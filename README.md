@@ -174,11 +174,3 @@ If you prefer not to use a Harness-style tool, you can deploy manually following
 > 👥 **WeChat group** — this group is for communication and discussion (deployment, usage, feedback). Scan the QR code to add us on WeChat and we'll pull you into the group.
 
 ![WeChat group QR code](<pics/wechat.png>)
-
----
-
-## 6. Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=sdlyxianchao/AIAllInOne&type=Date)](https://star-history.com/#sdlyxianchao/AIAllInOne&Date)
-
-> ⚠️ **Note:** GitHub has restricted access to star data, and the GitHub team is looking into it. In the meantime, repo owners can restore it temporarily with a workaround — see [star-history.com/blog/github-stargaer-api-restriction](https://star-history.com/blog/github-stargaer-api-restriction).
