@@ -171,14 +171,14 @@ git clone <你的仓库地址> AIAllInOne
 
 ## 五、社区 — 微信群
 
-> 👥 **微信群** —— 扫码加入，一起交流部署与使用。
+> 👥 **微信群** —— 本群用于交流（部署、使用、反馈）。扫码添加微信，我们会拉你进群。
 
-<!-- TODO: 此处放置微信群二维码图片（占位，待补充） -->
-
-![微信群]()
+![微信群二维码](<../pics/wechat.png>)
 
 ---
 
 ## 六、Star 趋势图
 
 [![Star History Chart](https://api.star-history.com/svg?repos=sdlyxianchao/AIAllInOne&type=Date)](https://star-history.com/#sdlyxianchao/AIAllInOne&Date)
+
+> ⚠️ **说明：** GitHub 已限制对 star 数据的访问，GitHub 团队正在处理中。在此期间，仓库所有者可通过一个临时方案恢复显示——详见 [star-history.com/blog/github-stargaer-api-restriction](https://star-history.com/blog/github-stargaer-api-restriction)。
