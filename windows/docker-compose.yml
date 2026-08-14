@@ -1,0 +1,667 @@
+# ============================================
+# AI Platform — Windows Docker Compose
+# File: docker-compose.yml
+# Usage:
+#   1. Copy .env.windows to .env, fill in API keys
+#   2. docker compose up -d
+# ============================================
+
+# 全局日志轮转（防止容器日志无限增长占满磁盘）
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+
+  # ==========================================
+  # 1. Keycloak — SSO (production mode, PostgreSQL)
+  # ==========================================
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    restart: always
+    logging: *default-logging
+    environment:
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - POSTGRES_DB=keycloak
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - ai-platform
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak
+    restart: always
+    logging: *default-logging
+    ports:
+      - "9090:8080"
+    command: start
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - KC_HOSTNAME=192.168.31.117
+      - KC_HOSTNAME_PORT=9090
+      - KC_HOSTNAME_STRICT=false
+      - KC_HTTP_ENABLED=true
+      - KC_PROXY=edge
+    networks:
+      - ai-platform
+    depends_on:
+      - keycloak-db
+
+  # ==========================================
+  # 2. NewAPI �?LLM Router / API Gateway
+  # ==========================================
+  new-api:
+    image: calciumion/new-api:latest
+    container_name: new-api
+    restart: always
+    logging: *default-logging
+    ports:
+      - "3000:3000"
+    environment:
+      - SQL_DSN=root:${NEWAPI_DB_PASSWORD}@tcp(new-api-db:3306)/new-api
+      - REDIS_CONN_STRING=redis://new-api-redis:6379
+      - SESSION_SECRET=${NEWAPI_SESSION_SECRET}
+      - CRYPTO_SECRET=${NEWAPI_CRYPTO_SECRET}
+      - GLOBAL_WEB_RATE_LIMIT=${GLOBAL_WEB_RATE_LIMIT:-999999}
+      - GLOBAL_API_RATE_LIMIT=${GLOBAL_API_RATE_LIMIT:-999999}
+      - CRITICAL_RATE_LIMIT_ENABLE=${CRITICAL_RATE_LIMIT_ENABLE:-false}
+      - CRITICAL_RATE_LIMIT=${CRITICAL_RATE_LIMIT:-999999}
+      - DEFAULT_QUOTA=${DEFAULT_QUOTA:-100}
+      - GENERATE_DEFAULT_TOKEN=${GENERATE_DEFAULT_TOKEN:-true}
+      # AI 管理中心周期调用管理 API 会反复登录，放宽单账号会话上限避免 AUTH_SESSION_LIMIT
+      - USER_SESSION_ACTIVE_LIMIT=${USER_SESSION_ACTIVE_LIMIT:-1000}
+      - USER_SESSION_ISSUANCE_LIMIT=${USER_SESSION_ISSUANCE_LIMIT:-10000}
+      - TZ=Asia/Shanghai
+    volumes:
+      - new-api-data:/data
+    depends_on:
+      new-api-db:
+        condition: service_healthy
+      new-api-redis:
+        condition: service_started
+    networks:
+      - ai-platform
+
+  new-api-db:
+    image: mysql:8.0
+    container_name: new-api-db
+    restart: always
+    logging: *default-logging
+    environment:
+      - MYSQL_ROOT_PASSWORD=${NEWAPI_DB_PASSWORD}
+      - MYSQL_DATABASE=new-api
+    volumes:
+      - new-api-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-platform
+
+  new-api-redis:
+    image: redis:7-alpine
+    container_name: new-api-redis
+    restart: always
+    logging: *default-logging
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 3. LiteLLM + Presidio �?PII Redaction Proxy
+  # ==========================================
+  litellm:
+    image: ghcr.io/berriai/litellm:v1.95.1
+    container_name: litellm
+    restart: always
+    logging: *default-logging
+    ports:
+      - "4001:4000"
+    volumes:
+      - ./litellm-config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      # PII 脱敏（Presidio）端点 —— litellm 会自动拼 /analyze、/anonymize，这里填 base URL 即可
+      - PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:3000
+      - PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:3000
+      # LLM 可观测（Langfuse）—— 每次调用上报到 Langfuse 做追踪分析
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_HOST=http://langfuse:3000
+    depends_on:
+      litellm-redis:
+        condition: service_started
+      presidio-analyzer:
+        condition: service_started
+      presidio-anonymizer:
+        condition: service_started
+    networks:
+      - ai-platform
+
+  litellm-redis:
+    image: redis:7-alpine
+    container_name: litellm-redis
+    restart: always
+    logging: *default-logging
+    networks:
+      - ai-platform
+
+  # PII 脱敏服务（Microsoft Presidio）—— 配合 LiteLLM guardrails 使用
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer:latest
+    container_name: presidio-analyzer
+    restart: always
+    logging: *default-logging
+    ports:
+      - "5002:3000"
+    networks:
+      - ai-platform
+
+  presidio-anonymizer:
+    image: mcr.microsoft.com/presidio-anonymizer:latest
+    container_name: presidio-anonymizer
+    restart: always
+    logging: *default-logging
+    ports:
+      - "5001:3000"
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 4. Ghost �?Enterprise Portal (Node.js + SQLite)
+  # ==========================================
+  ghost:
+    image: ghost:5-alpine
+    container_name: ghost
+    restart: always
+    logging: *default-logging
+    ports:
+      - "8090:2368"
+    environment:
+      url: http://192.168.31.117:8090
+      # 强制 SQLite，覆盖可能残留的旧 MySQL config.production.json
+      database__client: sqlite3
+      database__connection__filename: /var/lib/ghost/content/data/ghost.db
+      database__use_null_pool: "true"
+      # 邮件（魔法链接登录用）→ 本地 MailHog 接收器
+      mail__transport: SMTP
+      mail__from: noreply@company.com
+      mail__options__host: mailhog
+      mail__options__port: 1025
+    volumes:
+      - ghost-data:/var/lib/ghost/content
+    networks:
+      - ai-platform
+
+  # MailHog — 本地邮件接收器（Ghost 魔法链接登录用；Web UI 打开 :8025）
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    restart: always
+    logging: *default-logging
+    ports:
+      - "8025:8025"
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 5. Gitea �?Git + CI/CD (SQLite, with Runner)
+  # ==========================================
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: always
+    logging: *default-logging
+    ports:
+      - "3002:3000"
+      - "2222:22"
+    environment:
+      - GITEA__server__DOMAIN=192.168.31.117
+      - GITEA__server__ROOT_URL=http://192.168.31.117:3002/
+      - GITEA__server__SSH_DOMAIN=192.168.31.117
+      - GITEA__server__SSH_PORT=2222
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__actions__ENABLED=true
+    volumes:
+      - gitea-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ai-platform
+
+  gitea-runner:
+    image: gitea/act_runner:nightly
+    container_name: gitea-runner
+    restart: always
+    logging: *default-logging
+    environment:
+      - GITEA_INSTANCE_URL=http://gitea:3000
+      - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_TOKEN}
+      - GITEA_RUNNER_NAME=local-builder
+      - GITEA_RUNNER_LABELS=ubuntu-latest:docker://node:20
+      - CONFIG_FILE=/data/config.yaml
+    volumes:
+      - runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./gitea-runner-config.yaml:/data/config.yaml
+    depends_on:
+      - gitea
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 6. Update Server �?DeepChat distribution (nginx)
+  # ==========================================
+  update-server:
+    image: nginx:alpine
+    container_name: update-server
+    restart: always
+    logging: *default-logging
+    ports:
+      - "8091:80"
+    volumes:
+      - ./deepchat-updates:/usr/share/nginx/html
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 7. AI Admin Center — Unified admin portal
+  # ==========================================
+  admin-session-redis:
+    image: redis:7-alpine
+    container_name: admin-session-redis
+    restart: always
+    logging: *default-logging
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - admin-session-redis-data:/data
+    networks:
+      - ai-platform
+
+  admin-portal:
+    image: node:20-alpine
+    container_name: admin-portal
+    restart: always
+    logging: *default-logging
+    ports:
+      - "10086:3000"
+    working_dir: /app
+    command: sh -c "node server.js"
+    environment:
+      - PORT=3000
+      - KEYCLOAK_URL=http://192.168.31.117:9090
+      - KEYCLOAK_REALM=enterprise-ai
+      - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - GHOST_ADMIN_EMAIL=${GHOST_ADMIN_EMAIL}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - REDIS_URL=redis://admin-session-redis:6379
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_URL=http://192.168.31.117:4001
+      - NEWAPI_URL=http://new-api:3000
+      - NEWAPI_ADMIN_USERNAME=${NEWAPI_ADMIN_USERNAME}
+      - NEWAPI_ADMIN_PASSWORD=${NEWAPI_ADMIN_PASSWORD}
+      - NEWAPI_DB_PASSWORD=${NEWAPI_DB_PASSWORD}
+      - MCP_GATEWAY_URL=http://mcp-gateway:3100
+      - MCP_ADMIN_TOKEN=${MCP_ADMIN_TOKEN}
+      - GITEA_URL=http://192.168.31.117:3002
+      - DIFY_URL=http://192.168.31.117
+      - DIFY_ADMIN_EMAIL=${DIFY_ADMIN_EMAIL}
+      - DIFY_ADMIN_PASSWORD=${DIFY_ADMIN_PASSWORD}
+      - GRAFANA_URL=http://192.168.31.117:3030
+      - LANGFUSE_URL=http://192.168.31.117:3010
+      - LANGFUSE_CLICKHOUSE_PASSWORD=${LANGFUSE_CLICKHOUSE_PASSWORD}
+      - LOKI_URL=http://loki:3100
+      - AVAILABILITY_INTERVAL_MIN=${AVAILABILITY_INTERVAL_MIN:-10}
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./admin-portal:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../backups:/backups
+      - .:/deploy:ro
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 8. MCP Gateway �?Skill / MCP 管理 Hub
+  # ==========================================
+  mcp-gateway:
+    image: node:20-alpine
+    container_name: mcp-gateway
+    restart: always
+    logging: *default-logging
+    ports:
+      - "3100:3100"
+    working_dir: /app
+    command: sh -c "node gateway.js"
+    environment:
+      - PORT=3100
+      - MCP_SERVERS_FILE=/app/mcp-servers.json
+      - MCP_ADMIN_TOKEN=${MCP_ADMIN_TOKEN}
+    volumes:
+      - ./mcp-gateway:/app
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 9. 监控告警 — cadvisor + Prometheus + Grafana
+  # ==========================================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor
+    restart: always
+    logging: *default-logging
+    privileged: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - ai-platform
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    logging: *default-logging
+    ports:
+      - "9091:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - ai-platform
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: always
+    logging: *default-logging
+    ports:
+      - "9093:9093"
+    environment:
+      - ALERT_WEBHOOK_URL=${ALERT_WEBHOOK_URL:-http://127.0.0.1:10086/api/alert-webhook}
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - ai-platform
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    logging: *default-logging
+    ports:
+      - "3030:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_SERVER_ROOT_URL=http://192.168.31.117:3030
+      # Keycloak SSO（OAuth2 generic OIDC）—— 统一 ai_all_in_one_admin 登录
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=true
+      - GF_AUTH_GENERIC_OAUTH_NAME=Keycloak
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=grafana
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=${GRAFANA_OAUTH_CLIENT_SECRET}
+      - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=http://192.168.31.117:9090/realms/enterprise-ai/protocol/openid-connect/auth
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=http://192.168.31.117:9090/realms/enterprise-ai/protocol/openid-connect/token
+      - GF_AUTH_GENERIC_OAUTH_API_URL=http://192.168.31.117:9090/realms/enterprise-ai/protocol/openid-connect/userinfo
+      - GF_AUTH_OAUTH_AUTO_LOGIN=true
+      - GF_AUTH_DISABLE_LOGIN_FORM=false
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # 10. Langfuse — LLM 可观测
+  # ==========================================
+  langfuse-postgres:
+    image: postgres:16-alpine
+    container_name: langfuse-postgres
+    restart: always
+    logging: *default-logging
+    environment:
+      - POSTGRES_USER=langfuse
+      - POSTGRES_PASSWORD=${LANGFUSE_POSTGRES_PASSWORD}
+      - POSTGRES_DB=langfuse
+    volumes:
+      - langfuse-postgres-data:/var/lib/postgresql/data
+    networks:
+      - ai-platform
+
+  langfuse-redis:
+    image: redis:7-alpine
+    container_name: langfuse-redis
+    restart: always
+    logging: *default-logging
+    networks:
+      - ai-platform
+
+  langfuse-minio:
+    image: minio/minio:latest
+    container_name: langfuse-minio
+    restart: always
+    logging: *default-logging
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${LANGFUSE_MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${LANGFUSE_MINIO_PASSWORD}
+    volumes:
+      - langfuse-minio-data:/data
+    networks:
+      - ai-platform
+
+  # 一次性初始化：创建 langfuse 的 S3 bucket
+  langfuse-minio-init:
+    image: minio/mc:latest
+    container_name: langfuse-minio-init
+    entrypoint: >
+      sh -c "mc alias set local http://langfuse-minio:9000 ${LANGFUSE_MINIO_USER} ${LANGFUSE_MINIO_PASSWORD} && mc mb -p local/langfuse || true"
+    depends_on:
+      - langfuse-minio
+    networks:
+      - ai-platform
+
+  langfuse-clickhouse:
+    image: clickhouse/clickhouse-server:25.12
+    container_name: langfuse-clickhouse
+    restart: always
+    logging: *default-logging
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=langfuse
+      - CLICKHOUSE_PASSWORD=${LANGFUSE_CLICKHOUSE_PASSWORD}
+    volumes:
+      - langfuse-clickhouse-data:/var/lib/clickhouse
+    networks:
+      - ai-platform
+
+  langfuse:
+    image: docker.io/langfuse/langfuse:4
+    container_name: langfuse
+    restart: always
+    logging: *default-logging
+    ports:
+      - "3010:3000"
+    environment:
+      - DATABASE_URL=postgresql://langfuse:${LANGFUSE_POSTGRES_PASSWORD}@langfuse-postgres:5432/langfuse
+      - NEXTAUTH_URL=http://192.168.31.117:3010
+      - NEXTAUTH_SECRET=${LANGFUSE_NEXTAUTH_SECRET}
+      - SALT=${LANGFUSE_SALT}
+      - ENCRYPTION_KEY=${LANGFUSE_ENCRYPTION_KEY}
+      - TELEMETRY_ENABLED=false
+      - LANGFUSE_MIGRATION_V4_WRITE_MODE=dual
+      # Keycloak SSO —— 统一 ai_all_in_one_admin 登录
+      - AUTH_KEYCLOAK_CLIENT_ID=langfuse
+      - AUTH_KEYCLOAK_CLIENT_SECRET=${LANGFUSE_KEYCLOAK_CLIENT_SECRET}
+      - AUTH_KEYCLOAK_ISSUER=http://192.168.31.117:9090/realms/enterprise-ai
+      - AUTH_KEYCLOAK_SCOPE=openid email profile
+      # Headless 初始化：自动创建组织/项目/账号/API Key（首次启动时）
+      - LANGFUSE_INIT_ORG_ID=ai-all-in-one
+      - LANGFUSE_INIT_ORG_NAME=AI All In One
+      - LANGFUSE_INIT_PROJECT_ID=ai-platform
+      - LANGFUSE_INIT_PROJECT_NAME=AI Platform
+      - LANGFUSE_INIT_PROJECT_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_INIT_PROJECT_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_INIT_USER_EMAIL=${DIFY_ADMIN_EMAIL:-admin@example.com}
+      - LANGFUSE_INIT_USER_NAME=ai_all_in_one_admin
+      - LANGFUSE_INIT_USER_PASSWORD=${ADMIN_PASSWORD:-ChangeMe123!}
+      - CLICKHOUSE_URL=http://langfuse-clickhouse:8123
+      - CLICKHOUSE_USER=langfuse
+      - CLICKHOUSE_PASSWORD=${LANGFUSE_CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_MIGRATION_URL=clickhouse://langfuse-clickhouse:9000
+      - CLICKHOUSE_CLUSTER_ENABLED=false
+      - REDIS_HOST=langfuse-redis
+      - REDIS_PORT=6379
+      - LANGFUSE_S3_EVENT_UPLOAD_BUCKET=langfuse
+      - LANGFUSE_S3_EVENT_UPLOAD_REGION=auto
+      - LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID=${LANGFUSE_MINIO_USER}
+      - LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY=${LANGFUSE_MINIO_PASSWORD}
+      - LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT=http://langfuse-minio:9000
+      - LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE=true
+      - LANGFUSE_S3_MEDIA_UPLOAD_BUCKET=langfuse
+      - LANGFUSE_S3_MEDIA_UPLOAD_REGION=auto
+      - LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID=${LANGFUSE_MINIO_USER}
+      - LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY=${LANGFUSE_MINIO_PASSWORD}
+      - LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT=http://langfuse-minio:9000
+      - LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE=true
+    depends_on:
+      - langfuse-postgres
+      - langfuse-redis
+      - langfuse-minio
+      - langfuse-clickhouse
+    networks:
+      - ai-platform
+
+  langfuse-worker:
+    image: docker.io/langfuse/langfuse-worker:4
+    container_name: langfuse-worker
+    restart: always
+    logging: *default-logging
+    environment:
+      - DATABASE_URL=postgresql://langfuse:${LANGFUSE_POSTGRES_PASSWORD}@langfuse-postgres:5432/langfuse
+      - NEXTAUTH_URL=http://192.168.31.117:3010
+      - NEXTAUTH_SECRET=${LANGFUSE_NEXTAUTH_SECRET}
+      - SALT=${LANGFUSE_SALT}
+      - ENCRYPTION_KEY=${LANGFUSE_ENCRYPTION_KEY}
+      - TELEMETRY_ENABLED=false
+      - LANGFUSE_MIGRATION_V4_WRITE_MODE=dual
+      - CLICKHOUSE_URL=http://langfuse-clickhouse:8123
+      - CLICKHOUSE_USER=langfuse
+      - CLICKHOUSE_PASSWORD=${LANGFUSE_CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_MIGRATION_URL=clickhouse://langfuse-clickhouse:9000
+      - CLICKHOUSE_CLUSTER_ENABLED=false
+      - REDIS_HOST=langfuse-redis
+      - REDIS_PORT=6379
+      - LANGFUSE_S3_EVENT_UPLOAD_BUCKET=langfuse
+      - LANGFUSE_S3_EVENT_UPLOAD_REGION=auto
+      - LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID=${LANGFUSE_MINIO_USER}
+      - LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY=${LANGFUSE_MINIO_PASSWORD}
+      - LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT=http://langfuse-minio:9000
+      - LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE=true
+      - LANGFUSE_S3_MEDIA_UPLOAD_BUCKET=langfuse
+      - LANGFUSE_S3_MEDIA_UPLOAD_REGION=auto
+      - LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID=${LANGFUSE_MINIO_USER}
+      - LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY=${LANGFUSE_MINIO_PASSWORD}
+      - LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT=http://langfuse-minio:9000
+      - LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE=true
+    depends_on:
+      - langfuse-postgres
+      - langfuse-redis
+      - langfuse-minio
+      - langfuse-clickhouse
+    networks:
+      - ai-platform
+
+# ==========================================
+# 11. 统一日志 — Loki（聚合）+ Promtail（采集容器日志）
+# ==========================================
+  loki:
+    image: grafana/loki:2.9.7
+    container_name: loki
+    restart: always
+    logging: *default-logging
+    ports:
+      - "3110:3100"
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/loki.yml
+      - loki-data:/loki
+    networks:
+      - ai-platform
+
+  promtail:
+    image: grafana/promtail:2.9.7
+    container_name: promtail
+    restart: always
+    logging: *default-logging
+    command: ["-config.file=/etc/promtail/promtail.yml"]
+    volumes:
+      - ./monitoring/promtail.yml:/etc/promtail/promtail.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+    depends_on:
+      - loki
+    networks:
+      - ai-platform
+
+# ==========================================
+# Persistent Volumes
+# ==========================================
+volumes:
+  keycloak-data:
+  keycloak-db-data:
+  new-api-data:
+  new-api-db-data:
+  ghost-data:
+  gitea-data:
+  runner-data:
+  admin-session-redis-data:
+  prometheus-data:
+  grafana-data:
+  langfuse-postgres-data:
+  langfuse-minio-data:
+  langfuse-clickhouse-data:
+  loki-data:
+
+# ==========================================
+# Shared Network
+# Create first: docker network create ai-platform
+# ==========================================
+networks:
+  ai-platform:
+    external: true

@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 管理中心</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{display:flex;height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d1117;color:#c9d1d9}
+  /* ── Sidebar ── */
+  .sidebar{width:240px;background:#161b22;border-right:1px solid #30363d;padding:16px 0;overflow-y:auto;display:flex;flex-direction:column}
+  .sidebar h2{color:#58a6ff;font-size:1.05em;padding:8px 16px;margin-bottom:12px;border-bottom:1px solid #30363d;white-space:nowrap}
+  .sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#8b949e;text-decoration:none;font-size:0.88em;transition:background 0.12s;cursor:pointer;border-right:3px solid transparent}
+  .sidebar .nav-item:hover,.sidebar .nav-item.active{background:#1f2937;color:#e6edf3;border-right:3px solid #58a6ff}
+  .sidebar .divider{margin:8px 16px;border-top:1px solid #21262d}
+  /* ── Sidebar groups (collapsible) ── */
+  .nav-group{margin-bottom:2px}
+  .nav-group-head{display:flex;align-items:center;gap:6px;padding:7px 16px;color:#6e7681;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;cursor:pointer;user-select:none;transition:color 0.12s}
+  .nav-group-head:hover{color:#e6edf3}
+  .nav-group-head .group-arrow{font-size:0.9em;transition:transform 0.15s;color:#8b949e}
+  .nav-group.collapsed .group-arrow{transform:rotate(-90deg)}
+  .nav-group-body{overflow:hidden}
+  .nav-group.collapsed .nav-group-body{display:none}
+  .nav-group .nav-item{padding-left:24px}
+  .sidebar .user-info{margin-top:auto;padding:12px 16px;border-top:1px solid #30363d;font-size:0.8em;color:#8b949e}
+  .sidebar .user-info button{display:block;margin-top:8px;background:#21262d;color:#f85149;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.85em;width:100%}
+  /* ── Main content ── */
+  .main{flex:1;padding:24px;overflow-y:auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #30363d}
+  .topbar h1{font-size:1.4em;color:#f0f6fc}
+  /* ── Cards ── */
+  .card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px;margin-bottom:14px}
+  .card h3{color:#58a6ff;font-size:1.05em;margin-bottom:12px}
+  .card table{width:100%;border-collapse:collapse}
+  .card th,.card td{border:1px solid #30363d;padding:8px 10px;text-align:left;font-size:0.88em}
+  .card th{background:#0d1117;color:#58a6ff;font-weight:600}
+  /* ── Status grid ── */
+  .status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+  .svc-card{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:14px;transition:border-color 0.2s}
+  .svc-card:hover{border-color:#58a6ff}
+  .svc-card .svc-name{font-weight:600;margin-bottom:6px;font-size:0.95em}
+  .svc-card .svc-status{font-size:0.85em;margin-bottom:4px}
+  .svc-card .svc-status.running{color:#56d364}.svc-card .svc-status.exited,.svc-card .svc-status.dead{color:#f85149}.svc-card .svc-status.created{color:#d29922}
+  .svc-card .svc-image{color:#8b949e;font-size:0.78em}
+  /* ── Service groups (Docker) ── */
+  .docker-shell{border:1px solid #1f6feb;border-radius:12px;padding:16px;margin-bottom:14px;background:linear-gradient(180deg,#0d1117,#161b22)}
+  .docker-shell .docker-tip{color:#8b949e;font-size:0.82em;margin:2px 0 14px}
+  .service-group{margin-bottom:16px;border:1px solid #30363d;border-radius:10px;padding:12px;background:#0d1117}
+  .service-group:last-child{margin-bottom:0}
+  .service-group-head{display:flex;align-items:center;gap:8px;font-weight:600;color:#58a6ff;margin-bottom:10px;font-size:0.95em}
+  .service-group-head .count{margin-left:auto;color:#8b949e;font-size:0.78em;font-weight:400}
+  /* ── Stats ── */
+  .stats-bar{display:flex;gap:14px;margin-bottom:16px}
+  .stat{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px 20px;flex:1;text-align:center}
+  .stat .value{font-size:1.8em;font-weight:700}.stat .label{font-size:0.8em;color:#8b949e;margin-top:4px}
+  .stat.running .value{color:#56d364}.stat.total .value{color:#58a6ff}.stat.stopped .value{color:#f85149}
+  /* ── Admin table ── */
+  .admin-badge{background:#21262d;color:#d2a8ff;padding:2px 8px;border-radius:10px;font-size:0.75em}
+  .loading{color:#8b949e;padding:20px;text-align:center}
+  .error{color:#f85149;padding:12px;background:#3b0d0d;border-radius:6px}
+  a.ext-link{color:#58a6ff;font-size:0.82em;text-decoration:none}
+  a.ext-link:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- ═══════ Sidebar ═══════ -->
+<div class="sidebar">
+  <h2><img src="/logo.png" alt="AI All In One" style="width:28px;height:28px;border-radius:6px;vertical-align:middle;margin-right:8px"><span data-i18n="brand">AI 管理中心</span></h2>
+  <a class="nav-item active" onclick="loadDashboard()">📊 <span data-i18n="dashboard">总览仪表板</span></a>
+  <div class="divider"></div>
+
+  <div class="nav-group" data-group="apps">
+    <div class="nav-group-head" onclick="toggleGroup('apps')"><span class="group-arrow">▾</span><span data-i18n="group_apps">产品应用</span></div>
+    <div class="nav-group-body">
+      <a class="nav-item" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8090</span></a>
+      <a class="nav-item" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8088</span></a>
+      <a class="nav-item" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3002</span></a>
+      <a class="nav-item" onclick="loadNewApi()">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3000</span></a>
+      <a class="nav-item" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:9090</span></a>
+    </div>
+  </div>
+
+  <div class="nav-group" data-group="ai">
+    <div class="nav-group-head" onclick="toggleGroup('ai')"><span class="group-arrow">▾</span><span data-i18n="group_ai">AI 网关与集成</span></div>
+    <div class="nav-group-body">
+      <a class="nav-item" onclick="loadMcpGateway()">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3100</span></a>
+      <a class="nav-item" onclick="loadLitellm()">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:4001</span></a>
+      <a class="nav-item" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8091</span></a>
+    </div>
+  </div>
+
+  <div class="nav-group" data-group="ops">
+    <div class="nav-group-head" onclick="toggleGroup('ops')"><span class="group-arrow">▾</span><span data-i18n="group_ops">系统运维</span></div>
+    <div class="nav-group-body">
+      <a class="nav-item" onclick="loadAvailability(this)">🩺 <span data-i18n="availability">可用性测试</span></a>
+      <a class="nav-item" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3030</span></a>
+      <a class="nav-item" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3010</span></a>
+      <a class="nav-item" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:5001/:5002</span></a>
+      <a class="nav-item" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">Loki</span></a>
+      <a class="nav-item" onclick="loadBackup(this)">💾 <span data-i18n="backup">备份与恢复</span></a>
+      <a class="nav-item" onclick="loadReport(this)">📄 <span data-i18n="report">报告生成</span></a>
+    </div>
+  </div>
+
+  <div class="nav-group" data-group="admin">
+    <div class="nav-group-head" onclick="toggleGroup('admin')"><span class="group-arrow">▾</span><span data-i18n="group_admin">系统管理</span></div>
+    <div class="nav-group-body">
+      <a class="nav-item" onclick="loadAuthOverview()">🔐 <span data-i18n="auth">集中认证</span></a>
+      <a class="nav-item" onclick="loadAdmins()">👥 <span data-i18n="admins">管理员管理</span></a>
+      <a class="nav-item" onclick="loadSettings()">⚙️ <span data-i18n="settings">系统设置</span></a>
+    </div>
+  </div>
+
+  <div class="user-info">
+    <div>👤 <span id="username">...</span></div>
+    <button onclick="location.href='/logout'"><span data-i18n="logout">退出登录</span></button>
+  </div>
+</div>
+
+<!-- ═══════ Main Content ═══════ -->
+<div class="main" id="main">
+  <div class="topbar"><h1>📊 <span data-i18n="dashboard">总览仪表板</span></h1></div>
+  <div class="card"><h3>📈 <span data-i18n="metrics">产品业务指标</span></h3><div class="status-grid" id="metricsGrid"><div class="loading" data-i18n="loading_metrics">正在获取产品指标...</div></div></div>
+  <div class="card docker-shell">
+    <h3>🐳 <span data-i18n="docker_services">Docker 服务</span></h3>
+    <p class="docker-tip" data-i18n="docker_desc">以下服务均运行在 Docker 容器中，按产品分组展示</p>
+    <div class="stats-bar" id="statsBar"></div>
+    <div id="serviceGroups"><div class="loading" data-i18n="loading_services">正在获取服务状态...</div></div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+const LANG_KEY = 'ai-center-lang';
+let LANG = (localStorage.getItem(LANG_KEY) || 'zh');
+
+const I18N = {
+  zh: {
+    brand: 'AI 管理中心', dashboard: '总览仪表板', ghost: 'Ghost 后台', dify: 'Dify AI 平台', gitea: 'Gitea 源码管理',
+    group_apps: '产品应用', group_ai: 'AI 网关与集成', group_ops: '系统运维', group_admin: '系统管理',
+    newapi: 'NewAPI 管理', keycloak: 'Keycloak 认证', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新服务器',
+    auth: '集中认证', admins: '管理员管理', settings: '系统设置', logout: '退出登录',
+    loading_services: '正在获取服务状态...', loading: '加载中...',
+    metrics: '产品业务指标', loading_metrics: '正在获取产品指标...', docker_error: '无法连接 Docker：', metrics_error: '无法获取产品指标：',
+    channels: '渠道', users: '用户', keys: '密钥', not_connected: '未接入', pending: '待初始化', ports: '端口:',
+    running: '运行中', stopped: '已停止', total: '总计服务',
+    sys_info: '系统信息', docker_ver: 'Docker 版本', cpu: 'CPU', cores: '核', containers: '容器总数', images: '镜像数', memory: '内存', arch: '架构',
+    health_check: '健康检查', svc_detail: '服务详情', status: '状态', uptime: '运行时间', image: '镜像',
+    api_no_ui: '这是一个 API 服务，无 Web 界面。健康检查:', health_error: '无法获取状态：', manual_check: '手动检查:',
+    mcp_title: 'MCP Gateway — Skill / MCP 管理', endpoints: '端点信息', mcp_endpoint: 'MCP 端点', skill_market: 'Skill 市场', client_access: '客户端接入',
+    client_access_desc: 'DeepChat：设置 → MCP → 添加服务器 → 类型「可流式传输的 HTTP」→ 填上面的 /mcp 地址',
+    mcp_servers: 'MCP Server 管理（聚合外部 MCP）', skills: 'Skill 管理（内网技能包）',
+    name: '名称', type: '类型', cmd_url: '命令 / URL', delete: '删除', no_mcp: '暂无外部 MCP server（内置工具始终可用）',
+    add_mcp: '添加 MCP Server', name_ph: '名称（如 filesystem）', cmd_url_ph: 'http：填 URL；stdio：填命令', add: '添加',
+    cmd_url_ph_http: 'http：填 URL（如 http://example.com/mcp）', cmd_url_ph_stdio: 'stdio：填命令（如 npx -y ...）',
+    mcp_load_fail: '加载 MCP server 失败（需 ai-platform-admin 角色）：', add_fail: '添加失败：', delete_fail: '删除失败：',
+    delete_confirm: '删除 MCP server「', confirm_suffix: '」？', version: '版本', desc: '说明', size: '大小', no_skills: '暂无技能',
+    upload_skill: '上传技能包（zip，含 SKILL.md 的文件夹）', upload: '上传', skills_load_fail: '加载 Skill 失败（需 ai-platform-admin 角色）：',
+    upload_fail: '上传失败：', uploaded: '已上传技能：', delete_skill_confirm: '删除技能「',
+    name_cmd_required: '名称和命令/URL 必填', select_zip: '请先选择 zip 文件',
+    litellm_title: 'LiteLLM — PII 脱敏代理', litellm_open: '访问 LiteLLM 管理中心', litellm_desc: 'LiteLLM 是内部 PII 脱敏代理，登录用 Master Key（不走 Keycloak SSO）。',
+    open_litellm: '打开 LiteLLM 管理中心 ↗', copy_master_key: '📋 复制 Master Key', litellm_hint: '打开后把 Master Key 粘贴到登录框即可。Master Key 值见 credentials.html。',
+    litellm_fail: '无法获取 LiteLLM 信息：', no_key: '未获取到 Master Key', copied: '已复制到剪贴板',
+    newapi_title: 'NewAPI — LLM 路由网关', loading_newapi: '正在加载 NewAPI 数据...', newapi_fail: '无法获取 NewAPI 数据（需 ai-platform-admin 角色）：',
+    enabled: '启用', disabled: '禁用', admin_role: '管理员', user_role: '普通用户', other_role: '其他', usd: '美元', unlimited: '不限',
+    channel: '渠道', model: '模型', used_quota: '已用配额', username: '用户名', role: '角色', quota: '配额', used: '已用', requests: '请求数', remain_quota: '剩余配额',
+    no_channels: '暂无渠道', no_users: '暂无用户', no_keys: '暂无密钥', open_newapi: '打开 NewAPI 后台 ↗（复杂配置）', newapi_note: '查看已聚合；增删改渠道/用户/密钥请跳转后台操作。',
+    auth_title: '集中认证 — 统一账号体系', loading_auth: '正在加载认证概览...', auth_need_admin: '需要 ai-platform-admin 角色才能查看集中认证信息（含账号密码）',
+    auth_need_admin2: '请确保当前登录用户已分配 ai-platform-admin Realm Role。', auth_fail: '无法获取认证信息：',
+    security: '⚠️ 安全提示', security_desc: '本页面含统一管理员账号密码，仅 ai-platform-admin 角色可见，请勿外传或截图传播。',
+    unified_admin: '🔑 统一管理员账号（所有 Web 平台共用）', item: '项目', value: '值', action: '操作', copy: '📋 复制',
+    unified_desc: '一个账号管理所有平台。登录任意平台时跳转 Keycloak 认证，其他接入 SSO 的产品自动登录，无需重复输密码。',
+    sso_mech: '🔄 SSO 单点登录机制', sso_desc: 'Web 界面类产品都接入 Keycloak SSO，登录一次后点任何产品入口都自动进入。两个例外：Keycloak 本身是身份源；API 服务（LiteLLM、DeepSeek 等）用 API Key 调用，不走 SSO。',
+    auth_methods: '🗂️ 各平台认证方式清单', platform: '平台', login_method: '登录方式', note: '说明',
+    litellm_exception: '🛡️ LiteLLM — 例外（Master Key，不走 SSO）', litellm_exception_desc: 'LiteLLM 是内部 PII 脱敏代理，登录用 Master Key（不支持 Keycloak SSO）。日常无感，仅排查脱敏/查调用日志时进入。',
+    ad_account: '🏢 AD 域账号（LDAP 绑定）', bind_account: '绑定账号', bind_dn: '绑定 DN', password: '密码',
+    ad_note: '⚠️ 注意：AD 账号的 CN 带空格（"ai all in one admin"），不是下划线。改域控显示名后需同步更新 Keycloak LDAP 组件的 bindDn。',
+    admins_title: '管理员账号管理', admins_list: '平台管理员列表 (ai-platform-admin)', no_admins: '未找到管理员用户', name2: '姓名', email: '邮箱',
+    admins_desc: '管理员通过 Keycloak 管理，角色: ai-platform-admin。如需添加/移除管理员，请在 Keycloak 管理后台操作或通过 Entra ID 组映射。',
+    admins_need_admin: '需要 ai-platform-admin 角色才能查看管理员列表', admins_need_admin2: '请确保当前用户已分配 ai-platform-admin Realm Role。',
+    settings_title: '系统设置', language: '界面语言', language_desc: '选择管理中心界面的显示语言，保存后立即生效。',
+    env_config: '环境变量配置', env_desc: '所有配置通过 .env 文件或 docker-compose.yml 的 environment 传入。修改后需重启容器生效。',
+    product_urls: '产品入口 URL', prod_note: '生产环境请将以上 URL 替换为实际域名（参见 docker-deploy-guide.html）。',
+    open_admin: '打开后台 ↗', open_hint: '点击进入对应产品的管理后台进行详细配置', overview_fail: '无法获取数据：',
+    open_ghost: '打开 Ghost 后台', open_dify: '打开 Dify 平台', open_gitea: '打开 Gitea', open_keycloak: '打开 Keycloak 后台',
+    ghost_posts: '文章', ghost_pages: '页面', ghost_members: '订阅者', ghost_tags: '标签', ghost_logging_in: '正在免登录进入，稍候…', ghost_login_fail: 'Ghost 免登录失败：',
+    dify_apps: '应用', dify_workspaces: '工作空间', dify_version: '版本',
+    gitea_repos: '仓库', gitea_users: '用户', gitea_orgs: '组织', gitea_issues: '工单', gitea_version: '版本',
+    kc_users: '用户', kc_clients: '客户端', kc_roles: '角色', kc_idps: '身份源',
+    mcp_srv_count: 'MCP 服务', skill_count: '技能', litellm_models: '模型', update_version: 'DeepChat 版本',
+    docker_services: 'Docker 服务', docker_desc: '以下服务均运行在 Docker 容器中，按产品分组展示',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新服务器', svc_presidio: 'PII 脱敏', svc_monitoring: '监控', svc_langfuse: 'LLM 可观测', svc_session: '会话存储', svc_other: '其他',
+    repos_list: '仓库列表', repo_desc: '描述', repo_lang: '语言', repo_updated: '最后更新', sync_last_run: '更新脚本上次执行', sync_success: '成功', sync_failed: '失败', sync_running: '执行中', no_repos: '暂无仓库', installers: '安装包', last_updated: '上次更新', no_files: '暂无安装包', open_update: '打开更新服务器', quota_unit: '额度',
+    monitoring: '监控告警',
+    observability: 'LLM 可观测',
+    cost_report: '成本报表',
+    recent_days: '最近',
+    days: '天',
+    total_cost: '总成本',
+    total_calls: '总调用',
+    total_tokens: '总 Token',
+    by_user: '按用户',
+    by_model: '按模型',
+    by_day: '按日期',
+    calls: '调用次数',
+    tokens: 'Token',
+    cost: '成本',
+    date: '日期',
+    time: '时间',
+    audit_log: '审计日志',
+    recent: '最近',
+    records: '条',
+    no_data: '暂无数据',
+    audit_note: '记录每次模型调用的用户、模型、Token、额度与成本，用于合规审计与追溯。',
+    group: '分组',
+    org_note: '组织配额：在 NewAPI 后台「分组管理」按部门创建分组并设置模型倍率/配额，把用户归入对应分组即可实现按部门管控额度。',
+    presidio_status: '状态',
+    monitoring_targets: '存活目标',
+    monitoring_total: '总目标',
+    langfuse_version: '版本',
+    alerts_firing: '告警中',
+    open_monitoring: '打开监控大盘',
+    open_observability: '打开可观测平台',
+    traces: '追踪记录',
+    obs_desc: '追踪每次模型调用的提示词、响应、延迟、token、成本，用于质量分析与故障定位。',
+    pii: 'PII 脱敏', logs: '统一日志', backup: '备份与恢复', availability: '可用性测试',
+    avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DeepChat/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
+    presidio_state: '状态', pii_up: '正常', pii_down: '异常',
+    pii_title: 'PII 脱敏 — 敏感数据防护', pii_presidio: 'Presidio 实体识别服务', pii_analyzer: '识别服务 (analyzer)', pii_anonymizer: '脱敏服务 (anonymizer)',
+    pii_guardrails: 'LiteLLM 脱敏规则（guardrails）', pii_guardrail_name: '规则名', pii_guardrail_type: '类型', pii_guardrail_note: '说明',
+    pii_litellm_models: 'LiteLLM 已接入模型', pii_note: '所有经 LiteLLM 的模型调用都会先经过上述脱敏规则（default_on）：中文手机号/身份证/银行卡/邮箱/信用代码/护照/IP 及英文人名/邮箱/信用卡等敏感信息会被自动打码或拦截。',
+    backup_title: '备份与恢复', backup_desc: '数据备份 = NewAPI(MySQL) + Dify(PostgreSQL) + Ghost/Gitea(SQLite) + 配置文件。每日 02:00 定时备份，保留 7 天。',
+    backup_run: '立即备份', backup_running: '备份执行中...', backup_list: '备份列表', backup_time: '备份', backup_files: '文件', backup_no: '暂无备份记录', backup_confirm: '确认恢复到', backup_restore: '恢复', backup_restore_warn: '⚠️ 恢复会覆盖现有数据，请谨慎操作！', backup_result: '执行结果', backup_pass: '成功', backup_fail: '失败', backup_log: '备份日志',
+    logs_title: '统一日志', logs_desc: '聚合所有容器日志（Loki + Promtail）。按容器筛选，支持关键字搜索。', logs_container: '容器', logs_keyword: '关键字', logs_search_btn: '查询', logs_results: '日志结果', logs_empty: '无匹配日志', logs_all: '全部',
+    report: '报告生成', report_title: '报告生成 — 系统详细报告', report_desc: '按自定义条件生成系统报告：一段时间的系统状态、使用情况、客户端统计、最近问题、可用性、备份与 PII 状态。',
+    report_conditions: '报告条件', report_days: '统计周期', report_days_1: '最近 1 天', report_days_7: '最近 7 天', report_days_30: '最近 30 天', report_days_90: '最近 90 天',
+    report_sections: '包含内容', report_sec_system: '系统总览', report_sec_usage: '使用统计', report_sec_client: '客户端统计', report_sec_issues: '最近问题', report_sec_avail: '可用性测试', report_sec_backup: '备份状态', report_sec_pii: 'PII 脱敏',
+    report_generate: '📄 生成报告', report_generating: '正在生成报告...', report_download: '⬇️ 导出为 .md 文件', report_preview: '报告预览', report_lang: '报告语言与当前界面语言一致', report_need_admin: '生成报告需要 ai-platform-admin 角色',
+    report_none: '暂无报告，点击「生成报告」生成。', report_history: '历史报告', report_history_desc: '生成的报告自动保存在服务器，按保留策略自动清理。',
+    report_no_history: '暂无历史报告', report_view: '查看', report_delete: '删除', report_download_file: '下载', report_delete_confirm: '确认删除报告「', report_size: '大小',
+    report_retention: '报告保留策略', report_retention_mode: '保留方式', report_retention_count: '按份数', report_retention_days: '按天数', report_retention_value: '数量',
+    report_retention_save: '保存', report_retention_saved: '已保存，清理了 {n} 份过期报告', report_retention_count_text: '保留最近 {n} 份', report_retention_days_text: '保留最近 {n} 天',
+  },
+  en: {
+    brand: 'AI Admin Center', dashboard: 'Dashboard', ghost: 'Ghost Admin', dify: 'Dify AI Platform', gitea: 'Gitea Source',
+    group_apps: 'Applications', group_ai: 'AI Gateway & Integrations', group_ops: 'Operations', group_admin: 'System Admin',
+    newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Update Server',
+    auth: 'Central Auth', admins: 'Admins', settings: 'Settings', logout: 'Log out',
+    loading_services: 'Loading services...', loading: 'Loading...',
+    metrics: 'Product Metrics', loading_metrics: 'Loading metrics...', docker_error: 'Cannot connect to Docker: ', metrics_error: 'Cannot get metrics: ',
+    channels: 'Channels', users: 'Users', keys: 'Keys', not_connected: 'Not connected', pending: 'Pending', ports: 'Ports: ',
+    running: 'Running', stopped: 'Stopped', total: 'Total',
+    sys_info: 'System Info', docker_ver: 'Docker version', cpu: 'CPU', cores: 'cores', containers: 'Containers', images: 'Images', memory: 'Memory', arch: 'Architecture',
+    health_check: 'Health Check', svc_detail: 'Service Details', status: 'Status', uptime: 'Uptime', image: 'Image',
+    api_no_ui: 'This is an API service with no web UI. Health check: ', health_error: 'Cannot get status: ', manual_check: 'Manual check: ',
+    mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Endpoints', mcp_endpoint: 'MCP Endpoint', skill_market: 'Skill Market', client_access: 'Client Access',
+    client_access_desc: 'DeepChat: Settings → MCP → Add server → type "Streamable HTTP" → fill the /mcp URL above',
+    mcp_servers: 'MCP Servers (external MCP aggregation)', skills: 'Skills (internal skill packages)',
+    name: 'Name', type: 'Type', cmd_url: 'Command / URL', delete: 'Delete', no_mcp: 'No external MCP servers (built-in tools always available)',
+    add_mcp: 'Add MCP Server', name_ph: 'Name (e.g. filesystem)', cmd_url_ph: 'http: URL; stdio: command', add: 'Add',
+    cmd_url_ph_http: 'http: URL (e.g. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: command (e.g. npx -y ...)',
+    mcp_load_fail: 'Failed to load MCP servers (requires ai-platform-admin role): ', add_fail: 'Add failed: ', delete_fail: 'Delete failed: ',
+    delete_confirm: 'Delete MCP server "', confirm_suffix: '"?', version: 'Version', desc: 'Description', size: 'Size', no_skills: 'No skills',
+    upload_skill: 'Upload skill package (zip containing a folder with SKILL.md)', upload: 'Upload', skills_load_fail: 'Failed to load skills (requires ai-platform-admin role): ',
+    upload_fail: 'Upload failed: ', uploaded: 'Uploaded skill: ', delete_skill_confirm: 'Delete skill "',
+    name_cmd_required: 'Name and command/URL are required', select_zip: 'Please select a zip file first',
+    litellm_title: 'LiteLLM — PII Redaction Proxy', litellm_open: 'Access LiteLLM', litellm_desc: 'LiteLLM is the internal PII redaction proxy. Log in with the Master Key (not Keycloak SSO).',
+    open_litellm: 'Open LiteLLM ↗', copy_master_key: '📋 Copy Master Key', litellm_hint: 'Paste the Master Key into the login box. See credentials.html for the value.',
+    litellm_fail: 'Cannot get LiteLLM info: ', no_key: 'No Master Key', copied: 'copied to clipboard',
+    newapi_title: 'NewAPI — LLM Router', loading_newapi: 'Loading NewAPI data...', newapi_fail: 'Cannot get NewAPI data (requires ai-platform-admin role): ',
+    enabled: 'Enabled', disabled: 'Disabled', admin_role: 'Admin', user_role: 'User', other_role: 'Other', usd: 'USD', unlimited: 'Unlimited',
+    channel: 'Channel', model: 'Models', used_quota: 'Used quota', username: 'Username', role: 'Role', quota: 'Quota', used: 'Used', requests: 'Requests', remain_quota: 'Remaining',
+    no_channels: 'No channels', no_users: 'No users', no_keys: 'No keys', open_newapi: 'Open NewAPI ↗ (advanced)', newapi_note: 'Read-only aggregation; edit channels/users/keys in NewAPI backend.',
+    auth_title: 'Central Auth — Unified Accounts', loading_auth: 'Loading auth overview...', auth_need_admin: 'Requires ai-platform-admin role to view auth info (contains credentials)',
+    auth_need_admin2: 'Assign the ai-platform-admin Realm Role to the current user.', auth_fail: 'Cannot get auth info: ',
+    security: '⚠️ Security Notice', security_desc: 'This page contains the unified admin credentials. Visible to ai-platform-admin only. Do not share or screenshot.',
+    unified_admin: '🔑 Unified Admin Account (all web platforms)', item: 'Item', value: 'Value', action: 'Action', copy: '📋 Copy',
+    unified_desc: 'One account manages all platforms. Logging into any platform redirects to Keycloak; other SSO-enabled products auto-login.',
+    sso_mech: '🔄 SSO Mechanism', sso_desc: 'Web products use Keycloak SSO — sign in once and every entry auto-logs in. Two exceptions: Keycloak itself is the identity source; API services (LiteLLM, DeepSeek, etc.) use API keys.',
+    auth_methods: '🗂️ Auth Methods by Platform', platform: 'Platform', login_method: 'Login method', note: 'Notes',
+    litellm_exception: '🛡️ LiteLLM — Exception (Master Key, no SSO)', litellm_exception_desc: 'LiteLLM is the internal PII proxy, logged in with Master Key (no Keycloak SSO). Only used when troubleshooting redaction/logs.',
+    ad_account: '🏢 AD Domain Account (LDAP)', bind_account: 'Bind account', bind_dn: 'Bind DN', password: 'Password',
+    ad_note: '⚠️ The AD account CN has spaces ("ai all in one admin"), not underscores. Update Keycloak LDAP bindDn after renaming the DC display name.',
+    admins_title: 'Admin Accounts', admins_list: 'Platform Admins (ai-platform-admin)', no_admins: 'No admin users found', name2: 'Name', email: 'Email',
+    admins_desc: 'Admins are managed via Keycloak, role: ai-platform-admin. To add/remove, use Keycloak admin console or Entra ID group mapping.',
+    admins_need_admin: 'Requires ai-platform-admin role to view admins', admins_need_admin2: 'Assign the ai-platform-admin Realm Role to the current user.',
+    settings_title: 'Settings', language: 'Language', language_desc: 'Choose the Admin Center interface language. Takes effect immediately.',
+    env_config: 'Environment Variables', env_desc: 'All config is passed via .env or docker-compose.yml environment. Restart the container after changes.',
+    product_urls: 'Product URLs', prod_note: 'For production, replace these URLs with your actual domain (see docker-deploy-guide.html).',
+    open_admin: 'Open Admin ↗', open_hint: 'Click to open the product admin console for detailed configuration', overview_fail: 'Failed to load: ',
+    open_ghost: 'Open Ghost Admin', open_dify: 'Open Dify', open_gitea: 'Open Gitea', open_keycloak: 'Open Keycloak',
+    ghost_posts: 'Posts', ghost_pages: 'Pages', ghost_members: 'Members', ghost_tags: 'Tags', ghost_logging_in: 'Signing in automatically…', ghost_login_fail: 'Ghost auto sign-in failed: ',
+    dify_apps: 'Apps', dify_workspaces: 'Workspaces', dify_version: 'Version',
+    gitea_repos: 'Repos', gitea_users: 'Users', gitea_orgs: 'Orgs', gitea_issues: 'Issues', gitea_version: 'Version',
+    kc_users: 'Users', kc_clients: 'Clients', kc_roles: 'Roles', kc_idps: 'IdPs',
+    mcp_srv_count: 'MCP Servers', skill_count: 'Skills', litellm_models: 'Models', update_version: 'DeepChat Version',
+    docker_services: 'Docker Services', docker_desc: 'All services below run in Docker containers, grouped by product',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Update Server', svc_presidio: 'PII Redaction', svc_monitoring: 'Monitoring', svc_langfuse: 'LLM Observability', svc_session: 'Session Store', svc_other: 'Other',
+    repos_list: 'Repository List', repo_desc: 'Description', repo_lang: 'Language', repo_updated: 'Last updated', sync_last_run: 'Sync script last run', sync_success: 'Success', sync_failed: 'Failed', sync_running: 'Running', no_repos: 'No repositories', installers: 'Installers', last_updated: 'Last updated', no_files: 'No installers', open_update: 'Open Update Server', quota_unit: 'quota',
+    monitoring: 'Monitoring',
+    observability: 'LLM Observability',
+    cost_report: 'Cost Report',
+    recent_days: 'Last',
+    days: 'days',
+    total_cost: 'Total Cost',
+    total_calls: 'Total Calls',
+    total_tokens: 'Total Tokens',
+    by_user: 'By User',
+    by_model: 'By Model',
+    by_day: 'By Day',
+    calls: 'Calls',
+    tokens: 'Tokens',
+    cost: 'Cost',
+    date: 'Date',
+    time: 'Time',
+    audit_log: 'Audit Log',
+    recent: 'Recent',
+    records: 'records',
+    no_data: 'No data',
+    audit_note: 'Logs every model call (user, model, tokens, quota, cost) for compliance audit and traceability.',
+    group: 'Group',
+    org_note: 'Org quota: create groups by department in NewAPI "Group" admin and set model multipliers/quota; assign users to groups to enforce per-department limits.',
+    presidio_status: 'Status',
+    monitoring_targets: 'Targets up',
+    monitoring_total: 'Total targets',
+    langfuse_version: 'Version',
+    alerts_firing: 'Firing alerts',
+    open_monitoring: 'Open Monitoring',
+    open_observability: 'Open Observability',
+    traces: 'Traces',
+    obs_desc: 'Traces prompts, responses, latency, tokens and cost of every model call for quality analysis and debugging.',
+    pii: 'PII Redaction', logs: 'Unified Logs', backup: 'Backup & Restore', availability: 'Availability Test',
+    avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DeepChat/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
+    presidio_state: 'State', pii_up: 'Up', pii_down: 'Down',
+    pii_title: 'PII Redaction — Sensitive Data Protection', pii_presidio: 'Presidio Entity Recognition Services', pii_analyzer: 'Analyzer', pii_anonymizer: 'Anonymizer',
+    pii_guardrails: 'LiteLLM Redaction Rules (guardrails)', pii_guardrail_name: 'Rule', pii_guardrail_type: 'Type', pii_guardrail_note: 'Note',
+    pii_litellm_models: 'Models behind LiteLLM', pii_note: 'All LiteLLM traffic passes the guardrails (default_on): CN mobile/ID/bank card/email/credit code/passport/IP and EN name/email/credit card are masked or blocked.',
+    backup_title: 'Backup & Restore', backup_desc: 'Backup = NewAPI(MySQL) + Dify(PostgreSQL) + Ghost/Gitea(SQLite) + config files. Scheduled daily 02:00, kept 7 days.',
+    backup_run: 'Backup Now', backup_running: 'Running backup...', backup_list: 'Backup List', backup_time: 'Backup', backup_files: 'Files', backup_no: 'No backups yet', backup_confirm: 'Restore from', backup_restore: 'Restore', backup_restore_warn: 'Restore will overwrite current data!', backup_result: 'Result', backup_pass: 'OK', backup_fail: 'Failed', backup_log: 'Backup Log',
+    logs_title: 'Unified Logs', logs_desc: 'Aggregated container logs (Loki + Promtail). Filter by container, keyword search.', logs_container: 'Container', logs_keyword: 'Keyword', logs_search_btn: 'Search', logs_results: 'Log Results', logs_empty: 'No matching logs', logs_all: 'All',
+    report: 'Report', report_title: 'Report — System Detailed Report', report_desc: 'Generate a system report by custom conditions: system status over time, usage, client statistics, recent issues, availability, backup and PII status.',
+    report_conditions: 'Conditions', report_days: 'Period', report_days_1: 'Last 1 day', report_days_7: 'Last 7 days', report_days_30: 'Last 30 days', report_days_90: 'Last 90 days',
+    report_sections: 'Include', report_sec_system: 'System Overview', report_sec_usage: 'Usage Stats', report_sec_client: 'Client Stats', report_sec_issues: 'Recent Issues', report_sec_avail: 'Availability', report_sec_backup: 'Backup', report_sec_pii: 'PII Redaction',
+    report_generate: '📄 Generate Report', report_generating: 'Generating report...', report_download: '⬇️ Export as .md', report_preview: 'Report Preview', report_lang: 'Report language matches current UI language', report_need_admin: 'Generating reports requires the ai-platform-admin role',
+    report_none: 'No report yet. Click "Generate Report".', report_history: 'Report History', report_history_desc: 'Generated reports are saved on the server and auto-pruned by the retention policy.',
+    report_no_history: 'No history yet', report_view: 'View', report_delete: 'Delete', report_download_file: 'Download', report_delete_confirm: 'Delete report "', report_size: 'Size',
+    report_retention: 'Report retention', report_retention_mode: 'Retention mode', report_retention_count: 'By count', report_retention_days: 'By days', report_retention_value: 'Value',
+    report_retention_save: 'Save', report_retention_saved: 'Saved, pruned {n} expired report(s)', report_retention_count_text: 'Keep last {n} reports', report_retention_days_text: 'Keep reports from last {n} days',
+  },
+  "zh-TW": {
+    brand: 'AI 管理中心', dashboard: '總覽儀表板', ghost: 'Ghost 後台', dify: 'Dify AI 平台', gitea: 'Gitea 原始碼管理',
+    group_apps: '產品應用', group_ai: 'AI 閘道與整合', group_ops: '系統維運', group_admin: '系統管理',
+    newapi: 'NewAPI 管理', keycloak: 'Keycloak 認證', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新伺服器',
+    auth: '集中認證', admins: '管理員管理', settings: '系統設定', logout: '登出',
+    loading_services: '正在取得服務狀態...', loading: '載入中...',
+    metrics: '產品業務指標', loading_metrics: '正在取得產品指標...', docker_error: '無法連線 Docker：', metrics_error: '無法取得產品指標：',
+    channels: '管道', users: '使用者', keys: '金鑰', not_connected: '未接入', pending: '待初始化', ports: '連接埠:',
+    running: '執行中', stopped: '已停止', total: '總計服務',
+    sys_info: '系統資訊', docker_ver: 'Docker 版本', cpu: 'CPU', cores: '核心', containers: '容器總數', images: '映像檔數', memory: '記憶體', arch: '架構',
+    health_check: '健康檢查', svc_detail: '服務詳情', status: '狀態', uptime: '運行時間', image: '映像',
+    api_no_ui: '這是一個 API 服務，無 Web 介面。健康檢查:', health_error: '無法取得狀態：', manual_check: '手動檢查:',
+    mcp_title: 'MCP Gateway — Skill / MCP 管理', endpoints: '端點資訊', mcp_endpoint: 'MCP 端點', skill_market: 'Skill 市場', client_access: '用戶端接入',
+    client_access_desc: 'DeepChat：設定 → MCP → 新增伺服器 → 類型「可串流的 HTTP」→ 填上面的 /mcp 位址',
+    mcp_servers: 'MCP Server 管理（聚合外部 MCP）', skills: 'Skill 管理（內網技能包）',
+    name: '名稱', type: '類型', cmd_url: '命令 / URL', delete: '刪除', no_mcp: '暫無外部 MCP server（內建工具始終可用）',
+    add_mcp: '新增 MCP Server', name_ph: '名稱（如 filesystem）', cmd_url_ph: 'http：填 URL；stdio：填命令', add: '新增',
+    cmd_url_ph_http: 'http：填 URL（如 http://example.com/mcp）', cmd_url_ph_stdio: 'stdio：填命令（如 npx -y ...）',
+    mcp_load_fail: '載入 MCP server 失敗（需 ai-platform-admin 角色）：', add_fail: '新增失敗：', delete_fail: '刪除失敗：',
+    delete_confirm: '刪除 MCP server「', confirm_suffix: '」？', version: '版本', desc: '說明', size: '大小', no_skills: '暫無技能',
+    upload_skill: '上傳技能包（zip，含 SKILL.md 的資料夾）', upload: '上傳', skills_load_fail: '載入 Skill 失敗（需 ai-platform-admin 角色）：',
+    upload_fail: '上傳失敗：', uploaded: '已上傳技能：', delete_skill_confirm: '刪除技能「',
+    name_cmd_required: '名稱和命令/URL 必填', select_zip: '請先選擇 zip 檔案',
+    litellm_title: 'LiteLLM — PII 去識別化代理', litellm_open: '存取 LiteLLM 管理中心', litellm_desc: 'LiteLLM 是內部 PII 去識別化代理，登入用 Master Key（不走 Keycloak SSO）。',
+    open_litellm: '開啟 LiteLLM 管理中心 ↗', copy_master_key: '📋 複製 Master Key', litellm_hint: '開啟後把 Master Key 貼到登入框即可。Master Key 值見 credentials.html。',
+    litellm_fail: '無法取得 LiteLLM 資訊：', no_key: '未取得 Master Key', copied: '已複製到剪貼簿',
+    newapi_title: 'NewAPI — LLM 路由閘道', loading_newapi: '正在載入 NewAPI 資料...', newapi_fail: '無法取得 NewAPI 資料（需 ai-platform-admin 角色）：',
+    enabled: '啟用', disabled: '停用', admin_role: '管理員', user_role: '一般使用者', other_role: '其他', usd: '美元', unlimited: '不限',
+    channel: '管道', model: '模型', used_quota: '已用配額', username: '使用者名稱', role: '角色', quota: '配額', used: '已用', requests: '請求數', remain_quota: '剩餘配額',
+    no_channels: '暫無管道', no_users: '暫無使用者', no_keys: '暫無金鑰', open_newapi: '開啟 NewAPI 後台 ↗（複雜設定）', newapi_note: '檢視已聚合；增刪改管道/使用者/金鑰請跳轉後台操作。',
+    auth_title: '集中認證 — 統一帳號體系', loading_auth: '正在載入認證概覽...', auth_need_admin: '需要 ai-platform-admin 角色才能查看集中認證資訊（含帳號密碼）',
+    auth_need_admin2: '請確保目前登入使用者已指派 ai-platform-admin Realm Role。', auth_fail: '無法取得認證資訊：',
+    security: '⚠️ 安全提示', security_desc: '本頁面含統一管理員帳號密碼，僅 ai-platform-admin 角色可見，請勿外傳或截圖散佈。',
+    unified_admin: '🔑 統一管理員帳號（所有 Web 平台共用）', item: '項目', value: '值', action: '操作', copy: '📋 複製',
+    unified_desc: '一個帳號管理所有平台。登入任一平台時跳轉 Keycloak 認證，其他接入 SSO 的產品自動登入，無需重複輸入密碼。',
+    sso_mech: '🔄 SSO 單一登入機制', sso_desc: 'Web 介面類產品都接入 Keycloak SSO，登入一次後點任何產品入口都自動進入。兩個例外：Keycloak 本身是身份來源；API 服務（LiteLLM、DeepSeek 等）用 API Key 呼叫，不走 SSO。',
+    auth_methods: '🗂️ 各平台認證方式清單', platform: '平台', login_method: '登入方式', note: '說明',
+    litellm_exception: '🛡️ LiteLLM — 例外（Master Key，不走 SSO）', litellm_exception_desc: 'LiteLLM 是內部 PII 去識別化代理，登入用 Master Key（不支援 Keycloak SSO）。日常無感，僅排查去識別化/查呼叫日誌時進入。',
+    ad_account: '🏢 AD 網域帳號（LDAP 繫結）', bind_account: '繫結帳號', bind_dn: '繫結 DN', password: '密碼',
+    ad_note: '⚠️ 注意：AD 帳號的 CN 帶空格（"ai all in one admin"），不是底線。改網域控制站顯示名稱後需同步更新 Keycloak LDAP 元件的 bindDn。',
+    admins_title: '管理員帳號管理', admins_list: '平台管理員列表 (ai-platform-admin)', no_admins: '未找到管理員使用者', name2: '姓名', email: '電子郵件',
+    admins_desc: '管理員透過 Keycloak 管理，角色: ai-platform-admin。如需新增/移除管理員，請在 Keycloak 管理後台操作或透過 Entra ID 群組對應。',
+    admins_need_admin: '需要 ai-platform-admin 角色才能查看管理員列表', admins_need_admin2: '請確保目前使用者已指派 ai-platform-admin Realm Role。',
+    settings_title: '系統設定', language: '介面語言', language_desc: '選擇管理中心介面的顯示語言，儲存後立即生效。',
+    env_config: '環境變數設定', env_desc: '所有設定透過 .env 檔案或 docker-compose.yml 的 environment 傳入。修改後需重啟容器生效。',
+    product_urls: '產品入口 URL', prod_note: '正式環境請將以上 URL 替換為實際網域（參見 docker-deploy-guide.html）。',
+    open_admin: '開啟後台 ↗', open_hint: '點擊進入對應產品的管理後台進行詳細設定', overview_fail: '無法取得資料：',
+    open_ghost: '開啟 Ghost 後台', open_dify: '開啟 Dify 平台', open_gitea: '開啟 Gitea', open_keycloak: '開啟 Keycloak 後台',
+    ghost_posts: '文章', ghost_pages: '頁面', ghost_members: '訂閱者', ghost_tags: '標籤',
+    dify_apps: '應用', dify_workspaces: '工作區', dify_version: '版本',
+    gitea_repos: '儲存庫', gitea_users: '使用者', gitea_orgs: '組織', gitea_issues: '議題', gitea_version: '版本',
+    kc_users: '使用者', kc_clients: '用戶端', kc_roles: '角色', kc_idps: '身份來源',
+    mcp_srv_count: 'MCP 服務', skill_count: '技能', litellm_models: '模型', update_version: 'DeepChat 版本',
+    docker_services: 'Docker 服務', docker_desc: '以下服務均運行在 Docker 容器中，按產品分組展示',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新伺服器', svc_presidio: 'PII 脫敏', svc_monitoring: '監控', svc_langfuse: 'LLM 可觀測', svc_session: '工作階段儲存', svc_other: '其他',
+    repos_list: '儲存庫列表', repo_desc: '描述', repo_lang: '語言', repo_updated: '最後更新', sync_last_run: '更新腳本上次執行', sync_success: '成功', sync_failed: '失敗', sync_running: '執行中', no_repos: '暫無儲存庫', installers: '安裝包', last_updated: '上次更新', no_files: '暫無安裝包', open_update: '開啟更新伺服器', quota_unit: '額度',
+    monitoring: '監控告警',
+    observability: 'LLM 可觀測',
+    cost_report: '成本報表',
+    recent_days: '最近',
+    days: '天',
+    total_cost: '總成本',
+    total_calls: '總調用',
+    total_tokens: '總 Token',
+    by_user: '按使用者',
+    by_model: '按模型',
+    by_day: '按日期',
+    calls: '調用次數',
+    tokens: 'Token',
+    cost: '成本',
+    date: '日期',
+    time: '時間',
+    audit_log: '稽核日誌',
+    recent: '最近',
+    records: '筆',
+    no_data: '暫無資料',
+    audit_note: '記錄每次模型呼叫的使用者、模型、Token、額度與成本，用於合規稽核與追溯。',
+    group: '群組',
+    org_note: '組織配額：在 NewAPI 後台「群組管理」按部門建立群組並設定模型倍率/配額，把使用者歸入對應群組即可按部門控管額度。',
+    presidio_status: '狀態',
+    monitoring_targets: '存活目標',
+    monitoring_total: '總目標',
+    langfuse_version: '版本',
+    alerts_firing: '告警中',
+    open_monitoring: '開啟監控大盤',
+    open_observability: '開啟可觀測平台',
+    traces: '追蹤記錄',
+    obs_desc: '追蹤每次模型呼叫的提示詞、回應、延遲、token、成本，用於品質分析與故障定位。',
+  },
+  fr: {
+    brand: 'Centre d’administration IA', dashboard: 'Tableau de bord', ghost: 'Administration Ghost', dify: 'Plateforme Dify', gitea: 'Source Gitea',
+    group_apps: 'Applications', group_ai: 'Passerelle IA & intégrations', group_ops: 'Opérations', group_admin: 'Administration système',
+    newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Serveur de mise à jour',
+    auth: 'Authentification centralisée', admins: 'Administrateurs', settings: 'Paramètres', logout: 'Déconnexion',
+    loading_services: 'Chargement des services...', loading: 'Chargement...',
+    metrics: 'Métriques produits', loading_metrics: 'Chargement des métriques...', docker_error: 'Impossible de se connecter à Docker : ', metrics_error: 'Impossible de récupérer les métriques : ',
+    channels: 'Canaux', users: 'Utilisateurs', keys: 'Clés', not_connected: 'Non connecté', pending: 'En attente', ports: 'Ports : ',
+    running: 'En cours', stopped: 'Arrêté', total: 'Total',
+    sys_info: 'Infos système', docker_ver: 'Version Docker', cpu: 'CPU', cores: 'cœurs', containers: 'Conteneurs', images: 'Images', memory: 'Mémoire', arch: 'Architecture',
+    health_check: 'Vérification de santé', svc_detail: 'Détails du service', status: 'Statut', uptime: 'Disponibilité', image: 'Image',
+    api_no_ui: 'Service API sans interface web. Vérification : ', health_error: 'Impossible de récupérer le statut : ', manual_check: 'Vérification manuelle : ',
+    mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Points de terminaison', mcp_endpoint: 'Point de terminaison MCP', skill_market: 'Marché de skills', client_access: 'Accès client',
+    client_access_desc: 'DeepChat : Paramètres → MCP → Ajouter un serveur → type « HTTP diffusé en continu » → saisir l’URL /mcp ci-dessus',
+    mcp_servers: 'Serveurs MCP (agrégation MCP externe)', skills: 'Skills (paquets internes)',
+    name: 'Nom', type: 'Type', cmd_url: 'Commande / URL', delete: 'Supprimer', no_mcp: 'Aucun serveur MCP externe (outils intégrés toujours disponibles)',
+    add_mcp: 'Ajouter un serveur MCP', name_ph: 'Nom (ex. filesystem)', cmd_url_ph: 'http : URL ; stdio : commande', add: 'Ajouter',
+    cmd_url_ph_http: 'http : URL (ex. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio : commande (ex. npx -y ...)',
+    mcp_load_fail: 'Échec du chargement des serveurs MCP (rôle ai-platform-admin requis) : ', add_fail: 'Échec de l’ajout : ', delete_fail: 'Échec de la suppression : ',
+    delete_confirm: 'Supprimer le serveur MCP « ', confirm_suffix: ' » ?', version: 'Version', desc: 'Description', size: 'Taille', no_skills: 'Aucun skill',
+    upload_skill: 'Importer un paquet de skill (zip contenant un dossier avec SKILL.md)', upload: 'Importer', skills_load_fail: 'Échec du chargement des skills (rôle ai-platform-admin requis) : ',
+    upload_fail: 'Échec de l’import : ', uploaded: 'Skill importé : ', delete_skill_confirm: 'Supprimer le skill « ',
+    name_cmd_required: 'Nom et commande/URL requis', select_zip: 'Sélectionnez d’abord un fichier zip',
+    litellm_title: 'LiteLLM — Proxy de masquage PII', litellm_open: 'Accéder à LiteLLM', litellm_desc: 'LiteLLM est le proxy interne de masquage PII. Connexion avec la Master Key (pas de SSO Keycloak).',
+    open_litellm: 'Ouvrir LiteLLM ↗', copy_master_key: '📋 Copier la Master Key', litellm_hint: 'Collez la Master Key dans le champ de connexion. Voir credentials.html.',
+    litellm_fail: 'Impossible de récupérer les infos LiteLLM : ', no_key: 'Aucune Master Key', copied: 'copié dans le presse-papiers',
+    newapi_title: 'NewAPI — Routeur LLM', loading_newapi: 'Chargement des données NewAPI...', newapi_fail: 'Impossible de récupérer les données NewAPI (rôle ai-platform-admin requis) : ',
+    enabled: 'Activé', disabled: 'Désactivé', admin_role: 'Admin', user_role: 'Utilisateur', other_role: 'Autre', usd: 'USD', unlimited: 'Illimité',
+    channel: 'Canal', model: 'Modèles', used_quota: 'Quota utilisé', username: 'Nom d’utilisateur', role: 'Rôle', quota: 'Quota', used: 'Utilisé', requests: 'Requêtes', remain_quota: 'Restant',
+    no_channels: 'Aucun canal', no_users: 'Aucun utilisateur', no_keys: 'Aucune clé', open_newapi: 'Ouvrir NewAPI ↗ (avancé)', newapi_note: 'Agrégation en lecture seule ; modifiez canaux/utilisateurs/clés dans NewAPI.',
+    auth_title: 'Authentification centralisée — Comptes unifiés', loading_auth: 'Chargement de l’aperçu d’authentification...', auth_need_admin: 'Rôle ai-platform-admin requis pour voir les infos d’authentification (contient les identifiants)',
+    auth_need_admin2: 'Attribuez le rôle ai-platform-admin à l’utilisateur actuel.', auth_fail: 'Impossible de récupérer les infos d’authentification : ',
+    security: '⚠️ Avis de sécurité', security_desc: 'Cette page contient les identifiants admin unifiés. Visible uniquement par ai-platform-admin. Ne pas partager ni capturer.',
+    unified_admin: '🔑 Compte admin unifié (toutes les plateformes web)', item: 'Élément', value: 'Valeur', action: 'Action', copy: '📋 Copier',
+    unified_desc: 'Un compte gère toutes les plateformes. La connexion redirige vers Keycloak ; les autres produits SSO se connectent automatiquement.',
+    sso_mech: '🔄 Mécanisme SSO', sso_desc: 'Les produits web utilisent Keycloak SSO — connectez-vous une fois et chaque entrée se connecte automatiquement. Deux exceptions : Keycloak est la source d’identité ; les services API (LiteLLM, DeepSeek, etc.) utilisent des clés API.',
+    auth_methods: '🗂️ Méthodes d’authentification par plateforme', platform: 'Plateforme', login_method: 'Méthode de connexion', note: 'Notes',
+    litellm_exception: '🛡️ LiteLLM — Exception (Master Key, pas de SSO)', litellm_exception_desc: 'LiteLLM est le proxy PII interne, connexion par Master Key (pas de SSO Keycloak). Utilisé uniquement pour le dépannage du masquage/journalisation.',
+    ad_account: '🏢 Compte de domaine AD (LDAP)', bind_account: 'Compte de liaison', bind_dn: 'DN de liaison', password: 'Mot de passe',
+    ad_note: '⚠️ Le CN du compte AD contient des espaces (« ai all in one admin »), pas de tirets bas. Mettez à jour bindDn après renommage.',
+    admins_title: 'Comptes administrateurs', admins_list: 'Administrateurs de la plateforme (ai-platform-admin)', no_admins: 'Aucun administrateur trouvé', name2: 'Nom', email: 'E-mail',
+    admins_desc: 'Les administrateurs sont gérés via Keycloak, rôle : ai-platform-admin. Pour ajouter/retirer, utilisez la console Keycloak ou le mapping de groupe Entra ID.',
+    admins_need_admin: 'Rôle ai-platform-admin requis pour voir les administrateurs', admins_need_admin2: 'Attribuez le rôle ai-platform-admin à l’utilisateur actuel.',
+    settings_title: 'Paramètres', language: 'Langue', language_desc: 'Choisissez la langue de l’interface. Prend effet immédiatement.',
+    env_config: 'Variables d’environnement', env_desc: 'Toute la configuration passe par .env ou docker-compose.yml. Redémarrez le conteneur après modification.',
+    product_urls: 'URL des produits', prod_note: 'En production, remplacez ces URL par votre domaine réel (voir docker-deploy-guide.html).',
+    open_admin: 'Ouvrir l’admin ↗', open_hint: 'Cliquez pour ouvrir la console d’administration du produit', overview_fail: 'Échec du chargement : ',
+    open_ghost: 'Ouvrir l’admin Ghost', open_dify: 'Ouvrir Dify', open_gitea: 'Ouvrir Gitea', open_keycloak: 'Ouvrir Keycloak',
+    ghost_posts: 'Articles', ghost_pages: 'Pages', ghost_members: 'Membres', ghost_tags: 'Étiquettes',
+    dify_apps: 'Applications', dify_workspaces: 'Espaces de travail', dify_version: 'Version',
+    gitea_repos: 'Dépôts', gitea_users: 'Utilisateurs', gitea_orgs: 'Organisations', gitea_issues: 'Tickets', gitea_version: 'Version',
+    kc_users: 'Utilisateurs', kc_clients: 'Clients', kc_roles: 'Rôles', kc_idps: 'IdP',
+    mcp_srv_count: 'Serveurs MCP', skill_count: 'Skills', litellm_models: 'Modèles', update_version: 'Version DeepChat',
+    docker_services: 'Services Docker', docker_desc: 'Tous les services ci-dessous s’exécutent dans des conteneurs Docker, groupés par produit',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Serveur de mise à jour', svc_presidio: 'Anonymisation PII', svc_monitoring: 'Supervision', svc_langfuse: 'Observabilité LLM', svc_session: 'Stockage de session',     svc_other: 'Autre',
+    repos_list: 'Liste des dépôts', repo_desc: 'Description', repo_lang: 'Langage', repo_updated: 'Dernière mise à jour', sync_last_run: 'Dernière exécution du script', sync_success: 'Réussi', sync_failed: 'Échec', sync_running: 'En cours', no_repos: 'Aucun dépôt', installers: 'Installateurs', last_updated: 'Dernière mise à jour', no_files: 'Aucun installateur', open_update: 'Ouvrir le serveur de mise à jour', quota_unit: 'quota',
+    monitoring: 'Supervision',
+    observability: 'Observabilité LLM',
+    cost_report: 'Rapport de coûts',
+    recent_days: 'Derniers',
+    days: 'jours',
+    total_cost: 'Coût total',
+    total_calls: 'Appels totaux',
+    total_tokens: 'Tokens totaux',
+    by_user: 'Par utilisateur',
+    by_model: 'Par modèle',
+    by_day: 'Par jour',
+    calls: 'Appels',
+    tokens: 'Tokens',
+    cost: 'Coût',
+    date: 'Date',
+    time: 'Heure',
+    audit_log: 'Journal d\'audit',
+    recent: 'Récents',
+    records: 'enregistrements',
+    no_data: 'Aucune donnée',
+    audit_note: 'Journalise chaque appel (utilisateur, modèle, tokens, quota, coût) pour audit et traçabilité.',
+    group: 'Groupe',
+    org_note: 'Quota par groupe : créez des groupes par département dans NewAPI, définissez les multiplicateurs/quota, puis affectez les utilisateurs.',
+    presidio_status: 'Statut',
+    monitoring_targets: 'Cibles actives',
+    monitoring_total: 'Total cibles',
+    langfuse_version: 'Version',
+    alerts_firing: 'Alertes actives',
+    open_monitoring: 'Ouvrir la supervision',
+    open_observability: 'Ouvrir l’observabilité',
+    traces: 'Traces',
+    obs_desc: 'Trace les prompts, réponses, latence, tokens et coûts de chaque appel modèle pour analyse qualité et débogage.',
+  },
+  es: {
+    brand: 'Centro de administración de IA', dashboard: 'Panel de control', ghost: 'Administración de Ghost', dify: 'Plataforma Dify', gitea: 'Código Gitea',
+    group_apps: 'Aplicaciones', group_ai: 'Puerta de enlace IA e integraciones', group_ops: 'Operaciones', group_admin: 'Administración del sistema',
+    newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Servidor de actualizaciones',
+    auth: 'Autenticación central', admins: 'Administradores', settings: 'Ajustes', logout: 'Cerrar sesión',
+    loading_services: 'Cargando servicios...', loading: 'Cargando...',
+    metrics: 'Métricas de productos', loading_metrics: 'Cargando métricas...', docker_error: 'No se pudo conectar a Docker: ', metrics_error: 'No se pudieron obtener las métricas: ',
+    channels: 'Canales', users: 'Usuarios', keys: 'Claves', not_connected: 'No conectado', pending: 'Pendiente', ports: 'Puertos: ',
+    running: 'En ejecución', stopped: 'Detenido', total: 'Total',
+    sys_info: 'Información del sistema', docker_ver: 'Versión de Docker', cpu: 'CPU', cores: 'núcleos', containers: 'Contenedores', images: 'Imágenes', memory: 'Memoria', arch: 'Arquitectura',
+    health_check: 'Comprobación de estado', svc_detail: 'Detalles del servicio', status: 'Estado', uptime: 'Tiempo activo', image: 'Imagen',
+    api_no_ui: 'Este es un servicio API sin interfaz web. Comprobación: ', health_error: 'No se pudo obtener el estado: ', manual_check: 'Comprobación manual: ',
+    mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Puntos finales', mcp_endpoint: 'Punto final MCP', skill_market: 'Mercado de skills', client_access: 'Acceso de cliente',
+    client_access_desc: 'DeepChat: Ajustes → MCP → Añadir servidor → tipo «HTTP transmitido» → introducir la URL /mcp',
+    mcp_servers: 'Servidores MCP (agregación MCP externa)', skills: 'Skills (paquetes internos)',
+    name: 'Nombre', type: 'Tipo', cmd_url: 'Comando / URL', delete: 'Eliminar', no_mcp: 'Sin servidores MCP externos (herramientas integradas siempre disponibles)',
+    add_mcp: 'Añadir servidor MCP', name_ph: 'Nombre (p. ej. filesystem)', cmd_url_ph: 'http: URL; stdio: comando', add: 'Añadir',
+    cmd_url_ph_http: 'http: URL (p. ej. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: comando (p. ej. npx -y ...)',
+    mcp_load_fail: 'Error al cargar servidores MCP (requiere rol ai-platform-admin): ', add_fail: 'Error al añadir: ', delete_fail: 'Error al eliminar: ',
+    delete_confirm: 'Eliminar servidor MCP «', confirm_suffix: '»?', version: 'Versión', desc: 'Descripción', size: 'Tamaño', no_skills: 'Sin skills',
+    upload_skill: 'Subir paquete de skill (zip con carpeta que contiene SKILL.md)', upload: 'Subir', skills_load_fail: 'Error al cargar skills (requiere rol ai-platform-admin): ',
+    upload_fail: 'Error al subir: ', uploaded: 'Skill subido: ', delete_skill_confirm: 'Eliminar skill «',
+    name_cmd_required: 'Nombre y comando/URL obligatorios', select_zip: 'Seleccione primero un archivo zip',
+    litellm_title: 'LiteLLM — Proxy de anonimización PII', litellm_open: 'Acceder a LiteLLM', litellm_desc: 'LiteLLM es el proxy interno de anonimización PII. Inicie sesión con la Master Key (sin SSO de Keycloak).',
+    open_litellm: 'Abrir LiteLLM ↗', copy_master_key: '📋 Copiar Master Key', litellm_hint: 'Pegue la Master Key en el cuadro de inicio de sesión. Consulte credentials.html.',
+    litellm_fail: 'No se pudo obtener la información de LiteLLM: ', no_key: 'Sin Master Key', copied: 'copiado al portapapeles',
+    newapi_title: 'NewAPI — Enrutador LLM', loading_newapi: 'Cargando datos de NewAPI...', newapi_fail: 'No se pudieron obtener los datos de NewAPI (requiere rol ai-platform-admin): ',
+    enabled: 'Habilitado', disabled: 'Deshabilitado', admin_role: 'Admin', user_role: 'Usuario', other_role: 'Otro', usd: 'USD', unlimited: 'Ilimitado',
+    channel: 'Canal', model: 'Modelos', used_quota: 'Cuota usada', username: 'Usuario', role: 'Rol', quota: 'Cuota', used: 'Usado', requests: 'Solicitudes', remain_quota: 'Restante',
+    no_channels: 'Sin canales', no_users: 'Sin usuarios', no_keys: 'Sin claves', open_newapi: 'Abrir NewAPI ↗ (avanzado)', newapi_note: 'Agregación de solo lectura; edite canales/usuarios/claves en NewAPI.',
+    auth_title: 'Autenticación central — Cuentas unificadas', loading_auth: 'Cargando resumen de autenticación...', auth_need_admin: 'Se requiere rol ai-platform-admin para ver la info de autenticación (contiene credenciales)',
+    auth_need_admin2: 'Asigne el rol ai-platform-admin al usuario actual.', auth_fail: 'No se pudo obtener la info de autenticación: ',
+    security: '⚠️ Aviso de seguridad', security_desc: 'Esta página contiene las credenciales admin unificadas. Visible solo para ai-platform-admin. No comparta ni capture.',
+    unified_admin: '🔑 Cuenta admin unificada (todas las plataformas web)', item: 'Elemento', value: 'Valor', action: 'Acción', copy: '📋 Copiar',
+    unified_desc: 'Una cuenta gestiona todas las plataformas. Iniciar sesión redirige a Keycloak; otros productos SSO inician sesión automáticamente.',
+    sso_mech: '🔄 Mecanismo SSO', sso_desc: 'Los productos web usan SSO de Keycloak: inicie sesión una vez y cada entrada lo conecta automáticamente. Dos excepciones: Keycloak es la fuente de identidad; los servicios API (LiteLLM, DeepSeek, etc.) usan claves API.',
+    auth_methods: '🗂️ Métodos de autenticación por plataforma', platform: 'Plataforma', login_method: 'Método de inicio de sesión', note: 'Notas',
+    litellm_exception: '🛡️ LiteLLM — Excepción (Master Key, sin SSO)', litellm_exception_desc: 'LiteLLM es el proxy PII interno, inicio con Master Key (sin SSO de Keycloak). Solo para solucionar problemas de anonimización/registros.',
+    ad_account: '🏢 Cuenta de dominio AD (LDAP)', bind_account: 'Cuenta de enlace', bind_dn: 'DN de enlace', password: 'Contraseña',
+    ad_note: '⚠️ El CN de la cuenta AD tiene espacios («ai all in one admin»), no guiones bajos. Actualice bindDn tras renombrar.',
+    admins_title: 'Cuentas de administrador', admins_list: 'Administradores de la plataforma (ai-platform-admin)', no_admins: 'No se encontraron administradores', name2: 'Nombre', email: 'Correo',
+    admins_desc: 'Los administradores se gestionan vía Keycloak, rol: ai-platform-admin. Para añadir/retirar, use la consola de Keycloak o el mapeo de grupos Entra ID.',
+    admins_need_admin: 'Se requiere rol ai-platform-admin para ver administradores', admins_need_admin2: 'Asigne el rol ai-platform-admin al usuario actual.',
+    settings_title: 'Ajustes', language: 'Idioma', language_desc: 'Elija el idioma de la interfaz. Tiene efecto de inmediato.',
+    env_config: 'Variables de entorno', env_desc: 'Toda la configuración se pasa por .env o docker-compose.yml. Reinicie el contenedor tras los cambios.',
+    product_urls: 'URL de productos', prod_note: 'En producción, reemplace estas URL por su dominio real (ver docker-deploy-guide.html).',
+    open_admin: 'Abrir admin ↗', open_hint: 'Haga clic para abrir la consola de administración del producto', overview_fail: 'Error al cargar: ',
+    open_ghost: 'Abrir admin de Ghost', open_dify: 'Abrir Dify', open_gitea: 'Abrir Gitea', open_keycloak: 'Abrir Keycloak',
+    ghost_posts: 'Artículos', ghost_pages: 'Páginas', ghost_members: 'Miembros', ghost_tags: 'Etiquetas',
+    dify_apps: 'Aplicaciones', dify_workspaces: 'Espacios de trabajo', dify_version: 'Versión',
+    gitea_repos: 'Repositorios', gitea_users: 'Usuarios', gitea_orgs: 'Organizaciones', gitea_issues: 'Incidencias', gitea_version: 'Versión',
+    kc_users: 'Usuarios', kc_clients: 'Clientes', kc_roles: 'Roles', kc_idps: 'IdP',
+    mcp_srv_count: 'Servidores MCP', skill_count: 'Skills', litellm_models: 'Modelos', update_version: 'Versión de DeepChat',
+    docker_services: 'Servicios Docker', docker_desc: 'Todos los servicios siguientes se ejecutan en contenedores Docker, agrupados por producto',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Servidor de actualizaciones', svc_presidio: 'Anonimización PII', svc_monitoring: 'Monitoreo', svc_langfuse: 'Observabilidad LLM', svc_session: 'Almacén de sesión', svc_other: 'Otro',
+    repos_list: 'Lista de repositorios', repo_desc: 'Descripción', repo_lang: 'Lenguaje', repo_updated: 'Última actualización', sync_last_run: 'Última ejecución del script', sync_success: 'Éxito', sync_failed: 'Fallido', sync_running: 'En ejecución', no_repos: 'Sin repositorios', installers: 'Instaladores', last_updated: 'Última actualización', no_files: 'Sin instaladores', open_update: 'Abrir servidor de actualizaciones', quota_unit: 'cuota',
+    monitoring: 'Monitoreo',
+    observability: 'Observabilidad LLM',
+    cost_report: 'Informe de costos',
+    recent_days: 'Últimos',
+    days: 'días',
+    total_cost: 'Costo total',
+    total_calls: 'Llamadas totales',
+    total_tokens: 'Tokens totales',
+    by_user: 'Por usuario',
+    by_model: 'Por modelo',
+    by_day: 'Por día',
+    calls: 'Llamadas',
+    tokens: 'Tokens',
+    cost: 'Costo',
+    date: 'Fecha',
+    time: 'Hora',
+    audit_log: 'Registro de auditoría',
+    recent: 'Recientes',
+    records: 'registros',
+    no_data: 'Sin datos',
+    audit_note: 'Registra cada llamada (usuario, modelo, tokens, cuota, costo) para auditoría y trazabilidad.',
+    group: 'Grupo',
+    org_note: 'Cuota por grupo: cree grupos por departamento en NewAPI, defina multiplicadores/cuota y asigne usuarios para limitar por departamento.',
+    presidio_status: 'Estado',
+    monitoring_targets: 'Objetivos activos',
+    monitoring_total: 'Total objetivos',
+    langfuse_version: 'Versión',
+    alerts_firing: 'Alertas activas',
+    open_monitoring: 'Abrir monitoreo',
+    open_observability: 'Abrir observabilidad',
+    traces: 'Trazas',
+    obs_desc: 'Rastrea prompts, respuestas, latencia, tokens y costo de cada llamada para análisis de calidad y depuración.',
+  },
+  pt: {
+    brand: 'Central de Administração de IA', dashboard: 'Painel', ghost: 'Administração Ghost', dify: 'Plataforma Dify', gitea: 'Código Gitea',
+    group_apps: 'Aplicações', group_ai: 'Gateway de IA e integrações', group_ops: 'Operações', group_admin: 'Administração do sistema',
+    newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Servidor de atualização',
+    auth: 'Autenticação central', admins: 'Administradores', settings: 'Configurações', logout: 'Sair',
+    loading_services: 'Carregando serviços...', loading: 'Carregando...',
+    metrics: 'Métricas de produtos', loading_metrics: 'Carregando métricas...', docker_error: 'Não foi possível conectar ao Docker: ', metrics_error: 'Não foi possível obter as métricas: ',
+    channels: 'Canais', users: 'Usuários', keys: 'Chaves', not_connected: 'Não conectado', pending: 'Pendente', ports: 'Portas: ',
+    running: 'Em execução', stopped: 'Parado', total: 'Total',
+    sys_info: 'Informações do sistema', docker_ver: 'Versão do Docker', cpu: 'CPU', cores: 'núcleos', containers: 'Contêineres', images: 'Imagens', memory: 'Memória', arch: 'Arquitetura',
+    health_check: 'Verificação de integridade', svc_detail: 'Detalhes do serviço', status: 'Status', uptime: 'Tempo ativo', image: 'Imagem',
+    api_no_ui: 'Este é um serviço de API sem interface web. Verificação: ', health_error: 'Não foi possível obter o status: ', manual_check: 'Verificação manual: ',
+    mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Endpoints', mcp_endpoint: 'Endpoint MCP', skill_market: 'Mercado de skills', client_access: 'Acesso do cliente',
+    client_access_desc: 'DeepChat: Configurações → MCP → Adicionar servidor → tipo «HTTP transmitido» → preencher a URL /mcp',
+    mcp_servers: 'Servidores MCP (agregação MCP externa)', skills: 'Skills (pacotes internos)',
+    name: 'Nome', type: 'Tipo', cmd_url: 'Comando / URL', delete: 'Excluir', no_mcp: 'Sem servidores MCP externos (ferramentas integradas sempre disponíveis)',
+    add_mcp: 'Adicionar servidor MCP', name_ph: 'Nome (ex. filesystem)', cmd_url_ph: 'http: URL; stdio: comando', add: 'Adicionar',
+    cmd_url_ph_http: 'http: URL (ex. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: comando (ex. npx -y ...)',
+    mcp_load_fail: 'Falha ao carregar servidores MCP (requer função ai-platform-admin): ', add_fail: 'Falha ao adicionar: ', delete_fail: 'Falha ao excluir: ',
+    delete_confirm: 'Excluir servidor MCP «', confirm_suffix: '»?', version: 'Versão', desc: 'Descrição', size: 'Tamanho', no_skills: 'Sem skills',
+    upload_skill: 'Enviar pacote de skill (zip contendo uma pasta com SKILL.md)', upload: 'Enviar', skills_load_fail: 'Falha ao carregar skills (requer função ai-platform-admin): ',
+    upload_fail: 'Falha ao enviar: ', uploaded: 'Skill enviado: ', delete_skill_confirm: 'Excluir skill «',
+    name_cmd_required: 'Nome e comando/URL são obrigatórios', select_zip: 'Selecione primeiro um arquivo zip',
+    litellm_title: 'LiteLLM — Proxy de anonimização PII', litellm_open: 'Acessar o LiteLLM', litellm_desc: 'O LiteLLM é o proxy interno de anonimização PII. Entre com a Master Key (sem SSO do Keycloak).',
+    open_litellm: 'Abrir LiteLLM ↗', copy_master_key: '📋 Copiar Master Key', litellm_hint: 'Cole a Master Key na caixa de login. Consulte credentials.html.',
+    litellm_fail: 'Não foi possível obter informações do LiteLLM: ', no_key: 'Sem Master Key', copied: 'copiado para a área de transferência',
+    newapi_title: 'NewAPI — Roteador LLM', loading_newapi: 'Carregando dados do NewAPI...', newapi_fail: 'Não foi possível obter dados do NewAPI (requer função ai-platform-admin): ',
+    enabled: 'Habilitado', disabled: 'Desabilitado', admin_role: 'Admin', user_role: 'Usuário', other_role: 'Outro', usd: 'USD', unlimited: 'Ilimitado',
+    channel: 'Canal', model: 'Modelos', used_quota: 'Cota usada', username: 'Usuário', role: 'Função', quota: 'Cota', used: 'Usado', requests: 'Solicitações', remain_quota: 'Restante',
+    no_channels: 'Sem canais', no_users: 'Sem usuários', no_keys: 'Sem chaves', open_newapi: 'Abrir NewAPI ↗ (avançado)', newapi_note: 'Agregação somente leitura; edite canais/usuários/chaves no NewAPI.',
+    auth_title: 'Autenticação central — Contas unificadas', loading_auth: 'Carregando resumo de autenticação...', auth_need_admin: 'Requer função ai-platform-admin para ver as informações de autenticação (contém credenciais)',
+    auth_need_admin2: 'Atribua a função ai-platform-admin ao usuário atual.', auth_fail: 'Não foi possível obter informações de autenticação: ',
+    security: '⚠️ Aviso de segurança', security_desc: 'Esta página contém as credenciais admin unificadas. Visível apenas para ai-platform-admin. Não compartilhe nem capture.',
+    unified_admin: '🔑 Conta admin unificada (todas as plataformas web)', item: 'Item', value: 'Valor', action: 'Ação', copy: '📋 Copiar',
+    unified_desc: 'Uma conta gerencia todas as plataformas. Entrar redireciona para o Keycloak; outros produtos SSO entram automaticamente.',
+    sso_mech: '🔄 Mecanismo SSO', sso_desc: 'Os produtos web usam SSO do Keycloak — entre uma vez e cada acesso conecta automaticamente. Duas exceções: o Keycloak é a fonte de identidade; serviços API (LiteLLM, DeepSeek etc.) usam chaves de API.',
+    auth_methods: '🗂️ Métodos de autenticação por plataforma', platform: 'Plataforma', login_method: 'Método de login', note: 'Notas',
+    litellm_exception: '🛡️ LiteLLM — Exceção (Master Key, sem SSO)', litellm_exception_desc: 'O LiteLLM é o proxy PII interno, login com Master Key (sem SSO do Keycloak). Usado apenas para solucionar problemas de anonimização/registros.',
+    ad_account: '🏢 Conta de domínio AD (LDAP)', bind_account: 'Conta de vínculo', bind_dn: 'DN de vínculo', password: 'Senha',
+    ad_note: '⚠️ O CN da conta AD tem espaços («ai all in one admin»), não sublinhados. Atualize o bindDn após renomear.',
+    admins_title: 'Contas de administrador', admins_list: 'Administradores da plataforma (ai-platform-admin)', no_admins: 'Nenhum administrador encontrado', name2: 'Nome', email: 'E-mail',
+    admins_desc: 'Os administradores são gerenciados via Keycloak, função: ai-platform-admin. Para adicionar/remover, use o console do Keycloak ou o mapeamento de grupos Entra ID.',
+    admins_need_admin: 'Requer função ai-platform-admin para ver administradores', admins_need_admin2: 'Atribua a função ai-platform-admin ao usuário atual.',
+    settings_title: 'Configurações', language: 'Idioma', language_desc: 'Escolha o idioma da interface. Tem efeito imediato.',
+    env_config: 'Variáveis de ambiente', env_desc: 'Toda a configuração é passada via .env ou docker-compose.yml. Reinicie o contêiner após as alterações.',
+    product_urls: 'URLs dos produtos', prod_note: 'Em produção, substitua essas URLs pelo seu domínio real (veja docker-deploy-guide.html).',
+    open_admin: 'Abrir admin ↗', open_hint: 'Clique para abrir o console de administração do produto', overview_fail: 'Falha ao carregar: ',
+    open_ghost: 'Abrir admin do Ghost', open_dify: 'Abrir Dify', open_gitea: 'Abrir Gitea', open_keycloak: 'Abrir Keycloak',
+    ghost_posts: 'Artigos', ghost_pages: 'Páginas', ghost_members: 'Membros', ghost_tags: 'Etiquetas',
+    dify_apps: 'Aplicativos', dify_workspaces: 'Espaços de trabalho', dify_version: 'Versão',
+    gitea_repos: 'Repositórios', gitea_users: 'Usuários', gitea_orgs: 'Organizações', gitea_issues: 'Problemas', gitea_version: 'Versão',
+    kc_users: 'Usuários', kc_clients: 'Clientes', kc_roles: 'Funções', kc_idps: 'IdP',
+    mcp_srv_count: 'Servidores MCP', skill_count: 'Skills', litellm_models: 'Modelos', update_version: 'Versão do DeepChat',
+    docker_services: 'Serviços Docker', docker_desc: 'Todos os serviços abaixo são executados em contêineres Docker, agrupados por produto',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Servidor de atualização', svc_presidio: 'Anonimização PII', svc_monitoring: 'Monitoramento', svc_langfuse: 'Observabilidade LLM', svc_session: 'Armazenamento de sessão',     svc_other: 'Outro',
+    repos_list: 'Lista de repositórios', repo_desc: 'Descrição', repo_lang: 'Linguagem', repo_updated: 'Última atualização', sync_last_run: 'Última execução do script', sync_success: 'Sucesso', sync_failed: 'Falha', sync_running: 'Em execução', no_repos: 'Sem repositórios', installers: 'Instaladores', last_updated: 'Última atualização', no_files: 'Sem instaladores', open_update: 'Abrir servidor de atualização', quota_unit: 'cota',
+    monitoring: 'Monitoramento',
+    observability: 'Observabilidade LLM',
+    cost_report: 'Relatório de custos',
+    recent_days: 'Últimos',
+    days: 'dias',
+    total_cost: 'Custo total',
+    total_calls: 'Chamadas totais',
+    total_tokens: 'Tokens totais',
+    by_user: 'Por usuário',
+    by_model: 'Por modelo',
+    by_day: 'Por dia',
+    calls: 'Chamadas',
+    tokens: 'Tokens',
+    cost: 'Custo',
+    date: 'Data',
+    time: 'Hora',
+    audit_log: 'Registro de auditoria',
+    recent: 'Recentes',
+    records: 'registros',
+    no_data: 'Sem dados',
+    audit_note: 'Registra cada chamada (usuário, modelo, tokens, cota, custo) para auditoria e rastreabilidade.',
+    group: 'Grupo',
+    org_note: 'Cota por grupo: crie grupos por departamento no NewAPI, defina multiplicadores/cota e atribua usuários para limitar por departamento.',
+    presidio_status: 'Status',
+    monitoring_targets: 'Alvos ativos',
+    monitoring_total: 'Total alvos',
+    langfuse_version: 'Versão',
+    alerts_firing: 'Alertas ativos',
+    open_monitoring: 'Abrir monitoramento',
+    open_observability: 'Abrir observabilidade',
+    traces: 'Rastros',
+    obs_desc: 'Rastreia prompts, respostas, latência, tokens e custo de cada chamada para análise de qualidade e depuração.',
+  },
+  ja: {
+    brand: 'AI管理センター', dashboard: 'ダッシュボード', ghost: 'Ghost 管理', dify: 'Dify AI プラットフォーム', gitea: 'Gitea ソース管理',
+    group_apps: 'アプリケーション', group_ai: 'AI ゲートウェイと統合', group_ops: '運用管理', group_admin: 'システム管理',
+    newapi: 'NewAPI 管理', keycloak: 'Keycloak 認証', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新サーバー',
+    auth: '集中認証', admins: '管理者管理', settings: 'システム設定', logout: 'ログアウト',
+    loading_services: 'サービス状態を取得中...', loading: '読み込み中...',
+    metrics: '製品メトリクス', loading_metrics: 'メトリクスを取得中...', docker_error: 'Docker に接続できません：', metrics_error: 'メトリクスを取得できません：',
+    channels: 'チャネル', users: 'ユーザー', keys: 'キー', not_connected: '未接続', pending: '初期化待ち', ports: 'ポート：',
+    running: '実行中', stopped: '停止', total: 'サービス合計',
+    sys_info: 'システム情報', docker_ver: 'Docker バージョン', cpu: 'CPU', cores: 'コア', containers: 'コンテナ数', images: 'イメージ数', memory: 'メモリ', arch: 'アーキテクチャ',
+    health_check: 'ヘルスチェック', svc_detail: 'サービス詳細', status: '状態', uptime: '稼働時間', image: 'イメージ',
+    api_no_ui: 'これは Web UI のない API サービスです。ヘルスチェック：', health_error: '状態を取得できません：', manual_check: '手動チェック：',
+    mcp_title: 'MCP Gateway — Skill / MCP 管理', endpoints: 'エンドポイント情報', mcp_endpoint: 'MCP エンドポイント', skill_market: 'Skill マーケット', client_access: 'クライアント接続',
+    client_access_desc: 'DeepChat：設定 → MCP → サーバー追加 → タイプ「ストリーミング HTTP」→ 上の /mcp アドレスを入力',
+    mcp_servers: 'MCP サーバー管理（外部 MCP 集約）', skills: 'Skill 管理（社内スキルパック）',
+    name: '名前', type: 'タイプ', cmd_url: 'コマンド / URL', delete: '削除', no_mcp: '外部 MCP サーバーなし（組み込みツールは常に利用可能）',
+    add_mcp: 'MCP サーバーを追加', name_ph: '名前（例：filesystem）', cmd_url_ph: 'http：URL；stdio：コマンド', add: '追加',
+    cmd_url_ph_http: 'http：URL（例：http://example.com/mcp）', cmd_url_ph_stdio: 'stdio：コマンド（例：npx -y ...）',
+    mcp_load_fail: 'MCP サーバーの読み込みに失敗（ai-platform-admin ロールが必要）：', add_fail: '追加に失敗：', delete_fail: '削除に失敗：',
+    delete_confirm: 'MCP サーバー「', confirm_suffix: '」を削除しますか？', version: 'バージョン', desc: '説明', size: 'サイズ', no_skills: 'スキルなし',
+    upload_skill: 'スキルパックをアップロード（zip、SKILL.md を含むフォルダー）', upload: 'アップロード', skills_load_fail: 'Skill の読み込みに失敗（ai-platform-admin ロールが必要）：',
+    upload_fail: 'アップロードに失敗：', uploaded: 'アップロード済みスキル：', delete_skill_confirm: 'スキル「',
+    name_cmd_required: '名前とコマンド/URL は必須です', select_zip: 'まず zip ファイルを選択してください',
+    litellm_title: 'LiteLLM — PII マスキングプロキシ', litellm_open: 'LiteLLM 管理センターにアクセス', litellm_desc: 'LiteLLM は内部の PII マスキングプロキシです。Master Key でログインします（Keycloak SSO 不使用）。',
+    open_litellm: 'LiteLLM 管理センターを開く ↗', copy_master_key: '📋 Master Key をコピー', litellm_hint: '開いたら Master Key をログインボックスに貼り付けます。値は credentials.html を参照。',
+    litellm_fail: 'LiteLLM 情報を取得できません：', no_key: 'Master Key がありません', copied: 'クリップボードにコピーしました',
+    newapi_title: 'NewAPI — LLM ルーター', loading_newapi: 'NewAPI データを読み込み中...', newapi_fail: 'NewAPI データを取得できません（ai-platform-admin ロールが必要）：',
+    enabled: '有効', disabled: '無効', admin_role: '管理者', user_role: '一般ユーザー', other_role: 'その他', usd: '米ドル', unlimited: '無制限',
+    channel: 'チャネル', model: 'モデル', used_quota: '使用済みクォータ', username: 'ユーザー名', role: 'ロール', quota: 'クォータ', used: '使用済み', requests: 'リクエスト数', remain_quota: '残りクォータ',
+    no_channels: 'チャネルなし', no_users: 'ユーザーなし', no_keys: 'キーなし', open_newapi: 'NewAPI 管理を開く ↗（詳細設定）', newapi_note: '読み取り専用の集約；チャネル/ユーザー/キーの編集は管理画面へ。',
+    auth_title: '集中認証 — 統一アカウント体系', loading_auth: '認証概要を読み込み中...', auth_need_admin: '認証情報（アカウント・パスワードを含む）の表示には ai-platform-admin ロールが必要です',
+    auth_need_admin2: '現在のユーザーに ai-platform-admin Realm Role を割り当ててください。', auth_fail: '認証情報を取得できません：',
+    security: '⚠️ セキュリティ注意', security_desc: 'このページには統一管理者のアカウント・パスワードが含まれます。ai-platform-admin ロールのみ表示可能。外部共有・スクリーンショットを禁止。',
+    unified_admin: '🔑 統一管理者アカウント（全 Web プラットフォーム共通）', item: '項目', value: '値', action: '操作', copy: '📋 コピー',
+    unified_desc: '1 つのアカウントで全プラットフォームを管理。任意のプラットフォームへログインすると Keycloak 認証へリダイレクトし、SSO 対応製品は自動ログインします。',
+    sso_mech: '🔄 SSO シングルサインオン', sso_desc: 'Web UI 系製品はすべて Keycloak SSO に接続。一度ログインすれば各製品入口が自動ログインします。例外は 2 つ：Keycloak 自体は ID ソース、API サービス（LiteLLM、DeepSeek 等）は API キーで呼び出します。',
+    auth_methods: '🗂️ プラットフォーム別の認証方式', platform: 'プラットフォーム', login_method: 'ログイン方式', note: '説明',
+    litellm_exception: '🛡️ LiteLLM — 例外（Master Key、SSO 不使用）', litellm_exception_desc: 'LiteLLM は内部 PII プロキシ。Master Key でログイン（Keycloak SSO 非対応）。通常は不要で、マスキング/ログ確認時にのみ使用。',
+    ad_account: '🏢 AD ドメインアカウント（LDAP バインド）', bind_account: 'バインドアカウント', bind_dn: 'バインド DN', password: 'パスワード',
+    ad_note: '⚠️ 注意：AD アカウントの CN にはスペース（"ai all in one admin"）が含まれ、下線ではありません。ドメインコントローラー表示名を変更後は Keycloak LDAP の bindDn を更新してください。',
+    admins_title: '管理者アカウント管理', admins_list: 'プラットフォーム管理者リスト (ai-platform-admin)', no_admins: '管理者が見つかりません', name2: '氏名', email: 'メール',
+    admins_desc: '管理者は Keycloak で管理（ロール: ai-platform-admin）。追加/削除は Keycloak 管理画面または Entra ID グループマッピングで行います。',
+    admins_need_admin: '管理者リストの表示には ai-platform-admin ロールが必要です', admins_need_admin2: '現在のユーザーに ai-platform-admin Realm Role を割り当ててください。',
+    settings_title: 'システム設定', language: '表示言語', language_desc: '管理センターの表示言語を選択します。保存後すぐに反映されます。',
+    env_config: '環境変数設定', env_desc: 'すべての設定は .env ファイルまたは docker-compose.yml の environment で渡します。変更後はコンテナ再起動が必要です。',
+    product_urls: '製品入口 URL', prod_note: '本番環境では上記 URL を実際のドメインに置き換えてください（docker-deploy-guide.html 参照）。',
+    open_admin: '管理画面を開く ↗', open_hint: 'クリックして製品の管理画面を開き、詳細設定を行います', overview_fail: 'データを取得できません：',
+    open_ghost: 'Ghost 管理を開く', open_dify: 'Dify プラットフォームを開く', open_gitea: 'Gitea を開く', open_keycloak: 'Keycloak 管理を開く',
+    ghost_posts: '記事', ghost_pages: 'ページ', ghost_members: '購読者', ghost_tags: 'タグ',
+    dify_apps: 'アプリ', dify_workspaces: 'ワークスペース', dify_version: 'バージョン',
+    gitea_repos: 'リポジトリ', gitea_users: 'ユーザー', gitea_orgs: '組織', gitea_issues: '課題', gitea_version: 'バージョン',
+    kc_users: 'ユーザー', kc_clients: 'クライアント', kc_roles: 'ロール', kc_idps: 'ID ソース',
+    mcp_srv_count: 'MCP サービス', skill_count: 'スキル', litellm_models: 'モデル', update_version: 'DeepChat バージョン',
+    docker_services: 'Docker サービス', docker_desc: '以下のサービスはすべて Docker コンテナで動作し、製品別にグループ化して表示しています',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新サーバー', svc_presidio: 'PII 匿名化', svc_monitoring: '監視', svc_langfuse: 'LLM 可観測性', svc_session: 'セッションストア', svc_other: 'その他',
+    repos_list: 'リポジトリ一覧', repo_desc: '説明', repo_lang: '言語', repo_updated: '最終更新', sync_last_run: '更新スクリプト最終実行', sync_success: '成功', sync_failed: '失敗', sync_running: '実行中', no_repos: 'リポジトリなし', installers: 'インストーラー', last_updated: '最終更新', no_files: 'インストーラーなし', open_update: '更新サーバーを開く', quota_unit: 'クォータ',
+    monitoring: '監視',
+    observability: 'LLM 可観測性',
+    cost_report: 'コストレポート',
+    recent_days: '直近',
+    days: '日',
+    total_cost: '総コスト',
+    total_calls: '総呼び出し',
+    total_tokens: '総トークン',
+    by_user: 'ユーザー別',
+    by_model: 'モデル別',
+    by_day: '日別',
+    calls: '呼び出し',
+    tokens: 'トークン',
+    cost: 'コスト',
+    date: '日付',
+    time: '時刻',
+    audit_log: '監査ログ',
+    recent: '直近',
+    records: '件',
+    no_data: 'データなし',
+    audit_note: '各モデル呼び出し（ユーザー、モデル、トークン、クォータ、コスト）を記録し、監査と追跡に使用。',
+    group: 'グループ',
+    org_note: '組織クォータ：NewAPI の「グループ管理」で部門ごとにグループを作成し、モデル倍率/クォータを設定、ユーザーを割り当てて部門別に管理。',
+    presidio_status: '状態',
+    monitoring_targets: '稼働ターゲット',
+    monitoring_total: '全ターゲット',
+    langfuse_version: 'バージョン',
+    alerts_firing: '発火中アラート',
+    open_monitoring: '監視ダッシュボードを開く',
+    open_observability: '可観測性を開く',
+    traces: 'トレース',
+    obs_desc: '各モデル呼び出しのプロンプト、応答、遅延、トークン、コストを追跡し、品質分析と障害特定に使用。',
+  },
+  ko: {
+    brand: 'AI 관리 센터', dashboard: '대시보드', ghost: 'Ghost 관리', dify: 'Dify AI 플랫폼', gitea: 'Gitea 소스 관리',
+    group_apps: '애플리케이션', group_ai: 'AI 게이트웨이 및 통합', group_ops: '운영 관리', group_admin: '시스템 관리',
+    newapi: 'NewAPI 관리', keycloak: 'Keycloak 인증', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '업데이트 서버',
+    auth: '통합 인증', admins: '관리자 관리', settings: '시스템 설정', logout: '로그아웃',
+    loading_services: '서비스 상태 가져오는 중...', loading: '로딩 중...',
+    metrics: '제품 지표', loading_metrics: '지표 가져오는 중...', docker_error: 'Docker에 연결할 수 없습니다: ', metrics_error: '지표를 가져올 수 없습니다: ',
+    channels: '채널', users: '사용자', keys: '키', not_connected: '미연결', pending: '초기화 대기', ports: '포트: ',
+    running: '실행 중', stopped: '중지됨', total: '전체 서비스',
+    sys_info: '시스템 정보', docker_ver: 'Docker 버전', cpu: 'CPU', cores: '코어', containers: '컨테이너 수', images: '이미지 수', memory: '메모리', arch: '아키텍처',
+    health_check: '상태 점검', svc_detail: '서비스 상세', status: '상태', uptime: '가동 시간', image: '이미지',
+    api_no_ui: '웹 UI가 없는 API 서비스입니다. 상태 점검: ', health_error: '상태를 가져올 수 없습니다: ', manual_check: '수동 점검: ',
+    mcp_title: 'MCP Gateway — Skill / MCP 관리', endpoints: '엔드포인트 정보', mcp_endpoint: 'MCP 엔드포인트', skill_market: 'Skill 마켓', client_access: '클라이언트 접속',
+    client_access_desc: 'DeepChat: 설정 → MCP → 서버 추가 → 유형「스트리밍 HTTP」→ 위 /mcp 주소 입력',
+    mcp_servers: 'MCP 서버 관리(외부 MCP 집계)', skills: 'Skill 관리(내부 스킬 패키지)',
+    name: '이름', type: '유형', cmd_url: '명령 / URL', delete: '삭제', no_mcp: '외부 MCP 서버 없음(내장 도구는 항상 사용 가능)',
+    add_mcp: 'MCP 서버 추가', name_ph: '이름(예: filesystem)', cmd_url_ph: 'http: URL; stdio: 명령', add: '추가',
+    cmd_url_ph_http: 'http: URL(예: http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: 명령(예: npx -y ...)',
+    mcp_load_fail: 'MCP 서버 로드 실패(ai-platform-admin 역할 필요): ', add_fail: '추가 실패: ', delete_fail: '삭제 실패: ',
+    delete_confirm: 'MCP 서버「', confirm_suffix: '」삭제?', version: '버전', desc: '설명', size: '크기', no_skills: '스킬 없음',
+    upload_skill: '스킬 패키지 업로드(SKILL.md가 포함된 폴더의 zip)', upload: '업로드', skills_load_fail: 'Skill 로드 실패(ai-platform-admin 역할 필요): ',
+    upload_fail: '업로드 실패: ', uploaded: '업로드된 스킬: ', delete_skill_confirm: '스킬「',
+    name_cmd_required: '이름과 명령/URL은 필수입니다', select_zip: '먼저 zip 파일을 선택하세요',
+    litellm_title: 'LiteLLM — PII 마스킹 프록시', litellm_open: 'LiteLLM 관리 센터 접속', litellm_desc: 'LiteLLM은 내부 PII 마스킹 프록시입니다. Master Key로 로그인합니다(Keycloak SSO 미사용).',
+    open_litellm: 'LiteLLM 관리 센터 열기 ↗', copy_master_key: '📋 Master Key 복사', litellm_hint: '열고 Master Key를 로그인 창에 붙여넣으세요. 값은 credentials.html 참조.',
+    litellm_fail: 'LiteLLM 정보를 가져올 수 없습니다: ', no_key: 'Master Key 없음', copied: '클립보드에 복사됨',
+    newapi_title: 'NewAPI — LLM 라우터', loading_newapi: 'NewAPI 데이터 로딩 중...', newapi_fail: 'NewAPI 데이터를 가져올 수 없습니다(ai-platform-admin 역할 필요): ',
+    enabled: '활성화', disabled: '비활성화', admin_role: '관리자', user_role: '일반 사용자', other_role: '기타', usd: 'USD', unlimited: '무제한',
+    channel: '채널', model: '모델', used_quota: '사용된 할당량', username: '사용자명', role: '역할', quota: '할당량', used: '사용됨', requests: '요청 수', remain_quota: '남은 할당량',
+    no_channels: '채널 없음', no_users: '사용자 없음', no_keys: '키 없음', open_newapi: 'NewAPI 관리 열기 ↗(고급 설정)', newapi_note: '읽기 전용 집계; 채널/사용자/키 편집은 관리 화면으로 이동.',
+    auth_title: '통합 인증 — 통합 계정 체계', loading_auth: '인증 개요 로딩 중...', auth_need_admin: '인증 정보(계정·비밀번호 포함)를 보려면 ai-platform-admin 역할이 필요합니다',
+    auth_need_admin2: '현재 사용자에게 ai-platform-admin Realm Role을 할당하세요.', auth_fail: '인증 정보를 가져올 수 없습니다: ',
+    security: '⚠️ 보안 안내', security_desc: '이 페이지에는 통합 관리자 계정·비밀번호가 포함되어 있습니다. ai-platform-admin 역할만 볼 수 있습니다. 외부 공유·캡처 금지.',
+    unified_admin: '🔑 통합 관리자 계정(모든 웹 플랫폼 공용)', item: '항목', value: '값', action: '작업', copy: '📋 복사',
+    unified_desc: '하나의 계정으로 모든 플랫폼을 관리합니다. 어느 플랫폼에 로그인해도 Keycloak 인증으로 리다이렉트되고, SSO 지원 제품은 자동 로그인됩니다.',
+    sso_mech: '🔄 SSO 싱글 사인온', sso_desc: '웹 UI 제품은 모두 Keycloak SSO에 연결됩니다. 한 번 로그인하면 각 제품 입구가 자동 로그인됩니다. 예외 두 가지: Keycloak 자체는 ID 소스, API 서비스(LiteLLM, DeepSeek 등)는 API 키로 호출합니다.',
+    auth_methods: '🗂️ 플랫폼별 인증 방식', platform: '플랫폼', login_method: '로그인 방식', note: '설명',
+    litellm_exception: '🛡️ LiteLLM — 예외(Master Key, SSO 미사용)', litellm_exception_desc: 'LiteLLM은 내부 PII 프록시로 Master Key로 로그인합니다(Keycloak SSO 미지원). 마스킹/로그 확인 시에만 사용.',
+    ad_account: '🏢 AD 도메인 계정(LDAP 바인딩)', bind_account: '바인딩 계정', bind_dn: '바인딩 DN', password: '비밀번호',
+    ad_note: '⚠️ AD 계정의 CN에는 공백("ai all in one admin")이 있고 밑줄이 아닙니다. 도메인 컨트롤러 표시 이름 변경 후 Keycloak LDAP bindDn을 업데이트하세요.',
+    admins_title: '관리자 계정 관리', admins_list: '플랫폼 관리자 목록 (ai-platform-admin)', no_admins: '관리자를 찾을 수 없음', name2: '이름', email: '이메일',
+    admins_desc: '관리자는 Keycloak으로 관리(역할: ai-platform-admin). 추가/제거는 Keycloak 관리 콘솔 또는 Entra ID 그룹 매핑에서 수행.',
+    admins_need_admin: '관리자 목록을 보려면 ai-platform-admin 역할이 필요합니다', admins_need_admin2: '현재 사용자에게 ai-platform-admin Realm Role을 할당하세요.',
+    settings_title: '시스템 설정', language: '인터페이스 언어', language_desc: '관리 센터 인터페이스 언어를 선택합니다. 저장 즉시 적용됩니다.',
+    env_config: '환경 변수 설정', env_desc: '모든 설정은 .env 파일 또는 docker-compose.yml의 environment로 전달됩니다. 변경 후 컨테이너 재시작 필요.',
+    product_urls: '제품 입구 URL', prod_note: '프로덕션에서는 위 URL을 실제 도메인으로 교체하세요(docker-deploy-guide.html 참조).',
+    open_admin: '관리 화면 열기 ↗', open_hint: '클릭하여 제품 관리 화면을 열어 상세 설정', overview_fail: '데이터를 가져올 수 없습니다: ',
+    open_ghost: 'Ghost 관리 열기', open_dify: 'Dify 플랫폼 열기', open_gitea: 'Gitea 열기', open_keycloak: 'Keycloak 관리 열기',
+    ghost_posts: '게시글', ghost_pages: '페이지', ghost_members: '구독자', ghost_tags: '태그',
+    dify_apps: '앱', dify_workspaces: '워크스페이스', dify_version: '버전',
+    gitea_repos: '저장소', gitea_users: '사용자', gitea_orgs: '조직', gitea_issues: '이슈', gitea_version: '버전',
+    kc_users: '사용자', kc_clients: '클라이언트', kc_roles: '역할', kc_idps: 'ID 소스',
+    mcp_srv_count: 'MCP 서비스', skill_count: '스킬', litellm_models: '모델', update_version: 'DeepChat 버전',
+    docker_services: 'Docker 서비스', docker_desc: '아래 서비스는 모두 Docker 컨테이너에서 실행되며 제품별로 그룹화되어 표시됩니다',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '업데이트 서버', svc_presidio: 'PII 익명화', svc_monitoring: '모니터링', svc_langfuse: 'LLM 관측', svc_session: '세션 저장소',     svc_other: '기타',
+    repos_list: '저장소 목록', repo_desc: '설명', repo_lang: '언어', repo_updated: '최종 업데이트', sync_last_run: '업데이트 스크립트 최종 실행', sync_success: '성공', sync_failed: '실패', sync_running: '실행 중', no_repos: '저장소 없음', installers: '설치 패키지', last_updated: '최종 업데이트', no_files: '설치 패키지 없음', open_update: '업데이트 서버 열기', quota_unit: '할당량',
+    monitoring: '모니터링',
+    observability: 'LLM 관측',
+    cost_report: '비용 보고서',
+    recent_days: '최근',
+    days: '일',
+    total_cost: '총 비용',
+    total_calls: '총 호출',
+    total_tokens: '총 토큰',
+    by_user: '사용자별',
+    by_model: '모델별',
+    by_day: '일별',
+    calls: '호출',
+    tokens: '토큰',
+    cost: '비용',
+    date: '날짜',
+    time: '시간',
+    audit_log: '감사 로그',
+    recent: '최근',
+    records: '건',
+    no_data: '데이터 없음',
+    audit_note: '각 모델 호출(사용자, 모델, 토큰, 할당량, 비용)을 기록하여 감사 및 추적에 사용.',
+    group: '그룹',
+    org_note: '조직 할당량: NewAPI 그룹 관리에서 부서별 그룹을 만들고 모델 배율/할당량을 설정한 뒤 사용자를 할당해 부서별로 제한합니다.',
+    presidio_status: '상태',
+    monitoring_targets: '활성 타겟',
+    monitoring_total: '전체 타겟',
+    langfuse_version: '버전',
+    alerts_firing: '발화 알림',
+    open_monitoring: '모니터링 열기',
+    open_observability: '관측 열기',
+    traces: '트레이스',
+    obs_desc: '각 모델 호출의 프롬프트, 응답, 지연, 토큰, 비용을 추적하여 품질 분석 및 장애 위치 파악에 사용.',
+  },
+  ar: {
+    brand: 'مركز إدارة الذكاء الاصطناعي', dashboard: 'لوحة التحكم', ghost: 'إدارة Ghost', dify: 'منصة Dify AI', gitea: 'إدارة مصدر Gitea',
+    group_apps: 'التطبيقات', group_ai: 'بوابة الذكاء الاصطناعي والتكاملات', group_ops: 'العمليات', group_admin: 'إدارة النظام',
+    newapi: 'إدارة NewAPI', keycloak: 'مصادقة Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'خادم التحديث',
+    auth: 'المصادقة المركزية', admins: 'إدارة المشرفين', settings: 'إعدادات النظام', logout: 'تسجيل الخروج',
+    loading_services: 'جارٍ جلب حالة الخدمات...', loading: 'جارٍ التحميل...',
+    metrics: 'مؤشرات المنتجات', loading_metrics: 'جارٍ جلب المؤشرات...', docker_error: 'تعذر الاتصال بـ Docker: ', metrics_error: 'تعذر جلب المؤشرات: ',
+    channels: 'القنوات', users: 'المستخدمون', keys: 'المفاتيح', not_connected: 'غير متصل', pending: 'قيد التهيئة', ports: 'المنافذ: ',
+    running: 'يعمل', stopped: 'متوقف', total: 'إجمالي الخدمات',
+    sys_info: 'معلومات النظام', docker_ver: 'إصدار Docker', cpu: 'المعالج', cores: 'نواة', containers: 'الحاويات', images: 'الصور', memory: 'الذاكرة', arch: 'المعمارية',
+    health_check: 'فحص الصحة', svc_detail: 'تفاصيل الخدمة', status: 'الحالة', uptime: 'مدة التشغيل', image: 'الصورة',
+    api_no_ui: 'هذه خدمة API بدون واجهة ويب. فحص الصحة: ', health_error: 'تعذر جلب الحالة: ', manual_check: 'فحص يدوي: ',
+    mcp_title: 'MCP Gateway — إدارة Skill / MCP', endpoints: 'معلومات نقاط النهاية', mcp_endpoint: 'نقطة نهاية MCP', skill_market: 'سوق المهارات', client_access: 'وصول العميل',
+    client_access_desc: 'DeepChat: الإعدادات → MCP → إضافة خادم → النوع «HTTP متدفق» → أدخل عنوان /mcp أعلاه',
+    mcp_servers: 'إدارة خوادم MCP (تجميع MCP خارجي)', skills: 'إدارة المهارات (حزم داخلية)',
+    name: 'الاسم', type: 'النوع', cmd_url: 'الأمر / الرابط', delete: 'حذف', no_mcp: 'لا توجد خوادم MCP خارجية (الأدوات المدمجة متاحة دائمًا)',
+    add_mcp: 'إضافة خادم MCP', name_ph: 'الاسم (مثال: filesystem)', cmd_url_ph: 'http: رابط؛ stdio: أمر', add: 'إضافة',
+    cmd_url_ph_http: 'http: رابط (مثال: http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: أمر (مثال: npx -y ...)',
+    mcp_load_fail: 'فشل تحميل خوادم MCP (يتطلب دور ai-platform-admin): ', add_fail: 'فشل الإضافة: ', delete_fail: 'فشل الحذف: ',
+    delete_confirm: 'حذف خادم MCP «', confirm_suffix: '»؟', version: 'الإصدار', desc: 'الوصف', size: 'الحجم', no_skills: 'لا توجد مهارات',
+    upload_skill: 'رفع حزمة مهارات (zip يحتوي على مجلد مع SKILL.md)', upload: 'رفع', skills_load_fail: 'فشل تحميل المهارات (يتطلب دور ai-platform-admin): ',
+    upload_fail: 'فشل الرفع: ', uploaded: 'تم رفع المهارة: ', delete_skill_confirm: 'حذف المهارة «',
+    name_cmd_required: 'الاسم والأمر/الرابط مطلوبان', select_zip: 'يرجى اختيار ملف zip أولاً',
+    litellm_title: 'LiteLLM — وكيل إخفاء PII', litellm_open: 'الوصول إلى LiteLLM', litellm_desc: 'LiteLLM هو وكيل إخفاء PII الداخلي. سجّل الدخول باستخدام Master Key (بدون SSO).',
+    open_litellm: 'فتح LiteLLM ↗', copy_master_key: '📋 نسخ Master Key', litellm_hint: 'الصق Master Key في صندوق تسجيل الدخول. راجع credentials.html.',
+    litellm_fail: 'تعذر جلب معلومات LiteLLM: ', no_key: 'لا يوجد Master Key', copied: 'تم النسخ إلى الحافظة',
+    newapi_title: 'NewAPI — موجّه LLM', loading_newapi: 'جارٍ تحميل بيانات NewAPI...', newapi_fail: 'تعذر جلب بيانات NewAPI (يتطلب دور ai-platform-admin): ',
+    enabled: 'مفعّل', disabled: 'معطّل', admin_role: 'مشرف', user_role: 'مستخدم', other_role: 'أخرى', usd: 'دولار', unlimited: 'غير محدود',
+    channel: 'القناة', model: 'النماذج', used_quota: 'الحصة المستخدمة', username: 'اسم المستخدم', role: 'الدور', quota: 'الحصة', used: 'المستخدم', requests: 'الطلبات', remain_quota: 'المتبقي',
+    no_channels: 'لا توجد قنوات', no_users: 'لا يوجد مستخدمون', no_keys: 'لا توجد مفاتيح', open_newapi: 'فتح NewAPI ↗ (متقدم)', newapi_note: 'تجميع للقراءة فقط؛ عدّل القنوات/المستخدمين/المفاتيح في NewAPI.',
+    auth_title: 'المصادقة المركزية — حسابات موحدة', loading_auth: 'جارٍ تحميل نظرة المصادقة...', auth_need_admin: 'يتطلب دور ai-platform-admin لعرض معلومات المصادقة (تحتوي على بيانات الاعتماد)',
+    auth_need_admin2: 'قم بتعيين دور ai-platform-admin للمستخدم الحالي.', auth_fail: 'تعذر جلب معلومات المصادقة: ',
+    security: '⚠️ تنبيه أمني', security_desc: 'تحتوي هذه الصفحة على بيانات اعتماد المشرف الموحد. مرئية لـ ai-platform-admin فقط. لا تشاركها أو تلتقط صورًا لها.',
+    unified_admin: '🔑 حساب المشرف الموحد (جميع المنصات)', item: 'العنصر', value: 'القيمة', action: 'الإجراء', copy: '📋 نسخ',
+    unified_desc: 'حساب واحد يدير جميع المنصات. تسجيل الدخول يعيد التوجيه إلى Keycloak؛ المنتجات الأخرى المدعومة بـ SSO تسجّل الدخول تلقائيًا.',
+    sso_mech: '🔄 آلية SSO', sso_desc: 'منتجات الويب تستخدم Keycloak SSO — سجّل الدخول مرة واحدة وكل مدخل يسجّل الدخول تلقائيًا. استثناءان: Keycloak نفسه مصدر الهوية؛ خدمات API (LiteLLM، DeepSeek إلخ) تستخدم مفاتيح API.',
+    auth_methods: '🗂️ طرق المصادقة حسب المنصة', platform: 'المنصة', login_method: 'طريقة الدخول', note: 'ملاحظات',
+    litellm_exception: '🛡️ LiteLLM — استثناء (Master Key، بدون SSO)', litellm_exception_desc: 'LiteLLM هو وكيل PII الداخلي، الدخول بـ Master Key (بدون Keycloak SSO). يُستخدم فقط لاستكشاف الإخفاء/السجلات.',
+    ad_account: '🏢 حساب نطاق AD (LDAP)', bind_account: 'حساب الربط', bind_dn: 'DN الربط', password: 'كلمة المرور',
+    ad_note: '⚠️ ملاحظة: CN لحساب AD يحتوي على مسافات ("ai all in one admin") وليس شرطة سفلية. حدّث bindDn بعد تغيير اسم العرض.',
+    admins_title: 'إدارة حسابات المشرفين', admins_list: 'قائمة مشرفي المنصة (ai-platform-admin)', no_admins: 'لم يتم العثور على مشرفين', name2: 'الاسم', email: 'البريد الإلكتروني',
+    admins_desc: 'تتم إدارة المشرفين عبر Keycloak، الدور: ai-platform-admin. للإضافة/الإزالة استخدم وحدة تحكم Keycloak أو تعيين مجموعات Entra ID.',
+    admins_need_admin: 'يتطلب دور ai-platform-admin لعرض المشرفين', admins_need_admin2: 'قم بتعيين دور ai-platform-admin للمستخدم الحالي.',
+    settings_title: 'إعدادات النظام', language: 'لغة الواجهة', language_desc: 'اختر لغة واجهة مركز الإدارة. تسري فورًا.',
+    env_config: 'متغيرات البيئة', env_desc: 'تمرر جميع الإعدادات عبر .env أو docker-compose.yml. أعد تشغيل الحاوية بعد التعديل.',
+    product_urls: 'روابط المنتجات', prod_note: 'في الإنتاج، استبدل هذه الروابط بنطاقك الفعلي (راجع docker-deploy-guide.html).',
+    open_admin: 'فتح الإدارة ↗', open_hint: 'انقر لفتح وحدة تحكم إدارة المنتج للإعداد التفصيلي', overview_fail: 'تعذر التحميل: ',
+    open_ghost: 'فتح إدارة Ghost', open_dify: 'فتح Dify', open_gitea: 'فتح Gitea', open_keycloak: 'فتح إدارة Keycloak',
+    ghost_posts: 'المقالات', ghost_pages: 'الصفحات', ghost_members: 'الأعضاء', ghost_tags: 'الوسوم',
+    dify_apps: 'التطبيقات', dify_workspaces: 'مساحات العمل', dify_version: 'الإصدار',
+    gitea_repos: 'المستودعات', gitea_users: 'المستخدمون', gitea_orgs: 'المنظمات', gitea_issues: 'المشكلات', gitea_version: 'الإصدار',
+    kc_users: 'المستخدمون', kc_clients: 'العملاء', kc_roles: 'الأدوار', kc_idps: 'مصادر الهوية',
+    mcp_srv_count: 'خوادم MCP', skill_count: 'المهارات', litellm_models: 'النماذج', update_version: 'إصدار DeepChat',
+    docker_services: 'خدمات Docker', docker_desc: 'جميع الخدمات أدناه تعمل في حاويات Docker، مجمّعة حسب المنتج',
+    svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'خادم التحديث', svc_presidio: 'إخفاء PII', svc_monitoring: 'المراقبة', svc_langfuse: 'مراقبة LLM', svc_session: 'مخزن الجلسة', svc_other: 'أخرى',
+    repos_list: 'قائمة المستودعات', repo_desc: 'الوصف', repo_lang: 'اللغة', repo_updated: 'آخر تحديث', sync_last_run: 'آخر تشغيل لسكربت التحديث', sync_success: 'نجاح', sync_failed: 'فشل', sync_running: 'قيد التشغيل', no_repos: 'لا توجد مستودعات', installers: 'حزم التثبيت', last_updated: 'آخر تحديث', no_files: 'لا توجد حزم تثبيت', open_update: 'فتح خادم التحديث', quota_unit: 'حصة',
+    monitoring: 'المراقبة',
+    observability: 'مراقبة LLM',
+    cost_report: 'تقرير التكلفة',
+    recent_days: 'آخر',
+    days: 'أيام',
+    total_cost: 'التكلفة الإجمالية',
+    total_calls: 'إجمالي الاستدعاءات',
+    total_tokens: 'إجمالي الرموز',
+    by_user: 'حسب المستخدم',
+    by_model: 'حسب النموذج',
+    by_day: 'حسب اليوم',
+    calls: 'استدعاءات',
+    tokens: 'رموز',
+    cost: 'التكلفة',
+    date: 'التاريخ',
+    time: 'الوقت',
+    audit_log: 'سجل التدقيق',
+    recent: 'الأخيرة',
+    records: 'سجلات',
+    no_data: 'لا توجد بيانات',
+    audit_note: 'يسجل كل استدعاء للنموذج (المستخدم، النموذج، الرموز، الحصة، التكلفة) للتدقيق والتتبع.',
+    group: 'المجموعة',
+    org_note: 'حصة المنظمة: أنشئ مجموعات حسب القسم في NewAPI وحدد المضاعفات/الحصة، ثم عيّن المستخدمين للتحكم حسب القسم.',
+    presidio_status: 'الحالة',
+    monitoring_targets: 'أهداف نشطة',
+    monitoring_total: 'إجمالي الأهداف',
+    langfuse_version: 'الإصدار',
+    alerts_firing: 'تنبيهات نشطة',
+    open_monitoring: 'فتح المراقبة',
+    open_observability: 'فتح المراقبة',
+    traces: 'تتبعات',
+    obs_desc: 'يتتبع المطالبات والاستجابات وزمن الاستجابة والرموز والتكلفة لكل استدعاء نموذج لتحليل الجودة واستكشاف الأخطاء.',
+  },
+};
+
+function t(key) {
+  return (I18N[LANG] && I18N[LANG][key]) || (I18N.zh && I18N.zh[key]) || key;
+}
+function setLang(lang) {
+  if (lang === LANG) return;
+  localStorage.setItem(LANG_KEY, lang);
+  location.reload();
+}
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (k && I18N[LANG] && I18N[LANG][k]) el.textContent = I18N[LANG][k];
+  });
+}
+// 阿拉伯语等 RTL 语言切换文字方向
+function applyDir() {
+  const rtl = LANG === 'ar';
+  document.documentElement.setAttribute('dir', rtl ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', LANG);
+}
+
+// ═══ Dashboard ═══
+async function loadDashboard() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '📊 ' + t('dashboard');
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>📊 ${t('dashboard')}</h1></div>
+    <div class="card"><h3>📈 ${t('metrics')}</h3><div class="status-grid" id="metricsGrid"><div class="loading">${t('loading_metrics')}</div></div></div>
+    <div class="card docker-shell">
+      <h3>🐳 ${t('docker_services')}</h3>
+      <p class="docker-tip">${t('docker_desc')}</p>
+      <div class="stats-bar" id="statsBar"></div>
+      <div id="serviceGroups"><div class="loading">${t('loading_services')}</div></div>
+    </div>
+  `;
+  try {
+    const resp = await fetch(API + '/health');
+    const data = await resp.json();
+    if (data.error) throw new Error(data.message);
+    renderDashboard(data);
+  } catch (e) {
+    document.getElementById('serviceGroups').innerHTML = `<div class="error">${t('docker_error')}${e.message}</div>`;
+    document.getElementById('statsBar').innerHTML = '';
+  }
+  try {
+    const r2 = await fetch(API + '/system');
+    const sys = await r2.json();
+    if (!sys.error) renderSystem(sys);
+  } catch(e) {}
+  try {
+    const r3 = await fetch(API + '/metrics');
+    const metrics = await r3.json();
+    if (!metrics.error) renderMetrics(metrics);
+    else document.getElementById('metricsGrid').innerHTML = `<div class="error">${metrics.error}</div>`;
+  } catch(e) {
+    document.getElementById('metricsGrid').innerHTML = `<div class="error">${t('metrics_error')}${e.message}</div>`;
+  }
+  // 可用性测试汇总（追加到产品指标卡片区）
+  try {
+    const r4 = await fetch(API + '/availability');
+    const av = await r4.json();
+    if (av && av.last && av.last.summary) {
+      const s = av.last.summary;
+      const cls = (s.fail > 0) ? 'exited' : 'running';
+      const lastTxt = av.last.runAt ? new Date(av.last.runAt).toLocaleTimeString() : '—';
+      document.getElementById('metricsGrid').insertAdjacentHTML('beforeend', `
+        <div class="svc-card" style="cursor:pointer" onclick="loadAvailability()">
+          <div class="svc-name">🩺 ${t('availability')}</div>
+          <div class="svc-status ${cls}">${t('avail_pass')} ${s.ok ?? 0}/${s.total ?? 0}</div>
+          <div class="svc-image" style="font-size:0.78em;color:#8b949e">${t('avail_fail')} ${s.fail ?? 0} · ${t('avail_last')} ${lastTxt}</div>
+        </div>`);
+    }
+  } catch(e) {}
+}
+
+function renderMetrics(m) {
+  const card = (icon, name, lines, status) => {
+    const cls = status === 'ok' ? 'running' : 'exited';
+    return `<div class="svc-card">
+      <div class="svc-name">${icon} ${name}</div>
+      ${lines.map(l => `<div class="svc-status ${cls}">${l}</div>`).join('')}
+    </div>`;
+  };
+  // 每个产品的统计项：[i18n 键, 取值]
+  const defs = [
+    { key: 'newapi', icon: '🔀', name: 'NewAPI', lines: [['channels', 'channels'], ['users', 'users'], ['keys', 'tokens']] },
+    { key: 'gitea', icon: '📦', name: 'Gitea', lines: [['gitea_repos', 'repos'], ['gitea_users', 'users'], ['gitea_issues', 'issues']] },
+    { key: 'ghost', icon: '📰', name: 'Ghost', lines: [['ghost_posts', 'posts'], ['ghost_pages', 'pages'], ['ghost_members', 'members']] },
+    { key: 'dify', icon: '🤖', name: 'Dify', lines: [['dify_apps', 'apps'], ['dify_workspaces', 'workspaces']] },
+    { key: 'keycloak', icon: '🔐', name: 'Keycloak', lines: [['kc_users', 'users'], ['kc_clients', 'clients'], ['kc_roles', 'roles']] },
+    { key: 'mcp', icon: '🔌', name: 'MCP Gateway', lines: [['mcp_srv_count', 'servers'], ['skill_count', 'skills']] },
+    { key: 'litellm', icon: '🛡️', name: 'LiteLLM', lines: [['litellm_models', 'models']] },
+    { key: 'update', icon: '⬇️', name: 'Update Server', lines: [['update_version', 'version']] },
+    { key: 'presidio', icon: '🧬', name: 'PII 脱敏', lines: [['presidio_state', 'state']] },
+    { key: 'monitoring', icon: '📈', name: '监控', lines: [['monitoring_targets', 'targets'], ['monitoring_total', 'total']] },
+    { key: 'langfuse', icon: '🔍', name: 'LLM 可观测', lines: [['langfuse_version', 'version']] },
+  ];
+  const items = defs.map(d => {
+    const ok = m[d.key] && m[d.key].status === 'ok';
+    if (ok) {
+      const lines = d.lines.map(([lk, vk]) => `${t(lk)} ${m[d.key][vk] ?? '—'}`);
+      return card(d.icon, d.name, lines, 'ok');
+    }
+    return card(d.icon, d.name, [t('not_connected')], 'error');
+  });
+  document.getElementById('metricsGrid').innerHTML = items.join('');
+}
+
+function renderDashboard(data) {
+  const svcCard = s => {
+    const cls = s.status === 'running' ? 'running' : (s.status === 'exited' ? 'exited' : 'created');
+    const icon = s.status === 'running' ? '🟢' : (s.status === 'exited' ? '🔴' : '🟡');
+    const ports = s.ports.length ? ` | ${t('ports')}${s.ports.join(', ')}` : '';
+    return `<div class="svc-card">
+      <div class="svc-name">${icon} ${s.name}</div>
+      <div class="svc-status ${cls}">${s.status === 'running' ? t('running') : (s.status === 'exited' ? t('stopped') : s.status)}</div>
+      <div class="svc-image">${s.image}${ports}</div>
+    </div>`;
+  };
+
+  const groups = groupServices(data.services);
+  document.getElementById('serviceGroups').innerHTML = groups.map(g => `
+    <div class="service-group">
+      <div class="service-group-head">${g.icon} ${t(g.name)} <span class="count">${g.items.length}</span></div>
+      <div class="status-grid">${g.items.map(svcCard).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat running"><div class="value">${data.running}</div><div class="label">${t('running')}</div></div>
+    <div class="stat stopped"><div class="value">${data.total - data.running}</div><div class="label">${t('stopped')}</div></div>
+    <div class="stat total"><div class="value">${data.total}</div><div class="label">${t('total')}</div></div>
+  `;
+}
+
+// 按产品分组 Docker 服务（Dify 的 docker-* 单独一组，其余按产品名）
+function groupServices(services) {
+  const defs = [
+    { name: 'svc_dify', icon: '🤖', match: n => n.startsWith('docker-') },
+    { name: 'svc_keycloak', icon: '🔐', match: n => n === 'keycloak' },
+    { name: 'svc_newapi', icon: '🔀', match: n => n.startsWith('new-api') },
+    { name: 'svc_litellm', icon: '🛡️', match: n => n.startsWith('litellm') },
+    { name: 'svc_ghost', icon: '📰', match: n => n === 'ghost' },
+    { name: 'svc_gitea', icon: '📦', match: n => n.startsWith('gitea') },
+    { name: 'svc_mcp', icon: '🔌', match: n => n.startsWith('mcp-gateway') },
+    { name: 'svc_update', icon: '⬇️', match: n => n.startsWith('update-server') },
+    { name: 'svc_presidio', icon: '🧬', match: n => n.startsWith('presidio') },
+    { name: 'svc_monitoring', icon: '📈', match: n => ['cadvisor', 'prometheus', 'grafana'].includes(n) },
+    { name: 'svc_langfuse', icon: '🔍', match: n => n.startsWith('langfuse') },
+    { name: 'svc_session', icon: '🗄️', match: n => n === 'admin-session-redis' },
+  ];
+  const groups = defs.map(d => ({ ...d, items: [] }));
+  const other = { name: 'svc_other', icon: '📦', items: [] };
+  for (const s of services) {
+    const g = groups.find(g => g.match(s.name));
+    if (g) g.items.push(s); else other.items.push(s);
+  }
+  if (other.items.length) groups.push(other);
+  return groups;
+}
+
+function renderSystem(sys) {
+  document.getElementById('main').innerHTML += `
+    <div class="card"><h3>${t('sys_info')}</h3>
+      <table>
+        <tr><td>${t('docker_ver')}</td><td>${sys.dockerVersion}</td><td>${t('cpu')}</td><td>${sys.cpuCount} ${t('cores')}</td></tr>
+        <tr><td>${t('containers')}</td><td>${sys.containers}</td><td>${t('images')}</td><td>${sys.images}</td></tr>
+        <tr><td>${t('memory')}</td><td>${(sys.memory / 1024 / 1024 / 1024).toFixed(1)} GB</td><td>${t('arch')}</td><td>${sys.architecture}</td></tr>
+      </table>
+    </div>`;
+}
+
+// ═══ Service Health ═══
+async function loadHealth(name, port) {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = `🔍 ${name} — ${t('health_check')}`;
+  try {
+    const resp = await fetch(API + '/health/' + name);
+    const data = await resp.json();
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>🔍 ${name}</h1></div>
+      <div class="card"><h3>${t('svc_detail')}</h3>
+        <table>
+          <tr><td>${t('status')}</td><td style="color:${data.status==='running'?'#56d364':'#f85149'}">${data.status}</td></tr>
+          <tr><td>${t('uptime')}</td><td>${data.uptime || 'N/A'}</td></tr>
+          <tr><td>${t('image')}</td><td>${data.image || 'N/A'}</td></tr>
+        </table>
+        <p style="margin-top:12px;color:#8b949e">${t('api_no_ui')}<code>curl http://localhost:${port}/health</code></p>
+      </div>`;
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${name}</h1></div><div class="card"><p class="error">${t('health_error')}${e.message}</p><p>${t('manual_check')}<code>curl http://localhost:${port}/health</code></p></div>`;
+  }
+}
+
+// ═══ MCP Gateway — Skill / MCP 管理 Hub ═══
+const MCAPI = API + '/mcp-gateway';
+
+async function loadMcpGateway() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '🔌 MCP Gateway';
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>🔌 ${t('mcp_title')}</h1></div>
+    <div class="card"><h3>${t('endpoints')}</h3>
+      <table>
+        <tr><td style="width:30%">${t('mcp_endpoint')}</td><td><code>http://192.168.31.117:3100/mcp</code></td></tr>
+        <tr><td>${t('skill_market')}</td><td><a class="ext-link" href="http://192.168.31.117:3100/market" target="_blank">http://192.168.31.117:3100/market ↗</a></td></tr>
+        <tr><td>${t('client_access')}</td><td>${t('client_access_desc')}</td></tr>
+      </table>
+    </div>
+    <div class="card"><h3>🔌 ${t('mcp_servers')}</h3>
+      <div id="mcpServersBox"><p class="loading">${t('loading')}</p></div>
+    </div>
+    <div class="card"><h3>🧩 ${t('skills')}</h3>
+      <div id="skillsBox"><p class="loading">${t('loading')}</p></div>
+    </div>`;
+  loadMcpServers();
+  loadGwSkills();
+}
+
+async function loadMcpServers() {
+  const box = document.getElementById('mcpServersBox');
+  try {
+    const r = await fetch(MCAPI + '/servers');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    const servers = d.servers || [];
+    const rows = servers.length ? servers.map(s => `
+      <tr>
+        <td><code>${s.name}</code></td>
+        <td>${s.type}</td>
+        <td><code style="font-size:0.8em">${s.type === 'stdio' ? s.command : (s.url || '')}</code></td>
+        <td><button onclick="deleteMcpServer('${s.name}')" style="background:#21262d;color:#f85149;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer">${t('delete')}</button></td>
+      </tr>`).join('') : `<tr><td colspan="4" style="color:#8b949e">${t('no_mcp')}</td></tr>`;
+    box.innerHTML = `
+      <table><tr><th>${t('name')}</th><th>${t('type')}</th><th>${t('cmd_url')}</th><th></th></tr>${rows}</table>
+      <div style="margin-top:14px;border-top:1px solid #30363d;padding-top:14px">
+        <h4 style="color:#8b949e;font-size:0.9em;margin-bottom:8px">${t('add_mcp')}</h4>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="srvName" placeholder="${t('name_ph')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:6px;flex:1;min-width:140px">
+          <select id="srvType" onchange="toggleSrvField()" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:6px">
+            <option value="http">http</option>
+            <option value="stdio">stdio</option>
+          </select>
+          <input id="srvCmd" placeholder="${t('cmd_url_ph')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:6px;flex:2;min-width:200px">
+          <button onclick="addMcpServer()" style="background:#238636;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600">${t('add')}</button>
+        </div>
+      </div>`;
+  } catch (e) {
+    box.innerHTML = `<p class="error">${t('mcp_load_fail')}${e.message}</p>`;
+  }
+}
+
+function toggleSrvField() {
+  const type = document.getElementById('srvType').value;
+  document.getElementById('srvCmd').placeholder = type === 'http' ? t('cmd_url_ph_http') : t('cmd_url_ph_stdio');
+}
+
+async function addMcpServer() {
+  const name = document.getElementById('srvName').value.trim();
+  const type = document.getElementById('srvType').value;
+  const cmd = document.getElementById('srvCmd').value.trim();
+  if (!name || !cmd) { alert(t('name_cmd_required')); return; }
+  const body = { name, type };
+  if (type === 'http') body.url = cmd; else body.command = cmd;
+  const r = await fetch(MCAPI + '/servers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (d.error) { alert(t('add_fail') + d.error); return; }
+  loadMcpServers();
+}
+
+async function deleteMcpServer(name) {
+  if (!confirm(t('delete_confirm') + name + t('confirm_suffix'))) return;
+  const r = await fetch(MCAPI + '/servers/' + encodeURIComponent(name), { method: 'DELETE' });
+  const d = await r.json();
+  if (d.error) { alert(t('delete_fail') + d.error); return; }
+  loadMcpServers();
+}
+
+async function loadGwSkills() {
+  const box = document.getElementById('skillsBox');
+  try {
+    const r = await fetch(MCAPI + '/skills');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    const skills = d.skills || [];
+    const rows = skills.length ? skills.map(s => `
+      <tr>
+        <td><code>${s.name}</code></td>
+        <td>v${s.version || '—'}</td>
+        <td style="color:#8b949e">${s.description || ''}</td>
+        <td>${(s.size/1024).toFixed(1)} KB</td>
+        <td><button onclick="deleteGwSkill('${s.name}')" style="background:#21262d;color:#f85149;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer">${t('delete')}</button></td>
+      </tr>`).join('') : `<tr><td colspan="5" style="color:#8b949e">${t('no_skills')}</td></tr>`;
+    box.innerHTML = `
+      <table><tr><th>${t('name')}</th><th>${t('version')}</th><th>${t('desc')}</th><th>${t('size')}</th><th></th></tr>${rows}</table>
+      <div style="margin-top:14px;border-top:1px solid #30363d;padding-top:14px">
+        <h4 style="color:#8b949e;font-size:0.9em;margin-bottom:8px">${t('upload_skill')}</h4>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="skillFile" type="file" accept=".zip" style="color:#8b949e">
+          <button onclick="uploadGwSkill()" style="background:#238636;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600">${t('upload')}</button>
+        </div>
+      </div>`;
+  } catch (e) {
+    box.innerHTML = `<p class="error">${t('skills_load_fail')}${e.message}</p>`;
+  }
+}
+
+async function uploadGwSkill() {
+  const f = document.getElementById('skillFile').files[0];
+  if (!f) { alert(t('select_zip')); return; }
+  const buf = await f.arrayBuffer();
+  const r = await fetch(MCAPI + '/skills/upload', { method: 'POST', headers: { 'Content-Type': 'application/zip' }, body: buf });
+  const d = await r.json();
+  if (d.error) { alert(t('upload_fail') + d.error); return; }
+  alert(t('uploaded') + d.name);
+  loadGwSkills();
+}
+
+async function deleteGwSkill(name) {
+  if (!confirm(t('delete_skill_confirm') + name + t('confirm_suffix'))) return;
+  const r = await fetch(MCAPI + '/skills/' + encodeURIComponent(name), { method: 'DELETE' });
+  const d = await r.json();
+  if (d.error) { alert(t('delete_fail') + d.error); return; }
+  loadGwSkills();
+}
+
+// ═══ LiteLLM — 打开 + 复制 Master Key ═══
+async function loadLitellm() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '🛡️ ' + t('litellm_title');
+  try {
+    const resp = await fetch(API + '/litellm');
+    const data = await resp.json();
+    window._litellmKey = data.masterKey || '';
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>🛡️ ${t('litellm_title')}</h1></div>
+      <div class="card"><h3>${t('litellm_open')}</h3>
+        <p style="color:#8b949e">${t('litellm_desc')}</p>
+        <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
+          <a href="${data.url}" target="_blank" style="background:#1f6feb;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a>
+          <button onclick="copyMasterKey()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('copy_master_key')}</button>
+        </div>
+        <p style="color:#8b949e;font-size:0.85em">${t('litellm_hint')}</p>
+      </div>`;
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ LiteLLM</h1></div><div class="card"><p class="error">${t('litellm_fail')}${e.message}</p></div>`;
+  }
+}
+
+function copyMasterKey() {
+  const key = window._litellmKey || '';
+  if (!key) { alert(t('no_key')); return; }
+  const done = () => alert(t('copy_master_key') + ' ' + t('copied'));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(key).then(done).catch(() => fallbackCopy(key, done));
+  } else {
+    fallbackCopy(key, done);
+  }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta); cb();
+}
+
+// ═══ NewAPI 管理 — 渠道 / 用户 / 密钥 ═══
+async function loadNewApi() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '🔀 NewAPI';
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>🔀 ${t('newapi_title')}</h1></div>
+    <div class="card"><p class="loading">${t('loading_newapi')}</p></div>
+  `;
+  try {
+    const [overview, channels, users, tokens, audit, cost] = await Promise.all([
+      fetch(API + '/newapi/overview').then(r => r.json()),
+      fetch(API + '/newapi/channels').then(r => r.json()),
+      fetch(API + '/newapi/users').then(r => r.json()),
+      fetch(API + '/newapi/tokens').then(r => r.json()),
+      fetch(API + '/newapi/audit?limit=100').then(r => r.json()),
+      fetch(API + '/newapi/cost?days=30').then(r => r.json()),
+    ]);
+    if (overview.error) throw new Error(overview.error);
+    renderNewApi(overview, channels, users, tokens, audit, cost);
+  } catch(e) {
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>🔀 NewAPI</h1></div>
+      <div class="card"><p class="error">${t('newapi_fail')}${e.message}</p></div>
+    `;
+  }
+}
+
+function renderNewApi(overview, channels, users, tokens, audit, cost) {
+  const ch = (channels?.data?.items || []);
+  const us = (users?.data?.items || []);
+  const tk = (tokens?.data?.items || []);
+  const usd = q => (q >= 0 ? (q / 500000).toFixed(2) : '—');
+  const chRows = ch.map(c => `
+    <tr><td>${c.name || '—'}</td><td>${c.models || '—'}</td>
+      <td style="color:${c.status===1?'#56d364':'#f85149'}">${c.status===1?t('enabled'):t('disabled')}</td>
+      <td>${c.used_quota ?? 0}</td></tr>`).join('');
+  const usRows = us.map(u => `
+    <tr><td><span class="admin-badge">${u.username}</span></td>
+      <td>${u.role===100?t('admin_role'):(u.role===1?t('user_role'):t('other_role'))}</td>
+      <td>${u.group || 'default'}</td>
+      <td>${usd(u.quota)} ${t('usd')}</td><td>${usd(u.used_quota)} ${t('usd')}</td><td>${u.request_count ?? 0}</td></tr>`).join('');
+  const tkRows = tk.map(tk => `
+    <tr><td><span class="admin-badge">${tk.name || '—'}</span></td>
+      <td style="color:${tk.status===1?'#56d364':'#f85149'}">${tk.status===1?t('enabled'):t('disabled')}</td>
+      <td>${tk.used_quota ?? 0} ${t('quota_unit')}</td>
+      <td>${tk.unlimited_quota ? t('unlimited') : ((tk.remain_quota ?? 0) + ' ' + t('quota_unit'))}</td></tr>`).join('');
+
+  // 审计日志
+  const auditItems = audit?.items || [];
+  const fmtTime = ts => { const d = new Date(ts * 1000); return d.toLocaleString(); };
+  const auditRows = auditItems.map(a => `
+    <tr><td style="color:#8b949e;white-space:nowrap">${fmtTime(a.created_at)}</td>
+      <td>${a.username || '—'}</td><td>${a.model_name || '—'}</td>
+      <td>${a.prompt_tokens + a.completion_tokens}</td>
+      <td>${a.quota}</td><td style="color:#58a6ff">$${a.cost_usd}</td></tr>`).join('');
+
+  // 成本报表
+  const costData = cost || {};
+  const byUserRows = (costData.by_user || []).map(r => `
+    <tr><td><span class="admin-badge">${r.username}</span></td>
+      <td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
+  const byModelRows = (costData.by_model || []).map(r => `
+    <tr><td>${r.model || '—'}</td>
+      <td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
+  const byDayRows = (costData.by_day || []).map(r => `
+    <tr><td>${r.date}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>🔀 ${t('newapi_title')}</h1></div>
+    <div class="stats-bar">
+      <div class="stat total"><div class="value">${overview.channels}</div><div class="label">${t('channels')}</div></div>
+      <div class="stat total"><div class="value">${overview.users}</div><div class="label">${t('users')}</div></div>
+      <div class="stat total"><div class="value">${overview.tokens}</div><div class="label">${t('keys')}</div></div>
+    </div>
+    <div class="card"><h3>🔌 ${t('channels')}（${ch.length}）</h3>
+      ${ch.length === 0 ? `<p class="loading">${t('no_channels')}</p>` : `<table><tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>${chRows}</table>`}
+    </div>
+    <div class="card"><h3>👥 ${t('users')}（${us.length}）</h3>
+      ${us.length === 0 ? `<p class="loading">${t('no_users')}</p>` : `<table><tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>${usRows}</table>`}
+      <p style="margin-top:8px;color:#8b949e;font-size:0.85em">${t('org_note')}</p>
+    </div>
+    <div class="card"><h3>🔑 ${t('keys')}（${tk.length}）</h3>
+      ${tk.length === 0 ? `<p class="loading">${t('no_keys')}</p>` : `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>${tkRows}</table>`}
+    </div>
+    <div class="card"><h3>💰 ${t('cost_report')}（${t('recent_days')} ${costData.days || 30} ${t('days')}）</h3>
+      <div class="stats-bar">
+        <div class="stat total"><div class="value">$${costData.total?.cost_usd ?? '0.00'}</div><div class="label">${t('total_cost')}</div></div>
+        <div class="stat total"><div class="value">${costData.total?.calls ?? 0}</div><div class="label">${t('total_calls')}</div></div>
+        <div class="stat total"><div class="value">${(costData.total?.prompt_tokens ?? 0) + (costData.total?.completion_tokens ?? 0)}</div><div class="label">${t('total_tokens')}</div></div>
+      </div>
+      <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_user')}</h4>
+      ${byUserRows ? `<table><tr><th>${t('username')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byUserRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+      <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_model')}</h4>
+      ${byModelRows ? `<table><tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byModelRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+      <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_day')}</h4>
+      ${byDayRows ? `<table><tr><th>${t('date')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byDayRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+    </div>
+    <div class="card"><h3>📋 ${t('audit_log')}（${t('recent')} ${auditItems.length} ${t('records')}）</h3>
+      ${auditRows ? `<table><tr><th>${t('time')}</th><th>${t('username')}</th><th>${t('model')}</th><th>${t('tokens')}</th><th>${t('quota')}</th><th>${t('cost')}</th></tr>${auditRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+      <p style="margin-top:8px;color:#8b949e;font-size:0.85em">${t('audit_note')}</p>
+    </div>
+    <div class="card">
+      <a href="http://192.168.31.117:3000" target="_blank" style="background:#1f6feb;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_newapi')}</a>
+      <span style="color:#8b949e;font-size:0.85em;margin-left:12px">${t('newapi_note')}</span>
+    </div>`;
+}
+
+// ═══ 集中认证（统一账号体系） ═══
+async function loadAuthOverview() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '🔐 ' + t('auth');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${t('auth')}</h1></div><div class="loading">${t('loading_auth')}</div>`;
+  try {
+    const resp = await fetch(API + '/auth/overview');
+    if (resp.status === 401 || resp.status === 403) {
+      document.getElementById('main').innerHTML = `
+        <div class="topbar"><h1>🔐 ${t('auth')}</h1></div>
+        <div class="card"><p class="error">${t('auth_need_admin')}</p>
+        <p style="margin-top:8px;color:#8b949e">${t('auth_need_admin2')}</p></div>`;
+      return;
+    }
+    const data = await resp.json();
+    renderAuthOverview(data);
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${t('auth')}</h1></div><div class="card"><p class="error">${t('auth_fail')}${e.message}</p></div>`;
+  }
+}
+
+function renderAuthOverview(data) {
+  const u = data.unified, l = data.litellm, ldap = data.ldap;
+  window._authUnified = { username: u.username, password: u.password };
+  window._litellmKey = l.masterKey;
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>🔐 ${t('auth_title')}</h1></div>
+
+    <div class="card" style="border-left:3px solid #d29922">
+      <h3>${t('security')}</h3>
+      <p style="color:#d29922">${t('security_desc')}</p>
+    </div>
+
+    <div class="card">
+      <h3>${t('unified_admin')}</h3>
+      <table>
+        <tr><th style="width:22%">${t('item')}</th><th>${t('value')}</th><th style="width:18%">${t('action')}</th></tr>
+        <tr><td>${t('username')}</td><td><code style="font-size:1.1em">${u.username}</code></td><td><button onclick="copyUnified('username')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer">${t('copy')}</button></td></tr>
+        <tr><td>${t('password')}</td><td><code style="font-size:1.1em">${u.password}</code></td><td><button onclick="copyUnified('password')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer">${t('copy')}</button></td></tr>
+      </table>
+      <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('unified_desc')}</p>
+    </div>
+
+    <div class="card">
+      <h3>${t('sso_mech')}</h3>
+      <pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:14px;color:#c9d1d9;font-size:0.88em;line-height:1.7">${LANG === 'zh' ? '你登录 AI 管理中心（ai_all_in_one_admin）\n        ↓  实际跳转 Keycloak 认证\n     Keycloak 颁发 SSO 会话\n        ↓  所有接入 Keycloak 的产品共享这个会话\nDify / Ghost / Gitea / NewAPI  →  全部自动登录，无需再输密码' : 'You sign in to AI Admin Center (ai_all_in_one_admin)\n        ↓  redirected to Keycloak\n     Keycloak issues an SSO session\n        ↓  shared by all Keycloak-enabled products\nDify / Ghost / Gitea / NewAPI  →  all auto-login, no password needed'}</pre>
+      <p style="margin-top:10px;color:#8b949e;font-size:0.85em">${t('sso_desc')}</p>
+    </div>
+
+    <div class="card">
+      <h3>${t('auth_methods')}</h3>
+      <table>
+        <tr><th>${t('platform')}</th><th>${t('login_method')}</th><th>${t('note')}</th></tr>
+        <tr><td>🔐 Keycloak</td><td>${LANG === 'zh' ? '身份源（管理员入口）' : 'Identity source (admin entry)'}</td><td>${LANG === 'zh' ? '认证源头，用 ai_all_in_one_admin 管理' : 'Auth origin, managed via ai_all_in_one_admin'}</td></tr>
+        <tr><td>🏢 AI 管理中心</td><td>SSO</td><td>${LANG === 'zh' ? '本系统，ai_all_in_one_admin 登录' : 'This system, ai_all_in_one_admin login'}</td></tr>
+        <tr><td>🔀 NewAPI</td><td>SSO + 本地管理员</td><td>${LANG === 'zh' ? 'OIDC 登录 + root 管理员 ai_all_in_one_admin' : 'OIDC login + root admin ai_all_in_one_admin'}</td></tr>
+        <tr><td>🤖 Dify</td><td>SSO</td><td>${LANG === 'zh' ? '首次访问向导用统一账号初始化' : 'Initialized with unified account on first visit'}</td></tr>
+        <tr><td>📰 Ghost</td><td>SSO</td><td>${LANG === 'zh' ? '首次访问向导用统一账号初始化' : 'Initialized with unified account on first visit'}</td></tr>
+        <tr><td>📦 Gitea</td><td>SSO</td><td>${LANG === 'zh' ? '首次访问向导用统一账号初始化' : 'Initialized with unified account on first visit'}</td></tr>
+        <tr><td>🛡️ LiteLLM</td><td style="color:#f85149">Master Key（不走 SSO）</td><td>${LANG === 'zh' ? '内部脱敏代理，见下方卡片' : 'Internal redaction proxy, see below'}</td></tr>
+        <tr><td>🔌 MCP Gateway / ⬇️ Update Server</td><td>${LANG === 'zh' ? '无认证（内部 API）' : 'No auth (internal API)'}</td><td>${LANG === 'zh' ? '仅 Docker 内部 / 员工下载用，不对用户开放' : 'Docker-internal / employee downloads only'}</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>${t('litellm_exception')}</h3>
+      <p style="color:#8b949e">${t('litellm_exception_desc')}</p>
+      <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
+        <a href="${l.url}" target="_blank" style="background:#1f6feb;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a>
+        <button onclick="copyMasterKey()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('copy_master_key')}</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>${t('ad_account')}</h3>
+      <table>
+        <tr><th style="width:30%">${t('item')}</th><th>${t('value')}</th></tr>
+        <tr><td>${t('bind_account')}</td><td><code>${ldap.username}</code>（sAMAccountName）</td></tr>
+        <tr><td>${t('bind_dn')}</td><td><code style="font-size:0.85em">${ldap.bindDn}</code></td></tr>
+        <tr><td>${t('password')}</td><td>${LANG === 'zh' ? '与应用密码统一（' + u.password + '）' : 'Same as app password (' + u.password + ')'}</td></tr>
+      </table>
+      <p style="margin-top:10px;color:#d29922;font-size:0.85em">${t('ad_note')}</p>
+    </div>`;
+}
+
+function copyUnified(field) {
+  const val = window._authUnified ? window._authUnified[field] : '';
+  copyText(val, field === 'username' ? t('username') : t('password'));
+}
+
+function copyText(text, label) {
+  const done = () => alert((label || t('value')) + ' ' + t('copied'));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+// ═══ Admin Management ═══
+async function loadAdmins() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '👥 ' + t('admins_title');
+  try {
+    const resp = await fetch(API + '/admins');
+    const admins = await resp.json();
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>👥 ${t('admins_title')}</h1></div>
+      <div class="card"><h3>${t('admins_list')}</h3>
+        ${admins.length === 0 ? `<p class="loading">${t('no_admins')}</p>` : `
+        <table><tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('status')}</th></tr>
+          ${admins.map(a => `<tr>
+            <td><span class="admin-badge">${a.username}</span></td>
+            <td>${a.firstName || ''} ${a.lastName || ''}</td>
+            <td>${a.email || '—'}</td>
+            <td style="color:${a.enabled?'#56d364':'#f85149'}">${a.enabled ? t('enabled') : t('disabled')}</td>
+          </tr>`).join('')}
+        </table>`}
+        <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('admins_desc')}</p>
+      </div>`;
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>👥 ${t('admins_title')}</h1></div><div class="card"><p class="error">${t('admins_need_admin')}</p><p style="margin-top:8px;color:#8b949e">${t('admins_need_admin2')}</p></div>`;
+  }
+}
+
+// ═══ Settings ═══
+function loadSettings() {
+  setActive(this);
+  document.querySelector('.topbar h1').textContent = '⚙️ ' + t('settings_title');
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>⚙️ ${t('settings_title')}</h1></div>
+    <div class="card"><h3>🌐 ${t('language')}</h3>
+      <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px">${t('language_desc')}</p>
+      <select id="langSelect" onchange="setLang(this.value)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px">
+        <option value="zh" ${LANG === 'zh' ? 'selected' : ''}>简体中文</option>
+        <option value="zh-TW" ${LANG === 'zh-TW' ? 'selected' : ''}>繁體中文</option>
+        <option value="en" ${LANG === 'en' ? 'selected' : ''}>English</option>
+        <option value="fr" ${LANG === 'fr' ? 'selected' : ''}>Français</option>
+        <option value="es" ${LANG === 'es' ? 'selected' : ''}>Español</option>
+        <option value="pt" ${LANG === 'pt' ? 'selected' : ''}>Português</option>
+        <option value="ja" ${LANG === 'ja' ? 'selected' : ''}>日本語</option>
+        <option value="ko" ${LANG === 'ko' ? 'selected' : ''}>한국어</option>
+        <option value="ar" ${LANG === 'ar' ? 'selected' : ''}>العربية</option>
+      </select>
+    </div>
+    <div class="card"><h3>📄 ${t('report_retention')}</h3>
+      <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px">${t('report_history_desc')}</p>
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div>
+          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_retention_mode')}</div>
+          <select id="retentionMode" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+            <option value="count">${t('report_retention_count')}</option>
+            <option value="days">${t('report_retention_days')}</option>
+          </select>
+        </div>
+        <div>
+          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_retention_value')}</div>
+          <input id="retentionValue" type="number" min="1" max="3650" value="20" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;width:100px">
+        </div>
+        <button onclick="saveReportRetention()" style="background:#1f6feb;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_retention_save')}</button>
+        <span id="retentionMsg" style="color:#56d364;font-size:0.85em"></span>
+      </div>
+    </div>
+    <div class="card"><h3>${t('env_config')}</h3>
+      <table>
+        <tr><td>KEYCLOAK_URL</td><td>Keycloak 服务地址（容器名:端口）</td></tr>
+        <tr><td>KEYCLOAK_REALM</td><td>Keycloak Realm 名称</td></tr>
+        <tr><td>KEYCLOAK_CLIENT_ID</td><td>OIDC Client ID（在 Keycloak 中创建）</td></tr>
+        <tr><td>ADMIN_USERNAME</td><td>Global Admin 用户名</td></tr>
+        <tr><td>ADMIN_EMAIL</td><td>Global Admin 邮箱</td></tr>
+        <tr><td>SESSION_SECRET</td><td>会话加密密钥</td></tr>
+        <tr><td>PORT</td><td>管理中心端口（默认 3000，Docker 映射为 10086）</td></tr>
+      </table>
+      <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('env_desc')}</p>
+    </div>
+    <div class="card"><h3>${t('product_urls')}</h3>
+      <table>
+        <tr><td>📰 Ghost</td><td><a class="ext-link" href="http://192.168.31.117:8090/ghost/" target="_blank">http://192.168.31.117:8090/ghost/</a></td></tr>
+        <tr><td>🤖 Dify</td><td><a class="ext-link" href="http://192.168.31.117" target="_blank">http://192.168.31.117</a></td></tr>
+        <tr><td>📦 Gitea</td><td><a class="ext-link" href="http://192.168.31.117:3002" target="_blank">http://192.168.31.117:3002</a></td></tr>
+        <tr><td>🔀 NewAPI</td><td><a class="ext-link" href="http://192.168.31.117:3000" target="_blank">http://192.168.31.117:3000</a></td></tr>
+        <tr><td>🛡️ LiteLLM</td><td><a class="ext-link" href="http://192.168.31.117:4001" target="_blank">http://192.168.31.117:4001</a></td></tr>
+        <tr><td>🔐 Keycloak</td><td><a class="ext-link" href="http://192.168.31.117:9090" target="_blank">http://192.168.31.117:9090</a></td></tr>
+        <tr><td>🔌 MCP Gateway</td><td><a class="ext-link" href="http://192.168.31.117:3100" target="_blank">http://192.168.31.117:3100</a></td></tr>
+        <tr><td>⬇️ Update Server</td><td><a class="ext-link" href="http://192.168.31.117:8091" target="_blank">http://192.168.31.117:8091</a></td></tr>
+        <tr><td>📈 Grafana</td><td><a class="ext-link" href="http://192.168.31.117:3030" target="_blank">http://192.168.31.117:3030</a></td></tr>
+        <tr><td>📊 Prometheus</td><td><a class="ext-link" href="http://192.168.31.117:9091" target="_blank">http://192.168.31.117:9091</a></td></tr>
+        <tr><td>🔔 Alertmanager</td><td><a class="ext-link" href="http://192.168.31.117:9093" target="_blank">http://192.168.31.117:9093</a></td></tr>
+        <tr><td>🔍 Langfuse</td><td><a class="ext-link" href="http://192.168.31.117:3010" target="_blank">http://192.168.31.117:3010</a></td></tr>
+        <tr><td>📬 MailHog</td><td><a class="ext-link" href="http://192.168.31.117:8025" target="_blank">http://192.168.31.117:8025</a></td></tr>
+      </table>
+      <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('prod_note')}</p>
+    </div>`;
+  loadReportSettingsForm();
+}
+
+// ═══ 产品概览（Ghost / Dify / Gitea / Keycloak）═══
+function openAdminBtn(url, label) {
+  const txt = label || t('open_admin');
+  return `<div class="card" style="text-align:center">
+    <a href="${url}" target="_blank" style="display:inline-block;background:#1f6feb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:1em">${txt} ↗</a>
+    <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('open_hint')}</p>
+  </div>`;
+}
+
+function renderProductOverview(icon, title, url, stats, openLabel) {
+  const cards = stats.map(s => `<div class="stat total"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
+  return `<div class="topbar"><h1>${icon} ${title}</h1></div>
+    <div class="stats-bar">${cards}</div>
+    ${openAdminBtn(url, openLabel)}`;
+}
+
+function productError(icon, title, url, msg, openLabel) {
+  return `<div class="topbar"><h1>${icon} ${title}</h1></div>
+    <div class="card"><p class="error">${t('overview_fail')}${msg}</p></div>
+    ${openAdminBtn(url, openLabel)}`;
+}
+
+async function loadMonitoring(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117:3030';
+  const title = t('monitoring');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>📈 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/monitoring/overview')).json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('main').innerHTML = renderProductOverview('📈', title, url, [
+      { value: `${d.prometheus?.up ?? '—'}/${d.prometheus?.total ?? '—'}`, label: t('monitoring_targets') },
+      { value: d.alerts_firing ?? '—', label: t('alerts_firing') },
+      { value: d.grafana === 'up' ? t('running') : t('stopped'), label: 'Grafana' },
+      { value: d.cadvisor === 'up' ? t('running') : t('stopped'), label: 'cadvisor' },
+    ], t('open_monitoring')) + `<div class="card"><h3>📈 Prometheus</h3><p style="color:#8b949e">指标采集 + 告警规则，访问 <code>http://192.168.31.117:9091</code></p></div>`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('📈', title, url, e.message, t('open_monitoring'));
+  }
+}
+
+async function loadObservability(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117:3010/auth/sso-initiate?provider=KEYCLOAK';
+  const title = t('observability');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/langfuse/overview')).json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('main').innerHTML = renderProductOverview('🔍', title, url, [
+      { value: d.version ?? '—', label: t('langfuse_version') },
+      { value: d.traces ?? '—', label: t('traces') },
+    ], t('open_observability')) + `<div class="card"><h3>🔍 Langfuse</h3><p style="color:#8b949e">${t('obs_desc')}</p></div>`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('🔍', title, url, e.message, t('open_observability'));
+  }
+}
+
+// ═══ PII 脱敏 ═══
+async function loadPii(el) {
+  setActive(el);
+  const title = t('pii');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🧬 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/pii/overview')).json();
+    if (d.error) throw new Error(d.error);
+    const st = up => up ? `<span style="color:#56d364;font-weight:600">${t('pii_up')}</span>` : `<span style="color:#f85149;font-weight:600">${t('pii_down')}</span>`;
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>🧬 ${t('pii_title')}</h1></div>
+      <div class="card"><h3>🧬 ${t('pii_presidio')}</h3>
+        <table>
+          <tr><th style="width:30%">${t('item')}</th><th style="width:20%">${t('status')}</th><th>${t('desc')}</th></tr>
+          <tr><td>${t('pii_analyzer')}</td><td>${st(d.presidio.analyzer.up)}</td><td style="color:#8b949e">${d.presidio.analyzer.detail}</td></tr>
+          <tr><td>${t('pii_anonymizer')}</td><td>${st(d.presidio.anonymizer.up)}</td><td style="color:#8b949e">${d.presidio.anonymizer.detail}</td></tr>
+        </table>
+      </div>
+      <div class="card"><h3>🛡️ ${t('pii_guardrails')}</h3>
+        <table>
+          <tr><th>${t('pii_guardrail_name')}</th><th>${t('pii_guardrail_type')}</th><th>${t('pii_guardrail_note')}</th></tr>
+          ${d.guardrails.map(g => `<tr><td><code>${g.name}</code></td><td>${g.type}</td><td style="color:#8b949e">${g.note}</td></tr>`).join('')}
+        </table>
+      </div>
+      <div class="card"><h3>🤖 ${t('pii_litellm_models')}</h3><p style="font-size:0.95em">${(d.litellm.models || []).join('、') || '—'}</p></div>
+      <div class="card"><p style="color:#8b949e;font-size:0.85em">${t('pii_note')}</p></div>`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🧬 ${title}</h1></div><div class="card"><p class="error">${t('overview_fail')}${e.message}</p></div>`;
+  }
+}
+
+// ═══ 统一日志（Loki）═══
+async function loadLogs(el) {
+  setActive(el);
+  const title = t('logs');
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>📜 ${title}</h1></div>
+    <div class="card"><h3>🔎 ${t('logs_desc')}</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
+        <select id="logContainer" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:180px"><option value="">${t('logs_all')}</option></select>
+        <input id="logKeyword" placeholder="${t('logs_keyword')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;flex:1;min-width:200px">
+        <select id="logSince" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+          <option value="15m">15m</option><option value="1h" selected>1h</option><option value="6h">6h</option><option value="24h">24h</option><option value="7d">7d</option>
+        </select>
+        <button onclick="runLogQuery()" style="background:#1f6feb;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('logs_search_btn')}</button>
+      </div>
+    </div>
+    <div class="card"><h3>${t('logs_results')}</h3><div id="logResults"><p class="loading">${t('logs_empty')}</p></div></div>`;
+  try {
+    const d = await (await fetch(API + '/health')).json();
+    const names = (d.services || []).map(s => s.name).sort();
+    const sel = document.getElementById('logContainer');
+    if (sel) sel.innerHTML = `<option value="">${t('logs_all')}</option>` + names.map(n => `<option value="${n}">${n}</option>`).join('');
+  } catch (e) {}
+}
+
+async function runLogQuery() {
+  const res = document.getElementById('logResults');
+  res.innerHTML = `<p class="loading">${t('loading')}</p>`;
+  try {
+    const q = new URLSearchParams({ since: document.getElementById('logSince').value, limit: '300' });
+    const c = document.getElementById('logContainer').value;
+    const k = document.getElementById('logKeyword').value;
+    if (c) q.set('container', c);
+    if (k) q.set('keyword', k);
+    const d = await (await fetch(API + '/logs/query?' + q.toString())).json();
+    if (d.error) throw new Error(d.error);
+    if (!d.entries || !d.entries.length) { res.innerHTML = `<p class="loading">${t('logs_empty')}</p>`; return; }
+    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    res.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;color:#c9d1d9;font-size:0.78em;line-height:1.6;max-height:520px;overflow:auto">` +
+      d.entries.map(e => `<span style="color:#8b949e">[${new Date(e.ts).toLocaleString()}]</span> <span style="color:#58a6ff">${esc(e.container || '')}</span> ${esc(e.line)}`).join('\n') +
+      `</pre>`;
+  } catch (e) { res.innerHTML = `<p class="error">${e.message}</p>`; }
+}
+
+// ═══ 备份与恢复 ═══
+async function loadBackup(el) {
+  setActive(el);
+  const title = t('backup');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>💾 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  await refreshBackup();
+}
+
+async function refreshBackup() {
+  try {
+    const d = await (await fetch(API + '/backup/list')).json();
+    if (d.error) throw new Error(d.error);
+    const rows = (d.dirs || []).map(b => {
+      const files = (b.files || []).map(f => `<div style="font-size:0.8em;color:#8b949e">${f.name} (${(f.size / 1024).toFixed(1)} KB)</div>`).join('');
+      return `<tr>
+        <td><code>${b.name}</code><div style="font-size:0.78em;color:#8b949e">${new Date(b.mtime).toLocaleString()}</div></td>
+        <td>${files || '—'}</td>
+        <td><button onclick="restoreBackup('${b.name}')" style="background:#d29922;color:#0d1117;border:none;padding:4px 14px;border-radius:4px;cursor:pointer;font-weight:600">${t('backup_restore')}</button></td>
+      </tr>`;
+    }).join('');
+    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const logHtml = d.logTail ? `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;color:#8b949e;font-size:0.78em;max-height:240px;overflow:auto">${esc(d.logTail)}</pre>` : '';
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>💾 ${t('backup_title')}</h1></div>
+      <div class="card"><h3>📋 ${t('backup_desc')}</h3>
+        <button onclick="runBackup()" style="background:#1f6feb;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">💾 ${t('backup_run')}</button>
+      </div>
+      <div class="card"><h3>🗂️ ${t('backup_list')}</h3>
+        ${rows ? `<table><tr><th style="width:34%">${t('backup_time')}</th><th>${t('backup_files')}</th><th style="width:16%"></th></tr>${rows}</table>` : `<p class="loading">${t('backup_no')}</p>`}
+      </div>
+      <div class="card"><h3>📄 ${t('backup_log')}</h3>${logHtml || `<p style="color:#8b949e">${t('backup_no')}</p>`}</div>
+      <div id="backupResult"></div>`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>💾 ${t('backup_title')}</h1></div><div class="card"><p class="error">${t('overview_fail')}${e.message}</p></div>`;
+  }
+}
+
+async function runBackup() {
+  const r = document.getElementById('backupResult');
+  if (r) r.innerHTML = `<div class="card"><p class="loading">${t('backup_running')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/backup/run', { method: 'POST' })).json();
+    if (d.error) throw new Error(d.error);
+    if (r) r.innerHTML = `<div class="card"><h3>${t('backup_result')}</h3><p style="color:#56d364;font-weight:600">${t('backup_pass')} ${d.pass} / ${t('backup_fail')} ${d.fail}</p>` +
+      d.results.map(x => `<div style="font-size:0.85em;color:${x.ok ? '#56d364' : '#f85149'}">${x.ok ? '✓' : '✗'} ${x.name}${x.detail ? ' (' + x.detail + ')' : ''}</div>`).join('') + `</div>`;
+    await refreshBackup();
+  } catch (e) {
+    if (r) r.innerHTML = `<div class="card"><p class="error">${e.message}</p></div>`;
+  }
+}
+
+async function restoreBackup(name) {
+  if (!confirm(`${t('backup_restore_warn')}\n${t('backup_confirm')}「${name}」？`)) return;
+  try {
+    const d = await (await fetch(API + '/backup/restore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dir: name }) })).json();
+    if (d.error) throw new Error(d.error);
+    alert(`${t('backup_result')}：${t('backup_pass')} ${d.pass} / ${t('backup_fail')} ${d.fail}`);
+  } catch (e) { alert(e.message); }
+}
+
+// ═══ 报告生成 ═══
+let lastReportMd = null;
+let lastReportFilename = 'report.md';
+
+async function loadReport(el) {
+  setActive(el);
+  const title = t('report');
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>📄 ${title}</h1></div>
+    <div class="card"><h3>📄 ${t('report_desc')}</h3>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
+        <div>
+          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_days')}</div>
+          <select id="reportDays" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+            <option value="1">${t('report_days_1')}</option>
+            <option value="7" selected>${t('report_days_7')}</option>
+            <option value="30">${t('report_days_30')}</option>
+            <option value="90">${t('report_days_90')}</option>
+          </select>
+        </div>
+        <div>
+          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_sections')}</div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap">
+            ${[['system','report_sec_system'],['usage','report_sec_usage'],['client','report_sec_client'],['issues','report_sec_issues'],['avail','report_sec_avail'],['backup','report_sec_backup'],['pii','report_sec_pii']]
+              .map(([k,kk]) => `<label style="display:flex;align-items:center;gap:5px;color:#c9d1d9;font-size:0.85em;cursor:pointer"><input type="checkbox" class="report-sec" value="${k}" checked> ${t(kk)}</label>`).join('')}
+          </div>
+        </div>
+        <button onclick="generateReport()" style="background:#1f6feb;color:#fff;border:none;padding:9px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_generate')}</button>
+      </div>
+      <p style="color:#8b949e;font-size:0.8em;margin-top:10px">🌐 ${t('report_lang')} · 📂 <span id="reportRetention" style="color:#58a6ff">—</span></p>
+    </div>
+    <div class="card"><h3>${t('report_preview')}</h3>
+      <div id="reportToolbar" style="display:none;margin-bottom:10px">
+        <button onclick="downloadReport()" style="background:#238636;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_download')}</button>
+      </div>
+      <div id="reportPreview"><p class="loading">${t('report_none')}</p></div>
+    </div>
+    <div class="card"><h3>📂 ${t('report_history')}</h3>
+      <p style="color:#8b949e;font-size:0.85em;margin-bottom:10px">${t('report_history_desc')}</p>
+      <div id="reportHistory"><p class="loading">${t('loading')}</p></div>
+    </div>`;
+  refreshReportHistory();
+}
+
+async function generateReport() {
+  const preview = document.getElementById('reportPreview');
+  const toolbar = document.getElementById('reportToolbar');
+  preview.innerHTML = `<p class="loading">${t('report_generating')}</p>`;
+  try {
+    const days = document.getElementById('reportDays').value;
+    const sections = [...document.querySelectorAll('.report-sec:checked')].map(c => c.value).join(',');
+    const q = new URLSearchParams({ days, lang: LANG, sections });
+    const d = await (await fetch(API + '/report?' + q.toString())).json();
+    if (d.error) throw new Error(d.error);
+    lastReportMd = d.markdown;
+    lastReportFilename = d.filename || 'report.md';
+    if (toolbar) toolbar.style.display = 'block';
+    preview.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:14px;color:#c9d1d9;font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
+    refreshReportHistory();
+  } catch (e) {
+    preview.innerHTML = `<p class="error">${e.message}</p>`;
+  }
+}
+
+function downloadReport() {
+  if (!lastReportMd) { alert(t('report_generate')); return; }
+  const blob = new Blob(['\ufeff' + lastReportMd], { type: 'text/markdown;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = lastReportFilename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+// ═══ 报告历史 / 保留策略 ═══
+function retentionText(s) {
+  const tpl = (s && s.retentionMode === 'days') ? t('report_retention_days_text') : t('report_retention_count_text');
+  return tpl.replace('{n}', (s && s.retentionValue) || 20);
+}
+
+async function refreshReportHistory() {
+  const el = document.getElementById('reportHistory');
+  try {
+    const d = await (await fetch(API + '/report/list')).json();
+    if (d.error) throw new Error(d.error);
+    const rp = document.getElementById('reportRetention');
+    if (rp) rp.textContent = retentionText(d.settings);
+    const items = d.items || [];
+    if (!el) return;
+    if (!items.length) { el.innerHTML = `<p class="loading">${t('report_no_history')}</p>`; return; }
+    const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    el.innerHTML = `<table>
+      <tr><th style="width:42%">${t('backup_files')}</th><th style="width:26%">${t('backup_time')}</th><th style="width:12%">${t('report_size')}</th><th>${t('action')}</th></tr>
+      ${items.map(r => `<tr>
+        <td><code>${esc(r.name)}</code></td>
+        <td style="color:#8b949e">${new Date(r.mtime).toLocaleString()}</td>
+        <td style="color:#8b949e">${(r.size / 1024).toFixed(1)} KB</td>
+        <td style="white-space:nowrap">
+          <button onclick="viewReport('${esc(r.name)}')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;margin-right:4px">${t('report_view')}</button>
+          <button onclick="downloadReportFile('${esc(r.name)}')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;margin-right:4px">${t('report_download_file')}</button>
+          <button onclick="deleteReportFile('${esc(r.name)}')" style="background:#3b0d0d;color:#f85149;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('report_delete')}</button>
+        </td>
+      </tr>`).join('')}
+    </table>`;
+  } catch (e) {
+    if (el) el.innerHTML = `<p class="error">${e.message}</p>`;
+  }
+}
+
+async function viewReport(name) {
+  const preview = document.getElementById('reportPreview');
+  const toolbar = document.getElementById('reportToolbar');
+  if (preview) preview.innerHTML = `<p class="loading">${t('loading')}</p>`;
+  try {
+    const d = await (await fetch(API + '/report/file/' + encodeURIComponent(name))).json();
+    if (d.error) throw new Error(d.error);
+    lastReportMd = d.markdown;
+    lastReportFilename = d.name;
+    if (toolbar) toolbar.style.display = 'block';
+    if (preview) preview.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:14px;color:#c9d1d9;font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
+  } catch (e) {
+    if (preview) preview.innerHTML = `<p class="error">${e.message}</p>`;
+  }
+}
+
+function downloadReportFile(name) {
+  const a = document.createElement('a');
+  a.href = API + '/report/file/' + encodeURIComponent(name) + '/download';
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function deleteReportFile(name) {
+  if (!confirm(t('report_delete_confirm') + name + '」？')) return;
+  try {
+    const d = await (await fetch(API + '/report/file/' + encodeURIComponent(name), { method: 'DELETE' })).json();
+    if (d.error) throw new Error(d.error);
+    refreshReportHistory();
+  } catch (e) { alert(e.message); }
+}
+
+// ═══ 系统设置里的报告保留策略 ═══
+async function loadReportSettingsForm() {
+  try {
+    const d = await (await fetch(API + '/report/settings')).json();
+    const mode = document.getElementById('retentionMode');
+    const val = document.getElementById('retentionValue');
+    if (mode) mode.value = d.retentionMode || 'count';
+    if (val) val.value = d.retentionValue || 20;
+  } catch (e) {}
+}
+
+async function saveReportRetention() {
+  const mode = document.getElementById('retentionMode').value;
+  const val = parseInt(document.getElementById('retentionValue').value, 10) || 20;
+  const msg = document.getElementById('retentionMsg');
+  try {
+    const d = await (await fetch(API + '/report/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ retentionMode: mode, retentionValue: val }),
+    })).json();
+    if (d.error) throw new Error(d.error);
+    if (msg) { msg.style.color = '#56d364'; msg.textContent = t('report_retention_saved').replace('{n}', d.removed ?? 0); }
+  } catch (e) {
+    if (msg) { msg.style.color = '#f85149'; msg.textContent = e.message; }
+  }
+}
+
+// ═══ 可用性测试 ═══
+function escHtml(s) { return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function availCard(r) {
+  const ok = r.status === 'ok', fail = r.status === 'fail';
+  const icon = ok ? '✅' : (fail ? '❌' : '⚠️');
+  const color = ok ? '#56d364' : (fail ? '#f85149' : '#d29922');
+  const lat = (r.latency_ms != null) ? `<span style="font-size:0.78em;color:#8b949e">${r.latency_ms} ms</span>` : '';
+  return `<div class="svc-card" id="avail-${r.id}">
+    <div class="svc-name">${icon} ${escHtml(r.name)}</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+      <span style="font-size:0.78em;font-weight:600;color:${color}">${r.status.toUpperCase()}</span>${lat}
+    </div>
+    <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:0.78em;color:#c9d1d9;min-height:34px;max-height:110px;overflow:auto;white-space:pre-wrap;word-break:break-all" id="avail-log-${r.id}">${escHtml(r.detail || '')}</div>
+    <button onclick="runOneAvail('${r.id}')" style="margin-top:8px;background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">▶ ${t('avail_test')}</button>
+  </div>`;
+}
+
+function renderAvail(d) {
+  const s = d.summary || {};
+  const sumEl = document.getElementById('availSummary');
+  if (sumEl) sumEl.innerHTML = `✅ <span style="color:#56d364">${s.ok ?? 0}</span> · ❌ <span style="color:#f85149">${s.fail ?? 0}</span> · <span style="color:#8b949e">/ ${s.total ?? 0}</span>`;
+  const grid = document.getElementById('availGrid');
+  if (grid) grid.innerHTML = (d.results || []).map(availCard).join('');
+}
+
+async function loadAvailability(el) {
+  setActive(el);
+  document.getElementById('main').innerHTML = `
+    <div class="topbar"><h1>🩺 ${t('availability')}</h1></div>
+    <div class="card"><h3>🩺 ${t('avail_desc')}</h3>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button onclick="runAllAvail()" style="background:#1f6feb;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('avail_run_all')}</button>
+        <span id="availInterval" style="color:#8b949e;font-size:0.85em"></span>
+        <span id="availSummary" style="font-size:0.9em"></span>
+      </div>
+    </div>
+    <div class="card"><h3>📋 ${t('avail_result')}</h3><div class="status-grid" id="availGrid"><p class="loading">${t('loading')}</p></div></div>`;
+  try {
+    const d = await (await fetch(API + '/availability')).json();
+    const iv = document.getElementById('availInterval');
+    if (iv) iv.textContent = `${t('avail_interval')} ${d.interval_min} ${t('avail_min')}`;
+    if (d.last && d.last.results && d.last.results.length) renderAvail(d.last);
+    else document.getElementById('availGrid').innerHTML = `<p class="loading">${t('avail_none')}</p>`;
+  } catch (e) {
+    document.getElementById('availGrid').innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+async function runAllAvail() {
+  const grid = document.getElementById('availGrid');
+  if (grid) grid.innerHTML = `<p class="loading">${t('avail_running')}</p>`;
+  try {
+    const d = await (await fetch(API + '/availability/run', { method: 'POST' })).json();
+    renderAvail(d);
+  } catch (e) {
+    if (grid) grid.innerHTML = `<div class="error">${e.message}</div>`;
+  }
+}
+
+async function runOneAvail(id) {
+  const logEl = document.getElementById('avail-log-' + id);
+  if (logEl) logEl.textContent = t('avail_running');
+  try {
+    const r = await (await fetch(API + '/availability/test/' + id, { method: 'POST' })).json();
+    const card = document.getElementById('avail-' + id);
+    if (card) card.outerHTML = availCard(r);
+  } catch (e) {
+    if (logEl) logEl.textContent = e.message;
+  }
+}
+
+async function loadGhost(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117:8090/ghost/';
+  const title = t('ghost');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/ghost/overview')).json();
+    if (d.error) throw new Error(d.error);
+    const stats = [
+      { value: d.posts ?? '—', label: t('ghost_posts') },
+      { value: d.pages ?? '—', label: t('ghost_pages') },
+      { value: d.members ?? '—', label: t('ghost_members') },
+      { value: d.tags ?? '—', label: t('ghost_tags') },
+    ];
+    const cards = stats.map(s => `<div class="stat total"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1></div>
+      <div class="stats-bar">${cards}</div>
+      <div class="card" style="text-align:center">
+        <button onclick="ghostAutoLogin(this)" style="display:inline-block;background:#1f6feb;color:#fff;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-weight:600;font-size:1em">${t('open_ghost')} ↗</button>
+        <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('open_hint')}</p>
+      </div>`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('📰', title, url, e.message, t('open_ghost'));
+  }
+}
+
+async function ghostAutoLogin(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = t('ghost_logging_in'); }
+  try {
+    const r = await fetch(API + '/ghost/auto-login', { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    window.open(d.url, '_blank');
+  } catch (e) {
+    alert(t('ghost_login_fail') + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = t('open_ghost') + ' ↗'; }
+  }
+}
+
+async function loadDify(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117';
+  const title = t('dify');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/dify/overview')).json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('main').innerHTML = renderProductOverview('🤖', title, url, [
+      { value: d.apps ?? '—', label: t('dify_apps') },
+      { value: d.workspaces ?? '—', label: t('dify_workspaces') },
+      { value: d.version ?? '—', label: t('dify_version') },
+    ], t('open_dify'));
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('🤖', title, url, e.message, t('open_dify'));
+  }
+}
+
+async function loadGitea(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117:3002';
+  const title = t('gitea');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/gitea/overview')).json();
+    if (d.error) throw new Error(d.error);
+    // 仓库列表
+    const repos = d.repos_list || [];
+    const repoRows = repos.map(r => {
+      const isSync = (r.name || '').includes('deepchat-sync');
+      const sizeTxt = r.size_kb >= 1024 ? (r.size_kb / 1024).toFixed(1) + ' MB' : r.size_kb + ' KB';
+      const upd = r.updated_at ? new Date(r.updated_at).toLocaleString() : '—';
+      return `<tr>
+        <td>${r.html_url ? `<a class="ext-link" href="${r.html_url}" target="_blank"><code>${r.name || '—'}</code></a>` : `<code>${r.name || '—'}</code>`}${isSync ? ' <span class="admin-badge">sync</span>' : ''}</td>
+        <td style="color:#8b949e">${r.description || '—'}</td>
+        <td>${r.language || '—'}</td>
+        <td>${sizeTxt}</td>
+        <td>${upd}</td>
+      </tr>`;
+    }).join('');
+    // deepchat-sync 上次执行
+    let syncHtml = '';
+    if (d.sync_last_run) {
+      const s = d.sync_last_run;
+      const statusTxt = s.conclusion === 'success' ? t('sync_success') : (s.status === 'running' ? t('sync_running') : t('sync_failed'));
+      const statusColor = s.conclusion === 'success' ? '#56d364' : (s.status === 'running' ? '#d29922' : '#f85149');
+      const done = s.completed_at ? new Date(s.completed_at).toLocaleString() : '—';
+      syncHtml = `<div class="card"><h3>🔄 ${t('sync_last_run')} <span class="admin-badge">deepchat-sync</span></h3>
+        <table>
+          <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
+          <tr><td>${t('last_updated')}</td><td>${done}</td></tr>
+          ${s.display_title ? `<tr><td>${t('repo_desc')}</td><td style="color:#8b949e">${s.display_title}</td></tr>` : ''}
+        </table>
+      </div>`;
+    }
+    document.getElementById('main').innerHTML = renderProductOverview('📦', title, url, [
+      { value: d.repos ?? '—', label: t('gitea_repos') },
+      { value: d.users ?? '—', label: t('gitea_users') },
+      { value: d.orgs ?? '—', label: t('gitea_orgs') },
+      { value: d.issues ?? '—', label: t('gitea_issues') },
+    ], t('open_gitea')) +
+      `<div class="card"><h3>📁 ${t('repos_list')}（${repos.length}）</h3>
+        ${repoRows ? `<table><tr><th>${t('name')}</th><th>${t('repo_desc')}</th><th>${t('repo_lang')}</th><th>${t('size')}</th><th>${t('repo_updated')}</th></tr>${repoRows}</table>` : `<p class="loading">${t('no_repos')}</p>`}
+      </div>` +
+      syncHtml +
+      `<div class="card"><h3>${t('gitea_version')}</h3><p style="color:#8b949e">Gitea <code>${d.version || '—'}</code></p></div>`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('📦', title, url, e.message, t('open_gitea'));
+  }
+}
+
+async function loadKeycloak(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117:9090';
+  const title = t('keycloak');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/keycloak/overview')).json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('main').innerHTML = renderProductOverview('🔐', title, url, [
+      { value: d.users ?? '—', label: t('kc_users') },
+      { value: d.clients ?? '—', label: t('kc_clients') },
+      { value: d.roles ?? '—', label: t('kc_roles') },
+      { value: (d.idps || []).length, label: t('kc_idps') },
+    ], t('open_keycloak'));
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('🔐', title, url, e.message, t('open_keycloak'));
+  }
+}
+
+async function loadUpdate(el) {
+  setActive(el);
+  const url = 'http://192.168.31.117:8091';
+  const title = t('update');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>⬇️ ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/update/overview')).json();
+    if (d.error) throw new Error(d.error);
+    const fmtSize = s => s >= 1048576 ? (s / 1048576).toFixed(1) + ' MB' : (s / 1024).toFixed(1) + ' KB';
+    const fmtTime = ts => ts ? new Date(ts * 1000).toLocaleString() : '—';
+    const files = d.files || [];
+    const rows = files.map(f => `<tr><td><code>${f.name}</code></td><td>${fmtSize(f.size)}</td><td>${fmtTime(f.mtime)}</td></tr>`).join('');
+    document.getElementById('main').innerHTML = `
+      <div class="topbar"><h1>⬇️ ${title}</h1></div>
+      <div class="stats-bar">
+        <div class="stat total"><div class="value">${d.version || '—'}</div><div class="label">${t('update_version')}</div></div>
+        <div class="stat total"><div class="value">${files.length}</div><div class="label">${t('installers')}</div></div>
+      </div>
+      <div class="card"><h3>📦 ${t('installers')}（${files.length}）</h3>
+        ${rows ? `<table><tr><th>${t('name')}</th><th>${t('size')}</th><th>${t('last_updated')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_files')}</p>`}
+      </div>
+      <div class="card"><h3>🕒 ${t('last_updated')}</h3><p style="color:#8b949e">${fmtTime(d.last_updated)}</p></div>
+      ${openAdminBtn(url, t('open_update'))}`;
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('⬇️', title, url, e.message, t('open_update'));
+  }
+}
+
+// ═══ Helpers ═══
+function setActive(el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  if (el && el.classList) el.classList.add('active');
+}
+
+// ═══ 侧边栏分组折叠 ═══
+const NAV_GROUP_KEY = 'ai-center-nav-groups';
+function toggleGroup(name) {
+  const g = document.querySelector('.nav-group[data-group="' + name + '"]');
+  if (!g) return;
+  g.classList.toggle('collapsed');
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(NAV_GROUP_KEY) || '{}'); } catch (e) {}
+  state[name] = g.classList.contains('collapsed');
+  localStorage.setItem(NAV_GROUP_KEY, JSON.stringify(state));
+}
+function initNavGroups() {
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(NAV_GROUP_KEY) || '{}'); } catch (e) {}
+  document.querySelectorAll('.nav-group').forEach(g => {
+    const name = g.getAttribute('data-group');
+    if (state[name]) g.classList.add('collapsed');
+  });
+}
+
+async function loadUserInfo() {
+  try {
+    const resp = await fetch(API + '/me');
+    if (resp.ok) {
+      const data = await resp.json();
+      const el = document.getElementById('username');
+      if (el) el.textContent = data.username || '—';
+    }
+  } catch(e) {}
+}
+
+// ═══ Init ═══
+applyDir();
+applyI18n();
+initNavGroups();
+loadDashboard();
+loadUserInfo();
+</script>
+</body>
+</html>

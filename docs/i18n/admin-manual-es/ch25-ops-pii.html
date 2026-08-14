@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 25 — Enmascaramiento de PII (Presidio) · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte II · Administración</div>
+      <h1>Enmascaramiento de PII (Presidio)</h1>
+      <div class="sub">La información sensible se enmascara automáticamente antes de salir de la intranet.</div>
+    </div>
+
+    <h2>25.1 Enmascarado en dos capas</h2>
+    <table>
+      <tr><th>Capa</th><th>Capacidad</th></tr>
+      <tr><td>Regex integrada de LiteLLM (<code>litellm_content_filter</code>)</td><td>Números de móvil, DNI, tarjetas bancarias, correos, código unificado de crédito social, pasaportes, IPv4, etc.; al coincidir se sustituyen por <code>[xxx_REDACTED]</code>; si coincide con la lista negra de palabras sensibles se rechaza con BLOCK</td></tr>
+      <tr><td>Microsoft Presidio</td><td>Entidades de granularidad más fina (nombres de personas en inglés, correos, etc.), <code>presidio-analyzer</code> 5002 / <code>presidio-anonymizer</code> 5001</td></tr>
+    </table>
+
+    <h2>25.2 Reglas de regex integradas</h2>
+    <table>
+      <tr><th>Regla</th><th>Regex</th><th>Tipo</th></tr>
+      <tr><td>Móvil de China</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+      <tr><td>Número de DNI</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+      <tr><td>Número de tarjeta bancaria</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+      <tr><td>Correo electrónico</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+      <tr><td>Código unificado de crédito social</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+      <tr><td>Número de pasaporte</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+      <tr><td>IPv4</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+    </table>
+    <p>La lista negra de palabras sensibles se ajusta en <code>blocked_words</code> de <code>litellm-config.yaml</code> según la empresa (<code>secreto interno</code>, <code>secreto comercial</code>, etc.).</p>
+
+    <h2>25.3 Activar Presidio (actualmente comentado temporalmente)</h2>
+    <p>Por el cambio de la API de guardrail de la nueva versión de LiteLLM, el bloque de Presidio está comentado actualmente. Puntos clave para activarlo:</p>
+    <ul>
+      <li>Los guardrails necesitan <code>default_on: true</code> para aplicarse globalmente;</li>
+      <li>Las variables de entorno de endpoints <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code> deben rellenarse con la base URL (LiteLLM añade automáticamente <code>/analyze</code> y <code>/anonymize</code>; con ruta incluida quedaría <code>/analyze/analyze</code> y daría 404).</li>
+    </ul>
+
+    <div class="warn">⚠️ La imagen pesa unos 965MB y la descarga es muy lenta en China (medida en torno a 1 hora); si no se puede descargar, usa primero la regex integrada (ya cubre la PII central en chino).</div>
+
+    <h2>25.4 Verificación</h2>
+    <p>Envía una petición con un número de móvil/correo → en la respuesta del modelo el valor original se sustituye por <code>[REDACTED]</code>; envía una petición que contenga «secreto interno» → devuelve directamente <code>Content blocked</code>.</p>
+
+    <div class="docbox"><span class="label">📖 Documentación oficial:</span>Microsoft Presidio <span class="url">https://microsoft.github.io/presidio/</span> · Código fuente <span class="url">https://github.com/microsoft/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch25';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

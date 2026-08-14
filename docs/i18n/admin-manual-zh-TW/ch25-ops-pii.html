@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 25 章 PII 遮蔽（Presidio）· AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部分 · 管理篇</div>
+      <h1>PII 遮蔽（Presidio）</h1>
+      <div class="sub">敏感資訊在出內網前自動遮蔽。</div>
+    </div>
+
+    <h2>25.1 兩層遮蔽</h2>
+    <table>
+      <tr><th>層</th><th>能力</th></tr>
+      <tr><td>LiteLLM 內建正則（<code>litellm_content_filter</code>）</td><td>手機號、身分證、銀行卡、郵箱、統一社會信用程式碼、護照、IPv4 等，命中即替換 <code>[xxx_REDACTED]</code>；敏感詞黑名單命中即 BLOCK 拒絕</td></tr>
+      <tr><td>Microsoft Presidio</td><td>更細粒度實體（英文人名、郵箱等），<code>presidio-analyzer</code> 5002 / <code>presidio-anonymizer</code> 5001</td></tr>
+    </table>
+
+    <h2>25.2 內建正則規則</h2>
+    <table>
+      <tr><th>規則</th><th>正則</th><th>型別</th></tr>
+      <tr><td>中國手機號</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+      <tr><td>身分證號</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+      <tr><td>銀行卡號</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+      <tr><td>郵箱</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+      <tr><td>統一社會信用程式碼</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+      <tr><td>護照號</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+      <tr><td>IPv4</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+    </table>
+    <p>敏感詞黑名單在 <code>litellm-config.yaml</code> 的 <code>blocked_words</code> 按公司實際增刪（<code>內部機密</code>、<code>商業機密</code> 等）。</p>
+
+    <h2>25.3 啟用 Presidio（當前暫註釋）</h2>
+    <p>新版 LiteLLM guardrail API 變更，Presidio 段當前註釋。啟用要點：</p>
+    <ul>
+      <li>guardrails 加 <code>default_on: true</code> 才全域生效；</li>
+      <li>端點環境變數 <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code> 必須填 base URL（LiteLLM 自動拼 <code>/analyze</code>、<code>/anonymize</code>，帶路徑會變 <code>/analyze/analyze</code> 404）。</li>
+    </ul>
+
+    <div class="warn">⚠️ 映像約 965MB，國內拉取很慢（實測約 1 小時），拉不動可先用內建正則（已覆蓋中文核心 PII）。</div>
+
+    <h2>25.4 驗證</h2>
+    <p>發含手機號/郵箱的請求 → 模型回覆中原始值被替換為 <code>[REDACTED]</code>；發含「內部機密」的請求 → 直接返回 <code>Content blocked</code>。</p>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>Microsoft Presidio <span class="url">https://microsoft.github.io/presidio/</span> · 原始碼 <span class="url">https://github.com/microsoft/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch25';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

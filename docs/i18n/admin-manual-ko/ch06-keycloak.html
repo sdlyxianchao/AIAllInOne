@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제6장 Keycloak: Realm, 사용자 및 AD · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제1부 · 배포편</div>
+      <h1>Keycloak: Realm, 사용자 및 AD</h1>
+      <div class="sub">Realm 생성, 로컬 계정 생성, 또는 Active Directory에서 도메인 계정 가져오기——모든 제품 SSO의 기반.</div>
+    </div>
+
+    <div class="note">📌 접속: 호스트 <code>http://127.0.0.1:9090</code>, 내부망 <code>http://&lt;서버-IP&gt;:9090</code>. 데이터는 명명 볼륨 <code>keycloak-data</code>에 저장되어 컨테이너 재생성 시에도 유지됩니다. 자격 증명은 <code>.env.windows</code>의 <code>KEYCLOAK_ADMIN</code> / <code>KEYCLOAK_ADMIN_PASSWORD</code> 참조.</div>
+
+    <h2>6.1 Realm 생성</h2>
+    <ol>
+      <li>브라우저에서 <code>http://127.0.0.1:9090</code> 열기 → Administration Console → 관리자 로그인;</li>
+      <li>좌측 상단 드롭다운 → <b>Create Realm</b> → Realm name에 <code>enterprise-ai</code> 입력 → Create.</li>
+    </ol>
+
+    <h2>6.2 방식 A: 로컬 계정 생성 (AD 없는 소규모 팀/테스트)</h2>
+    <ol>
+      <li><b>Groups</b> → Create Group → <code>ai-admin</code>; 이어서 <code>ai-user</code> 생성;</li>
+      <li><b>Users</b> → Add user → 사용자명 → Create;</li>
+      <li>Credentials 탭 → 비밀번호 설정 → Temporary 끄기;</li>
+      <li>Groups 탭 → <code>ai-user</code> 그룹에 추가.</li>
+    </ol>
+
+    <h2>6.3 방식 B: Active Directory에서 계정 가져오기 (권장)</h2>
+    <p>회사에 이미 Windows AD 도메인 컨트롤러가 있으면 직원이 도메인 계정으로 로그인하므로 Keycloak에 수동으로 계정을 만들 필요가 없습니다. 전제: Docker 컨테이너에서 도메인 컨트롤러 네트워크까지 연결되어야 함 (네트워크 토폴로지, Hyper-V Internal Switch, 포트 포워딩은 《Keycloak AD 통합 가이드》 <code>windows-ad-integration.html</code> 참조).</p>
+    <div class="note">📌 필요한 AD 계정: 서비스 계정 <code>svc_keycloak</code> (비밀번호 만료 없음, LDAP 바인딩용) + 테스트 도메인 사용자 2명 (동기화 검증).</div>
+
+    <h3>LDAP 사용자 페더레이션 생성</h3>
+    <ol>
+      <li>enterprise-ai Realm → 좌측 <b>User Federation</b> → Add provider → <b>ldap</b>;</li>
+      <li>아래 표대로 입력.</li>
+    </ol>
+    <table>
+      <tr><th>설정 항목</th><th>값</th><th>설명</th></tr>
+      <tr><td>Vendor</td><td><b>Active Directory</b></td><td>AD 선택, Other 선택 금지 (그렇지 않으면 objectGUID 미인식)</td></tr>
+      <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V 경유 포트 포워딩; 운영 환경은 <code>ldap://dc.회사-도메인:389</code> 입력</td></tr>
+      <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>LDAP 389 또는 LDAPS 636</td></tr>
+      <tr><td>Bind type</td><td><b>simple</b></td><td>사용자명+비밀번호 인증</td></tr>
+      <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>반드시 LDAP DN 형식</b>, <s>DOMAIN\사용자</s> 사용 금지</td></tr>
+      <tr><td>Bind credentials</td><td><code>svc_keycloak 비밀번호</code></td><td><code>.env.windows</code> 참조</td></tr>
+      <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>읽기 전용, AD에 쓰기 금지</td></tr>
+      <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>하위 OU가 있으면 <code>DC=testcompany,DC=local</code>로 변경</td></tr>
+      <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>cn 입력 금지</b></td></tr>
+      <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>엔트리 명명 속성</td></tr>
+      <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>AD 불변 고유 식별자</td></tr>
+      <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>쉼표 구분</td></tr>
+      <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>One Level 선택 금지</b> (하위 OU 검색 불가)</td></tr>
+      <tr><td>Pagination</td><td><b>On</b></td><td>사용자 많을 때 분할 가져오기</td></tr>
+      <tr><td>Referral</td><td><b>ignore</b></td><td>존재하지 않는 도메인 컨트롤러로 이어지는 것 방지</td></tr>
+      <tr><td>Import users</td><td><b>On</b></td><td>전체 동기화 가져오기</td></tr>
+      <tr><td>Sync Registrations</td><td><b>On</b></td><td>최초 로그인 즉시 동기화</td></tr>
+    </table>
+    <p>Save → <b>Synchronize all users</b> → 동기화 완료 대기.</p>
+
+    <div class="warn">⚠️ 흔한 입력 오류:
+      <ul>
+        <li>Bind DN은 <b>LDAP 형식</b> (<code>CN=svc_keycloak,CN=Users,DC=xxx</code>), <s>DOMAIN\사용자</s> 아님;</li>
+        <li>Username LDAP attribute = <code>sAMAccountName</code>, <code>cn</code> 아님;</li>
+        <li>Search scope = <b>Subtree</b>;</li>
+        <li><b>CN에 공백이 있으면 그대로 유지</b>: 표시 이름에 공백이 있으면 (예: <code>ai all in one admin</code> 가운데가 공백), Bind DN을 반드시 <code>CN=ai all in one admin,...</code>으로 써야 하며, 밑줄로 바꾸면 연결되지 않습니다.</li>
+      </ul>
+    </div>
+
+    <h3>AD 로그인 검증</h3>
+    <ol>
+      <li>시크릿 창에서 <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code> 열기;</li>
+      <li>도메인 계정으로 로그인 (사용자명 <code>aitest1</code> 또는 <code>aitest1@chxia.lab</code> UPN 모두 가능);</li>
+      <li>Account Console로 성공적으로 이동하면 통과.</li>
+    </ol>
+
+    <h2>6.4 기타 기업 신원 소스 (부록 N 요약)</h2>
+    <p>Keycloak은 여러 신원 소스를 지원하며 모두 같은 <code>enterprise-ai</code> Realm에 연결합니다:</p>
+    <table>
+      <tr><th>신원 소스</th><th>연동 방식</th><th>핵심</th></tr>
+      <tr><td>Microsoft Entra ID (구 Azure AD)</td><td>Identity Providers → OpenID Connect v1.0</td><td>Azure 앱 등록으로 client id/secret 획득, redirect URI <code>/realms/enterprise-ai/broker/entra-id/endpoint</code></td></tr>
+      <tr><td>Google Workspace</td><td>Identity Providers → Google (내장)</td><td>Mapper로 <code>hd=도메인</code> 추가해 도메인 제한 가능</td></tr>
+      <tr><td>GitHub</td><td>Identity Providers → GitHub (내장)</td><td>OAuth App 콜백 <code>/broker/github/endpoint</code></td></tr>
+      <tr><td>범용 LDAP (OpenLDAP/FreeIPA)</td><td>User Federation → ldap</td><td>Vendor는 Other 선택, Username attribute는 <code>uid</code> 사용</td></tr>
+      <tr><td>범용 SAML 2.0 (Okta/ADFS)</td><td>Identity Providers → SAML v2.0</td><td>IdP 메타데이터 URL 붙여넣기로 자동 채움</td></tr>
+    </table>
+    <div class="tip">✅ 다중 신원 소스 공존: Authentication → Browser flow에 Identity Provider Redirector를 추가해 이메일 도메인에 따라 자동으로 IdP 선택 (<code>@회사.com</code>→AD, <code>@회사.onmicrosoft.com</code>→Entra ID).</div>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>Keycloak 공식 문서 <span class="url">https://www.keycloak.org/documentation</span> · 서버 관리 가이드 <span class="url">https://www.keycloak.org/server/</span> · LDAP 페더레이션 <span class="url">https://www.keycloak.org/docs/latest/server_admin/#_ldap</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

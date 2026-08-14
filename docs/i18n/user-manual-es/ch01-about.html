@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 1 — Conoce la plataforma · AI AllInOne Manual del usuario</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Inicio rápido</div>
+      <h1>Conoce la plataforma</h1>
+      <div class="sub">En 3 minutos entiende: qué es esta plataforma, qué puedes hacer con ella y por dónde entrar.</div>
+    </div>
+
+    <div class="note">📌 Nota: en este manual, <code>IP</code> se refiere a la dirección del servidor de la intranet de la empresa (ejemplo <code>192.168.31.117</code>; en la práctica, lo que indique el administrador). Todas las direcciones usan <b>IP de intranet</b>; no uses <code>localhost</code> ni <code>127.0.0.1</code>.</div>
+
+    <h2>1.1 Qué es la plataforma</h2>
+    <p>«AI AllInOne» es una plataforma corporativa de IA desplegada en la intranet de la empresa, que unifica en la intranet las capacidades de los modelos grandes (DeepSeek, GPT, Claude, etc.) para que los empleados puedan usarlos con <b>una sola cuenta</b>. No necesitas preocuparte por los servidores, modelos ni claves que hay detrás — solo recuerda tres puntos de entrada.</p>
+
+    <div class="svgbox">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:720px;">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker></defs>
+        <g><rect x="250" y="20" width="220" height="50" rx="10" fill="#2a210a" stroke="#d29922"/></g>
+        <text x="360" y="50" text-anchor="middle" fill="#d29922" font-size="14" font-weight="700">📰 AI All In One Hub (portal)</text>
+        <path d="M 360 70 L 360 92" stroke="#d29922" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="70" y="95" width="280" height="56" rx="10" fill="#0a1e3a" stroke="#58a6ff"/></g>
+        <text x="210" y="120" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="700">💬 DeepChat (conversación de escritorio)</text>
+        <text x="210" y="138" text-anchor="middle" fill="#8b949e" font-size="10">Instalar desde el centro de descargas del portal</text>
+        <g><rect x="370" y="95" width="280" height="56" rx="10" fill="#0a1e3a" stroke="#58a6ff"/></g>
+        <text x="510" y="120" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="700">🤖 Dify (aplicaciones web / base de conocimiento)</text>
+        <text x="510" y="138" text-anchor="middle" fill="#8b949e" font-size="10">http://IP</text>
+        <path d="M 360 92 L 210 120" stroke="#d29922" stroke-width="1" stroke-dasharray="4"/>
+        <path d="M 360 92 L 510 120" stroke="#d29922" stroke-width="1" stroke-dasharray="4"/>
+        <text x="360" y="178" text-anchor="middle" fill="#8b949e" font-size="11">Tres puntos de entrada: el portal (Hub) es el punto de partida; DeepChat y Dify son las dos herramientas</text>
+      </svg>
+      <div class="cap">Figura 1: relación entre los tres puntos de entrada</div>
+    </div>
+
+    <h2>1.2 Qué puedo hacer con la plataforma</h2>
+    <table>
+      <tr><th>Qué quieres hacer</th><th>Cuál usar</th><th>Dónde abrirlo</th></tr>
+      <tr><td>Conversar a diario como con ChatGPT, redactar documentos, traducir, corregir código</td><td>💬 DeepChat</td><td>Cliente de escritorio (primero descárgalo e instálalo desde el portal)</td></tr>
+      <tr><td>Usar aplicaciones de IA ya preparadas por la empresa (respuestas de atención al cliente, asistentes de aprobación, etc.)</td><td>🤖 Dify</td><td>Navegador <code>http://IP</code></td></tr>
+      <tr><td>Subir documentos para hacer «respuestas con base de conocimiento» (preguntar sobre material interno)</td><td>🤖 Dify</td><td>Navegador <code>http://IP</code></td></tr>
+      <tr><td>Ver noticias, anuncios de la empresa y descargar software</td><td>📰 Portal (Hub)</td><td>Navegador <code>http://IP:8090</code></td></tr>
+      <tr><td>Solicitar por tu cuenta una API Key para conectar herramientas de terceros</td><td>🔑 NewAPI</td><td>Navegador <code>http://IP:3000</code></td></tr>
+    </table>
+
+    <h2>1.3 Cómo elegir entre los tres puntos de entrada</h2>
+    <div class="tip">✅ <b>Para recordarlo en una frase</b>: <b>chatear/redactar/traducir → DeepChat</b>; <b>aplicaciones preparadas por la empresa / base de conocimiento → Dify</b>; <b>buscar cosas / ver anuncios / descargar software → portal Hub</b>. Los tres usan la misma cuenta para iniciar sesión.</div>
+    <p>Método de inicio de sesión: todos los productos usan la <b>cuenta unificada de Keycloak</b> (algunos admiten la cuenta de dominio AD de la empresa, es decir, la misma cuenta con la que enciendes tu equipo). Al hacer clic en «Iniciar sesión» salta automáticamente a la página de inicio unificado; introduces la cuenta una vez y después no hace falta volver a iniciar sesión en los demás productos.</p>
+
+    <h2>1.4 Cómo usar este manual</h2>
+    <ul>
+      <li><b>Si eres nuevo</b>: lee en orden los capítulos 2~4 y empieza instalando DeepChat para usarlo;</li>
+      <li><b>Para conectar herramientas de terceros</b>: lee el capítulo 5 para solicitar la Key;</li>
+      <li><b>Si tienes dudas</b>: consulta primero el FAQ del capítulo 7 y luego pregunta al administrador;</li>
+      <li><b>Lectura obligatoria</b>: capítulo 6 (seguridad de datos) y capítulo 8 (código de conducta), que todos deben cumplir.</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch01';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

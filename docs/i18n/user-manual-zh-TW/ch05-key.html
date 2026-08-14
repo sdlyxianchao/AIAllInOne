@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 5 章 申請 API Key · AI AllInOne 使用者手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">快速開始</div>
+      <h1>申請 API Key</h1>
+      <div class="sub">把公司 AI 能力接入第三方工具，需要一個 API Key。</div>
+    </div>
+
+    <p>如果你要把公司的 AI 能力接入<b>第三方工具</b>（自己的指令碼、其它支援 OpenAI 介面的軟體），需要一個 API Key（<code>sk-</code> 開頭的金鑰）。</p>
+
+    <h2>5.1 登入 NewAPI</h2>
+    <ol>
+      <li>瀏覽器開啟 <code>http://IP:3000</code>；</li>
+      <li>用統一帳號登入（或點「一鍵登入 / OIDC」用網域帳號）。</li>
+    </ol>
+
+    <h2>5.2 新建令牌</h2>
+    <ol>
+      <li>左側選單「<b>API 金鑰 / 令牌</b>」；</li>
+      <li>點「<b>新建令牌</b>」，起名（如 <code>我的指令碼</code>），可設額度、過期時間；</li>
+      <li>儲存後複製生成的 <code>sk-xxxx</code> 字串。<b>只顯示一次，務必立即儲存</b>。</li>
+    </ol>
+
+    <h2>5.3 填入客戶端</h2>
+    <ul>
+      <li><b>API Base URL</b>：<code>http://IP:3000/v1</code></li>
+      <li><b>API Key</b>：剛才複製的 <code>sk-xxxx</code></li>
+    </ul>
+
+    <h2>5.4 常見用法示例</h2>
+    <div class="example">💡 用 curl 測試：<br>
+    <code>curl http://IP:3000/v1/chat/completions -H "Authorization: Bearer sk-xxxx" -H "Content-Type: application/json" -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"你好"}]}'</code></div>
+
+    <div class="warn">⚠️ 額度用完後報「餘額不足」，聯絡管理員申請提額。Key 相當於你的帳號密碼，<b>不要發給別人、不要提交到程式碼倉庫</b>。</div>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>NewAPI 官方文件 <span class="url">https://docs.newapi.pro</span> · 官網 <span class="url">https://www.newapi.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

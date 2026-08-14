@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 1 章 认识平台 · AI AllInOne 用户手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">快速开始</div>
+      <h1>认识平台</h1>
+      <div class="sub">3 分钟了解：这套平台是什么、你能用它做什么、从哪进。</div>
+    </div>
+
+    <div class="note">📌 说明：本手册里的 <code>IP</code> 指公司内网服务器地址（示例 <code>192.168.31.117</code>，实际以管理员公布为准）。所有地址都用<b>内网 IP</b>，不要用 <code>localhost</code> 或 <code>127.0.0.1</code>。</div>
+
+    <h2>1.1 平台是什么</h2>
+    <p>「AI AllInOne」是公司内网部署的一套企业 AI 平台，把大模型（DeepSeek、GPT、Claude 等）的能力统一收口到内网，员工<b>一个账号</b>就能用。你不需要关心背后的服务器、模型、密钥——只需要记住三个入口。</p>
+
+    <div class="svgbox">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:720px;">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker></defs>
+        <g><rect x="250" y="20" width="220" height="50" rx="10" fill="#2a210a" stroke="#d29922"/></g>
+        <text x="360" y="50" text-anchor="middle" fill="#d29922" font-size="14" font-weight="700">📰 AI All In One Hub（门户）</text>
+        <path d="M 360 70 L 360 92" stroke="#d29922" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="70" y="95" width="280" height="56" rx="10" fill="#0a1e3a" stroke="#58a6ff"/></g>
+        <text x="210" y="120" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="700">💬 DeepChat（桌面对话）</text>
+        <text x="210" y="138" text-anchor="middle" fill="#8b949e" font-size="10">从门户下载中心安装</text>
+        <g><rect x="370" y="95" width="280" height="56" rx="10" fill="#0a1e3a" stroke="#58a6ff"/></g>
+        <text x="510" y="120" text-anchor="middle" fill="#58a6ff" font-size="13" font-weight="700">🤖 Dify（Web 应用/知识库）</text>
+        <text x="510" y="138" text-anchor="middle" fill="#8b949e" font-size="10">http://IP</text>
+        <path d="M 360 92 L 210 120" stroke="#d29922" stroke-width="1" stroke-dasharray="4"/>
+        <path d="M 360 92 L 510 120" stroke="#d29922" stroke-width="1" stroke-dasharray="4"/>
+        <text x="360" y="178" text-anchor="middle" fill="#8b949e" font-size="11">三个入口：门户（Hub）是起点，DeepChat 和 Dify 是两个工具</text>
+      </svg>
+      <div class="cap">图 1：三个入口的关系</div>
+    </div>
+
+    <h2>1.2 我能用平台做什么</h2>
+    <table>
+      <tr><th>想做什么</th><th>用哪个</th><th>在哪打开</th></tr>
+      <tr><td>像 ChatGPT 一样日常对话、写文档、翻译、改代码</td><td>💬 DeepChat</td><td>桌面客户端（先从门户下载安装）</td></tr>
+      <tr><td>用公司搭好的 AI 应用（客服问答、审批助手等）</td><td>🤖 Dify</td><td>浏览器 <code>http://IP</code></td></tr>
+      <tr><td>上传文档做「知识库问答」（问内部资料）</td><td>🤖 Dify</td><td>浏览器 <code>http://IP</code></td></tr>
+      <tr><td>看公司新闻、公告、下载软件</td><td>📰 门户（Hub）</td><td>浏览器 <code>http://IP:8090</code></td></tr>
+      <tr><td>自己申请 API Key 接第三方工具</td><td>🔑 NewAPI</td><td>浏览器 <code>http://IP:3000</code></td></tr>
+    </table>
+
+    <h2>1.3 三个入口怎么选</h2>
+    <div class="tip">✅ <b>一句话记住</b>：<b>聊天/写作/翻译 → DeepChat</b>；<b>公司搭好的应用/知识库 → Dify</b>；<b>找东西/看公告/下软件 → 门户 Hub</b>。三个都用同一个账号登录。</div>
+    <p>登录方式：所有产品都走 <b>Keycloak 统一账号</b>（部分支持公司 AD 域账号，即你电脑开机那套账号）。点「登录」自动跳统一登录页，输一次账号，之后各产品无需重复登录。</p>
+
+    <h2>1.4 本手册怎么用</h2>
+    <ul>
+      <li><b>新手</b>：按顺序读第 2~4 章，先装上 DeepChat 用起来；</li>
+      <li><b>要接第三方工具</b>：读第 5 章申请 Key；</li>
+      <li><b>有疑问</b>：先查第 7 章 FAQ，再问管理员；</li>
+      <li><b>必读</b>：第 6 章数据安全、第 8 章行为准则，人人都要遵守。</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch01';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 8 LiteLLM: Verification and Caching · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 1 · Deployment</div>
+      <h1>LiteLLM: Verification and Caching</h1>
+      <div class="sub">Verify the LiteLLM proxy works and enable response caching to save tokens.</div>
+    </div>
+
+    <div class="warn">⚠️ PII redaction (Presidio guardrail) is currently <b>temporarily disabled</b>: the new LiteLLM guardrail configuration format changed, so that section of <code>litellm-config.yaml</code> is commented out, and LiteLLM currently only proxies/forwards (no redaction). See Chapter 25 for how to enable it.</div>
+
+    <h2>8.1 Verify LiteLLM Is Basically Working</h2>
+    <pre><code>curl -X POST http://&lt;server-IP&gt;:4001/v1/chat/completions ^
+  -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}"</code></pre>
+    <div class="warn">⚠️ <code>&lt;LITELLM_MASTER_KEY&gt;</code> is the LiteLLM admin key; use the actual value from <code>.env</code> (not the placeholder itself, otherwise you get 401). And you must use the intranet IP <code>&lt;server-IP&gt;:4001</code>, not <code>127.0.0.1:4001</code> (WSL2 port forwarding issue).</div>
+
+    <h2>8.2 Response Caching (built-in, saves tokens)</h2>
+    <p>LiteLLM already has Redis exact-match caching enabled: completely identical requests (model + messages + parameters) return the cache directly, shared across users, saving tokens.</p>
+    <pre><code># end of litellm-config.yaml
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis   # dedicated cache Redis
+    port: 6379
+    ttl: 3600            # cache for 1 hour</code></pre>
+    <div class="note">Verify: <code>curl http://&lt;server-IP&gt;:4001/cache/ping -H "Authorization: Bearer &lt;KEY&gt;"</code> returns <code>ping_response: true</code>; send the same request twice in a row and the second one drops to milliseconds. Disable caching: set <code>cache: false</code> then restart litellm.</div>
+
+    <h2>8.3 Add More LLM Providers</h2>
+    <ol>
+      <li>In <code>.env</code>, uncomment <code># OPENAI_API_KEY=</code> and fill in the Key;</li>
+      <li>In <code>litellm-config.yaml</code>, uncomment the corresponding model block;</li>
+      <li><code>docker compose up -d litellm</code>.</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>LiteLLM official docs <span class="url">https://docs.litellm.ai</span> · Presidio guardrail <span class="url">https://docs.litellm.ai/docs/proxy/guardrails/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch08';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 11 · MCP Gateway et marché de Skills · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Première partie · Déploiement</div>
+      <h1>MCP Gateway et marché de Skills</h1>
+      <div class="sub">La passerelle qui centralise la gestion des Skills et des outils MCP ; DeepChat/Dify se connecte à une seule adresse pour obtenir tous les outils.</div>
+    </div>
+
+    <div class="note">📌 MCP Gateway est basé sur le SDK officiel <code>@modelcontextprotocol/sdk</code>, expose le point de terminaison Streamable HTTP standard <code>/mcp</code>, a été intégré au <code>docker-compose.yml</code> principal (port 3100) et démarre avec les services principaux. Le code source se trouve dans <code>mcp-gateway/</code>.</div>
+
+    <h2>11.1 Outils intégrés de la plateforme</h2>
+    <table>
+      <tr><th>Outil</th><th>Usage</th></tr>
+      <tr><td><code>platform_time</code></td><td>Renvoie l'heure actuelle du serveur</td></tr>
+      <tr><td><code>platform_echo</code></td><td>Renvoie le texte (test de connectivité)</td></tr>
+      <tr><td><code>platform_services</code></td><td>Liste l'inventaire des services de la plateforme</td></tr>
+    </table>
+
+    <h2>11.2 Agréger des MCP Server externes</h2>
+    <p>Modifiez <code>mcp-gateway/mcp-servers.json</code>, ajoutez des types stdio ou http, redémarrez <code>mcp-gateway</code> pour appliquer :</p>
+    <pre><code>{
+  "servers": [
+    { "name": "filesystem", "type": "stdio", "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/data"] },
+    { "name": "github", "type": "http", "url": "https://api.githubcopilot.com/mcp" }
+  ]
+}</code></pre>
+    <p>Les outils agrégés reçoivent automatiquement le préfixe <code>{serverName}_</code> pour éviter les doublons de noms.</p>
+
+    <h2>11.3 Connexion des clients</h2>
+    <ol>
+      <li>DeepChat : Paramètres → MCP → ajouter un serveur → type « HTTP streamable », URL <code>http://&lt;IP-du-serveur&gt;:3100/mcp</code> ;</li>
+      <li>Workflow Dify : pointez la configuration d'outil personnalisé / d'outil MCP vers la même adresse.</li>
+    </ol>
+    <div class="note">Vérification : <code>curl http://&lt;IP-du-serveur&gt;:3100/health</code> renvoie <code>{"status":"ok"}</code> ; <code>curl -X POST .../mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code> renvoie la liste des outils.</div>
+
+    <h2>11.4 Marché de Skills (distribution intranet de paquets de skills)</h2>
+    <table>
+      <tr><th>Point de terminaison</th><th>Rôle</th></tr>
+      <tr><td><code>/market</code></td><td>Page du marché de Skills (navigation par cartes + téléchargement ZIP + copie de l'adresse d'installation)</td></tr>
+      <tr><td><code>/skills</code></td><td>JSON de l'inventaire des skills (name/description/version)</td></tr>
+      <tr><td><code>/skills/&lt;nom&gt;.zip</code></td><td>Téléchargement du paquet de skill (empaquetage dynamique)</td></tr>
+    </table>
+    <p>Les skills sont placés dans le répertoire <code>mcp-gateway/skills/</code> (sous-répertoires contenant SKILL.md), <b>analysés automatiquement à chaque requête, sans redémarrage</b>. Le skill de démarrage <code>skill-market</code> est inclus.</p>
+    <div class="note">📌 Dans DeepChat, MCP et Skill sont deux notions différentes : MCP est un « outil » (function calling), Skill est un « paquet de compétences d'agent intelligent » (SKILL.md + scripts). Le Skill de DeepChat ne dispose pas d'« URL de marché personnalisée » : il ne prend en charge que l'installation par dossier / ZIP / URL, la distribution intranet s'appuie donc sur l'« installation par URL ».</div>
+
+    <h2>11.5 ⚠️ Nom d'hôte du marché de Skills (paramètre de déploiement, à remplacer impérativement)</h2>
+    <p>« Le gestionnaire de skills » lit le <code>market_url</code> de <code>config.json</code> pour requêter l'inventaire <code>/skills</code>. Deux points clés :</p>
+    <ul>
+      <li><b>Utiliser un nom d'hôte, pas une IP</b> : l'environnement d'agent de DeepChat anonymise l'IP en <code>[IP_ADDRESS_REDACTED]</code>, rendant l'adresse réelle illisible ;</li>
+      <li><b>Le nom d'hôte est un paramètre de déploiement</b> : différent pour chaque déploiement, à ne pas copier tel quel.</li>
+    </ul>
+    <pre><code># mcp-gateway/skills/skill-market/config.json
+{ "market_url": "http://&lt;hôte-marché&gt;:3100" }</code></pre>
+    <h4>Automatique (déploiement par Agent)</h4>
+    <p>Lors de la collecte des paramètres, l'Agent demande le « nom d'hôte du marché de Skills » et remplace automatiquement <code>&lt;hôte-marché&gt;</code> dans <code>config.json</code> et <code>SKILL.md</code>.</p>
+    <h4>Manuel</h4>
+    <ol>
+      <li>Modifiez <code>config.json</code> + l'adresse de secours de <code>SKILL.md</code>, remplacez <code>&lt;hôte-marché&gt;</code> ;</li>
+      <li>Rendez le nom d'hôte résolvable : sur une machine isolée, ajoutez <code>&lt;IP-du-serveur&gt;  &lt;nom-d'hôte&gt;</code> dans <code>C:\Windows\System32\drivers\etc\hosts</code> ; sur l'intranet de l'entreprise, ajoutez un enregistrement A dans le DNS.</li>
+    </ol>
+    <div class="tip">✅ Pour le nom d'hôte, il est conseillé d'utiliser un FQDN « nom-de-service + domaine d'entreprise », par exemple <code>skillmarket.votre-domaine-entreprise</code>. Ajout d'un enregistrement A au DNS : contrôleur de domaine « DNS → zone de recherche directe → votre domaine → nouvel hôte (A) », ou <code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "votre-domaine" -IPv4Address "&lt;IP-du-serveur&gt;"</code>.</div>
+
+    <h2>11.6 API d'administration (pour les opérations CRUD du Centre d'administration IA)</h2>
+    <table>
+      <tr><th>Point de terminaison</th><th>Rôle</th></tr>
+      <tr><td><code>GET/POST /api/servers</code>, <code>PUT/DELETE /api/servers/:name</code></td><td>CRUD des MCP Server (écriture de la configuration + reconnexion automatique)</td></tr>
+      <tr><td><code>POST /api/skills/upload</code></td><td>Téléverser un zip de skill (validation de SKILL.md, protection contre la traversée de chemin)</td></tr>
+      <tr><td><code>DELETE /api/skills/:name</code></td><td>Supprimer un skill</td></tr>
+    </table>
+    <p>En-tête <code>X-Admin-Token</code> requis (<code>MCP_ADMIN_TOKEN</code> de <code>.env</code>). Appelé par proxy via la page « MCP Gateway » du Centre d'administration IA (protégé par le rôle <code>ai-platform-admin</code>).</p>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>protocole MCP officiel <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch11';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

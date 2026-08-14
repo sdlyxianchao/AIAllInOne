@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第5章 API Key の申請 · AI AllInOne ユーザーマニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">クイックスタート</div>
+      <h1>API Key の申請</h1>
+      <div class="sub">会社の AI 能力をサードパーティツールに接続するには、API Key が必要です。</div>
+    </div>
+
+    <p>会社の AI 能力を<b>サードパーティツール</b>（自分のスクリプト、OpenAI インターフェース対応の他のソフト）に接続する場合、API Key（<code>sk-</code> で始まるキー）が必要です。</p>
+
+    <h2>5.1 NewAPI へのログイン</h2>
+    <ol>
+      <li>ブラウザで <code>http://IP:3000</code> を開く；</li>
+      <li>統合アカウントでログイン（または「ワンクリックログイン / OIDC」でドメインアカウントを使用）。</li>
+    </ol>
+
+    <h2>5.2 新規トークンの作成</h2>
+    <ol>
+      <li>左メニュー「<b>API キー / トークン</b>」；</li>
+      <li>「<b>新規トークン</b>」をクリックし、名前を付け（例：<code>私のスクリプト</code>）、クォータ、有効期限を設定可能；</li>
+      <li>保存後に生成された <code>sk-xxxx</code> 文字列をコピー。<b>一度しか表示されないため、必ずすぐに保存</b>。</li>
+    </ol>
+
+    <h2>5.3 クライアントへの記入</h2>
+    <ul>
+      <li><b>API Base URL</b>：<code>http://IP:3000/v1</code></li>
+      <li><b>API Key</b>：先ほどコピーした <code>sk-xxxx</code></li>
+    </ul>
+
+    <h2>5.4 よくある使い方の例</h2>
+    <div class="example">💡 curl でテスト：<br>
+    <code>curl http://IP:3000/v1/chat/completions -H "Authorization: Bearer sk-xxxx" -H "Content-Type: application/json" -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"こんにちは"}]}'</code></div>
+
+    <div class="warn">⚠️ クォータを使い切ると「残高不足」と表示されます。管理者に引き上げを申請してください。Key はあなたのアカウントパスワードに相当し、<b>他人に渡さない、コードリポジトリにコミットしない</b>。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>NewAPI 公式ドキュメント <span class="url">https://docs.newapi.pro</span> · 公式サイト <span class="url">https://www.newapi.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

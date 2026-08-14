@@ -1,0 +1,2369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI AllInOne 本地部署指南 — Windows 11 + Docker Desktop</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117; color: #c9d1d9;
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    line-height: 1.7; padding: 0; max-width: 1200px; margin: 0 auto;
+  }
+  h1 { color: #58a6ff; font-size: 1.8em; padding: 30px 24px 10px; border-bottom: 1px solid #30363d; }
+  h2 { color: #58a6ff; font-size: 1.4em; margin: 36px 24px 16px; padding-bottom: 8px; border-bottom: 1px solid #30363d; }
+  h3 { color: #d2a8ff; font-size: 1.15em; margin: 24px 24px 12px; }
+  h4 { color: #79c0ff; font-size: 1em; margin: 20px 24px 8px; }
+  p { margin: 8px 24px; }
+  ul, ol { margin: 8px 24px; padding-left: 24px; }
+  li { margin: 4px 0; }
+  code {
+    background: #161b22; color: #e06c75; padding: 2px 6px;
+    border-radius: 4px; font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 16px; margin: 12px 24px; overflow-x: auto;
+  }
+  pre code {
+    background: none; color: #c9d1d9; padding: 0;
+    font-size: 0.85em; line-height: 1.5;
+  }
+  .comment { color: #8b949e; }
+  .keyword { color: #ff7b72; }
+  .property { color: #79c0ff; }
+  .string { color: #a5d6ff; }
+  table {
+    width: calc(100% - 48px); margin: 12px 24px; border-collapse: collapse;
+    border: 1px solid #30363d; border-radius: 8px; overflow: hidden;
+  }
+  th { background: #21262d; color: #58a6ff; padding: 10px 14px; text-align: left; font-size: 0.9em; }
+  td { border-top: 1px solid #30363d; padding: 8px 14px; font-size: 0.88em; }
+  tr:hover td { background: #161b22; }
+  .callout {
+    margin: 12px 24px; padding: 14px 18px; border-radius: 8px;
+    border-left: 4px solid;
+  }
+  .callout-success { border-color: #56d364; background: #1a7f3722; }
+  .callout-warn { border-color: #d29922; background: #9e6a0322; }
+  .callout-info { border-color: #58a6ff; background: #1f6feb22; }
+  .callout-danger { border-color: #f85149; background: #da363322; }
+  .step {
+    margin: 16px 24px; padding: 16px 20px; background: #161b22;
+    border: 1px solid #30363d; border-radius: 8px;
+  }
+  .step-num {
+    display: inline-block; width: 28px; height: 28px; line-height: 28px;
+    text-align: center; background: #1f6feb; color: #fff; border-radius: 50%;
+    font-weight: 700; margin-right: 8px; font-size: 0.85em;
+  }
+  .verify {
+    margin: 12px 24px; padding: 12px 18px; background: #1a7f3718;
+    border: 1px solid #1a7f3744; border-radius: 8px;
+  }
+  .verify::before { content: "✅ 验证: "; color: #56d364; font-weight: 700; }
+  .port-badge {
+    display: inline-block; padding: 2px 8px; background: #1f6feb33;
+    color: #58a6ff; border-radius: 4px; font-size: 0.85em; font-family: monospace;
+  }
+  .toc {
+    margin: 16px 24px; padding: 16px 20px; background: #161b22;
+    border: 1px solid #30363d; border-radius: 8px;
+  }
+  .toc a { color: #58a6ff; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { margin: 6px 0; padding-left: 8px; }
+  .toc > ul > li { font-weight: 600; }
+  .toc ul ul { padding-left: 20px; }
+  .toc ul ul li { font-weight: 400; }
+  .nav-top {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #21262d; border: 1px solid #30363d; border-radius: 8px;
+    padding: 8px 16px; z-index: 999;
+  }
+  .nav-top a { color: #58a6ff; text-decoration: none; font-size: 0.85em; }
+  .arch-box {
+    border: 2px solid; border-radius: 8px; padding: 10px 16px;
+    text-align: center; margin: 4px; display: inline-block;
+    font-size: 0.85em;
+  }
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li {
+    padding: 6px 0 6px 28px; position: relative;
+  }
+  .checklist li::before {
+    content: "☐"; position: absolute; left: 0; color: #58a6ff; font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<h1>AI AllInOne 本地部署指南 — Windows 11 + Docker Desktop</h1>
+
+<div class="callout callout-info">
+  <p><strong>目标：</strong>在单台 Windows 11 机器上，通过 Docker Desktop 部署全部 9 个产品，
+  使用 <code>&lt;服务器IP&gt;:端口</code> 访问，无需域名和 SSL 证书，走通完整的 AI 平台链路。<span class="note" style="font-size:smaller">（Docker Desktop WSL2 对 IPv6 <code>::1</code> 的支持不稳定，请始终用 <code>&lt;服务器IP&gt;</code> 而非 <code>localhost</code>）</span></p>
+  <p><strong>软硬件要求：</strong></p>
+  <table>
+    <tr><th>项目</th><th>最低要求</th><th>推荐配置</th></tr>
+    <tr><td>操作系统</td><td>Windows 11（Docker Desktop + WSL2 后端）</td><td>Windows 11 Pro / 企业版（额外支持 Hyper-V 跑 AD 域控）</td></tr>
+    <tr><td>CPU</td><td>4 核 / 8 线程</td><td>8 核 / 16 线程</td></tr>
+    <tr><td>内存</td><td>16 GB</td><td>32 GB</td></tr>
+    <tr><td>磁盘</td><td>60 GB 可用 SSD</td><td>150 GB+ 可用 SSD</td></tr>
+    <tr><td>GPU</td><td>无需独立显卡</td><td>无需独立显卡</td></tr>
+  </table>
+  <p><strong>依据实测</strong>（约 30 个容器空闲时全部合计约 5 GB 内存；Dify 处理/索引、Keycloak JVM、MySQL/Postgres 缓存等峰值再增 3–5 GB，加 Docker Desktop 的 WSL2 虚拟内存，16 GB 为最低、32 GB 为舒适值）。磁盘主要被 Docker 镜像（约 10–15 GB）与 DeepChat 安装包（每版本约 740 MB，按保留版本数累积）占用。本方案所有大模型走外部 API（deepseek-chat 等），本地不做推理，因此<b>无需 GPU</b>。</p>
+</div>
+
+<div class="toc">
+  <strong>目录</strong>
+  <ul>
+    <li><a href="#agent-deploy">0. 用 AI Agent 工具自动部署（推荐）</a></li>
+    <li><a href="#overview">1. 环境概览与端口分配</a></li>
+    <li><a href="#prereq">2. 前置准备（Docker Desktop + 目录 + 网络）</a></li>
+    <li><a href="#files">3. 配置文件说明</a></li>
+    <li><a href="#start">4. 启动核心服务</a></li>
+    <li><a href="#dify">5. Dify 独立部署</a></li>
+    <li><a href="#config">6. 各产品 Web UI 配置</a></li>
+    <li><a href="#deepchat">7. DeepChat 安装与配置</a></li>
+    <li><a href="#mcp">8. MCP Gateway — Skill / MCP 管理 Hub</a></li>
+    <li><a href="#cicd">9. CI/CD — DeepChat 自动构建与发布</a></li>
+    <li><a href="#interconnect">10. 互连配置验证</a></li>
+    <li><a href="#admin-portal">11. AI 管理中心 — 统一管理员门户</a></li>
+    <li><a href="#ops">12. 运维 — 健康检查与开机自检</a></li>
+    <li><a href="#security">13. 安全合规与可观测</a></li>
+    <li><a href="#identity-sources">N. 附录：Keycloak 企业身份源集成</a></li>
+  </ul>
+</div>
+
+<!-- ==================== 0. Agent 工具自动部署 ==================== -->
+<h2 id="agent-deploy">0. 用 AI Agent 工具自动部署（推荐）</h2>
+
+<p>本指南既可<b>人工逐章执行</b>，也可<b>交给 AI Agent 工具自动执行</b>。如果你使用 OpenClaw / Microsoft Scout / WorkBuddy 这类工具，把本目录（含本文档、<code>windows-checklist.html</code>、<code>docker-compose.yml</code>、<code>.env.example</code>、<code>scripts/</code>）提供给 Agent，再粘贴下面的提示词，Agent 会：判断平台 → 向你收集参数 → 生成本地进度文件 → 按本指南逐步配置 → 遇到问题反复测试解决 → 全程更新进度 → 最后做一次完整测试并汇报结果。</p>
+
+<div class="step">
+<p><strong>复制给 Agent 的提示词（Windows 平台）</strong></p>
+<pre><code>你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
+
+## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
+开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 &lt;市场主机名&gt;，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+
+## 第二步：生成本地进度文件
+基于 windows-checklist.html 的内容，在本目录生成「部署进度-&lt;日期&gt;.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
+
+## 第三步：按部署指南逐步执行
+精读 windows-deploy-guide-v2.html，严格按第 1~13 章顺序执行，特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。
+
+## 第四步：反复测试解决
+出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
+
+## 第五步：全流程验证
+全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。</code></pre>
+</div>
+
+<div class="callout callout-info"><p>💡 即使你<b>不用 Agent</b>，上面这段提示词也清楚地列出了部署前需要准备的全部参数，可当作「部署前信息核对清单」使用。</p></div>
+
+<!-- ==================== 1. 环境概览 ==================== -->
+<h2 id="overview">1. 环境概览与端口分配</h2>
+
+<h3>1.1 架构总览</h3>
+<div style="margin: 12px 24px;">
+<svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
+  <!-- ====== Layer Background Bands ====== -->
+  <rect x="0" y="30" width="1200" height="90" rx="4" fill="#d2a8ff08" stroke="#d2a8ff22" stroke-width="0.5"/>
+  <rect x="0" y="140" width="1200" height="95" rx="4" fill="#d2992208" stroke="#d2992222" stroke-width="0.5"/>
+  <rect x="0" y="255" width="1200" height="90" rx="4" fill="#1f6feb08" stroke="#1f6feb22" stroke-width="0.5"/>
+  <rect x="0" y="365" width="1200" height="60" rx="4" fill="#39c5cf08" stroke="#39c5cf22" stroke-width="0.5"/>
+  <rect x="0" y="445" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
+  <rect x="0" y="565" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
+
+  <!-- ====== Layer Labels ====== -->
+  <rect x="8" y="36" width="56" height="18" rx="9" fill="#d2a8ff22"/><text x="36" y="49" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">用户层</text>
+  <rect x="8" y="146" width="76" height="18" rx="9" fill="#d2992222"/><text x="46" y="159" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">门户&amp;应用</text>
+  <rect x="8" y="261" width="66" height="18" rx="9" fill="#1f6feb22"/><text x="41" y="274" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">LLM路由</text>
+  <rect x="8" y="371" width="76" height="18" rx="9" fill="#39c5cf22"/><text x="46" y="384" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">可观测</text>
+  <rect x="8" y="451" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="464" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">基础设施</text>
+  <rect x="8" y="571" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="584" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">统一管理</text>
+
+  <!-- ====== Layer 1: User ====== -->
+  <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
+  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DeepChat 桌面客户端</text>
+  <text x="140" y="90" fill="#8b949e" font-size="10">Win/Mac/Linux · 本地文件读写 · MCP/Skill</text>
+
+  <g filter="url(#sh)"><rect x="820" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="820" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
+  <text x="840" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🌐 浏览器用户</text>
+  <text x="840" y="90" fill="#8b949e" font-size="10">访问企业门户 / Dify Web / Grafana / Langfuse</text>
+
+  <!-- ====== Layer 2: Portal & App ====== -->
+  <g filter="url(#sh)"><rect x="300" y="160" width="300" height="70" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="2"/><rect x="300" y="160" width="4" height="70" rx="2" fill="#d29922"/></g>
+  <text x="320" y="183" fill="#d29922" font-size="14" font-weight="700">📰 Ghost 企业门户</text>
+  <text x="320" y="200" fill="#8b949e" font-size="11">新闻发布 · 下载中心 · Dify入口 · 帮助文档</text>
+
+  <g filter="url(#sh)"><rect x="700" y="160" width="300" height="70" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="2"/><rect x="700" y="160" width="4" height="70" rx="2" fill="#58a6ff"/></g>
+  <text x="720" y="183" fill="#58a6ff" font-size="14" font-weight="700">🤖 Dify</text>
+  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI 应用平台 · RAG/Agent/Workflow</text>
+
+  <!-- ====== Layer 3: LLM Routing ====== -->
+  <g filter="url(#sh)"><rect x="130" y="275" width="220" height="60" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="1.5"/><rect x="130" y="275" width="4" height="60" rx="2" fill="#58a6ff"/></g>
+  <text x="150" y="297" fill="#58a6ff" font-size="13" font-weight="600">🔀 NewAPI</text>
+  <text x="150" y="314" fill="#8b949e" font-size="10">LLM Router · 计费 · 限流</text>
+
+  <g filter="url(#sh)"><rect x="440" y="275" width="240" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="440" y="275" width="4" height="60" rx="2" fill="#56d364"/></g>
+  <text x="460" y="297" fill="#56d364" font-size="13" font-weight="600">🛡️ LiteLLM + Presidio</text>
+  <text x="460" y="314" fill="#8b949e" font-size="10">PII 脱敏 → 还原（内置正则 + Presidio）</text>
+
+  <path d="M 780 280 Q 755 280 755 305 Q 755 323 770 327 Q 775 340 800 340 Q 815 347 845 347 Q 880 347 895 340 Q 920 340 925 327 Q 940 323 940 305 Q 940 280 915 280 Q 905 270 880 270 Q 860 267 845 270 Q 820 270 810 275 Q 800 275 780 280 Z" fill="url(#g-cloud)" stroke="#484f58" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="847" y="303" text-anchor="middle" fill="#8b949e" font-size="13" font-weight="600">☁️ 外部大模型</text>
+  <text x="847" y="320" text-anchor="middle" fill="#8b949e" font-size="10">GPT-4 · Claude · DeepSeek</text>
+
+  <!-- ====== Layer 4: Observability (Langfuse) ====== -->
+  <g filter="url(#sh)"><rect x="440" y="380" width="260" height="50" rx="10" fill="#0d2b33" stroke="#39c5cf" stroke-width="1.5"/><rect x="440" y="380" width="4" height="50" rx="2" fill="#39c5cf"/></g>
+  <text x="460" y="401" fill="#39c5cf" font-size="13" font-weight="600">🔍 Langfuse 可观测</text>
+  <text x="460" y="418" fill="#8b949e" font-size="10">提示词/响应/延迟/token/成本 追踪</text>
+  <!-- LiteLLM -> Langfuse 旁路 -->
+  <path d="M 560 335 L 560 380" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#at)"/>
+  <text x="568" y="360" fill="#39c5cf" font-size="8" font-weight="600">上报</text>
+
+  <!-- ====== Layer 5: Infrastructure ====== -->
+  <g filter="url(#sh)"><rect x="60" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="80" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
+  <text x="80" y="505" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
+
+  <g filter="url(#sh)"><rect x="285" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="305" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
+  <text x="305" y="505" fill="#8b949e" font-size="10">Skill / MCP 管理 Hub</text>
+
+  <g filter="url(#sh)"><rect x="510" y="465" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="465" width="4" height="60" rx="2" fill="#f85149"/></g>
+  <text x="530" y="488" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
+  <text x="530" y="505" fill="#8b949e" font-size="10">源码 + Actions CI/CD</text>
+
+  <g filter="url(#sh)"><rect x="735" y="465" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="465" width="4" height="60" rx="2" fill="#56d364"/></g>
+  <text x="755" y="488" fill="#56d364" font-size="13" font-weight="600">📦 更新服务器</text>
+  <text x="755" y="505" fill="#8b949e" font-size="10">DeepChat 安装包托管</text>
+
+  <g filter="url(#sh)"><rect x="960" y="465" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="465" width="4" height="60" rx="2" fill="#d29922"/></g>
+  <text x="980" y="488" fill="#d29922" font-size="13" font-weight="600">📈 监控 · 日志</text>
+  <text x="980" y="505" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
+
+  <!-- ====== Layer 6: Management ====== -->
+  <g filter="url(#sh)"><rect x="80" y="575" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="575" width="4" height="55" rx="2" fill="#58a6ff"/></g>
+  <text x="600" y="598" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI 管理中心（统一管理员门户 + Keycloak 鉴权）</text>
+  <text x="600" y="618" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard 容器状态/业务指标 · 产品内嵌统计页 · 审计/成本报表 · Keycloak SSO</text>
+
+  <!-- ====== Connections ====== -->
+  <path d="M 250 105 L 250 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="258" y="190" fill="#58a6ff" font-size="9" font-weight="600">LLM 请求</text>
+  <path d="M 850 230 L 850 247 L 240 247 L 240 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <path d="M 350 305 L 440 305" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="395" y="299" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">① 转发</text>
+  <path d="M 680 305 L 750 305" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="718" y="299" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">② 脱敏后</text>
+  <path d="M 750 323 L 680 320" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <text x="718" y="337" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">③ 响应</text>
+  <path d="M 440 320 L 350 320" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <text x="395" y="337" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">④ 还原PII</text>
+
+  <!-- 门户流 -->
+  <path d="M 950 105 L 950 135 L 450 135 L 450 160" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+  <text x="700" y="128" text-anchor="middle" fill="#d29922" font-size="8" font-weight="600">门户入口</text>
+  <path d="M 600 195 L 700 195" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+  <path d="M 880 105 L 880 130 L 850 130 L 850 160" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+
+  <!-- 可观测：浏览器 -> Langfuse -->
+  <path d="M 950 105 L 950 370 L 700 370 L 700 380" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#at)"/>
+  <text x="960" y="240" fill="#39c5cf" font-size="8" font-weight="600">查看追踪</text>
+
+  <!-- 监控：浏览器 -> Grafana -->
+  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 465" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+
+  <!-- CI/CD -->
+  <path d="M 612 465 L 735 465" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <text x="674" y="458" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">构建产物</text>
+  <path d="M 1062 465 L 1175 465 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DeepChat 自动更新（检查 version.txt → 下载安装）</text>
+
+  <!-- Keycloak OIDC -->
+  <path d="M 162 465 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
+  <text x="162" y="442" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ OIDC SSO → 全部 Web 产品</text>
+
+  <!-- MCP -->
+  <path d="M 387 465 L 387 447" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 387 447 Q 387 425 250 425 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
+  <text x="387" y="444" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+
+  <!-- 管理 bracket -->
+  <path d="M 80 575 L 80 545 L 1120 545 L 1120 575" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
+  <text x="600" y="541" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI 管理中心（Keycloak 鉴权 → Dashboard → 全部产品入口 + 审计/成本）</text>
+
+  <!-- ====== Legend ====== -->
+  <rect x="20" y="670" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="40" y="695" fill="#58a6ff" font-size="13" font-weight="700">📊 数据流说明</text>
+
+  <line x1="40" y1="715" x2="80" y2="715" stroke="#58a6ff" stroke-width="2"/>
+  <text x="90" y="719" fill="#c9d1d9" font-size="11">LLM 请求流：DeepChat / Dify → NewAPI → LiteLLM 脱敏 → 外部模型 → 响应还原 PII → 返回</text>
+
+  <line x1="40" y1="740" x2="80" y2="740" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="744" fill="#c9d1d9" font-size="11">可观测流：LiteLLM success_callback → Langfuse 追踪每次调用（提示词/响应/延迟/token/成本）</text>
+
+  <line x1="40" y1="765" x2="80" y2="765" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="769" fill="#c9d1d9" font-size="11">自动更新流：Gitea Actions 构建 → 更新服务器 → DeepChat 自动下载安装</text>
+
+  <line x1="620" y1="715" x2="660" y2="715" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="670" y="719" fill="#c9d1d9" font-size="11">门户流：浏览器 → Ghost 门户 → 浏览新闻/下载/跳转 Dify</text>
+
+  <line x1="620" y1="740" x2="660" y2="740" stroke="#d29922" stroke-width="1.5"/>
+  <text x="670" y="744" fill="#c9d1d9" font-size="11">监控流：浏览器 → Grafana 大盘（Prometheus + cadvisor 容器资源/告警）</text>
+
+  <line x1="620" y1="765" x2="660" y2="765" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
+  <text x="670" y="769" fill="#c9d1d9" font-size="11">认证流：Keycloak OIDC SSO 统一登录（全部 Web 产品共用 ai_all_in_one_admin）</text>
+
+  <line x1="40" y1="790" x2="80" y2="790" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
+  <text x="90" y="794" fill="#c9d1d9" font-size="11">统一日志流：Promtail 采集各容器日志 → Loki 聚合 → AI 管理中心「统一日志」页查询</text>
+
+  <line x1="40" y1="795" x2="1160" y2="795" stroke="#30363d" stroke-width="0.5"/>
+  <text x="40" y="812" fill="#d2a8ff" font-size="10" font-weight="700">🔐 组件交互：</text>
+  <text x="40" y="827" fill="#8b949e" font-size="9">Keycloak OIDC SSO → 全部 Web 产品　　MCP Gateway 提供 Skill/MCP → DeepChat/Dify　　LiteLLM 上报 → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+  <text x="40" y="842" fill="#8b949e" font-size="9">Gitea 构建 → 更新服务器 + Ghost 公告　　AI 管理中心 — 统一管理门户（Dashboard + 产品内嵌页 + 审计/成本报表 + 备份恢复 + 统一日志）</text>
+
+  <rect x="40" y="850" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
+  <text x="600" y="866" text-anchor="middle" fill="#8b949e" font-size="10">16 个独立开源组件 · 全部 Docker 部署 · 零代码开发 · 通过 URL + API Key / OIDC 互连 · Keycloak 统一 SSO</text>
+
+</div>
+
+<h3>1.2 端口分配表</h3>
+<div class="callout callout-info">
+  <strong>内网访问地址：</strong>下文用 <code>&lt;服务器IP&gt;</code> 表示宿主机「服务器对外地址」（例如当前环境为 <code>192.168.31.117</code>，部署时替换成你自己的内网 IP 或域名）。公司内部员工从自己电脑访问时，用「内网访问」列地址；在宿主机本机调试时用「本机访问」列地址（<code>127.0.0.1</code>）。两者指向同一服务，只是访问来源不同。
+</div>
+<table>
+  <tr><th>#</th><th>产品</th><th>用途</th><th>本机访问（宿主机）</th><th>内网访问（员工）</th><th>容器名</th></tr>
+  <tr><td>1</td><td><strong>AI 管理中心</strong></td><td>统一管理员门户 / Keycloak 鉴权</td><td><code>http://127.0.0.1:10086</code></td><td><code>http://&lt;服务器IP&gt;:10086</code></td><td>admin-portal</td></tr>
+  <tr><td>2</td><td><strong>Keycloak</strong></td><td>用户认证 / SSO</td><td><code>http://127.0.0.1:9090</code></td><td><code>http://&lt;服务器IP&gt;:9090</code></td><td>keycloak</td></tr>
+  <tr><td>3</td><td><strong>NewAPI</strong></td><td>LLM Router / API 网关</td><td><code>http://127.0.0.1:3000</code></td><td><code>http://&lt;服务器IP&gt;:3000</code></td><td>new-api</td></tr>
+  <tr><td>4</td><td><strong>LiteLLM</strong></td><td>PII 脱敏代理</td><td><code>http://&lt;服务器IP&gt;:4001</code></td><td>—（内部服务，仅被 NewAPI 调用）</td><td>litellm</td></tr>
+  <tr><td>5</td><td><strong>Dify</strong></td><td>Web AI 应用平台</td><td><code>http://127.0.0.1</code></td><td><code>http://&lt;服务器IP&gt;</code></td><td>dify-* (多容器)</td></tr>
+  <tr><td>6</td><td><strong>Ghost</strong></td><td>企业门户</td><td><code>http://127.0.0.1:8090</code></td><td><code>http://&lt;服务器IP&gt;:8090</code></td><td>ghost</td></tr>
+  <tr><td>7</td><td><strong>Gitea</strong></td><td>源码管理 + CI/CD</td><td><code>http://127.0.0.1:3002</code></td><td><code>http://&lt;服务器IP&gt;:3002</code></td><td>gitea</td></tr>
+  <tr><td>8</td><td><strong>Update Server</strong></td><td>DeepChat 安装包托管</td><td><code>http://127.0.0.1:8091</code></td><td><code>http://&lt;服务器IP&gt;:8091</code></td><td>update-server</td></tr>
+  <tr><td>9</td><td><strong>DeepChat</strong></td><td>本地 AI 桌面客户端</td><td colspan="2">桌面应用，API 地址填 <code>http://&lt;服务器IP&gt;:3000</code>（员工电脑上）</td><td>—</td></tr>
+  <tr><td>10</td><td><strong>Grafana</strong></td><td>监控可视化大盘</td><td><code>http://127.0.0.1:3030</code></td><td><code>http://&lt;服务器IP&gt;:3030</code></td><td>grafana</td></tr>
+  <tr><td>11</td><td><strong>Prometheus</strong></td><td>监控指标采集 / 告警</td><td><code>http://127.0.0.1:9091</code></td><td><code>http://&lt;服务器IP&gt;:9091</code></td><td>prometheus</td></tr>
+  <tr><td>12</td><td><strong>Langfuse</strong></td><td>LLM 可观测 / 调用追踪</td><td><code>http://127.0.0.1:3010</code></td><td><code>http://&lt;服务器IP&gt;:3010</code></td><td>langfuse</td></tr>
+  <tr><td>13</td><td><strong>cadvisor</strong></td><td>容器资源监控（内部）</td><td><code>http://127.0.0.1:8080</code></td><td>—（仅被 Prometheus 抓取）</td><td>cadvisor</td></tr>
+  <tr><td>14</td><td><strong>Loki</strong></td><td>统一日志聚合（内部）</td><td><code>http://127.0.0.1:3110</code></td><td>—（经 AI 管理中心「统一日志」查看）</td><td>loki</td></tr>
+  <tr><td>15</td><td><strong>Promtail</strong></td><td>容器日志采集（内部）</td><td>—</td><td>—（推送到 Loki）</td><td>promtail</td></tr>
+  <tr><td>16</td><td><strong>MailHog</strong></td><td>本地邮件接收器（Ghost 验证码/通知）</td><td><code>http://127.0.0.1:8025</code></td><td><code>http://&lt;服务器IP&gt;:8025</code></td><td>mailhog</td></tr>
+</table>
+
+<div class="callout callout-warn">
+  <strong>容器间通信：</strong>所有容器通过 <code>ai-platform</code> Docker 网络互访，使用容器名作为主机名。
+  例如 NewAPI 访问 LiteLLM 用 <code>http://litellm:4000</code>，不经过 localhost。<br>
+  <strong>数据库/缓存（MySQL、Redis、PostgreSQL）不对用户开放</strong>，仅在 Docker 网络内部通信。
+</div>
+
+<h3>1.3 数据流说明</h3>
+<h4>LLM 请求流（核心链路）</h4>
+<div style="margin: 12px 24px;"><svg viewBox="0 0 1000 170" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1000px;"><defs>
+    <linearGradient id="g-host" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2333"/><stop offset="100%" stop-color="#0d1117"/></linearGradient>
+    <linearGradient id="g-docker" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c2a3e"/><stop offset="100%" stop-color="#141d2e"/></linearGradient>
+    <linearGradient id="g-purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2d1b4e"/><stop offset="100%" stop-color="#1a1030"/></linearGradient>
+    <linearGradient id="g-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d2b4e"/><stop offset="100%" stop-color="#0a1e3a"/></linearGradient>
+    <linearGradient id="g-green" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d3b2e"/><stop offset="100%" stop-color="#0a2a20"/></linearGradient>
+    <linearGradient id="g-amber" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b2e0d"/><stop offset="100%" stop-color="#2a210a"/></linearGradient>
+    <linearGradient id="g-red" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b0d0d"/><stop offset="100%" stop-color="#2a0a0a"/></linearGradient>
+    <linearGradient id="g-cloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2a3a"/><stop offset="100%" stop-color="#0f1a26"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#56d364"/></marker>
+    <marker id="ay" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d29922"/></marker>
+    <marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d2a8ff"/></marker>
+    <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#39c5cf"/></marker>
+</defs>
+  <!-- Step 1: DeepChat/Dify -->
+  <g filter="url(#sh)"><rect x="8" y="18" width="135" height="58" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="18" width="4" height="58" rx="2" fill="#d2a8ff"/></g>
+  <text x="24" y="40" fill="#d2a8ff" font-size="11" font-weight="700">💬 DeepChat</text>
+  <text x="24" y="54" fill="#d2a8ff" font-size="11" font-weight="700">/ Dify</text>
+  <text x="24" y="68" fill="#8b949e" font-size="8">发起请求</text>
+
+  <path d="M 143 47 L 170 47" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <circle cx="156" cy="35" r="9" fill="#1f6feb"/><text x="156" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">1</text>
+
+  <!-- Step 2: NewAPI -->
+  <g filter="url(#sh)"><rect x="172" y="18" width="135" height="58" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="0.8"/><rect x="172" y="18" width="4" height="58" rx="2" fill="#58a6ff"/></g>
+  <text x="188" y="40" fill="#58a6ff" font-size="11" font-weight="700">🔀 NewAPI</text>
+  <text x="188" y="56" fill="#8b949e" font-size="8">路由/计费/限流</text>
+  <rect x="188" y="60" width="34" height="13" rx="3" fill="#1f6feb33"/><text x="205" y="70" text-anchor="middle" fill="#58a6ff" font-size="7" font-family="monospace">:3000</text>
+
+  <path d="M 307 47 L 334 47" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <circle cx="320" cy="35" r="9" fill="#1f6feb"/><text x="320" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">2</text>
+
+  <!-- Step 3: LiteLLM (mask) -->
+  <g filter="url(#sh)"><rect x="336" y="18" width="155" height="58" rx="10" fill="url(#g-green)" stroke="#56d364" stroke-width="0.8"/><rect x="336" y="18" width="4" height="58" rx="2" fill="#56d364"/></g>
+  <text x="352" y="40" fill="#56d364" font-size="11" font-weight="700">🛡️ LiteLLM</text>
+  <text x="352" y="56" fill="#56d364" font-size="8" font-weight="600">Presidio PII 脱敏</text>
+  <rect x="352" y="60" width="34" height="13" rx="3" fill="#1a7f3733"/><text x="369" y="70" text-anchor="middle" fill="#56d364" font-size="7" font-family="monospace">:4000</text>
+
+  <path d="M 491 47 L 518 47" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <circle cx="504" cy="35" r="9" fill="#1f6feb"/><text x="504" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">3</text>
+
+  <!-- Step 4: External LLM -->
+  <g filter="url(#sh)"><rect x="520" y="18" width="135" height="58" rx="10" fill="url(#g-cloud)" stroke="#484f58" stroke-width="1" stroke-dasharray="4"/></g>
+  <text x="536" y="40" fill="#8b949e" font-size="11" font-weight="700">☁️ 外部大模型</text>
+  <text x="536" y="56" fill="#8b949e" font-size="8">GPT-4o/Claude</text>
+  <text x="536" y="68" fill="#8b949e" font-size="8">/DeepSeek</text>
+
+  <path d="M 655 47 L 682 47" fill="none" stroke="#56d364" stroke-width="2" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <circle cx="668" cy="35" r="9" fill="#56d364"/><text x="668" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">4</text>
+
+  <!-- Step 5: LiteLLM (restore) -->
+  <g filter="url(#sh)"><rect x="684" y="18" width="145" height="58" rx="10" fill="url(#g-green)" stroke="#56d364" stroke-width="0.8"/><rect x="684" y="18" width="4" height="58" rx="2" fill="#56d364"/></g>
+  <text x="700" y="40" fill="#56d364" font-size="11" font-weight="700">🛡️ LiteLLM</text>
+  <text x="700" y="56" fill="#56d364" font-size="8" font-weight="600">PII 还原</text>
+
+  <path d="M 829 47 L 856 47" fill="none" stroke="#56d364" stroke-width="2" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <circle cx="842" cy="35" r="9" fill="#56d364"/><text x="842" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">5</text>
+
+  <!-- Step 6: Return -->
+  <g filter="url(#sh)"><rect x="858" y="18" width="95" height="58" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="858" y="18" width="4" height="58" rx="2" fill="#d2a8ff"/></g>
+  <text x="874" y="42" fill="#d2a8ff" font-size="11" font-weight="700">✅ 返回</text>
+  <text x="874" y="58" fill="#8b949e" font-size="8">显示回复</text>
+
+  <!-- Direction labels -->
+  <text x="426" y="12" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">━━ 请求方向 ━━→</text>
+  <text x="770" y="12" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">←━━ 响应方向 ━━</text>
+
+  <!-- Step labels -->
+  <text x="253" y="100" text-anchor="middle" fill="#8b949e" font-size="8">① 转发</text>
+  <text x="413" y="100" text-anchor="middle" fill="#56d364" font-size="8">② 自动脱敏 PII</text>
+  <text x="587" y="100" text-anchor="middle" fill="#8b949e" font-size="8">③ 处理请求</text>
+  <text x="756" y="100" text-anchor="middle" fill="#56d364" font-size="8">④ 自动还原 PII</text>
+  <text x="905" y="100" text-anchor="middle" fill="#8b949e" font-size="8">⑤ 返回结果</text>
+
+  <!-- 旁路：LLM 可观测（Langfuse）-->
+  <path d="M 413 76 L 413 118" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#at)"/>
+  <text x="425" y="98" fill="#39c5cf" font-size="8" font-weight="600">success_callback 上报</text>
+  <g filter="url(#sh)"><rect x="280" y="122" width="266" height="40" rx="10" fill="#0d2b33" stroke="#39c5cf" stroke-width="0.8"/><rect x="280" y="122" width="4" height="40" rx="2" fill="#39c5cf"/></g>
+  <text x="330" y="139" fill="#39c5cf" font-size="11" font-weight="700">🔍 Langfuse 可观测</text>
+  <text x="330" y="154" fill="#8b949e" font-size="8">每次调用的提示词/响应/延迟/token/成本追踪</text>
+</svg></div>
+<h4>用户访问流</h4>
+<div style="margin: 12px 24px;"><svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:900px;"><defs>
+    <linearGradient id="g-host" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2333"/><stop offset="100%" stop-color="#0d1117"/></linearGradient>
+    <linearGradient id="g-docker" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c2a3e"/><stop offset="100%" stop-color="#141d2e"/></linearGradient>
+    <linearGradient id="g-purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2d1b4e"/><stop offset="100%" stop-color="#1a1030"/></linearGradient>
+    <linearGradient id="g-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d2b4e"/><stop offset="100%" stop-color="#0a1e3a"/></linearGradient>
+    <linearGradient id="g-green" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d3b2e"/><stop offset="100%" stop-color="#0a2a20"/></linearGradient>
+    <linearGradient id="g-amber" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b2e0d"/><stop offset="100%" stop-color="#2a210a"/></linearGradient>
+    <linearGradient id="g-red" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b0d0d"/><stop offset="100%" stop-color="#2a0a0a"/></linearGradient>
+    <linearGradient id="g-cloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2a3a"/><stop offset="100%" stop-color="#0f1a26"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#56d364"/></marker>
+    <marker id="ay" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d29922"/></marker>
+    <marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d2a8ff"/></marker>
+    <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#39c5cf"/></marker>
+</defs>
+  <!-- Flow 1: Browser -> Ghost -> Dify -->
+  <g filter="url(#sh)"><rect x="8" y="8" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="8" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="26" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 浏览器</text>
+
+  <path d="M 123 22 L 150 22" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#ay)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="8" width="145" height="28" rx="8" fill="url(#g-amber)" stroke="#d29922" stroke-width="0.8"/><rect x="152" y="8" width="4" height="28" rx="2" fill="#d29922"/></g>
+  <text x="224" y="26" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">📰 Ghost :8090</text>
+
+  <path d="M 297 22 L 324 22" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#ay)"/>
+  <text x="310" y="15" text-anchor="middle" fill="#d29922" font-size="7" font-weight="600">AI工作台</text>
+
+  <g filter="url(#sh)"><rect x="326" y="8" width="145" height="28" rx="8" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="0.8"/><rect x="326" y="8" width="4" height="28" rx="2" fill="#58a6ff"/></g>
+  <text x="398" y="26" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">🤖 Dify :80</text>
+
+  <text x="490" y="26" fill="#8b949e" font-size="9">← Web AI 应用</text>
+
+  <!-- Flow 2: Browser -> AI Admin Center -->
+  <g filter="url(#sh)"><rect x="8" y="48" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="48" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="66" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 浏览器</text>
+
+  <path d="M 123 62 L 150 62" fill="none" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="48" width="165" height="28" rx="8" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="0.8"/><rect x="152" y="48" width="4" height="28" rx="2" fill="#58a6ff"/></g>
+  <text x="234" y="66" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">📊 AI 管理中心 :10086</text>
+
+  <text x="335" y="66" fill="#8b949e" font-size="9">← 管理所有 Docker 容器（启动/停止/日志/监控）</text>
+
+  <!-- Flow 3: Browser -> Grafana (监控) -->
+  <g filter="url(#sh)"><rect x="8" y="88" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="88" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="106" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 浏览器</text>
+
+  <path d="M 123 102 L 150 102" fill="none" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#at)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="88" width="185" height="28" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="0.8"/><rect x="152" y="88" width="4" height="28" rx="2" fill="#39c5cf"/></g>
+  <text x="244" y="106" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">📈 Grafana 监控 :3030</text>
+
+  <text x="355" y="106" fill="#8b949e" font-size="9">← Prometheus + cadvisor 容器资源/告警大盘</text>
+
+  <!-- Flow 4: Browser -> Langfuse (可观测) -->
+  <g filter="url(#sh)"><rect x="8" y="128" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="128" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="146" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 浏览器</text>
+
+  <path d="M 123 142 L 150 142" fill="none" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#at)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="128" width="185" height="28" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="0.8"/><rect x="152" y="128" width="4" height="28" rx="2" fill="#39c5cf"/></g>
+  <text x="244" y="146" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">🔍 Langfuse 可观测 :3010</text>
+
+  <text x="355" y="146" fill="#8b949e" font-size="9">← 每次模型调用的提示词/响应/延迟/成本追踪</text>
+</svg></div>
+
+<h3>1.4 内网访问地址清单（员工使用）</h3>
+<p>公司内部员工从自己电脑访问各产品时，用下面这些「内网地址」。把 <code>&lt;服务器IP&gt;</code> 换成宿主机实际对外地址（当前环境为 <code>192.168.31.117</code>，固定方法见 <a href="#prereq">2. 前置准备</a>）。</p>
+
+<h4>员工日常使用</h4>
+<table>
+  <tr><th>产品</th><th>内网地址</th><th>谁用</th><th>说明</th></tr>
+  <tr><td><strong>Dify</strong></td><td><code>http://&lt;服务器IP&gt;</code></td><td>全体员工</td><td>AI 应用平台（聊天 / 工作流 / 知识库）</td></tr>
+  <tr><td><strong>Ghost 门户</strong></td><td><code>http://&lt;服务器IP&gt;:8090</code></td><td>全体员工</td><td>企业门户、公告、下载中心</td></tr>
+  <tr><td><strong>NewAPI</strong></td><td><code>http://&lt;服务器IP&gt;:3000</code></td><td>全体员工</td><td>查看 / 申请自己的 API 密钥、游乐场测试</td></tr>
+  <tr><td><strong>Gitea</strong></td><td><code>http://&lt;服务器IP&gt;:3002</code></td><td>开发团队</td><td>源码管理 + CI/CD</td></tr>
+</table>
+
+<h4>客户端与特殊用途</h4>
+<table>
+  <tr><th>用途</th><th>地址</th><th>说明</th></tr>
+  <tr><td>DeepChat 客户端 API</td><td><code>http://&lt;服务器IP&gt;:3000/v1</code></td><td>员工电脑上 DeepChat 的 API Base URL</td></tr>
+  <tr><td>DeepChat 下载</td><td><code>http://&lt;服务器IP&gt;:8091</code></td><td>安装包托管，点链接下载</td></tr>
+  <tr><td>AI 管理中心</td><td><code>http://&lt;服务器IP&gt;:10086</code></td><td>仅管理员，统一管理入口</td></tr>
+  <tr><td>Grafana 监控</td><td><code>http://&lt;服务器IP&gt;:3030</code></td><td>仅管理员，容器资源监控 / 告警大盘</td></tr>
+  <tr><td>Langfuse 可观测</td><td><code>http://&lt;服务器IP&gt;:3010</code></td><td>仅管理员，LLM 调用追踪 / 成本 / 质量分析</td></tr>
+</table>
+
+<h4>内部服务（不对用户开放）</h4>
+<table>
+  <tr><th>产品</th><th>端口</th><th>说明</th></tr>
+  <tr><td>LiteLLM</td><td>4001</td><td>仅被 NewAPI 调用（PII 脱敏代理）</td></tr>
+  <tr><td>MySQL / Redis / PostgreSQL</td><td>—</td><td>数据库 / 缓存，仅 Docker 网络内部通信</td></tr>
+</table>
+
+<h4>本机访问地址（宿主机调试用，127.0.0.1）</h4>
+<p>管理员在宿主机本机操作、调试、排错时用下面这些 <code>127.0.0.1</code> 地址（仅宿主机本机有效，员工电脑访问不到）。</p>
+<table>
+  <tr><th>产品</th><th>本机地址</th><th>说明</th></tr>
+  <tr><td>Keycloak 管理后台</td><td><code>http://127.0.0.1:9090</code></td><td>SSO 配置、Realm / 用户 / OIDC Client 管理</td></tr>
+  <tr><td>NewAPI</td><td><code>http://127.0.0.1:3000</code></td><td>API 网关管理界面</td></tr>
+  <tr><td>Dify</td><td><code>http://127.0.0.1</code></td><td>AI 应用平台（80 端口）</td></tr>
+  <tr><td>Ghost 门户</td><td><code>http://127.0.0.1:8090</code></td><td>企业门户后台</td></tr>
+  <tr><td>Gitea</td><td><code>http://127.0.0.1:3002</code><br><code>ssh://git@127.0.0.1:2222</code></td><td>源码管理（Web + Git SSH）</td></tr>
+  <tr><td>Update Server</td><td><code>http://127.0.0.1:8091</code></td><td>DeepChat 安装包分发</td></tr>
+  <tr><td>AI 管理中心</td><td><code>http://127.0.0.1:10086</code></td><td>统一管理入口</td></tr>
+  <tr><td>LiteLLM</td><td><code>http://&lt;服务器IP&gt;:4001</code></td><td>PII 脱敏代理（内部）</td></tr>
+  <tr><td>Grafana</td><td><code>http://127.0.0.1:3030</code></td><td>监控大盘</td></tr>
+  <tr><td>Prometheus</td><td><code>http://127.0.0.1:9091</code></td><td>指标采集 / 告警规则</td></tr>
+  <tr><td>Langfuse</td><td><code>http://127.0.0.1:3010</code></td><td>LLM 可观测</td></tr>
+</table>
+
+<div class="callout callout-info">
+  <strong>登录说明：</strong>员工不需要记 Keycloak 地址。任何产品点「登录」都会自动跳转到 Keycloak（<code>http://&lt;服务器IP&gt;:9090</code>），用域账号登录后自动跳回原产品。
+</div>
+
+<!-- ==================== 2. 前置准备 ==================== -->
+<h2 id="prereq">2. 前置准备</h2>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Docker Desktop 配置</strong>
+  <p>Docker Desktop 安装后默认使用 WSL2 后端（无需额外配置）。如需手动调整资源限制，在用户目录下创建 <code>.wslconfig</code> 文件：</p>
+  <pre><code># %UserProfile%\.wslconfig（例如 C:\Users\你的用户名\.wslconfig）
+[wsl2]
+memory=24GB       # Docker 最大内存（最低 16GB，推荐 24~32GB；按宿主机内存一半左右分配）
+processors=8      # CPU 核心数（按宿主机物理核数）
+swap=4GB</code></pre>
+  <p>保存后 PowerShell 执行 <code>wsl --shutdown</code> 然后重启 Docker Desktop 生效。</p>
+  <div class="verify">Docker Desktop 状态栏显示 "Engine running"（绿色）</div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>创建工作目录</strong>
+  <pre><code><span class="comment"># 在 PowerShell 中执行</span>
+mkdir deepchat-updates</code></pre>
+  <p>目录结构：</p>
+  <div style="margin: 8px 0; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.85em; line-height: 2;">
+    <div><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">C:\ai-platform\windows\</span> &nbsp;&nbsp;<span style="color:#8b949e"># 假设的部署根目录</span></div>
+    <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">docker-compose.yml</span> &nbsp;&nbsp;<span style="color:#8b949e"># 核心服务编排（已生成）</span></div>
+    <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">.env.windows</span> &nbsp;&nbsp;<span style="color:#8b949e"># 环境变量（已生成，需填入 API Key）</span></div>
+    <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">litellm-config.yaml</span> &nbsp;&nbsp;<span style="color:#8b949e"># LiteLLM PII 脱敏配置（已生成）</span></div>
+    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">deepchat-updates\</span> &nbsp;&nbsp;<span style="color:#8b949e"># DeepChat 安装包托管目录</span></div>
+    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">admin-portal\</span> &nbsp;&nbsp;<span style="color:#8b949e"># AI 管理中心实现</span></div>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>编辑 .env.windows 填入 API Key</strong>
+  <p>打开 <code>.env.windows</code>，复制为 <code>.env</code>，修改以下项：</p>
+  <pre><code><span class="comment"># 默认已配 DeepSeek（取消注释并填入你的 Key 即可）</span>
+DEEPSEEK_API_KEY=sk-你的真实DeepSeek密钥
+
+<span class="comment"># 如需 OpenAI 或 Claude，取消对应注释并填入 Key</span>
+<span class="comment"># 同时需要取消 litellm-config.yaml 中对应 model 块的注释</span>
+# OPENAI_API_KEY=sk-你的真实OpenAI密钥
+# ANTHROPIC_API_KEY=sk-ant-你的真实Claude密钥</code></pre>
+  <div class="callout callout-warn">
+    <strong>注意：</strong>至少需要一个外部模型 API Key 才能走通 LLM 链路。
+    默认使用 DeepSeek（最便宜）。加了新 provider 后，<strong>必须同步修改 <code>litellm-config.yaml</code></strong>，取消对应 model 块的注释。
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>创建 Docker 共享网络</strong>
+  <pre><code><span class="comment"># 在 PowerShell 中执行</span>
+docker network create ai-platform
+
+<span class="comment"># 验证</span>
+docker network ls | findstr ai-platform</code></pre>
+  <div class="verify">输出包含 <code>ai-platform</code> 网络</div>
+</div>
+
+<div class="step">
+  <span class="step-num">5</span><strong>固定宿主机内网 IP（推荐，否则对外地址会变）</strong>
+  <p>宿主机通过 WiFi 接入公司内网时，IP 由路由器 DHCP 动态分配，重启或租约到期后会变。变掉后，员工访问各产品的地址（见 <a href="#overview">1.4 内网访问地址清单</a>）就全失效了。建议在路由器上做 <b>DHCP 保留（MAC 绑定）</b>固定 IP：</p>
+  <ol>
+    <li>查 WiFi 网卡 MAC：PowerShell 执行 <code>ipconfig /all</code>，找「无线局域网适配器 WLAN」的物理地址（如 <code>60-A3-E3-41-8F-61</code>）</li>
+    <li>登录路由器管理后台（如小米路由器 <code>http://192.168.31.1</code>）→ 局域网设置 / DHCP 静态 IP 分配</li>
+    <li>添加规则：MAC <code>60-A3-E3-41-8F-61</code> → IP <code>192.168.31.117</code>，保存</li>
+    <li>重连 WiFi 或重启路由器，确认 IP 固定为 <code>192.168.31.117</code></li>
+  </ol>
+  <div class="callout callout-info">DHCP 保留比在 Windows 里设静态 IP 更稳（路由器统一管理、不会 IP 冲突、Windows 无感）。若换成有线网卡，同样可对有线网卡的 MAC 做保留。</div>
+</div>
+
+<!-- ==================== 3. 配置文件说明 ==================== -->
+<h2 id="files">3. 配置文件说明</h2>
+
+<p>三个核心配置文件已生成在 <code></code> 目录下：</p>
+
+<table>
+  <tr><th>文件</th><th>用途</th><th>需要修改吗</th></tr>
+  <tr>
+    <td><code>.env.windows</code></td>
+    <td>所有密码和外部 API Key</td>
+    <td><strong>必须修改</strong>：填入 DeepSeek API Key（其他 provider 按需取消注释）</td>
+  </tr>
+  <tr>
+    <td><code>litellm-config.yaml</code></td>
+    <td>LiteLLM 模型列表 + Presidio PII 脱敏规则</td>
+    <td>通常不需要改（如只用 DeepSeek，删除 OpenAI/Claude 条目即可）</td>
+  </tr>
+  <tr>
+    <td><code>docker-compose.yml</code></td>
+    <td>7 个核心服务的 Docker 编排</td>
+    <td>已预配置（含 Keycloak <code>KC_HOSTNAME=&lt;服务器IP&gt;</code> + <code>keycloak-data</code> 持久化卷）</td>
+  </tr>
+</table>
+
+<div class="callout callout-info">
+  <strong>litellm-config.yaml 说明：</strong>
+  <ul>
+    <li><code>model_list</code> — 定义可用外部模型，NewAPI 通过 LiteLLM 调用它们。默认仅启用 <code>deepseek-chat</code>，其他模型按需取消注释 + 配 .env</li>
+    <li><code>general_settings.master_key</code> — LiteLLM 管理员密钥，读取 <code>.env</code> 中的 <code>LITELLM_MASTER_KEY</code></li>
+    <li>PII 脱敏（Presidio）已临时注释。新版 LiteLLM 的 guardrail API 变更导致不兼容。后需启用时参考 <a href="https://docs.litellm.ai/docs/proxy/guardrails/presidio" target="_blank">LiteLLM 官方文档</a></li>
+    <li>当前使用稳定版本 <code>v1.95.1</code>（<code>main-latest</code> 存在已知 bug）</li>
+  </ul>
+</div>
+
+<h3>3.1 环境变量配置指南（哪些现在配，哪些以后配）</h3>
+
+<h4>变量分类总览</h4>
+<table>
+  <tr><th>变量</th><th>类型</th><th>说明</th></tr>
+  <tr><td><code>DEEPSEEK_API_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>外部 LLM API Key，不配则链路不通</td></tr>
+  <tr><td><code>LITELLM_MASTER_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>LiteLLM 内部鉴权密钥，NewAPI 需要用</td></tr>
+  <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>MySQL root 密码，首次创建后不宜改</td></tr>
+  <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>Keycloak 管理员密码</td></tr>
+  <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>NewAPI 会话加密，随机字符串即可</td></tr>
+  <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>NewAPI 数据加密，随机字符串即可</td></tr>
+  <tr><td><code>GLOBAL_WEB_RATE_LIMIT</code></td><td style="color:#8b949e">⚪ 默认</td><td>Web 登录限流（次/分钟），测试期设 999999，生产酌情调低</td></tr>
+  <tr><td><code>GLOBAL_API_RATE_LIMIT</code></td><td style="color:#8b949e">⚪ 默认</td><td>API 路由限流（次/3分钟），测试期设 999999</td></tr>
+  <tr><td><code>CRITICAL_RATE_LIMIT_ENABLE</code></td><td style="color:#8b949e">⚪ 默认</td><td>关键接口限流开关（登录/OAuth 回调），默认 20 次/20分钟易触发 429，测试期设 false</td></tr>
+  <tr><td><code>CRITICAL_RATE_LIMIT</code></td><td style="color:#8b949e">⚪ 默认</td><td>关键接口限流阈值，测试期设 999999</td></tr>
+  <tr><td><code>DEFAULT_QUOTA</code></td><td style="color:#8b949e">⚪ 默认</td><td>新用户默认额度（美元），默认 0（无法调用模型）。设 100 = 新用户送 100 美元额度</td></tr>
+  <tr><td><code>GENERATE_DEFAULT_TOKEN</code></td><td style="color:#8b949e">⚪ 默认</td><td>新用户注册时自动生成初始 API Key，默认 false。设 true 让用户登录即可用</td></tr>
+  <tr><td><code>ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>AI 管理中心 Global Admin 密码</td></tr>
+  <tr><td><code>SESSION_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>AI 管理中心会话加密，随机字符串即可</td></tr>
+  <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td style="color:#d29922">🟡 可后配</td><td>需先在 Keycloak 创建 OIDC Client，拿到 Secret 后填入（见步骤 11.6）</td></tr>
+  <tr><td><code>GITEA_RUNNER_TOKEN</code></td><td style="color:#d29922">🟡 可后配</td><td>需先启动 Gitea，在后台获取 Token 后填入（见步骤 6.6）</td></tr>
+  <tr><td><code>OPENAI_API_KEY</code> / <code>ANTHROPIC_API_KEY</code></td><td style="color:#56d364">🟢 按需</td><td>需要用时取消注释并填入。同时取消 <code>litellm-config.yaml</code> 中对应 model 块的注释</td></tr>
+  <tr><td><code>TZ</code> / <code>KEYCLOAK_ADMIN</code> / <code>ADMIN_USERNAME</code> / <code>ADMIN_EMAIL</code></td><td style="color:#8b949e">⚪ 默认</td><td>默认值即可，无需修改</td></tr>
+</table>
+
+<h4>立即配置（首次启动前必须完成）</h4>
+<p>打开 <code>.env</code>，以下 🔴 标记项必须在首次启动前配置好。每个值都有 <code>.env</code> 文件中行内注释说明如何生成/获取。</p>
+
+<div class="card">
+<table>
+  <tr><th>变量</th><th>说明</th><th>如何获取/生成</th><th>格式示例</th></tr>
+  <tr>
+    <td style="color:#f85149"><code>DEEPSEEK_API_KEY</code></td>
+    <td>DeepSeek 云端 LLM API 密钥</td>
+    <td>注册 <a href="https://platform.deepseek.com">platform.deepseek.com</a> → API Keys</td>
+    <td><code>sk-xxxxxxxxxxxxxxxx</code></td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>LITELLM_MASTER_KEY</code></td>
+    <td>LiteLLM <strong>内部</strong>管理员密钥（不是外部 LLM Key！）</td>
+    <td>PowerShell: <code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code><br>NewAPI 用这个密钥连接 LiteLLM</td>
+    <td><code>sk-litellm-xxxx</code></td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>NEWAPI_DB_PASSWORD</code></td>
+    <td>MySQL 数据库密码</td>
+    <td>自己设定，首次创建后<strong>不宜再改</strong>（改需删库）</td>
+    <td>任意字符串</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>KEYCLOAK_ADMIN_PASSWORD</code></td>
+    <td>Keycloak 管理员密码</td>
+    <td>自己设定，至少 8 位</td>
+    <td>任意字符串</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>NEWAPI_SESSION_SECRET</code></td>
+    <td>NewAPI Web 界面会话加密密钥</td>
+    <td>随机生成：Windows PowerShell:<br><code>-join ((48..57)+(65..90)+(97..122) &#124; Get-Random -Count 32 &#124; % {[char]$_})</code></td>
+    <td>32 位随机字符串</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>NEWAPI_CRYPTO_SECRET</code></td>
+    <td>NewAPI 存储的 API Key 加密密钥</td>
+    <td>同上：PowerShell: <code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></td>
+    <td>32 位随机字符串</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>ADMIN_PASSWORD</code></td>
+    <td>AI 管理中心 Global Admin 密码</td>
+    <td>自己设定，至少 8 位</td>
+    <td>任意字符串</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>SESSION_SECRET</code></td>
+    <td>AI 管理中心会话加密密钥</td>
+    <td>同上：PowerShell: <code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></td>
+    <td>64 位随机字符串</td>
+  </tr>
+</table>
+</div>
+
+<p>完整配置查看 <code>.env.windows</code> 文件，每个变量都有行内注释说明用途、用法和格式。</p>
+
+<h4>密码修改策略</h4>
+<div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> 涉及已创建的数据库，修改后需要删除对应 volume 重新创建（数据会丢失）。建议首次就定好，不要后续改。</div>
+<p><code>KEYCLOAK_ADMIN_PASSWORD</code>、<code>ADMIN_PASSWORD</code>、<code>ADMIN_PASSWORD</code> 等管理密码可以在各产品的后台界面修改，改完后同步更新 <code>.env</code>（不影响运行，只是备忘）。</p>
+
+<h2 id="start">4. 启动核心服务</h2>
+
+<div class="step">
+  <span class="step-num">1</span><strong>复制 .env.windows 为 .env</strong>
+  <p>Docker Compose 默认读取 <code>.env</code> 文件：</p>
+  <pre><code><span class="comment"># PowerShell</span>
+copy .env.windows .env</code></pre>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>启动全部核心服务</strong>
+  <pre><code><span class="comment"># PowerShell</span>
+docker compose -f docker-compose.yml up -d</code></pre>
+  <p>首次启动会拉取所有镜像（约 5-10 分钟，取决于网速）。</p>
+  <div class="callout callout-warn">
+    <strong>首次拉取镜像（约 3-4GB 磁盘空间）：</strong>
+    <table>
+      <tr><th>Image</th><th>Container</th><th>Size</th></tr>
+      <tr><td><code>quay.io/keycloak/keycloak:25.0</code></td><td>keycloak</td><td>~600MB</td></tr>
+      <tr><td><code>calciumion/new-api</code></td><td>new-api</td><td>~200MB</td></tr>
+      <tr><td><code>mysql:8.0</code></td><td>new-api-db</td><td>~600MB</td></tr>
+      <tr><td><code>redis:7-alpine</code></td><td>new-api-redis</td><td>~40MB</td></tr>
+      <tr><td><code>ghcr.io/berriai/litellm:v1.95.1</code></td><td>litellm</td><td>~1GB</td></tr>
+      <tr><td><code>ghost:5-alpine</code></td><td>ghost</td><td>~150MB</td></tr>
+      <tr><td><code>gitea/gitea</code></td><td>gitea</td><td>~300MB</td></tr>
+      <tr><td><code>gitea/act_runner</code></td><td>gitea-runner</td><td>~100MB</td></tr>
+      <tr><td><code>nginx:alpine</code></td><td>update-server</td><td>~50MB</td></tr>
+      <tr><td><code>node:20-alpine</code></td><td>admin-portal</td><td>~50MB</td></tr>
+    </table>
+  </div>
+</div>
+
+  <div class="step">
+  <span class="step-num">3</span><strong>检查所有容器状态</strong>
+  <pre><code><span class="comment"># 查看运行中的容器（预期 10 个全部 Up）</span>
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+<span class="comment"># 预期输出</span>
+<span class="comment">NAME              STATUS         PORTS</span>
+<span class="comment">admin-portal      Up             0.0.0.0:10086->3000/tcp</span>
+<span class="comment">keycloak          Up             0.0.0.0:9090->8080/tcp</span>
+<span class="comment">new-api           Up             0.0.0.0:3000->3000/tcp</span>
+<span class="comment">new-api-db        Up (healthy)   3306/tcp</span>
+<span class="comment">new-api-redis     Up             6379/tcp</span>
+<span class="comment">litellm           Up             0.0.0.0:4000->4000/tcp</span>
+<span class="comment">ghost             Up             0.0.0.0:8090->2368/tcp</span>
+<span class="comment">gitea             Up             0.0.0.0:3002->3000/tcp, 0.0.0.0:2222->22/tcp</span>
+<span class="comment">gitea-runner      Up             </span>
+<span class="comment">update-server     Up             0.0.0.0:8091->80/tcp</span></code></pre>
+  <div class="verify">所有容器状态为 <code>Up</code>。如果有容器持续 Restarting，查看日志：<code>docker logs 容器名</code></div>
+</div>
+
+<div class="step">
+  <span class="step-num">3.5</span><strong>已知问题修复：Ghost 强制 SQLite</strong>
+  <p>如果上一步看到 <code>ghost</code> 容器一直 <code>Restarting</code>，执行 <code>docker logs ghost</code> 看到 <code>Error: connect ECONNREFUSED &lt;服务器IP&gt;:3306</code> —— 说明数据卷 <code>ghost-data</code> 里残留了一份指向 MySQL 的 <code>config.production.json</code>（旧版部署遗留），Ghost 启动时读这份残档而不是走默认 SQLite。windows 栈没有 MySQL 给 Ghost 用，所以连不上。</p>
+  <p>修复方法：在 <code>docker-compose.yml</code> 的 ghost 服务 <code>environment</code> 下显式声明 SQLite，用环境变量覆盖卷内残留配置：</p>
+  <pre><code><span class="comment"># docker-compose.yml 中 ghost 服务块的 environment 部分</span>
+  ghost:
+    image: ghost:5-alpine
+    container_name: ghost
+    restart: always
+    ports:
+      - "8090:2368"
+    environment:
+      url: http://127.0.0.1:8090
+      <span class="comment"># 强制 SQLite，覆盖可能残留的旧 MySQL config.production.json</span>
+      database__client: sqlite3
+      database__connection__filename: /var/lib/ghost/content/data/ghost.db
+      database__use_null_pool: "true"
+    volumes:
+      - ghost-data:/var/lib/ghost/content
+    networks:
+      - ai-platform</code></pre>
+  <p>修改后重建容器：</p>
+  <pre><code>docker compose up -d ghost
+
+<span class="comment"># 等待 10 秒后查看日志，确认 SQLite 启动成功</span>
+docker logs ghost --tail 20</code></pre>
+  <div class="callout callout-warn">
+    <strong>⚠️ 注意 Docker Desktop 卷不可见：</strong>Windows + Docker Desktop WSL2 下，<code>/var/lib/docker/volumes/windows_ghost-data/_data/</code> 在宿主机 git bash 里<b>不可见</b>（卷数据被封在 WSL2 虚拟磁盘内），所以无法直接删除卷内的 <code>config.production.json</code>。必须走"环境变量覆盖"路线，让 Ghost 启动时优先读环境变量。
+  </div>
+  <div class="callout callout-info">
+    <strong>📌 为什么不直接删数据卷？</strong>删卷 <code>docker volume rm windows_ghost-data</code> 也能解决，但会丢失所有已发布的文章/主题/上传文件。环境变量覆盖方式保留数据，只改数据库连接路径。Ghost 5.x 默认 SQLite 完全够企业门户用，无需引入额外 MySQL。
+  </div>
+  <div class="verify">日志出现 <code>Ghost database ready in X.Xs</code> + <code>Ghost booted in X.Xs</code> + <code>Database is in a ready state</code> 表示修复成功。<code>curl.exe -I http://127.0.0.1:8090</code> 返回 <code>HTTP 200</code>。</div>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>逐服务验证可访问</strong>
+
+  <h4>外部可访问的服务（浏览器 / curl 测试）</h4>
+  <pre><code><span class="comment"># Keycloak — 返回 302 表示 OK</span>
+curl.exe -I http://127.0.0.1:9090/admin/
+
+<span class="comment"># NewAPI — 返回 200</span>
+curl.exe -I http://127.0.0.1:3000
+
+<span class="comment"># Ghost 企业门户 — 返回 302（重定向到 /ghost/ 初始化页）</span>
+curl.exe -I http://127.0.0.1:8090
+
+<span class="comment"># Gitea — 返回 200</span>
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:3002
+
+<span class="comment"># Update Server — 返回 403（空目录，表示 nginx 在运行）</span>
+curl.exe -I http://127.0.0.1:8091
+
+<span class="comment"># AI 管理中心 — 返回 200</span>
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:10086</code></pre>
+
+  <h4>Docker 内网服务（通过容器间通信验证）</h4>
+  <div class="callout callout-info">
+    <strong>说明：</strong>LiteLLM 是纯 API 服务，不提供 Web 界面。它通过 Docker 内网供 NewAPI 调用（<code>http://litellm:4000</code>），宿主机不需要直接访问。Docker Desktop WSL2 的 HTTP 代理可能导致 LiteLLM 在宿主机上无法访问（返回 HEART 或空响应），这是已知 bug，不影响实际功能。
+  </div>
+  <pre><code><span class="comment"># LiteLLM 模型列表（读 Key → 存变量 → 一键调用）</span>
+$K = docker exec litellm printenv LITELLM_MASTER_KEY
+docker exec gitea wget -qO- --header="Authorization: Bearer $K" http://litellm:4000/v1/models
+
+<span class="comment"># 预期返回 JSON：{"data":[{"id":"deepseek-chat",...}]}</span></code></pre>
+  <div class="verify">Keycloak 302 / NewAPI 200 / Gitea 200 / Admin Center 200 = 通过。LiteLLM 从容器内部调用返回模型列表 = 通过。<br>更简单：浏览器打开 <code>http://127.0.0.1:3000</code>（NewAPI）、<code>http://127.0.0.1:9090</code>（Keycloak）、<code>http://127.0.0.1:8090</code>（Ghost）。</div>
+</div>
+
+<!-- ==================== 5. Dify ==================== -->
+<h2 id="dify">5. Dify 独立部署（官方 Docker Compose）</h2>
+
+<div class="callout callout-info">
+  Dify 使用官方 docker-compose（含 ~15 个容器），独立部署避免端口冲突。Dify 容器使用自己的默认网络。
+</div>
+
+<div class="step">
+  <span class="step-num">1</span><strong>克隆 Dify</strong>
+  <p>二选一（GitHub 需翻墙，Gitee 国内直达）：</p>
+  <pre><code><span class="comment"># 方案 A：GitHub</span>
+$tag = (Invoke-RestMethod https://api.github.com/repos/langgenius/dify/releases/latest).tag_name
+git clone --branch $tag https://github.com/langgenius/dify.git
+
+<span class="comment"># 方案 B：Gitee 官方镜像（推荐）</span>
+git clone https://gitee.com/dify_ai/dify.git</code></pre>
+  <div class="note">方案 A 还需要 <code>jq</code>：<code>winget install jqlang.jq</code>。</div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>修复 Yaml 兼容性 + 复制环境变量</strong>
+  <p>Dify 用了新版 Docker Compose 的 <code>env_file</code> 语法，如果你版本较老需要修复。同时把所有 <code>.env.example</code> 模板复制为 <code>.env</code>：</p>
+  <pre><code><span class="comment"># 进入 Docker 目录</span>
+cd dify\docker
+
+<span class="comment"># 修复 env_file 格式（兼容老版本 Docker Compose）</span>
+python -c "import re; c=open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml').read(); c=re.sub(r'  - path: (\./envs/[^\n]+\.env)\n\s+required: (?:true|false)', r'  - \1', c); open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml','w').write(c); print('Fixed')"
+
+<span class="comment"># 复制主环境变量</span>
+copy .env.example .env
+
+<span class="comment"># 复制所有子模板（sandbox.env、local-sandbox.env 等）</span>
+Get-ChildItem envs -Recurse -Filter *.example | ForEach-Object {
+    $target = $_.FullName -replace '\.example$', ''
+    if (-not (Test-Path $target)) { Copy-Item $_.FullName $target }
+}
+
+<span class="comment"># 修复 Dify 1.16.1 上游校验问题（必需）</span>
+<span class="comment"># 1.16.1 镜像把 GRAPH_ENGINE_SCALE_UP_THRESHOLD 字段从 NonNegativeInt 升级为 PositiveInt，</span>
+<span class="comment"># 但 shared.env 里默认值仍是 0，会导致 api/worker/worker_beat/api_websocket 4 个容器启动即崩溃，</span>
+<span class="comment"># 日志报 ValidationError: Input should be greater than 0</span>
+(Get-Content envs\core-services\shared.env) -replace 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=0', 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=50' | Set-Content envs\core-services\shared.env
+
+<span class="comment"># 验证 Yaml 无错误</span>
+docker compose config --quiet
+
+<span class="comment"># 验证 GRAPH_ENGINE 修改成功</span>
+findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
+<span class="comment"># 期望输出：GRAPH_ENGINE_SCALE_UP_THRESHOLD=50</span></code></pre>
+  <div class="callout callout-warn">
+    <strong>⚠️ 为什么必须改这一行：</strong>Dify 1.16.1 镜像把 <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> 字段类型从 <code>NonNegativeInt</code>（允许 0）升级为 <code>PositiveInt</code>（必须 > 0），但 <code>shared.env</code> 模板还停留在 <code>=0</code>。不改的话，<code>docker-api-1</code> / <code>docker-worker-1</code> / <code>docker-worker_beat-1</code> / <code>docker-api_websocket-1</code> 会一直 <code>Restarting (1)</code>，<code>docker logs docker-api-1</code> 能看到 <code>pydantic_core._pydantic_core.ValidationError</code>。这是上游版本升级的破坏性默认值变更，跟你的本地配置无关。
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>启动 Dify</strong>
+  <pre><code><span class="comment"># 启动全部容器（首次约 5-10 分钟，15 个容器）</span>
+docker compose up -d
+
+<span class="comment"># 检查状态</span>
+docker compose ps</code></pre>
+  <div class="verify">所有容器 <code>Up</code>（<code>init_permissions</code> 显示 <code>Exited</code> 是正常的）。浏览器打开 <code>http://127.0.0.1/install</code> 初始化管理员账号。</div>
+</div>
+
+<div class="callout callout-warn">
+  <strong>⚠️ WebSocket 地址配置（不改会导致创建应用时反复连接 <code>ws://localhost</code>）：</strong>Dify 的 <code>.env</code> 里 <code>NEXT_PUBLIC_SOCKET_URL</code> 默认是 <code>ws://localhost</code>，内网部署时浏览器里的 <code>localhost</code> 指向用户自己电脑（不是服务器），导致前端反复连接 <code>ws://localhost/socket.io</code>、响应一直为空（创建应用 / 工作流调试等需要实时功能的场景会卡住）。修复：
+  <pre><code><span class="comment"># .env 里把 WebSocket 地址改成内网 IP（与访问地址一致）</span>
+NEXT_PUBLIC_SOCKET_URL=ws://&lt;服务器IP&gt;
+
+<span class="comment"># docker-compose.yaml 里 web 服务的 fallback 也同步改</span>
+NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-ws://&lt;服务器IP&gt;}
+
+<span class="comment"># 重建 web 容器生效</span>
+docker compose up -d web</code></pre>
+  <div class="note">改完强刷浏览器（<code>Ctrl+F5</code>），WebSocket 会变成 <code>ws://&lt;服务器IP&gt;/socket.io</code> 并正常连上（nginx 已内置 <code>/socket.io/</code> → <code>api_websocket:5001</code> 代理）。该变量是<b>运行时读取</b>的（web 镜像 entrypoint 会 export），改 <code>.env</code> + 重启 web 容器即可，无需重建镜像。</div>
+</div>
+
+<p>Dify 的 Keycloak SSO 配置：Dify 设置 → 登录方式 → OIDC → 填入 Keycloak OIDC 端点。Dify 添加模型供应商时，<b>API Base URL 填写 <code>http://host.docker.internal:3000/v1</code></b>，通过 NewAPI 路由。</p>
+
+<div class="callout callout-warn">
+  <strong>⚠️ 踩坑：Dify 登录密码是 base64 传输，不是明文/RSA：</strong>Dify 1.16.x 的登录接口 <code>POST /console/api/login</code> 里 <code>password</code> 字段是 <b>base64 编码后的密码</b>（<code>/app/api/libs/encryption.py</code> 注释明确是「Base64 混淆，非加密」）。所以：① 用脚本/接口登录时要先 <code>base64(密码)</code>；② 前端「点了登录没反应」时，console 里 <code>GET /console/api/account/profile 401</code> + <code>POST /console/api/refresh-token 401</code> 是<b>未登录时的正常现象</b>，不代表后端坏（换浏览器/清缓存/重试）。
+</div>
+<div class="callout callout-danger">
+  <strong>⚠️ 踩坑：Dify 忘记管理员密码时的重置方法：</strong>Dify 密码哈希是 <code>pbkdf2_hmac('sha256', password, salt, 10000)</code>（<b>迭代 10000，不是常见的 100000</b>），无法直接反解。忘记密码用容器内命令重置（<b>新密码必须 ≥ 8 位</b>）：
+  <pre style="margin:8px 0;"><code>docker exec docker-api-1 flask reset-password \
+  --email ai_all_in_one_admin@&lt;公司域名&gt; \
+  --new-password '&lt;新密码&gt;' \
+  --password-confirm '&lt;新密码&gt;'</code></pre>
+  另注意：Dify <code>.env</code> 里 <code>SECRET_KEY</code> 若为空，不影响密码登录（密码走 PBKDF2+salt），但影响 provider 凭据加密（encrypted_config），一般无需处理。
+</div>
+
+<!-- ==================== 6. 各产品配置 ==================== -->
+<h2 id="config">6. 各产品 Web UI 配置</h2>
+
+<p>所有服务已启动，现在通过浏览器配置各产品的互连关系。按以下顺序操作：</p>
+
+<h3 id="config-keycloak">6.1 Keycloak — 创建 Realm 和用户</h3>
+<div class="callout callout-info">
+  <strong>Keycloak 配置说明：</strong>
+  <ul>
+    <li><strong>访问地址：</strong>宿主机本机用 <code>http://127.0.0.1:9090</code>，公司内网员工用 <code>http://&lt;服务器IP&gt;:9090</code>。compose 已将 <code>KC_HOSTNAME</code> 设为 <code>&lt;服务器IP&gt;</code>（内网 IP），并开启 <code>KC_HOSTNAME_STRICT=false</code> 让两种地址都能正常跳转，避免 Docker Desktop WSL2 IPv6 兼容性导致的 <code>localhost</code> 重定向空白页。</li>
+    <li><strong>数据持久化：</strong>H2 数据库存储在命名卷 <code>keycloak-data</code>（映射 <code>/opt/keycloak/data</code>），容器重建不会丢失 Realm、用户、OIDC 客户端等配置。</li>
+    <li><strong>凭据：</strong>用户名和密码见 <code>.env.windows</code> 中的 <code>KEYCLOAK_ADMIN</code> 和 <code>KEYCLOAK_ADMIN_PASSWORD</code>。</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">1</span>浏览器打开 <code>http://127.0.0.1:9090</code>
+  <ul>
+    <li>用户名和密码见 <code>.env.windows</code> 中的 <code>KEYCLOAK_ADMIN</code> 和 <code>KEYCLOAK_ADMIN_PASSWORD</code></li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>创建 Realm</strong>
+  <ul>
+    <li>左上角下拉 → <strong>Create Realm</strong></li>
+    <li>Realm name：<code>enterprise-ai</code> → Create</li>
+  </ul>
+</div>
+
+<h4>6.1.1 方式 A：本地创建账号（默认）</h4>
+<p>适用于无企业 AD 的小团队或开发测试场景，直接在 Keycloak 内管理用户。</p>
+<div class="step">
+  <span class="step-num">3a</span><strong>创建用户组和用户</strong>
+  <ul>
+    <li><strong>Groups</strong> → Create Group → <code>ai-admin</code></li>
+    <li>再创建 <code>ai-user</code></li>
+    <li><strong>Users</strong> → Add user → 用户名（自定义）→ Create</li>
+    <li>Credentials 标签 → 设置密码 → Temporary 关闭</li>
+    <li>Groups 标签 → 加入 <code>ai-user</code> 组</li>
+  </ul>
+</div>
+<div class="verify">可以用刚创建的本地用户在 Keycloak 登录页面登录成功。</div>
+
+<h4>6.1.2 方式 B：从 Active Directory 导入账号</h4>
+<p>适用于公司已有 Windows AD 域控的环境。员工用域账号登录，无需在 Keycloak 中手动创建账号。</p>
+<p><strong>前置条件：</strong>Docker 容器到 DC 域控的网络已互通。如未配置网络（端口转发、防火墙），先参考独立文档：
+<a href="windows-ad-integration.html" style="color:#58a6ff;">📄 Keycloak AD 集成完整指南 — 含网络拓扑、Hyper-V Internal Switch、端口转发、故障排查</a></p>
+<p><strong>需要的 AD 账号：</strong></p>
+<table>
+  <tr><th>账号</th><th>类型</th><th>说明</th></tr>
+  <tr><td><code>svc_keycloak</code></td><td>服务账号（必须，密码永不过期）</td><td>Keycloak LDAP 绑定用，密码见 <code>.env.windows</code></td></tr>
+  <tr><td>2 个普通域用户</td><td>测试用（按需创建）</td><td>用于验证 Keycloak 用户同步和域账号登录是否正常</td></tr>
+</table>
+
+<div class="step">
+  <span class="step-num">3b-1</span><strong>创建 LDAP 用户联合</strong>
+  <ol>
+    <li>Keycloak 管理后台 → 选择 <b>enterprise-ai</b> Realm</li>
+    <li>左侧 <b>User Federation</b> → <b>Add provider</b> → 选择 <b>ldap</b></li>
+    <li>填写以下配置：</li>
+  </ol>
+  <table style="margin:12px 0; width:100%;">
+    <tr><th style="width:28%;">配置项</th><th style="width:32%;">值</th><th>说明</th></tr>
+    <tr><td>UI display name</td><td><code>Company AD</code></td><td>Keycloak 界面显示名称，随意填</td></tr>
+    <tr><td>Vendor</td><td><b>Active Directory</b></td><td>选 AD（不要选 Other，否则 objectGUID 不识别）</td></tr>
+    <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V 经端口转发；生产填 <code>ldap://dc.company.com:389</code></td></tr>
+    <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>不走 StartTLS，直接用 LDAP 389 或 LDAPS 636</td></tr>
+    <tr><td>Use Truststore SPI</td><td><b>Always</b></td><td>仅 LDAPS 有用；LDAP 明文不影响</td></tr>
+    <tr><td>Connection pooling</td><td><b>Off</b></td><td>默认关，高并发时可按需开启</td></tr>
+    <tr><td>Connection timeout</td><td><i>留空</i></td><td>Keycloak 默认超时</td></tr>
+    <tr><td>Bind type</td><td><b>simple</b></td><td>用户名+密码认证</td></tr>
+    <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>必须 LDAP DN 格式！</b>不要用 <s>DOMAIN\用户</s></td></tr>
+    <tr><td>Bind credentials</td><td><code>svc_keycloak 密码</code></td><td>见 <code>.env.windows</code></td></tr>
+    <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>只读，不写回 AD</td></tr>
+    <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>用户所在容器。有子 OU 时改 <code>DC=testcompany,DC=local</code></td></tr>
+    <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>不要填 cn</b> — 这是 AD 登录名</td></tr>
+    <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>条目命名属性</td></tr>
+    <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>AD 不可变唯一标识</td></tr>
+    <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>AD 用户对象类，逗号分隔</td></tr>
+    <tr><td>User LDAP filter</td><td><i>留空</i></td><td>需要过滤时可填 <code>(department=IT)</code></td></tr>
+    <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>不要选 One Level</b> — 否则子 OU 用户搜不到</td></tr>
+    <tr><td>Read timeout</td><td><i>留空</i></td><td>默认值</td></tr>
+    <tr><td>Pagination</td><td><b>On</b></td><td>用户多时分批拉取</td></tr>
+    <tr><td>Referral</td><td><b>ignore</b></td><td>避免 Keycloak 跟到不存在的域控</td></tr>
+    <tr><td>Import users</td><td><b>On</b></td><td>全量同步时导入</td></tr>
+    <tr><td>Sync Registrations</td><td><b>On</b></td><td>首登即时同步</td></tr>
+    <tr><td>Batch size / Periodic sync</td><td><i>留空 / Off</i></td><td>测试阶段手动同步</td></tr>
+    <tr><td>Kerberos (两项)</td><td><b>Off / Off</b></td><td>不用 Kerberos</td></tr>
+    <tr><td>Cache policy</td><td><b>DEFAULT</b></td><td>默认缓存</td></tr>
+    <tr><td>Advanced (3 项)</td><td><b>Off / Off / Off</b></td><td>READ_ONLY 模式无需</td></tr>
+  </table>
+  <ol start="4">
+    <li>点击 <b>Save</b></li>
+    <li>点击 <b>Synchronize all users</b> → 等待同步完成</li>
+  </ol>
+  <div class="callout callout-warn" style="margin:12px 0;">
+    <strong>常见填错：</strong>
+    <ul>
+      <li><b>Bind DN = LDAP 格式</b>（<code>CN=svc_keycloak,CN=Users,DC=xxx</code>），不要用 <s>DOMAIN\用户</s></li>
+      <li><b>Username LDAP attribute = <code>sAMAccountName</code></b>，不是 <code>cn</code></li>
+      <li><b>Search scope = Subtree</b>，不要选 One Level</li>
+      <li style="color:#f0883e"><b>⚠️ CN 带空格要原样保留：</b>若绑定账号的显示名带空格（如统一账号显示名是 <code>ai all in one admin</code>，中间是<b>空格</b>不是下划线），Bind DN 必须写成 <code>CN=ai all in one admin,CN=Users,DC=xxx</code>（<b>空格原样保留</b>），写成 <code>ai_all_in_one_admin</code> 会连不上域控。改了域控显示名后要同步更新这里的 Bind DN。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">3b-2</span><strong>配置 LDAP 组映射（可选）</strong>
+  <p>将 AD 组映射为 Keycloak 角色：</p>
+  <ol>
+    <li>在 User Federation 列表点击刚创建的 LDAP Provider</li>
+    <li><b>Mappers</b> 标签 → 添加 <code>group-ldap-mapper</code></li>
+    <li>设置 Groups DN：<code>CN=Users,DC=testcompany,DC=local</code></li>
+    <li>保存后会自动将 AD 组映射到 Keycloak</li>
+  </ol>
+</div>
+<div class="verify">
+<p>在 Keycloak <b>Users</b> 列表中可看到从 AD 同步过来的域用户。用以下方式测试登录：</p>
+
+<h5>方式 A：Keycloak Account Console 登录测试（推荐，无需配置下游应用）</h5>
+<ol>
+  <li>打开浏览器（推荐隐私/无痕窗口，避免 Session 缓存干扰）</li>
+  <li>访问 <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code></li>
+  <li>
+    输入 AD 域用户凭证：
+    <ul>
+      <li>用户名：<code>aitest1</code>（sAMAccountName）或 <code>aitest1@chxia.lab</code>（UPN），两种格式均可</li>
+      <li>密码：域用户 AD 密码</li>
+    </ul>
+  </li>
+  <li>点击 <b>Sign In</b> → 预期跳转到 <b>Account Console</b>，显示用户名和个人信息</li>
+</ol>
+<div class="callout" style="border-left: 3px solid #d29922; padding: 10px 16px; margin: 12px 0; background: rgba(210,153,34,0.08); border-radius: 0 4px 4px 0;">
+  <strong>排错：</strong><br>
+  <code>Invalid username or password</code> → 密码错误或用户不在 Users DN 范围内<br>
+  <code>Account is disabled</code> → AD 用户已被禁用<br>
+  无反应 → F12 看 Console/Network 面板
+</div>
+
+<h5>方式 B：Admin Console 查看用户来源</h5>
+<ol>
+  <li>Keycloak 管理后台 → <b>Users</b> → 搜索 <code>aitest1</code></li>
+  <li>点击用户 → <b>Attributes</b>：有 <code>LDAP_ID</code> / <code>LDAP_ENTRY_DN</code> 即来源为 AD 同步</li>
+  <li><b>Sessions</b>：方式 A 登录成功后此处有一条活跃会话</li>
+</ol>
+
+<h5>方式 C：下游应用 SSO（后续配置完 Dify 等应用的 OIDC 后）</h5>
+<p>打开 <code>http://127.0.0.1/apps</code> → 自动跳转到 Keycloak 登录页 → 输入域账号 → 登录成功进入 Dify 工作台。</p>
+</div>
+
+<h3 id="config-newapi">6.2 NewAPI — 初始安装 + 配置 LLM 渠道和 API 密钥</h3>
+
+<h4>初始安装向导（首次访问）</h4>
+<p>NewAPI 首次启动时会弹出 4 步系统设置向导。按以下配置完成：</p>
+
+<div class="step">
+  <span class="step-num">1</span><strong>数据库检查</strong>
+  <p>点击 <b>"验证数据库连接"</b>，系统自动检测 MySQL 是否可连通。</p>
+  <div class="callout" style="border-left:3px solid #56d364;padding:10px 16px;margin:8px 0;background:rgba(86,211,100,0.06);border-radius:0 4px 4px 0;">
+    <strong>预期：</strong>绿色勾 + "数据库连接正常"。如失败，检查 <code>docker logs new-api</code> 看 MySQL 连接错误。
+  </div>
+</div>
+
+<div class="step">
+    <span class="step-num">2</span><strong>管理员账户</strong>
+  <table style="margin:8px 0;width:100%;">
+    <tr><th style="width:25%;">配置项</th><th>推荐值</th><th>说明</th></tr>
+    <tr><td>管理员用户名</td><td style="color:#f0883e"><b><code>ai_all_in_one_admin</code></b></td><td>统一管理员账号（见账号密码清单 <code>credentials.html</code>）</td></tr>
+    <tr><td>管理员邮箱</td><td><code>ai_all_in_one_admin@&lt;公司域名&gt;</code></td><td><code>&lt;公司域名&gt;</code> 改成公司域名</td></tr>
+    <tr><td>管理员密码</td><td style="color:#f0883e"><b>统一管理员密码</b></td><td>≥ 8 位，见账号密码清单 <code>credentials.html</code></td></tr>
+  </table>
+  <div class="callout" style="border-left:3px solid #d29922;padding:10px 16px;margin:8px 0;background:rgba(210,153,34,0.06);border-radius:0 4px 4px 0;">
+    <strong>为什么要创建本地管理员？</strong>此时 OIDC 还没配，NewAPI 不认识 Keycloak，必须有一个本地账号先"进门"完成配置。注册完这个管理员后，去系统设置打开 OIDC，后续所有人（含 AD 用户）就能用 Keycloak 账号登录了。
+  </div>
+</div>
+
+<div class="step">
+    <span class="step-num">3</span><strong>使用模式</strong>
+  <p>选择 <b>"个人使用"</b>。</p>
+  <div class="callout" style="border-left:3px solid #8b949e;padding:10px 16px;margin:8px 0;background:rgba(139,148,158,0.06);border-radius:0 4px 4px 0;">
+    <strong>三个选项的区别：</strong>
+    <ul>
+      <li><b>个人使用：</b>不限制用户注册，API 日志按用户隔离，配置简单。适合开发测试和公司内部使用</li>
+      <li><b>对外运营：</b>面向外部用户，多了充值/定价/用户套餐/计费等模块。适合商业化对外经营</li>
+      <li><b>演示站点：</b>只读模式，仅用于展示，不能修改任何配置</li>
+    </ul>
+    <p><b>选择建议：</b>公司内部使用选 <b>个人使用</b>——员工能注册、用量能分开看、没有充值计费等用不到的模块，界面更干净。将来如果有对外经营需求，再转为对外运营。后续随时可在系统设置中切换。</p>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>审核并初始化</strong>
+  <ul>
+    <li>确认前三步的配置无误</li>
+    <li>点击 <b>"确认并完成初始化"</b>（或类似按钮）</li>
+    <li>系统自动创建数据库表 → 跳转到登录页 → 用第一步创建的管理员账号登录</li>
+  </ul>
+</div>
+
+<h4>配置 LLM 渠道</h4>
+<div class="step">
+  <span class="step-num">1</span><strong>添加 LLM 渠道（指向 LiteLLM）</strong>
+  <ul>
+    <li><strong>渠道</strong> → <strong>添加新的渠道</strong></li>
+    <li>类型：<code>OpenAI</code></li>
+    <li>名称：<code>LiteLLM-OpenAI</code></li>
+    <li>Base URL：<code>http://litellm:4000</code>（容器名，走 Docker 网络）</li>
+    <li>密钥：<b style="color:#e5534b;">⚠️ 见 <code>.env</code> 中 <code>LITELLM_MASTER_KEY</code> 的值</b>（不是文档示例值，必须用实际运行的密钥，否则报 <code>No connected db</code>）</li>
+    <li>模型：<code>gpt-4o, gpt-4o-mini</code></li>
+    <li>保存</li>
+  </ul>
+  <p>重复添加其他模型渠道（如果配了对应 API Key）：</p>
+  <ul>
+    <li>Claude：类型 <code>Anthropic Claude</code>，Base URL <code>http://litellm:4000</code>，模型 <code>claude-3-5-sonnet-20241022</code></li>
+    <li>DeepSeek：类型 <code>OpenAI</code>，Base URL <code>http://litellm:4000</code>，模型 <code>deepseek-chat</code></li>
+  </ul>
+  <div class="callout callout-warn">
+    <strong>关键：</strong>所有渠道 Base URL 都填 <code>http://litellm:4000</code>（容器名），不是 localhost。
+    NewAPI 和 LiteLLM 在同一个 Docker 网络中，通过容器名互访。
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>测试渠道连通性</strong>
+  <ul>
+    <li>渠道列表 → 点击刚创建的渠道 → <strong>测试</strong> 按钮</li>
+    <li>选择一个模型 → 如果返回正常回复，说明 NewAPI → LiteLLM → 外部模型 链路通了</li>
+  </ul>
+  <div class="callout callout-danger">
+    如果测试失败：检查 <code>docker logs litellm</code> 看是否有 API Key 错误。
+    确认 <code>.env</code> 中的 <code>OPENAI_API_KEY</code> 等已填入真实密钥。
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>创建 API 密钥</strong>
+  <p>为 Dify 和 DeepChat 各创建一个独立密钥，方便后续分开管理用量：</p>
+  <ul>
+    <li>左侧菜单 <strong>API 密钥</strong> → <strong>新建</strong></li>
+    <li>名称：<code>dify-key</code> → 保存 → 复制 <code>sk-xxx</code>，后续填到 Dify 模型供应商</li>
+    <li>再新建一个，名称：<code>deepchat-key</code> → 保存 → 复制 <code>sk-xxx</code>，后续分发给 DeepChat 用户</li>
+  </ul>
+  <div class="callout" style="border-left:3px solid #8b949e;padding:10px 16px;margin:8px 0;background:rgba(139,148,158,0.06);border-radius:0 4px 4px 0;">
+    <strong>为什么要分开？</strong>Dify 是服务端调用，DeepChat 是客户端调用，两把 key 分开后可以在 NewAPI 用量统计里分别查看各自消耗，出问题也容易定位。
+  </div>
+</div>
+
+<h4>允许普通用户自助申请 API Key</h4>
+<p>员工（含 AD 同步用户）登录后，默认在 <b>API 密钥</b> 页面可以自己"新建"密钥，这是内置功能、无需额外开关。但要能真正调用模型，还需满足两点：</p>
+<ol>
+  <li><b>用户有额度</b>：新用户默认额度是 <code>0</code>（无法调用）。已在 <code>.env</code> 设置 <code>DEFAULT_QUOTA=100</code>，让新用户注册即送 100 美元额度。</li>
+  <li><b>用户有 token</b>：设置 <code>GENERATE_DEFAULT_TOKEN=true</code> 后，新用户注册时自动生成一个初始 token；用户也可自己在 API 密钥页新建。</li>
+</ol>
+<div class="callout callout-warn">
+  <strong>⚠️ 只对"新注册"用户生效：</strong><code>DEFAULT_QUOTA</code> 和 <code>GENERATE_DEFAULT_TOKEN</code> 只在用户<b>首次注册/首次 OIDC 登录</b>时起作用。已经登录过的用户（如 <code>aitest1</code>）不会自动补发，需管理员在 <b>用户</b> → 编辑该用户 → 手动设置额度，或让用户自己在 API 密钥页创建 token。
+</div>
+<div class="verify">普通用户在游乐场选择自己的 token 后，可以正常发送消息收到回复。</div>
+<div class="verify">NewAPI 仪表盘显示请求次数 > 0。渠道测试返回 AI 回复。</div>
+
+<h4>接入 Keycloak OIDC（让 AD 用户直接登录）</h4>
+<p>完成上述初始化和渠道配置后，可以让员工用 AD 域账号直接登录 NewAPI，无需再手动注册本地账号。</p>
+
+<div class="step">
+  <span class="step-num">1</span><strong>在 Keycloak 中创建 NewAPI OIDC Client</strong>
+  <ol>
+    <li>Keycloak 管理后台 → <code>enterprise-ai</code> Realm → <b>Clients</b> → <b>Create client</b></li>
+    <li>Client ID：<code>newapi</code>，Client type：<b>OpenID Connect</b> → Next</li>
+    <li><b>Client authentication：On</b>（⚠️ 必开，否则没有 Credentials 标签）</li>
+    <li>Standard flow：<b>On</b>，Direct access grants：<b>On</b> → Next</li>
+    <li>Valid redirect URIs：<code>http://&lt;服务器IP&gt;:3000/*</code>（内网）和 <code>http://127.0.0.1:3000/*</code>（本机调试），两个都加上</li>
+    <li>Web origins：<code>http://&lt;服务器IP&gt;:3000</code> 和 <code>http://127.0.0.1:3000</code> → Save</li>
+    <li>保存后页面顶部出现 <b>Credentials</b> 标签 → 点进去 → 复制 <b>Client secret</b></li>
+  </ol>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>在 NewAPI 中开启 OIDC</strong>
+  <ol>
+    <li>NewAPI 管理后台 → <b>系统设置</b> → <b>身份验证</b> → <b>自定义 OAuth</b> → <b>添加 OAuth 提供商</b></li>
+    <li>按以下分组填写：</li>
+  </ol>
+
+  <p><strong>快速设置</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>预设模板</td><td><code>Keycloak</code></td></tr>
+    <tr><td>API 地址</td><td><code>http://127.0.0.1:9090</code></td></tr>
+  </table>
+
+  <p><strong>基本信息</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>已启用</td><td>开启</td></tr>
+    <tr><td>提供商名称</td><td><code>Keycloak</code></td></tr>
+    <tr><td>标识符</td><td><code>keycloak</code></td></tr>
+    <tr><td>图标</td><td><code>keycloak</code>（可选）</td></tr>
+  </table>
+
+  <p><strong>凭证</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>Client ID</td><td><code>newapi</code></td></tr>
+    <tr><td>Client Secret</td><td>Keycloak Credentials 复制的值</td></tr>
+    <tr><td>认证方式</td><td>默认（Auto Detect）</td></tr>
+  </table>
+
+  <p><strong>端点（先自动发现，再手动修正）</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>Well-Known URL</td><td><code>http://host.docker.internal:9090/realms/enterprise-ai/.well-known/openid-configuration</code></td></tr>
+    <tr><td colspan="2">点 <b>"自动发现"</b> → 三个端点自动填好（都带 <code>&lt;服务器IP&gt;:9090</code> 前缀）→ <b style="color:#e5534b;">然后手动改</b>：</td></tr>
+    <tr><td>授权端点</td><td><b>保持 <code>&lt;服务器IP&gt;:9090</code> 不动</b>（浏览器跳转用，能直接访问）</td></tr>
+    <tr><td>令牌端点</td><td>把 <code>&lt;服务器IP&gt;:9090</code> 改成 <b><code>host.docker.internal:9090</code></b>（NewAPI 容器内部调 Keycloak 换 token）</td></tr>
+    <tr><td>用户信息端点</td><td>把 <code>&lt;服务器IP&gt;:9090</code> 改成 <b><code>host.docker.internal:9090</code></b>（NewAPI 容器内部拿用户信息）</td></tr>
+  </table>
+  <div class="callout" style="border-left:3px solid #58a6ff;padding:10px 16px;margin:4px 0 12px;background:rgba(86,211,100,0.06);border-radius:0 4px 4px 0;">
+    <strong>为什么不能用 &lt;服务器IP&gt;？</strong>NewAPI 是 Docker 容器，<code>&lt;服务器IP&gt;</code> 指向容器自己而非宿主机，必须用 <code>host.docker.internal</code> （Docker Desktop 自动解析到宿主机）。自动发现后授权端点也被自动填为 <code>http://host.docker.internal:9090/...</code>，浏览器端也能访问，无需额外修改。
+  </div>
+
+  <p><strong>作用域</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>作用域</td><td><code>openid profile email</code></td></tr>
+  </table>
+
+  <p><strong>字段映射</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>用户 ID 字段</td><td><code>sub</code></td></tr>
+    <tr><td>用户名字段</td><td><code>preferred_username</code></td></tr>
+    <tr><td>显示名称字段</td><td><code>name</code></td></tr>
+    <tr><td>邮箱字段</td><td><code>email</code></td></tr>
+  </table>
+
+  <p><strong>高级</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">配置项</th><th>推荐值</th></tr>
+    <tr><td>访问策略 (JSON)</td><td>留空（允许所有用户）</td></tr>
+    <tr><td>访问被拒绝消息</td><td>留空</td></tr>
+  </table>
+
+  <div class="callout" style="border-left:3px solid #d29922;padding:10px 16px;margin:12px 0;background:rgba(210,153,34,0.06);border-radius:0 4px 4px 0;">
+    <strong>⚠️ 保存后必须补一步：</strong>回到 Keycloak → <code>newapi</code> Client → Settings → Valid redirect URIs，把自动生成的<b>授权回调 URL</b>（内网 <code>http://&lt;服务器IP&gt;:3000/oauth/keycloak</code>，本机 <code>http://127.0.0.1:3000/oauth/keycloak</code>）加进去，Save。否则回调失败。
+  </div>
+  <div class="callout" style="border-left:3px solid #e5534b;padding:10px 16px;margin:12px 0;background:rgba(229,83,75,0.06);border-radius:0 4px 4px 0;">
+    <strong>⚠️ 必改：NewAPI 服务器地址必须设为员工能访问的地址（否则换 token 报 invalid_grant / Incorrect redirect_uri）</strong><br>
+    NewAPI 后端用 authorization code 换 token 时，会用系统设置的<b>"服务器地址"</b>拼 redirect_uri。默认值是 <code>http://localhost:3000</code>，与浏览器访问地址不一致 → Keycloak 报 <code>invalid_grant - Incorrect redirect_uri</code>。<br><br>
+    内网部署时设为内网地址 <code>http://&lt;服务器IP&gt;:3000</code>（本机调试可设为 <code>http://127.0.0.1:3000</code>），设置方法：NewAPI 后台 → <b>设置 → 系统设置 → 通用设置 → 服务器地址</b>。<br>
+    <b style="color:#f0883e">⚠️ 关键：服务器地址设成内网 IP 后，本机也要用内网 IP 访问（<code>http://&lt;服务器IP&gt;:3000</code>），不能再点 <code>127.0.0.1:3000</code>。</b>因为授权阶段 redirect_uri 取浏览器地址（127.0.0.1）、换 token 取服务器地址（内网 IP），两者不一致会再次报 <code>invalid_grant - Incorrect redirect_uri</code>。<br>
+    或直接改数据库：<br>
+    <code>docker exec new-api-db mysql -uroot -p... new-api -e "INSERT INTO options (\`key\`, value) VALUES ('ServerAddress','http://&lt;服务器IP&gt;:3000') ON DUPLICATE KEY UPDATE value='http://&lt;服务器IP&gt;:3000';"</code> 然后 <code>docker compose restart new-api</code>
+  </div>
+  <ol start="4">
+    <li>退出 NewAPI → 登录页出现 <b>Keycloak</b> 按钮 → 用域账号测试登录</li>
+  </ol>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>用 AD 账号测试登录</strong>
+  <ol>
+    <li>打开 <code>http://127.0.0.1:3000</code> → 登录页应出现 <b>Keycloak/OIDC 登录</b> 按钮</li>
+    <li>点击 → 跳转到 Keycloak 登录页 → 输入 AD 域账号（如 <code>aitest1</code> + 域密码）</li>
+    <li>登录成功 → 回到 NewAPI，用户名显示为 AD 账号</li>
+  </ol>
+</div>
+
+<div class="verify">AD 用户 <code>aitest1</code> 可以在 NewAPI 登录页通过 OIDC 按钮直接登录，无需在 NewAPI 中额外注册。</div>
+
+<div class="callout callout-danger" style="margin-top:12px;">
+  <strong>排错：登录返回 429 (Too Many Requests)</strong><br>
+  NewAPI 默认限流很严格，OIDC 调试期间连续失败容易触发。登录/OAuth 回调走的是 <b>CriticalRateLimit（关键接口限流）</b>，默认 <b>20 次 / 20 分钟</b>，与全局限流（GW/GA）是独立开关。环境变量：<code>CRITICAL_RATE_LIMIT_ENABLE</code> / <code>CRITICAL_RATE_LIMIT</code>（非系统设置里的"速率限制"页面）。<br><br>
+  <b>临时解除：</b><br>
+  <code>docker exec new-api-redis redis-cli --scan --pattern "rateLimit:*" | xargs -r docker exec new-api-redis redis-cli DEL</code><br><br>
+  <b>永久方案：</b>已在 <code>.env.windows</code> 预设四组变量：<code>GLOBAL_WEB_RATE_LIMIT=999999</code>、<code>GLOBAL_API_RATE_LIMIT=999999</code>、<code>CRITICAL_RATE_LIMIT_ENABLE=false</code>、<code>CRITICAL_RATE_LIMIT=999999</code>，docker-compose.yml 引用这些变量。重新创建容器后生效。
+</div>
+
+<h3 id="config-litellm">6.3 LiteLLM — 验证（PII 脱敏暂时禁用）</h3>
+<div class="callout callout-warn">
+  <strong>⚠️ PII 脱敏（Presidio guardrail）暂时禁用：</strong>新版 LiteLLM 的 guardrail 配置格式变更，<code>litellm-config.yaml</code> 里该段已注释掉。当前 LiteLLM 仅做 LLM 代理转发（不脱敏）。<b>此步可跳过</b>，待 guardrail 兼容后重新启用。
+</div>
+<div class="step">
+  <span class="step-num">1</span><strong>验证 LiteLLM 基本可用</strong>
+  <pre><code><span class="comment"># 发送一条测试消息</span>
+curl -X POST http://&lt;服务器IP&gt;:4001/v1/chat/completions ^
+  -H "Authorization: Bearer <b style="color:#f0883e;font-weight:700">&lt;LITELLM_MASTER_KEY&gt;</b>" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}"</code></pre>
+  <div class="verify">
+    <ul>
+      <li>返回正常 AI 回复（如 <code>Hi there...</code>）即通过</li>
+      <li><b style="color:#f0883e">⚠️ <code>&lt;LITELLM_MASTER_KEY&gt;</code> 是 LiteLLM 管理员密钥</b>：取 <code>.env</code> 里 <code>LITELLM_MASTER_KEY</code> 的实际值（见账号密码清单 <code>credentials.html</code>），不要用占位符本身，否则返回 <code>401 Unauthorized</code></li>
+      <li><b style="color:#f0883e">⚠️ 必须用内网 IP</b> <code>&lt;服务器IP&gt;:4001</code>，不能用 <code>127.0.0.1:4001</code>（WSL2 端口转发问题，实测 127.0.0.1 不通）</li>
+      <li>模型只启用了 <code>deepseek-chat</code>（<code>gpt-4o-mini</code> 等未配置）</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>启用 exact match 响应缓存（已内置）</strong>
+  <p>LiteLLM 已启用 Redis exact match 缓存：完全相同请求（模型 + 消息 + 参数）直接返回缓存，不再调用外部模型，<b>跨用户共享、节省 token</b>。任何参数变化都会 miss，不会串缓存。</p>
+  <pre><code><span class="comment"># litellm-config.yaml 末尾</span>
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis   <span class="comment"># 独立缓存 Redis（compose 已加 litellm-redis 服务）</span>
+    port: 6379
+    ttl: 3600            <span class="comment"># 缓存 1 小时，按数据更新频率调</span></code></pre>
+  <div class="verify">
+    <ul>
+      <li><b>验证连通</b>：<code>curl http://&lt;服务器IP&gt;:4001/cache/ping -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;"</code> → 返回 <code>ping_response: true</code></li>
+      <li><b>命中特征</b>：连续两次相同请求，第二次响应 <code>id</code> 与第一次相同，耗时从秒级降到毫秒级</li>
+      <li><b>关闭缓存</b>：<code>cache: false</code> 或注释整块，重启 <code>litellm</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <strong>扩展：添加更多 LLM 提供商</strong>（例如 OpenAI / Claude，按需）：
+  <ol style="margin:8px 0 0 20px;">
+    <li><code>.env</code> 中取消 <code># OPENAI_API_KEY=</code> 的注释，填入真实 Key</li>
+    <li><code>litellm-config.yaml</code> 中取消对应 model 块的注释</li>
+    <li>重启 LiteLLM：<code>docker compose up -d litellm</code></li>
+  </ol>
+</div>
+
+<h3 id="config-dify">6.4 Dify — 配置模型供应商</h3>
+<div class="step">
+  <span class="step-num">1</span>浏览器打开 <code>http://&lt;服务器IP&gt;</code>
+  <ul>
+    <li>首次访问 → 设置管理员邮箱和密码 → 登录</li>
+    <li style="color:#f0883e"><b>统一账号建议：</b>邮箱用 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code>（把 <code>&lt;公司域名&gt;</code> 改成你公司域名，如 <code>company.com</code>）；如产品有「用户名/账号」字段则填 <code>ai_all_in_one_admin</code>；密码用统一管理员密码（见账号密码清单 <code>credentials.html</code>）</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>添加模型供应商（指向 NewAPI）</strong>
+  <ul>
+    <li><strong>设置</strong> → <strong>模型供应商</strong></li>
+    <li>找到 <strong>OpenAI-API-compatible</strong> → <strong>添加模型</strong></li>
+    <li>配置（<b>以下以 DeepSeek 为例，请按你实际在 NewAPI 里配置的渠道和模型名填写</b>）：
+      <ul>
+        <li>模型名称：<code>deepseek-chat</code>（示例，改成你实际的模型名）</li>
+        <li>API Key：<code>dify-key</code> 的 <code>sk-xxx</code>（在 NewAPI API 密钥中复制）</li>
+        <li>API endpoint：<code>http://host.docker.internal:3000/v1</code></li>
+      </ul>
+    </li>
+    <li>如需更多模型，重复添加（如 <code>gpt-4o</code>、<code>claude-3-5-sonnet</code> 等，取决于你在 NewAPI 里配了哪些渠道）</li>
+  </ul>
+  <div class="callout callout-warn">
+    <strong>注意：</strong>Dify 使用 <code>host.docker.internal</code> 而不是容器名，
+    因为 Dify 在自己的 Docker 网络中，与 NewAPI 不在同一网络。
+    <code>host.docker.internal</code> 在 Docker Desktop for Windows 上自动可用。
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>创建测试应用</strong>
+  <ul>
+    <li><strong>工作室</strong> → <strong>创建空白应用</strong> → 选"聊天助手"</li>
+    <li>右上角选择模型 <code>deepseek-chat</code>（示例，选你实际配置的模型）</li>
+    <li>发送消息 → 收到 AI 回复 → 链路验证成功</li>
+  </ul>
+</div>
+<div class="verify">Dify 中 AI 正常回复消息。查看 <code>docker logs new-api</code> 能看到 Dify 的请求记录。</div>
+
+<h3 id="config-ghost">6.5 Ghost — 配置门户</h3>
+<div class="step">
+  <span class="step-num">1</span>浏览器打开后台入口 <code>http://&lt;服务器IP&gt;:8090/ghost/</code>（<b>注意 /ghost/ 后缀，这是管理员后台</b>）
+  <ul>
+    <li>首次访问 → Ghost setup 向导 → 设置站点标题 + 姓名 + 邮箱 + 密码（创建管理员账号）。<b>注意：Ghost 5 后台登录是免密的</b>——之后每次登录输入邮箱，Ghost 会发 6 位验证码到 MailHog（<code>:8025</code>）里；或在 AI 管理中心点「Ghost 后台」的「打开」直接免登录（见 13.10）。</li>
+    <li style="color:#f0883e"><b>统一账号建议：</b>邮箱用 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code>（<code>&lt;公司域名&gt;</code> 改成公司域名），密码用统一管理员密码（见 <code>credentials.html</code>，需至少 10 位）</li>
+    <li style="color:#f0883e"><b>⚠️ 别在门户首页（<code>/</code>）点「注册」：</b>那是给访客用的 <b>订阅者（members）注册</b>，走 magic link 邮箱验证，未配置 SMTP 邮件服务会报 500。管理员入口是 <code>/ghost/</code>。</li>
+  </ul>
+  <div class="callout callout-info"><strong>🤖 自动化（可选）：</strong>不用在浏览器里点向导，直接跑 <code>scripts\ghost-setup.ps1</code> 即可用 setup API 一次性创建管理员（从 <code>.env</code> 读 <code>GHOST_ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code>），等效于走完向导：<code>powershell -File .\scripts\ghost-setup.ps1</code>（已初始化时自动跳过）。</div>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>安装主题</strong>
+  <ul>
+    <li>后台 → <strong>外观</strong> → <strong>主题</strong>，Ghost 已自带 <code>Casper</code> 和 <code>Source</code> 两个官方主题（100% 兼容），直接激活即可。</li>
+    <li>要更多样式：从<strong>主题市场</strong>（Design → Change theme → 浏览主题）安装，市场会匹配当前版本兼容的主题。</li>
+    <li style="color:#f0883e"><b>⚠️ 别从 GitHub 直接装最新版主题：</b>部分官方主题（如 <code>Journal</code>）的 main 分支已适配 Ghost 6.x，在 Ghost 5.x 上会报 <code>Theme is not compatible or contains errors</code>（invalid Handlebars syntax）。要装这类主题需找兼容 5.x 的旧版 zip 手动上传。</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>配置导航菜单</strong>
+  <p>后台 → <strong>外观</strong> → <strong>菜单</strong> → 创建"主导航"：</p>
+  <table>
+    <tr><th>菜单项</th><th>类型</th><th>URL</th></tr>
+    <tr><td>首页</td><td>页面</td><td><code>/</code></td></tr>
+    <tr><td>新闻动态</td><td>分类</td><td><code>/category/news</code></td></tr>
+    <tr><td>下载中心</td><td>页面</td><td><code>/downloads</code></td></tr>
+    <tr><td>AI 工作台</td><td>自定义链接</td><td><code>http://&lt;服务器IP&gt;</code></td></tr>
+    <tr><td>帮助文档</td><td>分类</td><td><code>/category/docs</code></td></tr>
+  </table>
+</div>
+<div class="step">
+  <span class="step-num">4</span><strong>创建下载中心页面</strong>
+  <p>后台 → <strong>页面</strong> → 新建"下载中心"（slug 用 <code>downloads</code>）：</p>
+  <pre><code>## DeepChat 企业版
+
+### Windows
+- [DeepChat v1.1.0（Windows x64）](http://&lt;服务器IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+
+### macOS
+- [DeepChat v1.1.0（macOS x64）](http://&lt;服务器IP&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+
+### 版本历史
+- **v1.1.0** — 2026-08-11 发布</code></pre>
+</div>
+<div class="verify">Ghost 首页显示主题样式，导航菜单包含"AI 工作台"链接，点击跳转到 Dify。</div>
+
+<h3 id="config-gitea">6.6 Gitea — 初始化和 Runner 注册</h3>
+<div class="step">
+  <span class="step-num">1</span>浏览器打开 <code>http://&lt;服务器IP&gt;:3002</code>
+  <ul>
+    <li>完成安装向导（数据库选 SQLite，已预配）</li>
+    <li>创建管理员账号</li>
+    <li style="color:#f0883e"><b>统一账号建议：</b>用户名用 <code>ai_all_in_one_admin</code>，邮箱用 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code>（<code>&lt;公司域名&gt;</code> 改成公司域名），密码用统一管理员密码（见 <code>credentials.html</code>）</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>启用 Actions 并获取 Runner Token</strong>
+  <ul>
+    <li>右上角头像 → <strong>Site Administration</strong> → <strong>Actions</strong></li>
+    <li>确认 <code>Enabled Actions</code> 已开启</li>
+    <li><strong>Runners</strong> → <strong>Create new Runner</strong> → 复制 Registration Token</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>用 Token 重启 Runner 容器</strong>
+  <pre><code><span class="comment"># 编辑 .env 文件，填入 Runner Token</span>
+<span class="comment"># .env</span>
+GITEA_RUNNER_TOKEN=你从Gitea复制的Token
+
+<span class="comment"># 重新创建 Runner 容器（⚠️ 必须用 up -d，不能用 restart：
+# restart 只重启进程，不会重新读取 .env 的环境变量，token 变了也不会生效）</span>
+docker compose -f docker-compose.yml up -d gitea-runner
+
+<span class="comment"># 等待几秒后检查 Runner 状态（看到 "Runner registered successfully." 即成功）</span>
+docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
+  <div class="verify">Gitea → Site Administration → Runners 页面显示 Runner 状态为 <strong>Idle</strong>（绿色）。</div>
+</div>
+<div class="callout callout-danger">
+  <strong>⚠️ 踩坑 1：Gitea 报 <code>readonly database</code> / 页面打不开：</strong>通常是因为 <code>gitea-data</code> 卷里的 <code>gitea.db</code> 被 root 用户创建（而非容器内的 <code>git</code> 用户），导致 Gitea 无法写入。修复：停 Gitea 后删除那个空/root 属主的 <code>gitea.db</code>（在宿主机 <code>gitea-data/git/gitea.db</code> 或通过 <code>docker exec</code> 定位），再 <code>docker compose up -d gitea</code> 让它以 git 用户重建。
+</div>
+<div class="callout callout-warn">
+  <strong>⚠️ 踩坑 2：Gitea 的 <code>ROOT_URL</code> 要设成内网地址：</strong>docker-compose 里 <code>GITEA__server__ROOT_URL</code> 若还是 <code>http://localhost:3002/</code>，则 Gitea 生成的仓库链接、API 返回的 <code>html_url</code> 都会是 <code>localhost</code>/容器地址（内网员工点开失效）。改为 <code>http://&lt;服务器IP&gt;:3002/</code> 后 <code>docker compose up -d gitea</code> 重建生效。
+</div>
+
+<!-- ==================== 7. DeepChat ==================== -->
+
+<h2 id="deepchat">7. DeepChat 安装与配置</h2>
+<p>DeepChat 是桌面端 AI 对话客户端，通过 NewAPI 统一调用后端大模型。下面三种方式任选其一。</p>
+
+<h3>7.1 方式 A：内网分发（推荐，员工从内网下载）</h3>
+<div class="callout callout-info">
+  <strong>说明：</strong>分发链路 = GitHub Releases 安装包 → <code>deepchat-sync</code> 仓库的 Gitea Actions 工作流 → Update Server(8091) → Ghost 下载页 → 员工下载。<b>不再需要 Gitea 源码镜像仓库</b>（<code>deepchat</code> mirror 已删除）——镜像只同步 git 源码、<b>不同步 release 安装包</b>，且每天 8 小时同步一次、占 ~107 MB，对「分发安装包」没有任何帮助。若将来要做源码审计/二次开发再单独建。
+</div>
+<div class="step">
+  <span class="step-num">1</span><strong>（可选）建源码镜像仓库，仅供源码审计/二次开发</strong>
+  <p>仅当需要在内网看 DeepChat 源码、做安全审查或自建打包时才有用，与「分发安装包」无关，可跳过：</p>
+  <pre><code>curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/migrate" \
+  -u "ai_all_in_one_admin:&lt;密码&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"clone_addr":"https://github.com/ThinkInAIXYZ/deepchat","repo_name":"deepchat","mirror":true}'</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>下载安装包到 Update Server</strong>
+  <pre><code><span class="comment"># 从 GitHub release 下载（以 v1.1.0 为例，替换成最新版本号）</span>
+mkdir -p deepchat-updates/deepchat
+curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-windows-x64.exe \
+  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-windows-x64.exe
+curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
+  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-mac-x64.dmg</code></pre>
+  <div class="verify">下载链接可访问：<code>curl -I http://&lt;服务器IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe</code> → HTTP 200/206。</div>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>更新 Ghost 下载中心页面</strong>
+  <p>在 Ghost 的 <code>downloads</code> 页面放上内网下载链接（见 6.5 步骤 4）。员工打开 <code>http://&lt;服务器IP&gt;:8090/downloads/</code> 即可下载。</p>
+</div>
+
+<h4>自动同步（Gitea Actions，可选）</h4>
+<p>上面的三步可以固化成 Gitea Actions 工作流，每天自动检查 GitHub 新版本并同步。已实现：</p>
+<table>
+  <tr><th>组件</th><th>说明</th></tr>
+  <tr><td><code>deepchat-sync</code> 仓库</td><td>Gitea 普通仓库（<b>不能</b>用 mirror 仓库，mirror 只读），放 <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
+  <tr><td>workflow 触发</td><td><code>schedule</code>（每天 UTC 2 点）+ <code>workflow_dispatch</code>（手动）</td></tr>
+  <tr><td>同步逻辑</td><td>查 GitHub API 最新 tag → 对比 <code>version.txt</code> → 有新版则下载安装包 + 更新 Ghost 下载页 + 写版本</td></tr>
+  <tr><td>runner 配置</td><td><code>gitea-runner-config.yaml</code> 挂载到 runner，加 <code>CONFIG_FILE</code> 环境变量；<code>container.network: ai-platform</code>（让 job 容器解析 gitea 容器名）</td></tr>
+</table>
+<pre><code><span class="comment"># 手动触发一次同步</span>
+curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+  -u "ai_all_in_one_admin:&lt;密码&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'
+
+<span class="comment"># 或 Gitea Web UI：deepchat-sync → Actions → 运行工作流</span></code></pre>
+<div class="note">关键坑：① act_runner 的 <code>container.network</code> 必须通过 <code>config.yaml</code>（+ <code>CONFIG_FILE</code> 环境变量）配置，否则 job 容器在独立网络解析不了 <code>gitea</code> 主机名；② docker.sock 由 act_runner 自动挂载，不要在 <code>options</code> 里再挂一次（会报 Duplicate mount point）；③ 下载 docker CLI 时偶发 <code>curl (18) HTTP/2 stream</code> 网络瞬断，workflow 已给该下载加 <code>--http1.1 --retry 5</code>。</div>
+
+<h4>国内下载源配置（<code>sync-config.json</code>）</h4>
+<div class="callout callout-warn">
+  <strong>⚠️ 国内访问 GitHub 基本不通，官方「下载页」其实不解决下载问题：</strong>官网 <code>deepchatai.cn</code> 的下载数据来自它自己服务器上的 <code>https://deepchatai.cn/download-cache.json</code>（国内可达），但里面的安装包 <code>browser_download_url</code> <b>仍指向 <code>github.com/.../releases/download/...</code></b>，前端点「下载」就是直接跳 GitHub，没有任何国内镜像/加速改写。而且这份缓存<b>会滞后</b>（官网 stable 显示 v1.0.7 时，GitHub 实际已是 v1.1.0）。
+</div>
+<p>所以真正解决国内下载靠 <code>deepchat-sync</code> 仓库根目录的 <code>sync-config.json</code>，两个开关：</p>
+<table>
+  <tr><th style="width:28%;">字段</th><th>作用</th><th>默认</th></tr>
+  <tr><td><code>version_source</code></td><td>查版本走哪：<code>github</code>（GitHub API，最准）或 <code>official</code>（官网 download-cache.json，国内可达但滞后）</td><td><code>github</code></td></tr>
+  <tr><td><code>download_prefix</code></td><td>下载加速前缀，下载链接变成 <code>前缀 + github.com/...</code>，留空直连</td><td><code>""</code></td></tr>
+  <tr><td><code>keep_releases</code></td><td>下载页版本历史最多保留几个（最新在前，超出自动裁剪）</td><td><code>5</code></td></tr>
+  <tr><td><code>market_url</code></td><td>下载页「先装技能管家」提示里的内网 Skill 市场地址</td><td><code>http://&lt;服务器IP&gt;:3100</code></td></tr>
+</table>
+<pre><code><span class="comment"># ① 能连 GitHub：默认不改</span>
+{ "version_source": "github", "download_prefix": "" }
+<span class="comment"># ② GitHub 加速代理（最常用）</span>
+{ "version_source": "github", "download_prefix": "https://ghproxy.com/" }
+<span class="comment"># ③ GitHub API 完全不通：官网查版本 + 代理下载</span>
+{ "version_source": "official", "download_prefix": "https://ghproxy.com/" }</code></pre>
+<div class="note">工作流内置 <code>version_cmp.py</code> 做版本号比较，<b>只有「最新版 &gt; 本地已部署版」才下载</b>——因为官网缓存滞后（v1.0.7 &lt; 本地 v1.1.0），若按「版本不同就下载」会把员工客户端<b>回退到旧版</b>。同时 <code>update_ghost.py</code> 会自动维护下载页：新版本累积成时间轴、按 <code>keep_releases</code> 裁剪、同版本幂等（不重复追加）、页面被误删时自动重建（UPSERT）。</div>
+
+<h3>7.2 方式 B：用 Docker 构建自定义版本</h3>
+<div class="step">
+  <span class="step-num">1</span><strong>用 Docker 临时容器构建</strong>
+  <pre><code><span class="comment"># PowerShell</span>
+mkdir deepchat-build
+
+<span class="comment"># 启动临时 Node.js 容器进行构建</span>
+docker run -it --rm ^
+  -v ${PWD}/deepchat-build:/app ^
+  -w /app ^
+  node:20 bash
+
+<span class="comment"># === 容器内执行 ===</span>
+git clone https://github.com/ThinkInAIXYZ/deepchat.git .
+npm ci
+
+<span class="comment"># 构建 Windows 安装包</span>
+npx electron-builder --win --x64
+
+<span class="comment"># 构建产物在 dist/ 目录</span>
+ls dist/
+<span class="comment"># DeepChat-Setup-0.0.1.exe  latest.yml</span>
+
+<span class="comment"># 退出容器</span>
+exit
+
+<span class="comment"># === 回到 PowerShell ===</span>
+<span class="comment"># 将安装包复制到 Update Server 目录</span>
+mkdir deepchat-updates
+copy deepchat-build\dist\*.exe windows\deepchat-updates\
+copy deepchat-build\dist\latest.yml windows\deepchat-updates\</code></pre>
+  <div class="verify">浏览器打开 <code>http://127.0.0.1:8091/deepchat/latest.yml</code> 能看到 YAML 文件内容。</div>
+</div>
+
+<h3>7.3 配置 DeepChat 客户端</h3>
+<div class="step">
+  <span class="step-num">1</span><strong>配置 LLM Provider</strong>
+  <ul>
+    <li>打开 DeepChat → <strong>设置</strong> → <strong>模型服务</strong></li>
+    <li>选择"自定义 Provider" 或 "OpenAI 兼容"</li>
+    <li>API Base URL：<code>http://&lt;服务器IP&gt;:3000/v1</code>（NewAPI，员工电脑上必须用内网 IP，不能用 &lt;服务器IP&gt;）</li>
+    <li>API Key：<code>deepchat-key</code> 的 <code>sk-xxx</code>（在 NewAPI API 密钥中复制）</li>
+    <li>模型选择：<code>gpt-4o-mini</code>（或 <code>deepseek-chat</code>）</li>
+    <li>保存</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>测试对话</strong>
+  <ul>
+    <li>新建对话 → 发送 "你好" → 收到 AI 回复</li>
+    <li>发送 "我的邮箱是 test@example.com" → 查看回复</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>验证 PII 脱敏</strong>
+  <pre><code><span class="comment"># 查看 LiteLLM 日志确认脱敏</span>
+docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
+  <div class="verify">
+    日志显示 <code>EMAIL_ADDRESS</code> 被检测到并替换为 <code>[EMAIL]</code>。
+    DeepChat 收到的回复中邮箱地址被还原。
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">4</span><strong>配置 MCP Server（可选）</strong>
+  <ul>
+    <li>DeepChat → <strong>设置</strong> → <strong>MCP</strong></li>
+    <li>添加 MCP Server：名称 <code>filesystem</code></li>
+    <li>命令：<code>npx -y @modelcontextprotocol/server-filesystem C:\Users</code></li>
+    <li>保存 → 在对话中测试 "列出我的文件"</li>
+  </ul>
+</div>
+
+<h2 id="mcp">8. MCP Gateway — Skill / MCP 管理 Hub</h2>
+<div class="note"><strong>说明：</strong>MCP Gateway 是 Skill 和 MCP 工具的集中管理网关，基于官方 <code>@modelcontextprotocol/sdk</code> 实现，暴露标准 Streamable HTTP <code>/mcp</code> 端点。DeepChat 和 Dify 连这一个地址即可获取所有工具（内置平台工具 + 聚合的外部 MCP Server）。已并入主 docker-compose.yml，随核心服务一起启动。</div>
+
+<h3>8.1 部署（已并入主 docker-compose.yml）</h3>
+<p>MCP Gateway 已作为 <code>mcp-gateway</code> 服务加入主 <code>docker-compose.yml</code>，端口 <code>3100</code>，随核心服务 <code>docker compose up -d</code> 一起启动，无需单独部署。源码在 <code>mcp-gateway/</code> 目录（gateway.js + package.json + mcp-servers.json）。</p>
+
+<h3>8.2 内置平台工具</h3>
+<table>
+  <tr><th>工具</th><th>用途</th></tr>
+  <tr><td><code>platform_time</code></td><td>返回服务器当前时间</td></tr>
+  <tr><td><code>platform_echo</code></td><td>回显文本（连通性测试）</td></tr>
+  <tr><td><code>platform_services</code></td><td>列出平台服务清单</td></tr>
+</table>
+
+<h3>8.3 聚合外部 MCP Server</h3>
+<p>编辑 <code>mcp-gateway/mcp-servers.json</code>，添加 stdio 或 http 类型的 MCP Server，重启 <code>mcp-gateway</code> 生效。参考 <code>mcp-servers.example.json</code>：</p>
+<pre><code>{
+  "servers": [
+    { "name": "filesystem", "type": "stdio", "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/data"] },
+    { "name": "github", "type": "http", "url": "https://api.githubcopilot.com/mcp" }
+  ]
+}</code></pre>
+<p style="color:#8b949e;font-size:0.9em">聚合的工具会自动加 <code>{serverName}_</code> 前缀，避免与内置工具重名冲突。</p>
+
+<h3>8.4 客户端接入（DeepChat / Dify）</h3>
+<ol>
+  <li>DeepChat：设置 → MCP 设置 → 添加服务器 → 类型选 <b>可流式传输的 HTTP（http）</b></li>
+  <li>基础 URL 填：<code>http://&lt;服务器IP&gt;:3100/mcp</code></li>
+  <li>Dify 工作流：自定义工具 / MCP 工具配置同样指向 <code>http://&lt;服务器IP&gt;:3100/mcp</code></li>
+</ol>
+
+<h3>8.5 验证</h3>
+<ol>
+  <li><code>curl http://&lt;服务器IP&gt;:3100/health</code> → 返回 <code>{"status":"ok"}</code></li>
+  <li><code>curl -X POST http://&lt;服务器IP&gt;:3100/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code> → 返回内置工具列表</li>
+</ol>
+<div class="tip">MCP Gateway 运行后，DeepChat 客户端在 MCP 设置中添加 <code>http://&lt;服务器IP&gt;:3100/mcp</code> 即可使用平台工具。Dify 工作流也可通过 MCP 工具配置接入同一地址。</div>
+
+<h3>8.6 扩展：添加自定义内置工具</h3>
+<p>在 <code>mcp-gateway/gateway.js</code> 中加两步：先往 <code>builtinTools</code> 数组加工具定义，再在 <code>callBuiltin</code> 加执行逻辑。</p>
+<pre><code>// ① 工具定义（builtinTools 数组里加一项）
+{ name: 'platform_health', description: '查询服务健康状态',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② 执行逻辑（callBuiltin 函数里加一个分支）
+if (name === 'platform_health') {
+  return '所有服务运行正常';
+}</code></pre>
+<p>修改后重启生效：<code>docker compose restart mcp-gateway</code>。之后 DeepChat 里重新连接该 MCP 服务器即可看到新工具。</p>
+
+<h3>8.7 Skill 市场（内网技能包分发）</h3>
+<p>MCP Gateway 同时托管内网 Skill（技能包），提供浏览、下载、安装三个端点：</p>
+<table>
+  <tr><th>端点</th><th>作用</th></tr>
+  <tr><td><code>/market</code></td><td>Skill 市场页面（浏览器打开，卡片式浏览 + 下载 ZIP + 复制安装地址）</td></tr>
+  <tr><td><code>/skills</code></td><td>技能清单（JSON，含 name/description/version）</td></tr>
+  <tr><td><code>/skills/&lt;名称&gt;.zip</code></td><td>技能包下载（<code>adm-zip</code> 动态打包）</td></tr>
+</table>
+<p>技能放在 <code>mcp-gateway/skills/</code> 目录下（含 <code>SKILL.md</code> 的子目录），<b>每次请求自动扫描，无需重启</b>。内置示例：<code>platform-report</code>（生成平台状态报告）。</p>
+<div class="callout callout-info">
+  <strong>DeepChat 装 Skill：</strong>设置 → Skills → <b>从 URL 安装</b>，填 <code>http://&lt;服务器IP&gt;:3100/skills/&lt;名称&gt;.zip</code>。<br>
+  <strong>关键认知：</strong>DeepChat 里 MCP 和 Skill 是两个独立概念——MCP 是「工具」（function calling），Skill 是「智能体技能包」（SKILL.md 指令 + 脚本）。DeepChat 的 Skill <b>没有「自定义市场 URL」</b>，官方只支持「文件夹 / ZIP / URL」三种安装方式，所以内网分发只能靠「URL 安装」变相实现（网关托管 zip + 市场页）。
+</div>
+
+<h4>「技能管家」Skill（先装，供员工找/装/更新技能）</h4>
+<p>内置一个引导型 <code>skill-market</code> 技能，员工先装它，之后在对话里问「有哪些技能 / 帮我装 X / 更新技能」即可。它不碰 DeepChat 内部目录（100% 可靠），只负责：读 <code>config.json</code> 里的 <code>market_url</code> → 请求 <code>/skills</code> 清单 → 筛选/推荐 → 给安装指引 → 比 version 提示更新。Ghost 下载页顶部已置顶「首次使用先装技能管家」提示。</p>
+<pre><code><span class="comment"># 技能管家自己的市场地址（打包进 zip 分发给员工）</span>
+<span class="comment"># mcp-gateway/skills/skill-market/config.json</span>
+<span class="comment"># ⚠️ 用主机名，不要用 IP（DeepChat 会脱敏 IP）</span>
+<span class="comment"># ⚠️ &lt;市场主机名&gt; 是部署参数，必须替换（见下方「自动 / 手动」）</span>
+{ "market_url": "http://&lt;市场主机名&gt;:3100" }</code></pre>
+
+<div class="callout callout-warn">
+  <strong>⚠️ 重要：<code>market_url</code> 用主机名，且 <code>&lt;市场主机名&gt;</code> 是<b>部署参数，必须替换</b>。</strong>DeepChat 的 agent 环境会把 IP 地址脱敏成 <code>[IP_ADDRESS_REDACTED]</code>，导致「技能管家」读不到真实 IP、无法请求 <code>/skills</code> 清单；主机名不受脱敏影响。但主机名是<b>每套部署都不同的本地值</b>，不能照抄（本环境当前填 <code>skillmarket.chxia.lab</code>，其中 <code>chxia.lab</code> 是本公司的 AD 域，别人部署必须换成自己的）。
+  <ul>
+    <li><b>自动（推荐，用 Agent 部署）：</b>Agent 会在「第 0 章 · 第一步收集参数」时问你「Skill 市场主机名（域名）」，然后自动把 <code>mcp-gateway/skills/skill-market/config.json</code> 和同目录 <code>SKILL.md</code> 里的 <code>&lt;市场主机名&gt;</code> 全部替换成你的值。</li>
+    <li><b>手动：</b>编辑 <code>mcp-gateway/skills/skill-market/config.json</code>（及 <code>SKILL.md</code> 兜底地址），把 <code>&lt;市场主机名&gt;</code> 换成你的主机名；再让该主机名可解析——单机在 <code>C:\Windows\System32\drivers\etc\hosts</code> 加一行 <code>&lt;服务器IP&gt;  &lt;你的主机名&gt;</code>（本机调试也可用 <code>127.0.0.1</code>），公司内网则在 DNS 加 A 记录。</li>
+  </ul>
+  <p><b>主机名取值建议</b>：用「服务名 + 公司域」的 FQDN，如 <code>skillmarket.你的公司域名</code>（本环境为 <code>skillmarket.chxia.lab</code>）。DNS 加 A 记录：域控「服务器管理器 → DNS → 正向查找区域 → 你的域 → 新建主机(A) → 名称 <code>skillmarket</code>、IP <code>&lt;服务器IP&gt;</code>」；或 PowerShell：<code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "你的域" -IPv4Address "&lt;服务器IP&gt;"</code>。</p>
+</div>
+
+<h3>8.8 管理 API（供 AI 管理中心增删改）</h3>
+<p>网关暴露管理 API（需 <code>X-Admin-Token</code> 头，值来自 <code>.env</code> 的 <code>MCP_ADMIN_TOKEN</code>；未配返回 503、错 token 返回 401）。公开的 <code>/mcp</code>、<code>/skills</code>、<code>/market</code> 不受影响：</p>
+<table>
+  <tr><th>端点</th><th>作用</th></tr>
+  <tr><td><code>GET/POST /api/servers</code>、<code>PUT/DELETE /api/servers/:name</code></td><td>MCP Server 增删改查（写回 <code>mcp-servers.json</code> + 自动重连）</td></tr>
+  <tr><td><code>POST /api/skills/upload</code></td><td>上传技能 zip（校验含 SKILL.md、防路径穿越、解压到 <code>skills/</code>）</td></tr>
+  <tr><td><code>DELETE /api/skills/:name</code></td><td>删除技能</td></tr>
+</table>
+<p>这些接口由 AI 管理中心（第 11 章）的「MCP Gateway」页面通过代理端点调用（Keycloak <code>ai-platform-admin</code> 角色保护），管理员在 UI 上即可增删 MCP Server、上传/删除 Skill，员工看到的 <code>/market</code> 仍是只读市场。</p>
+
+<h2 id="cicd">9. CI/CD — DeepChat 自动构建与发布</h2>
+
+<h3>9.1 Fork DeepChat 源码到 Gitea</h3>
+<pre><code>git clone https://github.com/ThinkInAIXYZ/deepchat.git
+cd deepchat
+# 在 Gitea 中创建空仓库 deepchat 后：
+git remote add internal http://127.0.0.1:3002/你的组织/deepchat.git
+git push -u internal main</code></pre>
+
+<h3>9.2 配置 DeepChat 发布地址</h3>
+<p>在 Gitea Web UI 中编辑 <code>package.json</code>，修改 <code>publish.url</code> 指向更新服务器：</p>
+<pre><code>"build": {
+  "publish": [{
+    "provider": "generic",
+    "url": "http://&lt;服务器IP&gt;:8091/deepchat/"
+  }]
+}</code></pre>
+
+<h3>9.3 创建 CI/CD 工作流</h3>
+<div class="file-name">.gitea/workflows/release.yml</div>
+<pre><code>name: Build & Release DeepChat
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: npm ci
+      - name: Build Linux
+        run: npx electron-builder --linux --x64
+      - name: Build Windows
+        run: npx electron-builder --win --x64
+      - name: Upload to update server
+        run: |
+          cp dist/*.exe dist/*.AppImage dist/latest*.yml /tmp/
+          curl -X PUT -T /tmp/latest.yml http://update-server/deepchat/latest.yml || true</code></pre>
+
+<div class="note"><strong>说明：</strong>Gitea Runner 需要能访问 Docker（已挂载 <code>docker.sock</code>）。构建产物需手动或通过脚本上传到 <code>update-server</code> 容器（端口 8091）。</div>
+
+<h3>9.4 Ghost 生成 API Token（供 Gitea 发布公告用）</h3>
+<ol>
+  <li>Ghost 后台 → <b>Integrations</b> → 添加自定义集成 → 生成 Admin API Key（格式 <code>id:secret</code>）</li>
+  <li>在 Gitea Actions 工作流中添加公告发布步骤：</li>
+</ol>
+<pre><code>      - name: Post release announcement to Ghost
+        run: |
+          curl -X POST http://ghost:8090/ghost/api/admin/posts/ \
+            -H "Authorization: Ghost ${{ secrets.GHOST_ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"posts":[{"title":"DeepChat 新版本发布","status":"published","html":"新版本已发布，请前往下载中心更新。"}]}'</code></pre>
+
+<h2 id="interconnect">10. 互连配置验证（12 项）</h2>
+<div class="card">
+<ol>
+  <li><span class="check">☑</span> NewAPI → LiteLLM：在 NewAPI 渠道测试中收到 OK</li>
+  <li><span class="check">☑</span> Dify → NewAPI：在 Dify 模型供应商测试中收到回复</li>
+  <li><span class="check">☑</span> DeepChat → NewAPI：在 DeepChat 中发送消息收到回复</li>
+  <li><span class="check">☑</span> Keycloak → NewAPI：用 Keycloak 账号登录 NewAPI 管理后台（OIDC 模式）</li>
+  <li><span class="check">☑</span> Keycloak → Dify：用 Keycloak 账号 SSO 登录 Dify</li>
+  <li><span class="check">☑</span> MCP Gateway → DeepChat：DeepChat 获取 MCP 工具列表并调用</li>
+  <li><span class="check">☑</span> MCP Gateway → Dify：Dify 工作流中调用 MCP Gateway 工具</li>
+  <li><span class="check">☑</span> Gitea Runner → Docker：Runner 可执行 CI/CD 任务</li>
+  <li><span class="check">☑</span> Gitea → 更新服务器：CI/CD 产物可上传到更新服务器</li>
+  <li><span class="check">☑</span> Ghost API → Gitea：Gitea Actions 可调用 Ghost API 发布公告</li>
+  <li><span class="check">☑</span> Ghost → Dify 跳转：门户 AI 工作台链接正确跳转 Dify</li>
+  <li><span class="check">☑</span> AI 管理中心 → Dashboard 显示全部容器状态 + 左侧菜单可访问所有产品</li>
+</ol>
+</div>
+
+<h2 id="identity-sources">N. Keycloak 企业身份源集成（AD / Entra ID / LDAP / SAML / OIDC）</h2>
+<div class="note"><strong>说明：</strong>Keycloak 支持对接多种企业身份源，用户无需额外创建账号即可使用公司现有账号登录 Dify、Ghost 等所有已接入 Keycloak SSO 的应用。</div>
+
+<h3>N.1 Active Directory (LDAP) — 本地域控对接</h3>
+<div class="tip"><strong>适用场景：</strong>公司有本地 Windows Active Directory 域控，希望员工用域账号登录所有 AI 平台应用。</div>
+<p><strong>网络 + 部署部分</strong>（Hyper-V 搭建、Internal Switch、端口转发、防火墙）详见独立文档。Keycloak LDAP 用户联合的配置步骤已整合到 <a href="#config-keycloak" style="color:#58a6ff;">6.1.2 方式 B</a>。</p>
+<p style="margin-top: 8px;"><a href="windows-ad-integration.html" style="color:#58a6ff; font-size:1.05em; font-weight:600;">📄 Keycloak AD 集成完整指南 — windows-ad-integration.html</a>（含一键检测修复脚本 <code>scripts\setup-hyperv-dc-network.ps1</code>）</p>
+
+<h3>N.2 Microsoft Entra ID（原 Azure AD）— 云目录对接</h3>
+<div class="tip"><strong>适用场景：</strong>公司使用 Microsoft 365 / Azure，员工账号在 Entra ID 中管理。通过 OpenID Connect 协议对接。</div>
+
+<h4>步骤 1：在 Entra ID 中注册应用</h4>
+<ol>
+  <li><a href="https://portal.azure.com">Azure Portal</a> → <b>Microsoft Entra ID</b> → <b>App registrations</b> → <b>New registration</b></li>
+  <li>Name：<code>AI-Platform-Keycloak</code></li>
+  <li>Supported account types：<b>Accounts in this organizational directory only</b></li>
+  <li>Redirect URI：<b>Web</b>，URL 填 <code>http://127.0.0.1:9090/realms/enterprise-ai/broker/entra-id/endpoint</code></li>
+  <li>点击 <b>Register</b></li>
+  <li>记下 <b>Application (client) ID</b> 和 <b>Directory (tenant) ID</b></li>
+  <li><b>Certificates & secrets</b> → New client secret → 记下 <b>Secret Value</b></li>
+</ol>
+
+<h4>步骤 2：在 Keycloak 中添加 Entra ID 身份提供者</h4>
+<ol>
+  <li>Keycloak → enterprise-ai Realm → <b>Identity Providers</b> → <b>Add provider</b> → <b>OpenID Connect v1.0</b></li>
+  <li>Alias：<code>entra-id</code></li>
+  <li>Display Name：<code>Microsoft Entra ID</code></li>
+  <li>填写配置：</li>
+</ol>
+<table>
+  <tr><th>配置项</th><th>值</th></tr>
+  <tr><td>Authorization URL</td><td><code>https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/authorize</code></td></tr>
+  <tr><td>Token URL</td><td><code>https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/token</code></td></tr>
+  <tr><td>Client ID</td><td><code>{application-client-id}</code></td></tr>
+  <tr><td>Client Secret</td><td><code>{client-secret-value}</code></td></tr>
+  <tr><td>Default Scopes</td><td><code>openid profile email</code></td></tr>
+  <tr><td>Client Authentication</td><td><b>Client secret sent as post</b></td></tr>
+</table>
+<ol start="4">
+  <li>点击 <b>Save</b></li>
+</ol>
+
+<h4>步骤 3：配置属性映射（可选）</h4>
+<p>在 Identity Provider → <b>Mappers</b> 中可添加属性映射，例如：</p>
+<pre><code>Mapper Type: Attribute Importer
+Claim: preferred_username  →  User Attribute: username
+Claim: email               →  User Attribute: email
+Claim: name                →  User Attribute: firstName</code></pre>
+
+<h4>验证</h4>
+<ol>
+  <li>打开 Dify 登录页面 → 应出现 <b>Microsoft Entra ID</b> 登录按钮</li>
+  <li>点击后跳转到 Microsoft 登录页面 → 用公司 Entra ID 账号登录</li>
+  <li>首次登录后，在 Keycloak <b>Users</b> 列表中能看到从 Entra ID 同步的用户</li>
+</ol>
+
+<h3>N.3 Google Workspace (OpenID Connect)</h3>
+<div class="tip"><strong>适用场景：</strong>公司使用 Google Workspace，员工用 Google 账号登录。</div>
+<ol>
+  <li><a href="https://console.cloud.google.com">Google Cloud Console</a> → APIs & Services → Credentials → Create OAuth 2.0 Client ID</li>
+  <li>Authorized redirect URI：<code>http://127.0.0.1:9090/realms/enterprise-ai/broker/google/endpoint</code></li>
+  <li>记下 <b>Client ID</b> 和 <b>Client Secret</b></li>
+  <li>Keycloak → Identity Providers → Add <b>Google</b>（内置）</li>
+  <li>填入 Client ID 和 Client Secret → Save</li>
+  <li>如需限制域名：进入 Identity Provider → <b>Mappers</b> → 添加 <code>Hardcoded Attribute</code> → 只在 <code>hd=你的域名.com</code> 时允许登录</li>
+</ol>
+
+<h3>N.4 GitHub (OAuth2)</h3>
+<ol>
+  <li>GitHub → Settings → Developer settings → OAuth Apps → New OAuth App</li>
+  <li>Authorization callback URL：<code>http://127.0.0.1:9090/realms/enterprise-ai/broker/github/endpoint</code></li>
+  <li>记下 Client ID 和 Client Secret</li>
+  <li>Keycloak → Identity Providers → Add <b>GitHub</b>（内置）</li>
+  <li>填入 Client ID/Secret → Save</li>
+  <li>可选：在 Mappers 中添加 <code>Attribute Importer</code> 将 GitHub 组织/团队映射为 Keycloak 角色</li>
+</ol>
+
+<h3>N.5 通用 LDAP（OpenLDAP / FreeIPA / 389 DS）</h3>
+<ol>
+  <li>Keycloak → User Federation → Add <b>ldap</b></li>
+  <li>Vendor 选择 <b>Other</b>（非 Active Directory）</li>
+  <li>Connection URL：<code>ldap://openldap-server:389</code></li>
+  <li>Users DN：<code>ou=users,dc=company,dc=com</code></li>
+  <li>Username LDAP attribute：<code>uid</code>（OpenLDAP 用 uid，AD 用 sAMAccountName）</li>
+  <li>RDN LDAP attribute：<code>uid</code></li>
+  <li>UUID LDAP attribute：<code>entryUUID</code></li>
+  <li>User Object Classes：<code>inetOrgPerson, organizationalPerson</code></li>
+  <li>Save → Synchronize all users</li>
+</ol>
+
+<h3>N.6 通用 SAML 2.0（Okta / PingFederate / ADFS / Shibboleth）</h3>
+<div class="tip"><strong>适用场景：</strong>对接任意支持 SAML 2.0 的身份提供商（Okta、Ping、ADFS、Shibboleth 等）。</div>
+<ol>
+  <li>在目标 IdP（如 Okta）中创建 SAML 应用：
+    <ul>
+      <li>ACS URL：<code>http://127.0.0.1:9090/realms/enterprise-ai/broker/saml/endpoint</code></li>
+      <li>Entity ID：<code>http://127.0.0.1:9090/realms/enterprise-ai</code></li>
+      <li>导出 IdP 元数据 XML 文件</li>
+    </ul>
+  </li>
+  <li>Keycloak → Identity Providers → Add <b>SAML v2.0</b></li>
+  <li>Alias：<code>okta-saml</code></li>
+  <li>两种配置方式：
+    <ul>
+      <li><b>方式 A：</b>粘贴 IdP 元数据 URL（推荐，自动填充所有字段）</li>
+      <li><b>方式 B：</b>导入 IdP 元数据 XML 文件</li>
+    </ul>
+  </li>
+  <li>Service Provider Entity ID：<code>http://127.0.0.1:9090/realms/enterprise-ai</code></li>
+  <li>Save → 即可使用 SAML 登录</li>
+</ol>
+
+<h3>N.7 多身份源共存策略</h3>
+<div class="note"><strong>最佳实践：</strong>Keycloak 支持同时配置多个身份源（AD + Entra ID + Google + GitHub）。所有身份源共享同一个 Realm，用户在登录页面可选择使用哪个身份源登录。建议：</div>
+<ol>
+  <li>在 <b>Authentication</b> → <b>Browser flow</b> 中添加 <b>Identity Provider Redirector</b>，根据用户邮箱域名自动选择 IdP</li>
+  <li>例如：<code>@company.com</code> → AD；<code>@company.onmicrosoft.com</code> → Entra ID</li>
+  <li>外部合作方用 GitHub / Google 账号 → 单独配置权限较低的 Keycloak 角色</li>
+</ol>
+
+<h3>N.8 验证清单</h3>
+<div class="card">
+<ol>
+  <li><span class="check">☑</span> LDAP 用户已同步到 Keycloak Users 列表</li>
+  <li><span class="check">☑</span> 用 AD 域账号成功登录 Dify</li>
+  <li><span class="check">☑</span> 用 Entra ID 账号成功登录 Dify</li>
+  <li><span class="check">☑</span> Dify / Ghost 登录页面显示多个 IdP 按钮（AD、Entra ID、Google 等）</li>
+  <li><span class="check">☑</span> 首次登录自动创建 Keycloak 用户，后续登录直接识别</li>
+  <li><span class="check">☑</span> IdP 用户的角色/权限正确映射</li>
+  <li><span class="check">☑</span> AD 组 → Keycloak 角色映射生效</li>
+</ol>
+</div>
+
+<h2 id="admin-portal">11. AI 管理中心 — 统一管理员门户</h2>
+<div class="note"><strong>定位：</strong>不是 Docker 管理平台（1Panel/Portainer 那种），而是一个面向管理员的统一后台——用 Keycloak 鉴权，左侧菜单链接全部产品，Dashboard 展示集群状态，统一管理所有平台的管理员账号。</div>
+
+<h3>11.1 为什么不自建不可</h3>
+<p>调研了 Organizr、Dashy、Homarr、Heimdall 等开源面板，它们都不满足以下核心需求：</p>
+<table>
+  <tr><th>需求</th><th>Organizr</th><th>Dashy</th><th>AI Admin Center</th></tr>
+  <tr><td>Keycloak OIDC 登录</td><td>插件支持（非原生）</td><td>支持</td><td><span class="check">☑</span> 原生</td></tr>
+  <tr><td>侧边栏菜单 + iframe 嵌入</td><td><span class="check">☑</span></td><td>部分</td><td><span class="check">☑</span></td></tr>
+  <tr><td>Docker 容器状态监控</td><td>不支持</td><td>Widget</td><td><span class="check">☑</span> 实时</td></tr>
+  <tr><td>统一管理 Keycloak 管理员账号</td><td>不支持</td><td>不支持</td><td><span class="check">☑</span></td></tr>
+  <tr><td>Global Admin 初始配置</td><td>不支持</td><td>不支持</td><td><span class="check">☑</span></td></tr>
+  <tr><td>所有产品统一入口 + 鉴权</td><td>部分</td><td>部分</td><td><span class="check">☑</span></td></tr>
+</table>
+
+<h3>11.2 架构设计</h3>
+<pre style="background:none;border:none;font-size:0.9em;">
+用户浏览器 → AI 管理中心 (&lt;服务器IP&gt;:10086)
+                  │
+    ┌─────────────┼─────────────┐
+    │  Keycloak    │  Admin API  │  Docker API
+    │  OIDC 登录   │  (用户管理)  │  (容器状态)
+    │             │             │
+    ▼             ▼             ▼
+ Keycloak     Keycloak      Docker
+ (9090)       Admin REST    Socket
+</pre>
+
+<div class="card">
+<h4 style="color:#58a6ff;margin-top:0">左侧菜单结构</h4>
+<table>
+  <tr><th>图标</th><th>菜单项</th><th>行为</th><th>目标</th></tr>
+  <tr><td>📊</td><td><b>总览仪表板</b></td><td>内嵌页面</td><td>8 个产品业务指标 + Docker 服务（按产品分组）+ 系统信息</td></tr>
+  <tr><td>📰</td><td>Ghost 后台</td><td>内嵌统计页</td><td>文章/页面/订阅者/标签统计 + 「打开 Ghost 后台」按钮 → <code>:8090/ghost/</code></td></tr>
+  <tr><td>🤖</td><td>Dify AI 平台</td><td>内嵌统计页</td><td>应用/工作空间/版本统计 + 「打开 Dify 平台」按钮</td></tr>
+  <tr><td>📦</td><td>Gitea 源码管理</td><td>内嵌统计页</td><td>仓库列表（名称/描述/语言/大小/更新时间）+ deepchat-sync 同步脚本上次执行 + 「打开 Gitea」按钮</td></tr>
+  <tr><td>🔀</td><td>NewAPI 管理</td><td>内嵌页面</td><td>渠道/用户/密钥（含已使用配额）+ 💰 成本报表（按用户/模型/日期）+ 📋 审计日志（最近调用记录），Admin API，仅管理员</td></tr>
+  <tr><td>🔐</td><td>Keycloak 认证</td><td>内嵌统计页</td><td>用户/客户端/角色/身份源统计 + 「打开 Keycloak」按钮</td></tr>
+  <tr><td>🔌</td><td>MCP Gateway</td><td>内嵌管理页</td><td>端点信息 + 增删 MCP Server + 上传/删除 Skill（仅 ai-platform-admin）</td></tr>
+  <tr><td>🛡️</td><td>LiteLLM+PII</td><td>内嵌页</td><td>复制 Master Key + 打开 LiteLLM 管理中心</td></tr>
+  <tr><td>⬇️</td><td>更新服务器</td><td>内嵌统计页</td><td>DeepChat 版本 + 安装包清单（文件名/大小/更新时间）</td></tr>
+  <tr><td>📈</td><td>监控告警</td><td>新标签页</td><td>Grafana 大盘 → <code>:3030</code></td></tr>
+  <tr><td>🔍</td><td>LLM 可观测</td><td>新标签页</td><td>Langfuse 追踪 → <code>:3010</code></td></tr>
+  <tr><td>🔐</td><td><b>集中认证</b></td><td>内嵌页面</td><td>统一账号体系（仅 ai-platform-admin 可见）</td></tr>
+  <tr><td>👥</td><td><b>管理员账号管理</b></td><td>内嵌页面</td><td>Keycloak Admin API</td></tr>
+  <tr><td>⚙️</td><td><b>系统设置</b></td><td>内嵌页面</td><td>基础配置 + 界面语言（9 种）</td></tr>
+</table>
+</div>
+
+<h3>11.3 初始化：Global Administrator</h3>
+<p>首次启动时，AI 管理中心通过环境变量配置 Global Admin：</p>
+<pre><code># .env 中新增：
+ADMIN_USERNAME=ai_all_in_one_admin
+ADMIN_PASSWORD=见账号密码清单
+ADMIN_EMAIL=admin@company.com</code></pre>
+<p>启动后自动在 Keycloak 中创建 <code>ai_all_in_one_admin</code> 用户（如有则跳过），并分配 <code>ai-platform-admin</code> Realm Role。所有接入 Keycloak SSO 的产品（Dify、NewAPI、Ghost）可通过此角色识别管理员。</p>
+<div class="tip"><strong>核心理念：</strong>一个 Global Admin 账号管理所有平台。每个产品的管理员角色通过 Keycloak Realm Role <code>ai-platform-admin</code> 统一控制。</div>
+
+<div class="callout callout-info">
+  <strong>统一管理员账号（全局约定）：</strong>所有平台的应用管理员统一用用户名 <code>ai_all_in_one_admin</code>（Keycloak / NewAPI / AI 管理中心 / Ghost / Gitea / Dify），AD 域控的 LDAP 绑定服务账号也叫 <code>ai_all_in_one_admin</code>。<strong>具体密码见独立的账号密码清单文档</strong>（<code>credentials.html</code>，内部机密，不随本部署指南外传）。
+</div>
+
+<h3>11.4 Docker Compose 部署</h3>
+<p><strong>前置步骤：</strong>先进入 <code>admin-portal/</code> 目录安装 Node.js 依赖，只需执行一次。</p>
+<pre><code>cd admin-portal
+npm install
+cd ..</code></pre>
+<p>然后在 <code>docker-compose.yml</code> 中新增：</p>
+<pre><code>  # ═══ AI 管理中心 ═══
+  admin-portal:
+    image: node:20-alpine
+    container_name: admin-portal
+    restart: always
+    ports:
+      - "10086:3000"
+    working_dir: /app
+    command: sh -c "node server.js"
+    environment:
+      - PORT=3000
+      - KEYCLOAK_URL=http://192.168.31.117:9090
+      - KEYCLOAK_REALM=enterprise-ai
+      - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_URL=http://&lt;服务器IP&gt;:4001
+    volumes:
+      - ./admin-portal:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ai-platform</code></pre>
+
+<h3>11.5 管理中心的代码实现（要点）</h3>
+<p>源码在 <code>admin-portal/</code>（<code>server.js</code> + <code>public/index.html</code>），依赖 <code>express</code> / <code>keycloak-connect</code> / <code>dockerode</code> / <code>@keycloak/keycloak-admin-client</code>。功能远超最初的「容器状态看板」，完整能力如下：</p>
+<ul>
+  <li><b>总览仪表板</b>：8 个产品业务指标（NewAPI/Gitea/Ghost/Dify/Keycloak/MCP/LiteLLM/Update Server，各产品独立聚合端点、单个失败不影响整体）+ Docker 服务（按产品分组圈）+ 系统信息。</li>
+  <li><b>产品统计页</b>：Ghost/Dify/Gitea/Keycloak/更新服务器点击后先展示关键统计 + 「打开后台」按钮（见 11.2 菜单表）。数据来源：Gitea REST API（Basic Auth + X-Total-Count）、Keycloak Admin API、Dify console API（base64 密码 + cookie/CSRF）、Ghost 容器内 sqlite（docker exec）、Update Server 的 version.txt + stat。</li>
+  <li><b>MCP Gateway 管理</b>：增删 MCP Server、上传/删除 Skill（代理网关 <code>/api/*</code> 管理端点，注入 <code>X-Admin-Token</code>）。</li>
+  <li><b>集中认证 / 管理员管理</b>：统一账号、SSO 机制、各平台登录方式（仅 ai-platform-admin 可见）。</li>
+  <li><b>系统设置</b>：环境变量说明 + 产品入口 URL + <b>界面语言（9 种：简中/繁中/英/法/西/葡/日/韩/阿，阿拉伯语支持 RTL 从右到左）</b>。</li>
+  <li><b>🧬 PII 脱敏</b>：展示 Presidio analyzer/anonymizer 健康状态 + LiteLLM guardrails（content-safety-filter / presidio-pii-mask）规则清单 + 已接入模型。</li>
+  <li><b>📜 统一日志</b>：按容器下拉 + 关键字 + 时间范围查 Loki 聚合日志（后端 <code>/api/logs/query</code>）。</li>
+  <li><b>💾 备份与恢复</b>：备份列表 + 「立即备份」+ 一键恢复（后端 <code>/api/backup/list|run|restore</code>，经 docker.sock + <code>C:\AIAllInOne\backups</code> 挂载实现，与 backup.ps1 同格式）。</li>
+  <li><b>📄 报告生成</b>：按条件（统计周期 1/7/30/90 天 + 勾选包含模块）生成系统详细报告，覆盖系统总览、产品健康状态、使用统计（调用/Token/成本，按用户·模型·天）、客户端统计（按 IP 地址 + 按 API Key 应用）、最近问题（Loki 错误日志汇总 + 可用性失败项 + 停止容器）、可用性测试、备份状态、PII 脱敏状态；报告语言与当前界面语言一致（zh/en，其他语言回退英文）；可导出 <code>.md</code> 文件（后端 <code>/api/report?days=&lang=&sections=</code>）。</li>
+  <li><b>监控告警 / LLM 可观测</b>：内嵌统计页（Prometheus targets/告警数、Langfuse 版本/trace 数）+ 打开大盘按钮。</li>
+  <li><b>🩺 可用性测试</b>：定时（默认每 10 分钟，<code>AVAILABILITY_INTERVAL_MIN</code> 可调）+ 手动「测试所有」+ 每项单独测试；覆盖 Keycloak 认证 / NewAPI / LiteLLM / DeepChat·Dify 聊天（经 NewAPI 发真实对话）/ Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / 更新服务器 / 备份 / Docker / Redis；每项卡片下方小窗口输出结果与关键日志。后端 <code>/api/availability|run|test/:id</code>。Dashboard 产品指标区追加「可用性测试」汇总卡。</li>
+  <li><b>📰 Ghost 免登录</b>：点「Ghost 后台」的「打开」按钮时，后端 <code>/api/ghost/auto-login</code> 自动完成——密码登录（<code>POST /session/</code>）→ 读 Ghost 库的 <code>admin_session_secret</code> 本地算 6 位 TOTP 验证码（<code>HMAC-SHA1(secret+userId)</code>，与邮件里的码一致，免读 MailHog）→ <code>PUT /session/verify</code> 验证会话 → 把 <code>ghost-admin-api-session</code> cookie 写进浏览器 → 跳转 Ghost 后台，全程无感。详情见 13.10。</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>⚠️ 部署/排错要点：</strong>
+  <ul>
+    <li>admin-portal 会话存内存（MemoryStore），<code>docker compose up -d</code> 重建容器会<b>清空登录会话</b>（需重新登录）。要多副本/持久会话需换 Redis 存储。</li>
+    <li>首页 <code>/</code> 必须走 Keycloak 保护：<code>express.static(..., { index:false })</code> 不放行 index.html + 显式 <code>app.get('/', keycloak.protect(), ...)</code>，否则未登录会直接渲染空看板、接口全 401（表现为「打开没有登录界面、各页大量失败」）。</li>
+    <li>统计 Dify 数据时邮箱必须用 Dify 实际管理员邮箱（<code>ai_all_in_one_admin@&lt;公司域名&gt;</code>），不是 <code>.env</code> 里那个旧的 <code>ADMIN_EMAIL=admin@company.com</code>。</li>
+  </ul>
+</div>
+
+<h3>11.6 Keycloak 客户端配置</h3>
+<p>在 Keycloak 中为 AI 管理中心创建 OIDC Client：</p>
+<ol>
+  <li>Keycloak → enterprise-ai Realm → <b>Clients</b> → Create</li>
+  <li>Client ID：<code>AI-all-in-one-admin-portal</code>，类型：<b>OpenID Connect</b> → Next</li>
+  <li><b>Client authentication：On</b>（⚠️ 必开，否则没有 Credentials 标签）</li>
+  <li><b>Standard flow：On</b>（⚠️ 必开，否则登录无法回调）</li>
+  <li>Valid Redirect URIs：<code>http://127.0.0.1:10086/*</code> 和 <code>http://&lt;服务器IP&gt;:10086/*</code>，Web origins：<code>http://127.0.0.1:10086</code> 和 <code>http://&lt;服务器IP&gt;:10086</code> → Save</li>
+  <li>保存后出现 <b>Credentials</b> 标签 → 复制 <b>Client Secret</b></li>
+  <li>将 Secret 填入 <code>.env</code> 的 <code>KEYCLOAK_CLIENT_SECRET</code>，重启 admin-portal：<code>docker compose up -d admin-portal</code></li>
+  <li>创建 Realm Role：<b>ai-platform-admin</b></li>
+  <li>将 <code>ai_all_in_one_admin</code> 用户分配此角色</li>
+  <li>对于其他平台（Dify、Ghost、NewAPI），也创建相同的 <code>ai-platform-admin</code> 角色，实现跨平台统一管理员</li>
+</ol>
+
+<h3>11.7 验证</h3>
+<ol>
+  <li>浏览器打开 <b>http://&lt;服务器IP&gt;:10086</b> → 自动跳转 Keycloak 登录（未登录不会显示空看板，而是 302 到登录页）</li>
+  <li>用 Global Admin 账号 <code>ai_all_in_one_admin</code> 登录 → 进入总览仪表板</li>
+  <li>Dashboard 顶部「产品业务指标」显示 8 个产品真实统计；下方「Docker 服务」按产品分组展示所有容器</li>
+  <li>点击左侧菜单 Ghost/Dify/Gitea/Keycloak → 先显示各自统计卡片，点「打开后台」按钮才跳转对应后台</li>
+  <li>NewAPI 管理 → 显示渠道/用户/密钥（密钥含「已使用配额」）；MCP Gateway → 可增删 MCP Server、上传/删除 Skill</li>
+  <li>管理员管理 → 显示拥有 ai-platform-admin 角色的用户列表</li>
+  <li>系统设置 → 可切换界面语言（简中/繁中/英/法/西/葡/日/韩/阿）</li>
+  <li>未登录用户访问 http://&lt;服务器IP&gt;:10086 → 被重定向到 Keycloak 登录页</li>
+</ol>
+
+<div class="tip"><strong>对比旧方案：</strong>之前在架构图中用了 1Panel/Portainer 作为"统一管理平台"。但它们只是 Docker 容器管理工具，不能做应用层的统一鉴权和管理。AI 管理中心填补了这个空缺：对外提供统一入口，对内通过 Keycloak 控制所有产品的管理员权限。</div>
+
+<!-- ==================== 8. 运维 ==================== -->
+<h2 id="ops">12. 运维 — 健康检查与开机自检</h2>
+
+<div class="callout callout-info">
+  <strong>脚本位置：</strong><code>C:\AIAllInOne\windows\scripts\health-check.ps1</code><br>
+  <strong>结果输出：</strong><code>C:\AIAllInOne\windows\scripts\health_check_&lt;年月日_时分秒&gt;.log</code>（每次运行生成独立报告，不覆盖历史）<br>
+  <strong>覆盖范围：</strong>41 个容器（25 Windows 核心 + 16 Dify），分 9 个阶段检查（含 LLM 全链路、AD 账号认证 + 管理员登录、MCP/Skill 功能验证、磁盘空间）。凭据从同目录 <code>.env</code> 读取，脚本不硬编码密码。
+</div>
+
+<h3>12.1 检查范围</h3>
+
+<table>
+  <tr><th>阶段</th><th>检查项</th><th>方式</th></tr>
+  <tr><td>Stage 1</td><td>Docker Daemon 是否运行（等待就绪，适配开机自检）</td><td><code>docker info</code></td></tr>
+  <tr><td>Stage 2</td><td>41 个容器状态（Up/Exited/Restarting）</td><td><code>docker ps -a</code></td></tr>
+  <tr><td>Stage 3</td><td>10 个 HTTP 端点响应（含 MCP Gateway）</td><td><code>curl.exe 127.0.0.1:端口</code></td></tr>
+  <tr><td>Stage 4</td><td>LiteLLM /readiness + <b>模型注册</b>、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox 健康状态</td><td><code>docker exec</code> + <code>docker inspect</code></td></tr>
+  <tr><td>Stage 5</td><td><b>LLM 全链路</b>：NewAPI 渠道状态 + 以 DeepChat 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek）</td><td><code>curl /v1/chat/completions</code></td></tr>
+  <tr><td>Stage 6</td><td><b>AD 账号认证链路</b>：Keycloak well-known + AD 用户同步（aitest1）+ NewAPI OIDC 配置 + OIDC clients 完整性 + <b>NewAPI 管理员登录</b></td><td>curl + Admin API + mysql</td></tr>
+  <tr><td>Stage 7</td><td><b>MCP Gateway + Skill</b>：/health + tools/list + tools/call + 外部 Skill 聚合</td><td>curl MCP 协议</td></tr>
+  <tr><td>Stage 8</td><td><b>DeepChat / Dify 登录前置条件</b>：NewAPI 服务可用 + Dify 已初始化</td><td>curl + psql</td></tr>
+  <tr><td>Stage 9</td><td><b>磁盘空间</b>：系统盘剩余 + Docker 磁盘占用</td><td><code>Get-PSDrive</code> + <code>docker system df</code></td></tr>
+</table>
+
+<h3>12.2 手动执行</h3>
+
+<div class="step">
+  <span class="step-num">1</span>打开 PowerShell 终端
+  <pre><code><span class="comment"># 直接运行</span>
+C:\AIAllInOne\windows\scripts\health-check.ps1
+
+<span class="comment"># 查看结果文件（文件名带时间戳，如 health_check_2026_08_13_10_05_31.log）</span>
+dir C:\AIAllInOne\windows\scripts\health_check_*.log
+notepad C:\AIAllInOne\windows\scripts\health_check_&lt;最新时间戳&gt;.log</code></pre>
+</div>
+
+<div class="verify">输出末尾显示 <code>ALL CLEAR</code> 且 <code>Fail: 0</code> 表示全部正常。</div>
+
+<h3>12.3 开机自动运行（计划任务）</h3>
+
+<div class="step">
+  <span class="step-num">1</span>以管理员身份打开 PowerShell，执行：
+  <pre><code><span class="comment"># 创建开机自启计划任务</span>
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # 登录后延迟 2 分钟，等 Docker Desktop + 容器启动
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
+
+<span class="comment"># 验证已创建</span>
+Get-ScheduledTask -TaskName "AI-Platform-HealthCheck"
+
+<span class="comment"># 手动触发一次测试</span>
+Start-ScheduledTask -TaskName "AI-Platform-HealthCheck"</code></pre>
+</div>
+
+<div class="callout callout-info">
+  <strong>📌 注意事项：</strong>
+  <ul>
+    <li>脚本使用 <code>127.0.0.1</code> 而非 <code>localhost</code>，避免 Docker Desktop WSL2 IPv6 兼容性问题</li>
+    <li>凭据从同目录 <code>.env</code> 读取（Keycloak 管理员、NewAPI DB/管理员密码），脚本本身不硬编码密码</li>
+    <li>LiteLLM 内部健康检查使用 <code>/health/readiness</code>（无需认证）而非 <code>/health</code>（需要 Bearer token）</li>
+    <li><code>docker-init_permissions-1</code> 容器 Exited (0) 是正常的一次性初始化任务</li>
+    <li>Update Server 返回 HTTP 403 也是正常的（无默认 index.html，但服务在运行）</li>
+    <li>脚本 exit code：0 = 全部通过，1 = 有失败项</li>
+  </ul>
+</div>
+
+<h3>12.4 常见问题排查</h3>
+
+<pre><code><span class="comment"># 如果某个容器持续 Restarting</span>
+docker logs &lt;容器名&gt; --tail 30
+
+<span class="comment"># 如果 HTTP 端点无响应</span>
+docker ps --filter "name=&lt;容器名&gt;" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+<span class="comment"># 重建单个服务</span>
+docker compose up -d &lt;服务名&gt;
+
+<span class="comment"># 重新运行健康检查</span>
+C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
+
+<h2 id="security">13. 安全合规与可观测</h2>
+<p>本章覆盖企业 AI 落地的<b>安全合规、数据治理、可运维</b>三大块，是「能用」到「企业级落地」的关键增量。</p>
+
+<h3>13.1 PII 脱敏与内容安全（LiteLLM Guardrails）</h3>
+<p>所有发给外部大模型的请求都经过 LiteLLM 的 guardrails 预处理，敏感信息<b>在出内网前就已被脱敏</b>。</p>
+<div class="step">
+  <span class="step-num">1</span><strong>内置内容过滤器（默认启用，无需外部服务）</strong>
+  <p>使用 <code>litellm_content_filter</code>，正则脱敏以下类型（action = MASK，命中即替换为 <code>[xxx_REDACTED]</code>）：</p>
+  <table>
+    <tr><th>规则</th><th>正则</th><th>类型</th></tr>
+    <tr><td>中国手机号</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+    <tr><td>身份证号</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+    <tr><td>银行卡号</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+    <tr><td>邮箱</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+    <tr><td>统一社会信用代码</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+    <tr><td>护照号</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+    <tr><td>IPv4 地址</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+  </table>
+  <p>另有敏感词黑名单（命中即 <b>BLOCK</b> 拒绝请求）：<code>内部机密</code>、<code>商业机密</code> 等，按公司实际敏感词在 <code>litellm-config.yaml</code> 的 <code>blocked_words</code> 增删。</p>
+  <div class="note">⚠️ <b>关键坑</b>：guardrails 注册后默认<b>不全局生效</b>，必须加 <code>default_on: true</code>，否则只有请求体显式传 <code>guardrails</code> 字段才触发。</div>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Presidio 高级实体识别（已启用）</strong>
+  <p>Microsoft Presidio（<code>presidio-analyzer</code> / <code>presidio-anonymizer</code>）识别英文人名、邮箱等更细粒度实体，与上方内置正则互补。端点由环境变量 <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code> 指定。</p>
+  <div class="note">⚠️ <b>关键坑（端点格式）</b>：LiteLLM 会自动在 base URL 后面拼 <code>/analyze</code>、<code>/anonymize</code>，所以环境变量<b>必须填 base URL</b>（如 <code>http://presidio-analyzer:3000</code>），<b>不能</b>带 <code>/analyze</code> 路径，否则会变成 <code>/analyze/analyze</code> 返回 404。此外 analyzer 的 <code>/analyze</code> 必须带 <code>language</code> 字段（LiteLLM 会自动带）。</div>
+  <div class="note">⚠️ <b>镜像拉取慢</b>：presidio-analyzer 约 965MB，国内 MCR 直连很慢（实测约 1 小时）。如拉不动，可先用内置正则（已覆盖中文核心 PII），Presidio 作为可选增强。</div>
+</div>
+<div class="verify">验证：发含手机号/邮箱的请求 → 模型回复中原始值被替换为 <code>[REDACTED]</code>；发含「内部机密」的请求 → 直接返回 <code>Content blocked</code>。</div>
+
+<h3>13.2 数据备份与恢复</h3>
+<p>备份脚本 <code>scripts\backup.ps1</code> 每日备份所有关键数据，输出到 <code>C:\AIAllInOne\backups\</code>，自动保留最近 7 天。</p>
+<table>
+  <tr><th>备份项</th><th>内容</th><th>方式</th></tr>
+  <tr><td>NewAPI</td><td>MySQL（new-api 库：用户/渠道/密钥/日志）</td><td><code>mysqldump</code></td></tr>
+  <tr><td>Dify</td><td>PostgreSQL（dify 库：应用/知识库/工作流）</td><td><code>pg_dump</code></td></tr>
+  <tr><td>Ghost</td><td>SQLite（ghost.db：文章/页面/设置）</td><td>文件复制</td></tr>
+  <tr><td>Gitea</td><td>SQLite（gitea.db：仓库元数据）</td><td>文件复制</td></tr>
+  <tr><td>配置</td><td>.env / docker-compose.yml / litellm-config.yaml 等</td><td>文件复制</td></tr>
+</table>
+<div class="step">
+  <span class="step-num">1</span><strong>手动执行一次</strong>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>定时执行（Windows 任务计划）</strong>
+  <p>已注册计划任务 <code>AI-Platform-Backup</code>（每天 02:00，当前用户）。如未自动注册，可手动在「任务计划程序」创建：操作 → 新建 → 程序 <code>powershell.exe</code>，参数 <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>，触发器每天 02:00。</p>
+</div>
+<div class="note">⚠️ 备份文件默认在 C 盘，建议定期把 <code>C:\AIAllInOne\backups\</code> 同步到另一块盘或对象存储，实现异地容灾。</div>
+<div class="step">
+  <span class="step-num">3</span><strong>恢复（<code>scripts\restore.ps1</code>）</strong>
+  <p>从某次备份目录恢复全部数据（MySQL / PostgreSQL / SQLite / 配置）：</p>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+  <p>脚本会要求输入 <code>yes</code> 确认后执行（加 <code>-Force</code> 跳过确认，仅脚本/CI 用）。</p>
+</div>
+<div class="step">
+  <span class="step-num">4</span><strong>AI 管理中心「💾 备份与恢复」页</strong>
+  <p>登录 AI 管理中心即可看到备份列表、点击「立即备份」、点某次备份的「恢复」按钮一键恢复（后端经 <code>docker.sock</code> + 挂载的 <code>C:\AIAllInOne\backups</code> 实现，与 backup.ps1 产出同格式备份）。需要 <code>ai-platform-admin</code> 角色。</p>
+  <div class="note">⚠️ <b>关键坑</b>：旧版 backup.ps1 用 <code>Copy-Item</code> 批量复制配置文件时，点号文件 <code>.env</code> 会导致整批静默失败（<code>-ErrorAction SilentlyContinue</code> 吞错），实测备份里 <code>config/</code> 只有 <code>dify.env</code> + <code>mcp-servers.json</code>。已改为逐文件 <code>-LiteralPath</code> 复制 + 校验。另：AI 管理中心备份用 <code>base64</code> 中转 + <code>tar-fs</code>/<code>putArchive</code> 保证二进制安全（<code>docker exec</code> 的 stdout 走 utf8 会损坏 SQLite .db）。</div>
+</div>
+
+<h3>13.3 监控告警（Prometheus + Grafana + cadvisor）</h3>
+<p>三个容器提供容器级资源监控与告警：</p>
+<table>
+  <tr><th>组件</th><th>端口</th><th>用途</th></tr>
+  <tr><td>cadvisor</td><td>8080（内部）</td><td>采集每个容器的 CPU/内存/网络/磁盘指标</td></tr>
+  <tr><td>Prometheus</td><td>9091</td><td>汇聚指标 + 告警规则（<code>monitoring/alerts.yml</code>）</td></tr>
+  <tr><td>Grafana</td><td>3030</td><td>可视化大盘（已预置「AI All In One — 容器监控」面板）</td></tr>
+</table>
+<p>登录 Grafana：<code>http://&lt;服务器IP&gt;:3030</code>，账号 <code>ai_all_in_one_admin</code> / 统一密码。已预置的告警规则：容器宕机（critical）、容器内存 &gt;90%（warning）、容器 CPU &gt;80%（warning）。</p>
+<div class="note">⚠️ <b>端口冲突</b>：Prometheus 默认 9090 被 Keycloak 占用，故改为 <b>9091</b>；Grafana 默认 3000 与 NewAPI 冲突、3001 也被占用，故改为 <b>3030</b>。</div>
+<div class="note">⚠️ <b>告警误报坑</b>：cadvisor 会上报宿主机<b>所有 cgroup</b>（systemd 服务如 snap、docker 等），这些 cgroup 没有 <code>name</code> 标签。若告警规则不写 <code>{name!=""}</code>，会对 systemd 服务误报；内存告警还要加 <code>container_spec_memory_limit_bytes &gt; 0</code>（否则 limit=0 的容器除零产生 <code>+Inf</code> 恒触发）。<code>alerts.yml</code> 已修复这些过滤。</div>
+<div class="callout callout-warn">
+  <strong>告警通知：</strong>当前告警规则已就绪，但<b>未接通知渠道</b>（钉钉/企微 webhook）。接入方式：在 Grafana 的 Alerting → Contact points 添加 Webhook（或部署 Alertmanager），指向公司的钉钉/企微机器人地址。
+</div>
+
+<h3>13.4 LLM 可观测（Langfuse）</h3>
+<p>Langfuse v4 自托管，追踪每一次模型调用的<b>提示词、响应、模型、延迟、token、成本</b>，出问题可回溯定位。</p>
+<table>
+  <tr><th>组件</th><th>用途</th></tr>
+  <tr><td>langfuse</td><td>Web UI + 追踪展示（端口 3010）</td></tr>
+  <tr><td>langfuse-worker</td><td>异步事件处理</td></tr>
+  <tr><td>langfuse-postgres</td><td>元数据存储</td></tr>
+  <tr><td>langfuse-clickhouse</td><td>事件/追踪数据存储</td></tr>
+  <tr><td>langfuse-minio</td><td>S3 附件/媒体存储</td></tr>
+  <tr><td>langfuse-redis</td><td>队列</td></tr>
+</table>
+<p>LiteLLM 通过 <code>success_callback: ["langfuse"]</code> 自动上报（<code>.env</code> 里的 <code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code> / <code>LANGFUSE_HOST</code>）。</p>
+<p>登录 Langfuse：<code>http://&lt;服务器IP&gt;:3010</code>，账号 <code>ai_all_in_one_admin@company.com</code> / 统一密码。首次启动已通过 headless 初始化自动创建组织 <code>AI All In One</code> 和项目 <code>AI Platform</code>。</p>
+<div class="note">⚠️ <b>关键坑</b>：Langfuse v4 默认 <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=events_only</code>，旧客户端（LiteLLM 的 langfuse SDK）会上报 <code>trace-create</code> 失败。必须设 <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code>（web 和 worker 都要设），否则看不到任何追踪数据。</div>
+<div class="note">⚠️ <b>SSO 登录看不到数据的坑</b>：headless 初始化的组织 <code>AI All In One</code> 只绑定了初始化账号 <code>ai_all_in_one_admin@company.com</code>。若用 Keycloak SSO 登录（AD 邮箱为 <code>ai_all_in_one_admin@chxia.lab</code>），Langfuse 会<b>自动新建一个独立账号且不属于任何组织</b>，导致进去后看不到任何 trace 数据。修复：把 SSO 用户加进组织——</p>
+<pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
+"INSERT INTO organization_memberships (id, org_id, user_id, role) \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
+</div>
+
+<h3>13.5 审计日志与成本报表（AI 管理中心内嵌）</h3>
+<p>在 AI 管理中心 → 「🔀 NewAPI 管理」页，新增了两块：</p>
+<ul>
+  <li><b>💰 成本报表</b>：最近 N 天总成本/总调用/总 Token，按用户、按模型、按日期三个维度聚合（数据来自 NewAPI logs 表，1 美元 = 500000 额度）。</li>
+  <li><b>📋 审计日志</b>：最近 100 条模型调用记录（用户、模型、Token、额度、成本、IP、时间），用于合规审计与追溯。</li>
+</ul>
+<div class="note">⚠️ <b>关键坑</b>：直接用 <code>mysql -p"密码"</code> 会向 stderr 输出 <code>Using a password on the command line</code> 警告，被后端误判为错误返回 500。已改用 <code>MYSQL_PWD</code> 环境变量 + <code>2&gt;/dev/null</code> 抑制。</div>
+
+<h3>13.6 组织架构与配额映射</h3>
+<p>按部门/角色管控模型权限与额度的机制：</p>
+<ol>
+  <li><b>NewAPI 分组</b>：后台「分组管理」按部门创建分组，设置模型倍率/配额；用户归入对应分组即按部门管控。AI 管理中心 NewAPI 页的用户表已展示 <code>group</code> 字段。</li>
+  <li><b>Keycloak 角色</b>：用 realm role（如 <code>ai-platform-admin</code>）控制管理权限；可扩展部门角色（<code>ai-dept-研发</code> 等）映射到 NewAPI 分组。</li>
+  <li><b>映射链路</b>：AD 组 → Keycloak 角色 → NewAPI 分组 → 模型权限/配额。</li>
+</ol>
+<p>具体按部门配额调整在 NewAPI 后台完成（AI 管理中心「打开 NewAPI 后台 ↗」）。</p>
+
+<h3>13.7 员工培训与制度</h3>
+<p>培训手册已拆分为两本<b>多页电子书</b>，并翻译成 <b>9 种语言</b>（与 AI 管理中心一致）：<b>管理员手册</b>（30 章：部署篇 + 13 个产品的日常操作 + 运维篇）、<b>普通用户手册</b>（8 章：平台简介、AI All In One Hub（门户）使用、DeepChat/Dify 上手步骤、<b>数据分级规范</b>、API Key 申请、常见问题、行为准则）。语言分布：英文版在 <code>docs/admin-manual/</code> 与 <code>docs/user-manual/</code>；简体中文在 <code>docs/i18n/admin-manual-zh-cn/</code> 与 <code>docs/i18n/user-manual-zh-cn/</code>；其余 7 种（繁体中文 / 法 / 西 / 葡 / 日 / 韩 / 阿）在 <code>docs/i18n/</code> 对应目录。每本都是「封面 + 目录 + 每章一页 + 翻页导航」的电子书，可直接发员工，或后续搬到 Ghost 门户。</p>
+<p><b>数据分级建议</b>：公开信息可直接用外部模型；内部信息（项目文档）可用但需脱敏；机密信息（客户数据/源代码/身份证号）禁止上传外部模型，应走本地模型或人工处理。</p>
+
+<h3>13.8 统一 SSO 登录（Keycloak）</h3>
+<p>所有带 Web UI 的产品都通过 Keycloak 实现单点登录，统一使用管理员账号 <code>ai_all_in_one_admin</code>。</p>
+<table>
+  <tr><th>产品</th><th>接入方式</th><th>Keycloak Client</th><th>登录方式</th></tr>
+  <tr><td>AI 管理中心</td><td>keycloak-connect (OIDC)</td><td>AI-all-in-one-admin-portal</td><td>强制 SSO（未登录自动跳 Keycloak）</td></tr>
+  <tr><td>NewAPI</td><td>OIDC</td><td>newapi</td><td>登录页点「OIDC 登录」</td></tr>
+  <tr><td>Ghost</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@company.com</code></td></tr>
+  <tr><td>Dify</td><td>OIDC（可选）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@company.com</code></td></tr>
+  <tr><td>Gitea</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin</code></td></tr>
+  <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td>grafana</td><td>自动登录（<code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>，点链接直进，无需点按钮）</td></tr>
+  <tr><td>Langfuse</td><td>Keycloak provider</td><td>langfuse</td><td>自动登录（AI 管理中心入口指向 <code>/auth/sso-initiate?provider=KEYCLOAK</code>，IdP 发起式 SSO）</td></tr>
+</table>
+<div class="step">
+  <span class="step-num">1</span><strong>Grafana SSO</strong>
+  <p>通过 <code>GF_AUTH_GENERIC_OAUTH_*</code> 环境变量接入（client id <code>grafana</code>，redirect URI <code>http://&lt;服务器IP&gt;:3030/login/generic_oauth</code>）。</p>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Langfuse SSO</strong>
+  <p>通过 <code>AUTH_KEYCLOAK_*</code> 环境变量接入（client id <code>langfuse</code>，redirect URI <code>http://&lt;服务器IP&gt;:3010/api/auth/callback/keycloak</code>）。</p>
+</div>
+<div class="note">⚠️ <b>关键坑</b>：Keycloak 里的 <code>ai_all_in_one_admin</code> 通过 LDAP 联合到 AD 域控，密码验证走 AD。如果 AD 域控（Hyper-V DC VM）未开机，SSO 登录时密码验证会报 <code>unknown_error</code>（LDAP Connection refused）。需确保 DC VM 开机并可达（见第 2 章 Hyper-V 网络配置）。</div>
+<div class="step">
+  <span class="step-num">3</span><strong>去掉「点按钮」步骤（自动登录）</strong>
+  <p>目标：在 AI 管理中心已登录的前提下，点 Grafana / Langfuse 入口<b>直接进管理界面</b>，不经过各产品登录页点「Sign in with Keycloak」。</p>
+  <ul>
+    <li><b>Grafana</b>：设 <code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>（<code>docker-compose.yml</code> 已设）。未登录访问任意页面 → 自动 302 <code>/login</code> → 307 <code>/login/generic_oauth</code> → Keycloak（已登录则直接回调进入）。</li>
+    <li><b>Langfuse</b>：Auth.js 无原生 auto-login，改用<b>IdP 发起式 SSO</b>——把 AI 管理中心「LLM 可观测」的打开按钮指向 <code>http://&lt;服务器IP&gt;:3010/auth/sso-initiate?provider=KEYCLOAK</code>，浏览器打开即自动发起 Keycloak 认证。</li>
+  </ul>
+  <div class="note">⚠️ <b>关键坑</b>：Langfuse 的 <code>/auth/sso-initiate</code> 返回的是 Next.js 应用壳（HTTP 200），重定向在浏览器端完成，curl 看不到 302。属正常，浏览器打开即可。若仍想完全服务端跳转，可保留登录页（至少已去掉重复输密码）。</div>
+</div>
+
+<h3>13.9 统一日志（Loki + Promtail）</h3>
+<p>新增 Loki（聚合）+ Promtail（采集）两个容器，把<b>所有容器的应用日志</b>汇聚到一处，AI 管理中心「📜 统一日志」页可按容器筛选 + 关键字搜索。</p>
+<table>
+  <tr><th>组件</th><th>端口</th><th>用途</th></tr>
+  <tr><td>Loki</td><td>3110</td><td>日志存储与查询（单机、本地文件系统）</td></tr>
+  <tr><td>Promtail</td><td>—（内部）</td><td>经 docker.sock 发现容器并采集 <code>/var/lib/docker/containers/*/*-json.log</code> 推给 Loki</td></tr>
+</table>
+<p>配置：<code>monitoring/loki.yml</code>（Loki 存储/表结构）、<code>monitoring/promtail.yml</code>（docker_sd 发现 + <code>container</code>/<code>service</code>/<code>project</code> 标签）。AI 管理中心后端 <code>/api/logs/query</code> 用 LogQL 查 Loki，前端提供容器下拉 + 关键字 + 时间范围。</p>
+<div class="note">⚠️ <b>关键坑（Docker Desktop 挂载）</b>：Promtail 需挂载 <code>/var/run/docker.sock</code> 和 <code>/var/lib/docker/containers</code>。在 Docker Desktop（WSL2）下这两个路径指向 Docker Desktop 虚拟机内部，正好是容器日志所在，可直接读取（与 cadvisor 同理）；但<b>别</b>用宿主机 Windows 的 <code>C:\...\containers</code> 路径映射。Loki 单机用 <code>store: tsdb</code> + <code>filesystem</code> 对象存储，2.9.x 版本稳定。</div>
+
+<h3>13.10 MailHog 邮件接收器 + Ghost 免登录</h3>
+<p>Ghost 5 后台是<b>免密登录</b>（前端没有密码框）：输入邮箱后 Ghost 会发一封带 6 位验证码的邮件。内网没有 SMTP 时这个邮件发不出去，登录就报 <code>Failed to send email</code>。解决方案是加一个本地邮件接收器 <b>MailHog</b> 当「邮件出口」，并让 AI 管理中心自动完成登录。</p>
+<p><b>管理员创建（自动化）：</b>免登录的前提是 Ghost 已有管理员。跑 <code>scripts\ghost-setup.ps1</code> 即可用 setup API（<code>POST /ghost/api/admin/authentication/setup</code>）一次性创建管理员（邮箱 <code>GHOST_ADMIN_EMAIL</code>、密码 <code>ADMIN_PASSWORD</code>，从 <code>.env</code> 读），等效于浏览器向导，已初始化时自动跳过。</p>
+<table>
+  <tr><th>组件</th><th>端口</th><th>用途</th></tr>
+  <tr><td>MailHog</td><td>8025（Web UI，SMTP 1025 仅内部）</td><td>接收 Ghost 发出的验证码/通知邮件，可在浏览器里查看</td></tr>
+</table>
+<p>Ghost 侧环境变量（<code>docker-compose.yml</code>）：</p>
+<pre><code><span class="comment"># Ghost 邮件 → 本地 MailHog（SMTP 1025，无需认证）</span>
+mail__transport: SMTP
+mail__from: noreply@company.com
+mail__options__host: mailhog
+mail__options__port: 1025</code></pre>
+
+<p><b>Ghost 免登录（AI 管理中心自动登录，免看 MailHog）：</b>Ghost 的 6 位验证码本质是 <b>TOTP</b>——<code>TOTP(admin_session_secret + userId)</code>，6 位 / 60 秒 / HMAC-SHA1。所以 AI 管理中心可以直接本地算出验证码，不用去 MailHog 里翻邮件。点「Ghost 后台」的「打开」按钮时，后端 <code>POST /api/ghost/auto-login</code> 依次做：</p>
+<ol>
+  <li>密码登录 <code>POST /ghost/api/admin/session/</code>（邮箱 + 密码）→ 拿到未验证的会话 cookie（此时会触发发码邮件，被 MailHog 吞掉，我们忽略它）；</li>
+  <li>读 Ghost 库 <code>settings</code> 表的 <code>admin_session_secret</code> + 管理员 <code>userId</code>，本地算 TOTP 验证码；</li>
+  <li><code>PUT /ghost/api/admin/session/verify</code>（带 cookie + 算出的码）→ 会话验证通过；</li>
+  <li>把 <code>ghost-admin-api-session</code> cookie 写进浏览器（<code>Path=/ghost</code>，同 host 不同端口 cookie 按域名共享），跳转 <code>:8090/ghost/</code> 直接进后台。</li>
+</ol>
+<div class="note">⚠️ <b>关键坑</b>：① Ghost 5 后端<b>仍支持密码登录</b>（<code>POST /session/</code>），但密码对后会触发「新设备 2FA」（返回 403 <code>Needs2FAError</code> + 发码），所以必须补验证码这步；② 验证码就是 TOTP，可用 <code>crypto.createHmac('sha1', secret+userId)</code> 精确复现，实测与邮件里的码逐位一致；③ 就算自己算码，Ghost 仍会真的「发邮件」，因此 MailHog（或任意 SMTP）必须保留，否则登录报 <code>Failed to send email</code>；④ <code>/session/verify</code> 有 brute 限流，正常单次点击不会触发，但别短时间反复刷。</div>
+
+</body>
+</html>

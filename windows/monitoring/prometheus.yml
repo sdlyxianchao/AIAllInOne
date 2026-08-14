@@ -1,0 +1,27 @@
+# AI All In One — Prometheus 配置
+# 抓取目标：cadvisor（容器资源）+ 各服务自身暴露的 /metrics
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# 告警规则
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+# 告警发送到 Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # 容器资源监控（CPU/内存/网络/磁盘），cadvisor 只读挂载 docker.sock
+  - job_name: 'cadvisor'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # Prometheus 自身
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

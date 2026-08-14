@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 22 — Gestão de monitoramento e alertas · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 2 · Gestão</div>
+      <h1>Gestão de monitoramento e alertas</h1>
+      <div class="sub">Prometheus + Grafana + Alertmanager: monitoramento de recursos dos contêineres e notificação de alertas.</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/grafana-logo.svg" alt="Grafana"></span><b>Entrada</b>: Grafana <span class="entry">http://&lt;IP-do-servidor&gt;:3030</span> (login automático via SSO); Prometheus <span class="entry">:9091</span>; Alertmanager <span class="entry">:9093</span>.</p>
+
+    <h2>22.1 Componentes e portas</h2>
+    <table>
+      <tr><th>Componente</th><th>Porta</th><th>Uso</th></tr>
+      <tr><td>cadvisor</td><td>8080 (interno)</td><td>Coleta CPU/memória/rede/disco de cada contêiner</td></tr>
+      <tr><td>Prometheus</td><td>9091</td><td>Agrega métricas + regras de alerta (<code>monitoring/alerts.yml</code>)</td></tr>
+      <tr><td>Grafana</td><td>3030</td><td>Painel de visualização (pré-configurado «AI All In One — monitoramento de contêineres»)</td></tr>
+      <tr><td>Alertmanager</td><td>9093</td><td>Deduplicação/agrupamento/roteamento/notificação de alertas</td></tr>
+    </table>
+
+    <h2>22.2 Ver o painel</h2>
+    <ol>
+      <li>Entre no Grafana (<code>ai_all_in_one_admin</code> / senha unificada, login automático via SSO);</li>
+      <li>Abra o painel «AI All In One — monitoramento de contêineres» e veja CPU/memória/rede de cada contêiner.</li>
+    </ol>
+
+    <h2>22.3 Regras de alerta</h2>
+    <p>Regras pré-configuradas (<code>monitoring/alerts.yml</code>): contêiner fora do ar (critical), memória do contêiner &gt;90% (warning), CPU do contêiner &gt;80% (warning).</p>
+    <div class="warn">⚠️ Armadilha de falsos positivos: o cadvisor reporta todos os cgroups do host (incluindo systemd); a regra de alerta deve filtrar com <code>{name!=""}</code>, e o alerta de memória também precisa de <code>container_spec_memory_limit_bytes &gt; 0</code> (senão, com limit=0, a divisão por zero dispara sempre).</div>
+
+    <h2>22.4 Conectar a notificação de alertas</h2>
+    <p>As regras de alerta estão prontas, mas <b>ainda não há canal de notificação conectado</b>. Para conectar: Grafana → Alerting → Contact points, adicione Webhook (robôs do DingTalk/WeCom/Feishu), ou configure o receiver do Alertmanager.</p>
+    <pre><code># Exemplo de configuração do Alertmanager (receiver do alertmanager.yml)
+receivers:
+  - name: 'dingtalk'
+    webhook_configs:
+      - url: 'https://oapi.dingtalk.com/robot/send?access_token=xxx'</code></pre>
+
+    <div class="note">📌 Sobre conflito de portas: a porta 9090 padrão do Prometheus está ocupada pelo Keycloak, então foi alterada para 9091; a 3000/3001 padrão do Grafana está ocupada, então foi alterada para 3030.</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>Grafana <span class="url">https://grafana.com/docs/grafana/latest/</span> · Prometheus <span class="url">https://prometheus.io/docs/</span> · Alertmanager <span class="url">https://prometheus.io/docs/alerting/latest/alertmanager/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch22';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

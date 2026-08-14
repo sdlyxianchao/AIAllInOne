@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第28章 ヘルスチェックと起動時セルフチェック · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第三部 · 運用編</div>
+      <h1>ヘルスチェックと起動時セルフチェック</h1>
+      <div class="sub">ワンクリックで全 41 コンテナ + LLM 全経路 + 認証経路を検査します。</div>
+    </div>
+
+    <p><b>スクリプト</b>：<code>C:\AIAllInOne\windows\scripts\health-check.ps1</code>。出力は <code>health_check_&lt;タイムスタンプ&gt;.log</code>。41 コンテナ（Windows コア 25 + Dify 16）をカバーし、資格情報は <code>.env</code> から読み取り、パスワードをハードコードしません。</p>
+
+    <h2>28.1 検査範囲（9 ステージ）</h2>
+    <table>
+      <tr><th>ステージ</th><th>検査項目</th></tr>
+      <tr><td>Stage 1</td><td>Docker Daemon 稼働状態（起動待機、起動時セルフチェック対応）</td></tr>
+      <tr><td>Stage 2</td><td>41 コンテナの状態（Up/Exited/Restarting）</td></tr>
+      <tr><td>Stage 3</td><td>10 個の HTTP エンドポイント応答</td></tr>
+      <tr><td>Stage 4</td><td>LiteLLM readiness + モデル登録、Dify API、データベース/Redis/Sandbox ヘルス</td></tr>
+      <tr><td>Stage 5</td><td>LLM 全経路（NewAPI → LiteLLM → DeepSeek 実リクエスト）</td></tr>
+      <tr><td>Stage 6</td><td>AD アカウント認証経路 + NewAPI 管理者ログイン</td></tr>
+      <tr><td>Stage 7</td><td>MCP Gateway + スキル機能</td></tr>
+      <tr><td>Stage 8</td><td>DeepChat/Dify ログイン前提条件</td></tr>
+      <tr><td>Stage 9</td><td>ディスク空き容量</td></tr>
+    </table>
+
+    <h2>28.2 手動実行</h2>
+    <pre><code>C:\AIAllInOne\windows\scripts\health-check.ps1
+dir C:\AIAllInOne\windows\scripts\health_check_*.log</code></pre>
+    <div class="note">✅ 出力末尾に <code>ALL CLEAR</code> かつ <code>Fail: 0</code> ならすべて正常です。</div>
+
+    <h2>28.3 起動時自動実行（スケジュールタスク）</h2>
+    <pre><code>$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # ログイン後 2 分遅延させて Docker + コンテナ起動を待つ
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest</code></pre>
+
+    <div class="note">📌 注意：スクリプトは <code>127.0.0.1</code> を使い localhost は使いません。LiteLLM 内部ヘルスは <code>/health/readiness</code>（認証不要）。<code>docker-init_permissions-1</code> の Exited(0) は正常。Update Server の 403 は正常（デフォルト index.html なし）。exit code 0=通過、1=失敗あり。</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch28';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

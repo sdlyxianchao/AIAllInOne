@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 15 NewAPI Day-to-Day Administration · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 2 · Administration</div>
+      <h1>NewAPI Day-to-Day Administration</h1>
+      <div class="sub">LLM gateway: manage channels, tokens, quotas, users, logs, and cost.</div>
+    </div>
+
+    <p><span class="logo"><img src="../images/newapi-logo.png" alt="NewAPI"></span><b>Entry</b>: <span class="entry">http://&lt;server-IP&gt;:3000</span>.</p>
+
+    <h2>15.1 Channel Management (upstream models)</h2>
+    <ol>
+      <li><b>Add channel</b>: Channels → Add new channel → type OpenAI (or Claude, etc.) → Base URL <code>http://litellm:4000</code> → Key <code>LITELLM_MASTER_KEY</code> → fill in the model name → Save;</li>
+      <li><b>Test</b>: in the channel list click "Test", select a model to verify connectivity;</li>
+      <li><b>Disable/enable</b>: the toggle in the channel list; after disabling, the channel no longer accepts requests;</li>
+      <li><b>Priority/weight</b>: when multiple channels serve the same model, traffic is split by priority/weight.</li>
+    </ol>
+
+    <h2>15.2 Token (API Key) Management</h2>
+    <ol>
+      <li><b>Create</b>: API Keys → New token → name it (e.g. <code>deepchat-key</code>) → can set quota / expiry / model limits → Save;</li>
+      <li><b>Copy Key</b>: starts with <code>sk-</code>, <b>shown only once, save it immediately</b>;</li>
+      <li><b>Disable/delete</b>: token list actions (after disabling, the Key immediately becomes invalid);</li>
+      <li><b>Check usage</b>: token detail shows the consumed quota.</li>
+    </ol>
+
+    <h2>15.3 Quotas and Users</h2>
+    <ul>
+      <li><b>Default quota for new users</b>: <code>DEFAULT_QUOTA</code> (suggested $100);</li>
+      <li><b>Raise a single user's quota</b>: Users page → edit that user → set quota;</li>
+      <li><b>Top up/ban</b>: operations on the Users page;</li>
+      <li><b>Group management</b>: create groups by department, set model multipliers/quotas; when users are assigned to a group they are governed by the department.</li>
+    </ul>
+
+    <h2>15.4 Logs and Cost</h2>
+    <ul>
+      <li><b>Logs page</b>: check user/model/token/quota/cost/source IP for each call;</li>
+      <li><b>Cost report</b>: the AI Admin Center's "NewAPI Management" page has cost reports aggregated by user/model/date + the latest 100 audit logs.</li>
+    </ul>
+    <div class="note">📌 Client IP recording depends on the user's "Record IP log" setting (<code>record_ip_log</code>, off by default); enable it for the corresponding users when IP auditing is needed.</div>
+
+    <h2>15.5 System Settings Essentials</h2>
+    <ul>
+      <li><b>Server address</b>: must be set to the intranet <code>http://&lt;server-IP&gt;:3000</code> (otherwise OIDC reports <code>invalid_grant - Incorrect redirect_uri</code>);</li>
+      <li><b>Authentication → Custom OAuth</b>: Keycloak OIDC integration (see Chapter 7);</li>
+      <li><b>Usage mode</b>: switchable between personal use ↔ public operation.</li>
+    </ul>
+
+    <div class="warn">⚠️ Key pitfall review: ① channel Base URL should all be the container name <code>http://litellm:4000</code>; ② rate-limit 429 is controlled by variables such as <code>CRITICAL_RATE_LIMIT_ENABLE=false</code>; ③ when changing the database, use the <code>MYSQL_PWD</code> environment variable directly to avoid the stderr password warning being mistaken for an error.</div>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>NewAPI official docs <span class="url">https://docs.newapi.pro</span> · website <span class="url">https://www.newapi.ai</span> · open-source repo <span class="url">https://github.com/QuantumNous/new-api</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch15';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

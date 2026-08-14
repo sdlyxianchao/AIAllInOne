@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 6 章 資料安全規範 · AI AllInOne 使用者手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">快速開始</div>
+      <h1>資料安全規範</h1>
+      <div class="sub">什麼能發給 AI、什麼絕不能發——人人都要遵守的紅線。</div>
+    </div>
+
+    <p>平台已自動對<b>手機號、身分證號、銀行卡號、郵箱</b>等敏感資訊做<b>遮蔽</b>（發給大模型前自動打碼），並對敏感詞做攔截。但請自覺遵守下面的紅線。</p>
+
+    <h2>6.1 什麼能發什麼不能發</h2>
+    <h3>❌ 嚴禁傳送給 AI</h3>
+    <ul>
+      <li>內部機密 / 商業機密（未公開的產品程式碼、定價、客戶名單、合同條款）；</li>
+      <li>個人隱私（身分證號、銀行卡號、密碼、健康資訊、他人隱私）；</li>
+      <li>原始碼 / 未公開技術方案。</li>
+    </ul>
+    <h3>✅ 可以放心使用</h3>
+    <ul>
+      <li>公開資料、通用知識、文件撰寫、翻譯、總結；</li>
+      <li>遮蔽後的業務資料（去掉具體人名/號碼/敏感欄位後）。</li>
+    </ul>
+
+    <h2>6.2 資料分級速查</h2>
+    <table>
+      <tr><th>資料等級</th><th>能否上外部大模型</th><th>說明</th></tr>
+      <tr><td>公開資料</td><td>✅ 可以</td><td>已公開的資料、通用資訊</td></tr>
+      <tr><td>內部普通資料</td><td>⚠️ 遮蔽後可用</td><td>去掉敏感欄位後可使用</td></tr>
+      <tr><td>內部機密 / 個人隱私</td><td>❌ 禁止</td><td>嚴禁傳送</td></tr>
+    </table>
+    <blockquote>判斷原則：<b>「這段內容如果被外人看到會不會有問題？」</b>會 → 別發。</blockquote>
+
+    <h2>6.3 三個典型場景</h2>
+    <table>
+      <tr><th>場景</th><th>怎麼做</th></tr>
+      <tr><td>寫週報，涉及客戶名</td><td>用「某客戶」「A 客戶」代替真實客戶名</td></tr>
+      <tr><td>讓 AI 分析資料表</td><td>先刪掉姓名、電話、身分證號等列，只留彙總資料</td></tr>
+      <tr><td>翻譯合同條款</td><td>先刪掉金額、對方名稱等敏感資訊，或用「甲方/乙方」代替</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

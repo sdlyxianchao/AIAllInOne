@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 3 — Archivos de configuración y variables de entorno · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte I · Implementación</div>
+      <h1>Archivos de configuración y variables de entorno</h1>
+      <div class="sub">Tres archivos de configuración principales + la explicación completa de las variables de entorno: cuáles se configuran ahora y cuáles después.</div>
+    </div>
+
+    <h2>3.1 Los tres archivos de configuración principales</h2>
+    <table>
+      <tr><th>Archivo</th><th>Uso</th><th>¿Hay que modificarlo?</th></tr>
+      <tr><td><code>.env.windows</code></td><td>Todas las contraseñas y API Keys externas</td><td><b>Modificación obligatoria</b>: rellenar la API Key de DeepSeek; los demás providers según necesidad</td></tr>
+      <tr><td><code>litellm-config.yaml</code></td><td>Lista de modelos de LiteLLM + reglas de enmascaramiento de PII</td><td>Normalmente no se modifica (si solo usas DeepSeek, puedes eliminar las entradas de OpenAI/Claude)</td></tr>
+      <tr><td><code>docker-compose.yml</code></td><td>Orquestación de los servicios principales</td><td>Ya preconfigurado (incluye <code>KC_HOSTNAME</code> de Keycloak + volúmenes persistentes)</td></tr>
+    </table>
+
+    <h2>3.2 Resumen de la clasificación de variables de entorno</h2>
+    <p>Abre <code>.env</code> (copiado de <code>.env.windows</code>) y configúralo por prioridad.</p>
+    <table>
+      <tr><th>Variable</th><th>Prioridad</th><th>Descripción</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>🔴 Inmediata</td><td>API Key del LLM externo; sin ella la cadena no funciona</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>🔴 Inmediata</td><td>Clave de autenticación interna de LiteLLM; NewAPI la necesita</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>🔴 Inmediata</td><td>Contraseña de root de MySQL; no conviene cambiarla tras la primera creación</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>🔴 Inmediata</td><td>Contraseña del administrador de Keycloak</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>🔴 Inmediata</td><td>Cifrado de sesión de NewAPI; cadena aleatoria</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>🔴 Inmediata</td><td>Cifrado de datos de NewAPI; cadena aleatoria</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>🔴 Inmediata</td><td>Contraseña del Global Admin del Centro de administración de IA</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>🔴 Inmediata</td><td>Cifrado de sesión del Centro de administración de IA; cadena aleatoria</td></tr>
+      <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td>🟡 Posterior</td><td>Primero hay que crear el OIDC Client en Keycloak y obtener el Secret (ver capítulo 12)</td></tr>
+      <tr><td><code>GITEA_RUNNER_TOKEN</code></td><td>🟡 Posterior</td><td>Inicia primero Gitea y obtén el Token desde el panel (ver capítulo 9)</td></tr>
+      <tr><td><code>OPENAI_API_KEY</code> / <code>ANTHROPIC_API_KEY</code></td><td>🟢 Según necesidad</td><td>Descomenta cuando las uses y actualiza también <code>litellm-config.yaml</code></td></tr>
+      <tr><td><code>GLOBAL_WEB_RATE_LIMIT</code> y otros límites de tasa</td><td>⚪ Por defecto</td><td>En pruebas pon 999999; en producción baja según corresponda</td></tr>
+      <tr><td><code>DEFAULT_QUOTA</code></td><td>⚪ Por defecto</td><td>Cuota por defecto de los nuevos usuarios (dólares); con 100, cada usuario nuevo recibe 100 dólares</td></tr>
+      <tr><td><code>GENERATE_DEFAULT_TOKEN</code></td><td>⚪ Por defecto</td><td>Genera automáticamente una Key inicial al registrar un usuario; pon true para que el usuario la use al iniciar sesión</td></tr>
+      <tr><td><code>TZ</code> / <code>KEYCLOAK_ADMIN</code> / <code>ADMIN_USERNAME</code> / <code>ADMIN_EMAIL</code></td><td>⚪ Por defecto</td><td>Los valores por defecto bastan</td></tr>
+    </table>
+
+    <h2>3.3 🔴 Configuración inmediata (obligatoria antes del primer arranque)</h2>
+    <table>
+      <tr><th>Variable</th><th>Descripción</th><th>Cómo obtenerla</th><th>Formato</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>Key del LLM en la nube de DeepSeek</td><td>Regístrate en <span class="url">https://platform.deepseek.com</span> → API Keys</td><td><code>sk-xxxx</code></td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>Clave de administrador interna de LiteLLM (no es una Key de LLM externo)</td><td>Genérala aleatoriamente (ver abajo)</td><td><code>sk-litellm-xxxx</code></td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>Contraseña de MySQL</td><td>Defínela tú; <b>no conviene cambiarla</b> tras la primera creación</td><td>Cualquiera</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>Contraseña del administrador de Keycloak</td><td>Defínela tú; ≥ 8 caracteres</td><td>Cualquiera</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>Cifrado de sesión de NewAPI</td><td>Generada aleatoriamente</td><td>32 caracteres</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>Cifrado de datos de NewAPI</td><td>Generada aleatoriamente</td><td>32 caracteres</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>Contraseña del administrador del Centro de administración de IA</td><td>Defínela tú; ≥ 8 caracteres</td><td>Cualquiera</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>Cifrado de sesión del Centro de administración de IA</td><td>Generada aleatoriamente</td><td>64 caracteres</td></tr>
+    </table>
+    <p>Generar una cadena aleatoria (PowerShell):</p>
+    <pre><code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></pre>
+
+    <h3>Ejemplo de rellenar la API Key</h3>
+    <pre><code># DeepSeek ya viene configurado por defecto (descomenta y rellena la Key)
+DEEPSEEK_API_KEY=sk-tu-clave-real-de-deepseek
+
+# Si necesitas OpenAI / Claude, descomenta y descomenta también el bloque de modelo correspondiente en litellm-config.yaml
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...</code></pre>
+
+    <h2>3.4 Política de modificación de contraseñas</h2>
+    <div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> afecta a una base de datos ya creada; si la cambias tendrás que eliminar y recrear el volumen correspondiente (se pierden los datos), así que conviene fijarla bien desde el principio.<br>
+    Las contraseñas de administración como <code>KEYCLOAK_ADMIN_PASSWORD</code> y <code>ADMIN_PASSWORD</code> pueden cambiarse en el panel de cada producto; tras cambiarlas, actualiza también <code>.env</code> (solo como recordatorio, no afecta a la ejecución).</div>
+
+    <h2>3.5 Explicación de litellm-config.yaml</h2>
+    <ul>
+      <li><code>model_list</code> — define los modelos externos disponibles; NewAPI llama a través de LiteLLM. Por defecto solo está habilitado <code>deepseek-chat</code>;</li>
+      <li><code>general_settings.master_key</code> — clave de administrador de LiteLLM, lee <code>LITELLM_MASTER_KEY</code> de <code>.env</code>;</li>
+      <li>El enmascaramiento de PII (Presidio) está actualmente <b>comentado temporalmente</b> (la API de guardrail de la nueva versión de LiteLLM cambió y es incompatible); para habilitarlo después, ver el capítulo 25;</li>
+      <li>Usa la versión estable <code>v1.95.1</code> (<code>main-latest</code> tiene bugs conocidos).</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 12 章 AI 管理中心 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>AI 管理中心</h1>
+      <div class="sub">统一管理员门户：Keycloak 鉴权、左侧菜单内嵌全部产品、Dashboard 集群状态。</div>
+    </div>
+
+    <div class="note">📌 定位：不是 Docker 管理平台（1Panel/Portainer），而是面向管理员的统一后台——Keycloak 鉴权 + 左侧菜单链接全部产品 + Dashboard 集群状态 + 统一管理员账号。</div>
+
+    <h2>12.1 核心能力</h2>
+    <table>
+      <tr><th>菜单项</th><th>行为</th><th>说明</th></tr>
+      <tr><td>📊 总览仪表板</td><td>内嵌页面</td><td>8 个产品业务指标 + Docker 服务（按产品分组）+ 系统信息</td></tr>
+      <tr><td>Ghost / Dify / Gitea / Keycloak</td><td>内嵌统计页</td><td>先看统计，点「打开后台」才跳转</td></tr>
+      <tr><td>🔀 NewAPI 管理</td><td>内嵌页面</td><td>渠道/用户/密钥 + 成本报表 + 审计日志</td></tr>
+      <tr><td>🔌 MCP Gateway</td><td>内嵌管理页</td><td>增删 MCP Server、上传/删除 Skill</td></tr>
+      <tr><td>📈 监控 / 🔍 可观测</td><td>新标签页</td><td>Grafana :3030 / Langfuse :3010</td></tr>
+      <tr><td>📜 统一日志</td><td>内嵌页</td><td>按容器+关键字+时间查 Loki</td></tr>
+      <tr><td>💾 备份恢复</td><td>内嵌页</td><td>备份列表 + 立即备份 + 一键恢复</td></tr>
+      <tr><td>🩺 可用性测试</td><td>内嵌页</td><td>定时+手动测全链路</td></tr>
+      <tr><td>📄 报告生成</td><td>内嵌页</td><td>自定义周期导出 .md</td></tr>
+      <tr><td>⚙️ 系统设置</td><td>内嵌页</td><td>界面语言 9 种 + 产品入口 URL</td></tr>
+    </table>
+
+    <h2>12.2 初始化 Global Administrator</h2>
+    <pre><code># .env 中配置
+ADMIN_USERNAME=ai_all_in_one_admin
+ADMIN_PASSWORD=见账号密码清单
+ADMIN_EMAIL=admin@company.com</code></pre>
+    <p>启动后自动在 Keycloak 建 <code>ai_all_in_one_admin</code> 用户（已有则跳过），分配 <code>ai-platform-admin</code> Realm Role。核心理念：<b>一个 Global Admin 账号管理所有平台</b>。</p>
+
+    <h2>12.3 Docker Compose 部署</h2>
+    <pre><code># 前置：先装依赖（一次）
+cd admin-portal
+npm install
+cd ..</code></pre>
+    <pre><code>  admin-portal:
+    image: node:20-alpine
+    container_name: admin-portal
+    restart: always
+    ports: ["10086:3000"]
+    working_dir: /app
+    command: sh -c "node server.js"
+    environment:
+      - PORT=3000
+      - KEYCLOAK_URL=http://&lt;服务器IP&gt;:9090
+      - KEYCLOAK_REALM=enterprise-ai
+      - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_URL=http://&lt;服务器IP&gt;:4001
+    volumes:
+      - ./admin-portal:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [ai-platform]</code></pre>
+
+    <h2>12.4 Keycloak 客户端配置</h2>
+    <ol>
+      <li>Keycloak → enterprise-ai → Clients → Create；</li>
+      <li>Client ID <code>AI-all-in-one-admin-portal</code>，Client authentication / Standard flow 都 On；</li>
+      <li>Valid Redirect URIs：<code>http://127.0.0.1:10086/*</code> 和 <code>http://&lt;服务器IP&gt;:10086/*</code>；</li>
+      <li>复制 Client Secret → 填 <code>.env</code> 的 <code>KEYCLOAK_CLIENT_SECRET</code> → <code>docker compose up -d admin-portal</code>；</li>
+      <li>建 Realm Role <code>ai-platform-admin</code>，分配给 <code>ai_all_in_one_admin</code>。</li>
+    </ol>
+
+    <div class="warn">⚠️ 部署/排错要点：
+      <ul>
+        <li>admin-portal 会话存内存，<code>up -d</code> 重建容器会<b>清空登录会话</b>（需重登）；</li>
+        <li>首页 <code>/</code> 必须走 Keycloak 保护（<code>express.static(..., {index:false})</code> + 显式 <code>app.get('/', keycloak.protect())</code>），否则未登录直接渲染空看板；</li>
+        <li>统计 Dify 用实际管理员邮箱（<code>ai_all_in_one_admin@&lt;公司域名&gt;</code>），不是旧 <code>ADMIN_EMAIL=admin@company.com</code>；</li>
+        <li><b>改 server.js 后必须 <code>docker restart admin-portal</code></b>，不能用 <code>up -d</code>（volume 文件内容变化不会触发重建）。</li>
+      </ul>
+    </div>
+
+    <h2>12.5 验证</h2>
+    <ol>
+      <li>打开 <code>http://&lt;服务器IP&gt;:10086</code> → 自动跳 Keycloak 登录（未登录不显示空看板）；</li>
+      <li>用 <code>ai_all_in_one_admin</code> 登录 → 进总览仪表板；</li>
+      <li>Dashboard 显示 8 个产品指标 + 容器分组；</li>
+      <li>点各产品先看统计、点「打开后台」才跳转；</li>
+      <li>系统设置可切 9 种语言。</li>
+    </ol>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch12';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

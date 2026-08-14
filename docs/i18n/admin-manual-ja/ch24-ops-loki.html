@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第24章 統合ログ（Loki）· AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部 · 管理編</div>
+      <h1>統合ログ（Loki）</h1>
+      <div class="sub">全コンテナログを集約し、コンテナ + キーワード + 時間で検索します。</div>
+    </div>
+
+    <p><b>入口</b>：AI 管理センター「📜 統合ログ」ページ（最も便利）、または Loki <span class="entry">http://&lt;サーバーIP&gt;:3110</span>。</p>
+
+    <h2>24.1 コンポーネント</h2>
+    <table>
+      <tr><th>コンポーネント</th><th>ポート</th><th>用途</th></tr>
+      <tr><td>Loki</td><td>3110</td><td>ログ保存と照会（単一マシン、ローカルファイルシステム）</td></tr>
+      <tr><td>Promtail</td><td>—（内部）</td><td>docker.sock 経由でコンテナを検出し、json ログを収集して Loki に送信</td></tr>
+    </table>
+
+    <h2>24.2 ログ照会</h2>
+    <ol>
+      <li>AI 管理センター → 統合ログ；</li>
+      <li>コンテナ選択（ドロップダウン）→ キーワード入力 → 時間範囲選択 → 照会；</li>
+      <li>バックエンド <code>/api/logs/query</code> が LogQL で Loki を照会。</li>
+    </ol>
+
+    <h2>24.3 LogQL クイックリファレンス</h2>
+    <pre><code>{container="new-api"} |= "error"              # あるコンテナの error を含む行
+{container=~".+"} |~ "(?i)error|exception"      # 全コンテナでマッチ
+{service="litellm"} |= "EMAIL"                  # サービス別で照会</code></pre>
+    <div class="note">📌 Loki の label は <code>container / project / service</code> で、<b><code>job</code> はありません</b>。照会は <code>{container=~".+"}</code> を使い、<code>{job="docker"}</code> は使いません。</div>
+
+    <div class="warn">⚠️ 重要な落とし穴（Docker Desktop のマウント）：Promtail は <code>/var/run/docker.sock</code> と <code>/var/lib/docker/containers</code> をマウントする必要があります（WSL2 下では Docker Desktop VM 内部を指し、ログのある場所です）。ホストマシン Windows の <code>C:\...\containers</code> パスは使わないでください。Loki 単一マシンは <code>store: tsdb</code> + filesystem を使います。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>Loki 公式ドキュメント <span class="url">https://grafana.com/docs/loki/latest/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch24';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

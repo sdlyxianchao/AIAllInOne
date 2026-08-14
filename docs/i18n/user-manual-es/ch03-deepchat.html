@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 3 — Herramienta 1: DeepChat · AI AllInOne Manual del usuario</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Inicio rápido</div>
+      <h1>Herramienta 1: DeepChat</h1>
+      <div class="sub">Cliente de escritorio de conversación con IA: descarga, configuración, conversación y trucos avanzados.</div>
+    </div>
+
+    <h2>3.1 Descarga e instalación</h2>
+    <ol>
+      <li>Abre el centro de descargas del portal <code>http://IP:8090/downloads/</code>;</li>
+      <li>Descarga e instala el instalador según tu sistema;</li>
+      <li>Inicia DeepChat.</li>
+    </ol>
+
+    <h2>3.2 Configurar el modelo (conectar con el gateway de la empresa)</h2>
+    <p>La primera vez debes indicar a DeepChat dónde está el modelo. La empresa ya ha unificado los modelos en el gateway <b>NewAPI</b>; solo tienes que rellenar tres valores:</p>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin:12px 0;">
+      <p><span class="step-num">1</span>Abre DeepChat → abajo a la izquierda <b>Configuración (⚙️)</b> → <b>Servicio de modelos / Proveedor de modelos</b>.</p>
+      <p><span class="step-num">2</span>Añade «<b>Provider personalizado</b>» o «<b>compatible con OpenAI</b>».</p>
+      <p><span class="step-num">3</span>Rellena los tres campos siguientes:</p>
+      <table>
+        <tr><th>Campo</th><th>Qué poner</th></tr>
+        <tr><td>API Base URL</td><td><code>http://IP:3000/v1</code></td></tr>
+        <tr><td>API Key</td><td>La clave <code>sk-</code> solicitada en NewAPI (ver capítulo 5)</td></tr>
+        <tr><td>Modelo</td><td><code>deepseek-chat</code> (por defecto en la empresa; puedes elegir otros modelos habilitados)</td></tr>
+      </table>
+      <p><span class="step-num">4</span>Guarda.</p>
+    </div>
+    <div class="warn">⚠️ <b>Clave</b>: la API Base URL debe usar la <b>IP de intranet</b> (<code>http://IP:3000/v1</code>); no uses <code>localhost</code>, o no conectarás con el servidor de la empresa.</div>
+
+    <h2>3.3 Empezar a conversar</h2>
+    <ol>
+      <li>Haz clic en «<b>+ Nueva conversación</b>»;</li>
+      <li>Escribe en el cuadro de entrada y pulsa Enter para enviar;</li>
+      <li>Si recibes una respuesta, la cadena funciona.</li>
+    </ol>
+    <div class="example">💡 <b>Pruébalo</b>: envía «Escríbeme un correo de reclamación de pago para un cliente, con tono amable» y mira cómo responde la IA. Prueba también «Traduce el siguiente texto al inglés: …». DeepChat admite conversaciones de varias rondas; puedes seguir preguntando y pedir a la IA que modifique.</div>
+
+    <h2>3.4 Funciones y trucos habituales</h2>
+    <table>
+      <tr><th>Función</th><th>Cómo usarla</th></tr>
+      <tr><td>Cambio de varios modelos</td><td>Elige modelos distintos en la parte superior de la conversación (si la empresa habilita varios)</td></tr>
+      <tr><td>Lectura/escritura de archivos / herramientas MCP</td><td>Configuración → MCP, habilita las herramientas de la empresa (como el sistema de archivos) para que la IA lea archivos locales</td></tr>
+      <tr><td>Tema oscuro/claro</td><td>Configuración → Apariencia</td></tr>
+      <tr><td>Problema de proxy de red</td><td>Si da «tiempo de conexión agotado» → Configuración → Red/Proxy → cambia a «No usar proxy / conexión directa»</td></tr>
+    </table>
+
+    <h2>3.5 Técnicas para preguntar</h2>
+    <div class="tip">✅ <b>Cuanto más concreto, mejor</b> — aporta contexto, aclara el requisito y da ejemplos; la calidad de la respuesta de la IA será mayor.</div>
+    <div class="example">💡 Buen ejemplo: «Eres un redactor sénior; escríbeme una presentación de producto de 200 palabras, dirigida a lectores CTO, con un estilo profesional y sobrio» — es mucho mejor que «escribe una presentación».</div>
+    <ul>
+      <li><b>Dale un rol</b>: «Eres un experto en finanzas, ayúdame a…»;</li>
+      <li><b>Dale restricciones</b>: «en 100 palabras como máximo / en tabla / en tres pasos»;</li>
+      <li><b>Dale ejemplos</b>: «reescribe siguiendo este formato…»;</li>
+      <li><b>Pregunta por pasos</b>: si no te convence, pide «modifícalo» o «cambia el tono».</li>
+    </ul>
+
+    <div class="docbox"><span class="label">📖 Documentación oficial:</span>Inicio rápido de DeepChat <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · Repositorio de código abierto <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 13 — Lista de verificación de interconexión · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte I · Implementación</div>
+      <h1>Lista de verificación de interconexión</h1>
+      <div class="sub">Una vez terminada la implementación, confirma uno a uno que las 12 cadenas de interconexión quedan operativas.</div>
+    </div>
+
+    <p>Aquí termina la parte de implementación. Verifica por último los siguientes 12 puntos uno a uno; solo cuando todos estén ✅ se puede decir que la plataforma funciona de verdad.</p>
+
+    <table>
+      <tr><th>#</th><th>Interconexión</th><th>Forma de verificación</th></tr>
+      <tr><td>1</td><td>NewAPI → LiteLLM</td><td>La prueba del canal de NewAPI recibe OK</td></tr>
+      <tr><td>2</td><td>Dify → NewAPI</td><td>La prueba del proveedor de modelos de Dify recibe respuesta</td></tr>
+      <tr><td>3</td><td>DeepChat → NewAPI</td><td>DeepChat envía un mensaje y recibe respuesta</td></tr>
+      <tr><td>4</td><td>Keycloak → NewAPI</td><td>La cuenta de Keycloak inicia sesión por OIDC en NewAPI</td></tr>
+      <tr><td>5</td><td>Keycloak → Dify</td><td>La cuenta de Keycloak inicia sesión por SSO en Dify</td></tr>
+      <tr><td>6</td><td>MCP Gateway → DeepChat</td><td>DeepChat obtiene la lista de herramientas MCP y las llama</td></tr>
+      <tr><td>7</td><td>MCP Gateway → Dify</td><td>El flujo de trabajo de Dify llama a herramientas MCP</td></tr>
+      <tr><td>8</td><td>Gitea Runner → Docker</td><td>El Runner puede ejecutar tareas CI/CD</td></tr>
+      <tr><td>9</td><td>Gitea → servidor de actualización</td><td>Los artefactos de CI pueden subirse al servidor de actualización</td></tr>
+      <tr><td>10</td><td>Ghost API → Gitea</td><td>Gitea Actions puede llamar a la API de Ghost para publicar anuncios</td></tr>
+      <tr><td>11</td><td>Ghost → salto a Dify</td><td>El «Banco de trabajo de IA» del portal salta correctamente a Dify</td></tr>
+      <tr><td>12</td><td>Centro de administración de IA</td><td>El Dashboard muestra todos los contenedores + el menú lateral accede a todos los productos</td></tr>
+    </table>
+
+    <div class="tip">✅ Una vez superado todo, sigue con la segunda parte «Administración» para aprender las operaciones diarias de cada producto, y con la tercera parte «Operaciones» para copias de seguridad, verificación de estado y resolución de problemas.</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch13';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

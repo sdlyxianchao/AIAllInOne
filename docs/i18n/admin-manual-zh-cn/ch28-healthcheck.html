@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 28 章 健康检查与开机自检 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第三部分 · 运维篇</div>
+      <h1>健康检查与开机自检</h1>
+      <div class="sub">一键体检全部 41 个容器 + LLM 全链路 + 认证链路。</div>
+    </div>
+
+    <p><b>脚本</b>：<code>C:\AIAllInOne\windows\scripts\health-check.ps1</code>，输出 <code>health_check_&lt;时间戳&gt;.log</code>。覆盖 41 个容器（25 Windows 核心 + 16 Dify），凭据从 <code>.env</code> 读，不硬编码密码。</p>
+
+    <h2>28.1 检查范围（9 个阶段）</h2>
+    <table>
+      <tr><th>阶段</th><th>检查项</th></tr>
+      <tr><td>Stage 1</td><td>Docker Daemon 是否运行（等待就绪，适配开机自检）</td></tr>
+      <tr><td>Stage 2</td><td>41 个容器状态（Up/Exited/Restarting）</td></tr>
+      <tr><td>Stage 3</td><td>10 个 HTTP 端点响应</td></tr>
+      <tr><td>Stage 4</td><td>LiteLLM readiness + 模型注册、Dify API、数据库/Redis/Sandbox 健康</td></tr>
+      <tr><td>Stage 5</td><td>LLM 全链路（NewAPI → LiteLLM → DeepSeek 真实请求）</td></tr>
+      <tr><td>Stage 6</td><td>AD 账号认证链路 + NewAPI 管理员登录</td></tr>
+      <tr><td>Stage 7</td><td>MCP Gateway + Skill 功能</td></tr>
+      <tr><td>Stage 8</td><td>DeepChat/Dify 登录前置条件</td></tr>
+      <tr><td>Stage 9</td><td>磁盘空间</td></tr>
+    </table>
+
+    <h2>28.2 手动执行</h2>
+    <pre><code>C:\AIAllInOne\windows\scripts\health-check.ps1
+dir C:\AIAllInOne\windows\scripts\health_check_*.log</code></pre>
+    <div class="note">✅ 输出末尾 <code>ALL CLEAR</code> 且 <code>Fail: 0</code> 表示全部正常。</div>
+
+    <h2>28.3 开机自启（计划任务）</h2>
+    <pre><code>$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # 登录后延迟 2 分钟等 Docker + 容器启动
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest</code></pre>
+
+    <div class="note">📌 注意：脚本用 <code>127.0.0.1</code> 不用 localhost；LiteLLM 内部健康用 <code>/health/readiness</code>（无需认证）；<code>docker-init_permissions-1</code> Exited(0) 正常；Update Server 返回 403 正常（无默认 index.html）；exit code 0=通过、1=有失败。</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch28';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

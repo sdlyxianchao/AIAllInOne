@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 27 Backup and Restore · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 3 · Operations</div>
+      <h1>Backup and Restore</h1>
+      <div class="sub">Daily full-data backup, one-click restore.</div>
+    </div>
+
+    <p><b>Entry</b>: the AI Admin Center's "💾 Backup and Restore" page, or the command line <code>scripts/backup.ps1</code> / <code>restore.ps1</code>. A scheduled task auto-backs up at 02:00 daily, keeping 7 days.</p>
+
+    <h2>27.1 Backup Items</h2>
+    <table>
+      <tr><th>Backup item</th><th>Method</th></tr>
+      <tr><td>NewAPI MySQL</td><td><code>mysqldump</code></td></tr>
+      <tr><td>Dify PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Langfuse PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Ghost / Gitea / Grafana SQLite</td><td>file copy</td></tr>
+      <tr><td>Keycloak</td><td><b>realm export (JSON)</b></td></tr>
+      <tr><td>Config files</td><td>file copy</td></tr>
+    </table>
+
+    <h2>27.2 Manual Backup</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+
+    <h2>27.3 Scheduled Backup (scheduled task)</h2>
+    <p>The scheduled task <code>AI-Platform-Backup</code> is already registered (daily 02:00). If not auto-registered, create it manually: Task Scheduler → New → program <code>powershell.exe</code>, arguments <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>, trigger daily 02:00.</p>
+    <div class="note">📌 Backups default to the C drive; it is recommended to periodically sync <code>C:\AIAllInOne\backups\</code> to another disk or object storage for offsite disaster recovery.</div>
+
+    <h2>27.4 Restore</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+    <p>The script requires typing <code>yes</code> to confirm (add <code>-Force</code> to skip, only for scripts/CI). You can also click "Restore" on a backup in the AI Admin Center's "Backup and Restore" page for one-click restore.</p>
+
+    <h2>27.5 Key Pitfalls (verified in drills)</h2>
+    <div class="warn">⚠️
+      <ul>
+        <li>Keycloak must use <b>realm export/import (JSON)</b>; pg_dump restore loses the default role association and won't start;</li>
+        <li>After SQLite restore the owner is root; chown to the corresponding uid (grafana=472, gitea=1000), otherwise it reports readonly;</li>
+        <li>pg_dump should include <code>--clean --if-exists</code> to avoid restore conflicts;</li>
+        <li>The old backup.ps1 used <code>Copy-Item</code> batch copy where the dotfile <code>.env</code> caused the whole batch to silently fail; it was changed to per-file <code>-LiteralPath</code>;</li>
+        <li>The AI Admin Center backup uses base64 relay + tar-fs to ensure binary safety (docker exec stdout over utf8 would corrupt SQLite .db).</li>
+      </ul>
+    </div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch27';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

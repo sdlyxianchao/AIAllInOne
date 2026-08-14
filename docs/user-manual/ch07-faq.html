@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 7 FAQ · AI AllInOne User Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Quick Start</div>
+      <h1>FAQ</h1>
+      <div class="sub">Check here first when you run into problems.</div>
+    </div>
+
+    <h2>7.1 Login / Access</h2>
+    <table>
+      <tr><th>Problem</th><th>Solution</th></tr>
+      <tr><td>Can't log in to a product?</td><td>make sure you're using the intranet IP (not localhost) and the unified account; if it still fails, contact the admin</td></tr>
+      <tr><td>Login page won't open / keeps spinning?</td><td>make sure you're on the company intranet (WiFi/wired) and the address uses <code>http://IP</code>, not localhost</td></tr>
+      <tr><td>Forgot the unified account password?</td><td>contact the admin to reset (or recover via the domain account)</td></tr>
+    </table>
+
+    <h2>7.2 Usage</h2>
+    <table>
+      <tr><th>Problem</th><th>Solution</th></tr>
+      <tr><td>"Insufficient quota" prompt?</td><td>check balance in the NewAPI admin; contact the admin to top up / raise when exhausted</td></tr>
+      <tr><td>Content blocked on send?</td><td>hit a sensitive word or contains sensitive info; adjust per Chapter 6 rules and retry</td></tr>
+      <tr><td>DeepChat reports connection timeout?</td><td>Settings → Network/Proxy → change to "No proxy / direct"</td></tr>
+      <tr><td>Model reply quality is poor?</td><td>switch models, or improve the question (provide context, clarify requirements, give examples)</td></tr>
+      <tr><td>Forgot where to download DeepChat?</td><td>the portal download center <code>http://IP:8090/downloads/</code></td></tr>
+      <tr><td>Dify keeps spinning when creating apps?</td><td>usually a network/WebSocket issue; contact the admin; hard-refresh with Ctrl+F5</td></tr>
+    </table>
+
+    <h2>7.3 Awareness</h2>
+    <table>
+      <tr><th>Problem</th><th>Solution</th></tr>
+      <tr><td>Can I trust the AI's answers?</td><td>not fully. The AI can be wrong (hallucination); always manually verify important facts, numbers, and code</td></tr>
+      <tr><td>Will the AI remember what I say?</td><td>the current conversation context is kept for multi-turn responses; do not enter confidential information (see Chapter 6)</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch07';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

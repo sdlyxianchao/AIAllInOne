@@ -1,0 +1,46 @@
+# AI All In One — 告警规则
+# 注意：cadvisor 会上报宿主机所有 cgroup（systemd 服务等），
+# 这些 cgroup 没有 name 标签。所有规则必须用 {name!=""} 过滤，
+# 只告警真实 Docker 容器，避免误报。
+groups:
+  - name: ai-platform
+    rules:
+      # 容器宕机（超过 1 分钟无指标上报）
+      - alert: ContainerDown
+        expr: (time() - container_last_seen{name!=""}) > 60
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "容器 {{ $labels.name }} 已停止"
+          description: "容器 {{ $labels.name }} 超过 1 分钟无心跳，可能已宕机。"
+
+      # 容器内存使用率过高（>90% 持续 5 分钟）
+      # 仅对设置了内存上限的容器告警，避免 limit=0 时除零产生 +Inf 误报
+      - alert: ContainerHighMemory
+        expr: |
+          (
+            container_memory_usage_bytes{name!=""}
+            / on(name) container_spec_memory_limit_bytes{name!=""} > 0
+          ) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "容器 {{ $labels.name }} 内存使用率过高"
+          description: "容器 {{ $labels.name }} 内存使用率超过 90%（已用 {{ $value | humanizePercentage }}）。"
+
+      # 容器 CPU 使用率过高（>80% 持续 5 分钟）
+      # 仅对设置了 CPU 配额（quota>0）的容器告警
+      - alert: ContainerHighCPU
+        expr: |
+          (
+            sum(rate(container_cpu_usage_seconds_total{name!=""}[2m])) by (name)
+            / on(name) sum(container_spec_cpu_quota{name!=""} > 0) by (name) / 100000
+          ) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "容器 {{ $labels.name }} CPU 使用率过高"
+          description: "容器 {{ $labels.name }} CPU 使用率超过 80%。"

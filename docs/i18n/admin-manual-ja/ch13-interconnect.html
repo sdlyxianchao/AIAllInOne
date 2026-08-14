@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第13章 相互接続検証チェックリスト · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部 · デプロイ編</div>
+      <h1>相互接続検証チェックリスト</h1>
+      <div class="sub">デプロイ完了後、12 本の相互接続経路を項目ごとにすべて疎通確認します。</div>
+    </div>
+
+    <p>デプロイ編はここで終了です。最後に以下の 12 項目を順に検証し、すべて ✅ になればプラットフォームが本当に稼働していることを示します。</p>
+
+    <table>
+      <tr><th>#</th><th>相互接続</th><th>検証方法</th></tr>
+      <tr><td>1</td><td>NewAPI → LiteLLM</td><td>NewAPI チャネルテストで OK を受信</td></tr>
+      <tr><td>2</td><td>Dify → NewAPI</td><td>Dify モデルプロバイダーテストで応答を受信</td></tr>
+      <tr><td>3</td><td>DeepChat → NewAPI</td><td>DeepChat でメッセージ送信し応答を受信</td></tr>
+      <tr><td>4</td><td>Keycloak → NewAPI</td><td>Keycloak アカウントで OIDC ログイン NewAPI</td></tr>
+      <tr><td>5</td><td>Keycloak → Dify</td><td>Keycloak アカウントで SSO ログイン Dify</td></tr>
+      <tr><td>6</td><td>MCP Gateway → DeepChat</td><td>DeepChat が MCP ツールリストを取得し呼び出し</td></tr>
+      <tr><td>7</td><td>MCP Gateway → Dify</td><td>Dify ワークフローが MCP ツールを呼び出し</td></tr>
+      <tr><td>8</td><td>Gitea Runner → Docker</td><td>Runner が CI/CD タスクを実行可能</td></tr>
+      <tr><td>9</td><td>Gitea → 更新サーバー</td><td>CI 成果物を更新サーバーにアップロード可能</td></tr>
+      <tr><td>10</td><td>Ghost API → Gitea</td><td>Gitea Actions が Ghost API を呼び出してお知らせを発行可能</td></tr>
+      <tr><td>11</td><td>Ghost → Dify 遷移</td><td>ポータル「AI ワークベンチ」が正しく Dify へ遷移</td></tr>
+      <tr><td>12</td><td>AI 管理センター</td><td>Dashboard に全コンテナが表示され、左メニューから全製品にアクセス可能</td></tr>
+    </table>
+
+    <div class="tip">✅ すべて通過したら、第二部「管理編」で各製品の日常運用、第三部「運用編」のバックアップ、ヘルスチェック、トラブル対応を学習します。</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch13';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 1 章 平台概覽與架構 · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>平台概覽與架構</h1>
+      <div class="sub">理解這套平台的組成、埠、資料流，是後續所有部署與管理操作的前提。</div>
+    </div>
+
+    <h2>1.1 這套平台是什麼</h2>
+    <p>「AI AllInOne」是一套<b>企業內網 AI 平台</b>，把十幾個開源產品用 Docker 編排成一個整體：統一認證、LLM 路由、PII 遮蔽、AI 應用、企業門戶、原始碼 CI、客戶端分發、統一管理、監控告警、可觀測、日誌、備份恢復——全部走通，且<b>一個 Keycloak 帳號單點登入所有產品</b>。</p>
+    <table>
+      <tr><th>層</th><th>元件</th><th>作用</th></tr>
+      <tr><td>統一認證</td><td>Keycloak</td><td>SSO / OIDC，可對接 AD/LDAP 或本地帳號</td></tr>
+      <tr><td>LLM 路由</td><td>NewAPI</td><td>渠道、金鑰、額度、審計、成本</td></tr>
+      <tr><td>PII 遮蔽</td><td>LiteLLM + Presidio</td><td>模型呼叫前自動遮蔽手機號/身分證/郵箱等</td></tr>
+      <tr><td>AI 應用</td><td>Dify</td><td>視覺化 AI 應用 / Agent / 知識庫平台</td></tr>
+      <tr><td>企業門戶</td><td>Ghost</td><td>公告、新聞、下載中心、員工 Hub</td></tr>
+      <tr><td>原始碼 / CI</td><td>Gitea + Runner</td><td>內部 Git 倉庫 + Actions 自動化</td></tr>
+      <tr><td>客戶端</td><td>DeepChat</td><td>本地 AI 桌面客戶端（Win/macOS/Linux）</td></tr>
+      <tr><td>客戶端分發</td><td>更新伺服器</td><td>DeepChat 安裝包託管與自動更新</td></tr>
+      <tr><td>統一管理</td><td>AI 管理中心</td><td>唯一管理入口：Dashboard + 產品內嵌 + 審計/成本/報告</td></tr>
+      <tr><td>閘道器</td><td>MCP Gateway</td><td>Skill / MCP 市場管理</td></tr>
+      <tr><td>監控告警</td><td>Prometheus + Grafana + Alertmanager</td><td>容器資源監控 + 告警通知</td></tr>
+      <tr><td>LLM 可觀測</td><td>Langfuse</td><td>每次模型呼叫的 trace / 延遲 / token / 成本</td></tr>
+      <tr><td>統一日誌</td><td>Loki + Promtail</td><td>所有容器日誌聚合檢索</td></tr>
+      <tr><td>備份恢復</td><td>backup / restore 指令碼 + 管理頁</td><td>全量資料每日備份 + 一鍵恢復</td></tr>
+    </table>
+
+    <h2>1.2 軟硬體要求</h2>
+    <table>
+      <tr><th>專案</th><th>最低要求</th><th>推薦配置</th></tr>
+      <tr><td>作業系統</td><td>Windows 11（Docker Desktop + WSL2 後端）</td><td>Windows 11 Pro / 企業版（額外支援 Hyper-V 跑 AD 網域控制站）</td></tr>
+      <tr><td>CPU</td><td>4 核 / 8 執行緒</td><td>8 核 / 16 執行緒</td></tr>
+      <tr><td>記憶體</td><td>16 GB</td><td>32 GB</td></tr>
+      <tr><td>磁碟</td><td>60 GB 可用 SSD</td><td>150 GB+ 可用 SSD</td></tr>
+      <tr><td>GPU</td><td>無需獨立顯示卡</td><td>無需獨立顯示卡</td></tr>
+    </table>
+    <div class="note">📌 依據實測：約 30 個容器空閒時合計約 5 GB 記憶體，Dify 處理/索引、Keycloak JVM、資料庫快取等峰值再增 3–5 GB，加 WSL2 虛擬記憶體，16 GB 為最低、32 GB 為舒適值。所有大模型走外部 API（deepseek-chat 等），本地不做推理，<b>無需 GPU</b>。</div>
+
+    <h2>1.3 埠分配表</h2>
+    <p>下文統一用 <code>&lt;伺服器IP&gt;</code> 表示宿主機對外地址（當前環境為 <code>192.168.31.117</code>，部署時替換成你自己的內網 IP 或網域）。</p>
+    <table>
+      <tr><th>#</th><th>產品</th><th>用途</th><th>本機訪問</th><th>內網訪問（員工）</th></tr>
+      <tr><td>1</td><td>AI 管理中心</td><td>統一管理員門戶</td><td><code>127.0.0.1:10086</code></td><td><code>&lt;伺服器IP&gt;:10086</code></td></tr>
+      <tr><td>2</td><td>Keycloak</td><td>認證 / SSO</td><td><code>127.0.0.1:9090</code></td><td><code>&lt;伺服器IP&gt;:9090</code></td></tr>
+      <tr><td>3</td><td>NewAPI</td><td>LLM 路由閘道器</td><td><code>127.0.0.1:3000</code></td><td><code>&lt;伺服器IP&gt;:3000</code></td></tr>
+      <tr><td>4</td><td>LiteLLM</td><td>PII 遮蔽代理</td><td><code>&lt;伺服器IP&gt;:4001</code></td><td>—（僅被 NewAPI 呼叫）</td></tr>
+      <tr><td>5</td><td>Dify</td><td>AI 應用平台</td><td><code>127.0.0.1</code></td><td><code>&lt;伺服器IP&gt;</code>（80 埠）</td></tr>
+      <tr><td>6</td><td>Ghost</td><td>企業門戶</td><td><code>127.0.0.1:8090</code></td><td><code>&lt;伺服器IP&gt;:8090</code></td></tr>
+      <tr><td>7</td><td>Gitea</td><td>原始碼 + CI/CD</td><td><code>127.0.0.1:3002</code></td><td><code>&lt;伺服器IP&gt;:3002</code></td></tr>
+      <tr><td>8</td><td>更新伺服器</td><td>DeepChat 安裝包</td><td><code>127.0.0.1:8091</code></td><td><code>&lt;伺服器IP&gt;:8091</code></td></tr>
+      <tr><td>9</td><td>MCP Gateway</td><td>Skill / MCP 閘道器</td><td><code>127.0.0.1:3100</code></td><td><code>&lt;伺服器IP&gt;:3100</code></td></tr>
+      <tr><td>10</td><td>Grafana</td><td>監控大盤</td><td><code>127.0.0.1:3030</code></td><td><code>&lt;伺服器IP&gt;:3030</code></td></tr>
+      <tr><td>11</td><td>Prometheus</td><td>指標採集 / 告警</td><td><code>127.0.0.1:9091</code></td><td><code>&lt;伺服器IP&gt;:9091</code></td></tr>
+      <tr><td>12</td><td>Langfuse</td><td>LLM 可觀測</td><td><code>127.0.0.1:3010</code></td><td><code>&lt;伺服器IP&gt;:3010</code></td></tr>
+      <tr><td>13</td><td>Loki</td><td>日誌聚合（內部）</td><td><code>127.0.0.1:3110</code></td><td>—（經管理頁檢視）</td></tr>
+      <tr><td>14</td><td>MailHog</td><td>本地郵件接收</td><td><code>127.0.0.1:8025</code></td><td><code>&lt;伺服器IP&gt;:8025</code></td></tr>
+    </table>
+    <div class="warn">⚠️ 統一用<b>內網 IP</b> 訪問，不用 <code>localhost</code>（Docker Desktop WSL2 對 IPv6 <code>::1</code> 支援不穩，導致埠轉發失敗）。資料庫（MySQL/Redis/PostgreSQL）不對使用者開放，僅在 Docker 網路內部通訊。</div>
+
+    <h2>1.4 核心資料流</h2>
+    <h3>LLM 請求流（最關鍵的一條鏈路）</h3>
+    <div class="svgbox">
+      <svg viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:720px;">
+        <defs>
+          <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker>
+        </defs>
+        <g><rect x="8" y="38" width="120" height="44" rx="8" fill="#1a1030" stroke="#d2a8ff"/></g>
+        <text x="68" y="65" text-anchor="middle" fill="#d2a8ff" font-size="12" font-weight="700">DeepChat / Dify</text>
+        <path d="M 128 60 L 154 60" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="156" y="38" width="120" height="44" rx="8" fill="#0a1e3a" stroke="#58a6ff"/></g>
+        <text x="216" y="65" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">NewAPI（路由）</text>
+        <path d="M 276 60 L 302 60" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="304" y="38" width="130" height="44" rx="8" fill="#0a2a20" stroke="#56d364"/></g>
+        <text x="369" y="65" text-anchor="middle" fill="#56d364" font-size="12" font-weight="700">LiteLLM（遮蔽）</text>
+        <path d="M 434 60 L 460 60" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="462" y="38" width="120" height="44" rx="8" fill="#0f1a26" stroke="#484f58" stroke-dasharray="4"/></g>
+        <text x="522" y="65" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">外部大模型</text>
+        <text x="360" y="110" text-anchor="middle" fill="#8b949e" font-size="11">請求方向 →；響應方向 ←（LiteLLM 還原 PII 後返回）；LiteLLM 旁路上報 Langfuse</text>
+      </svg>
+      <div class="cap">圖 1-1：核心 LLM 鏈路</div>
+    </div>
+    <ol>
+      <li><b>① 轉發</b>：DeepChat / Dify 把請求發給 NewAPI（<code>:3000/v1</code>）；</li>
+      <li><b>② 遮蔽</b>：NewAPI 轉發到 LiteLLM，LiteLLM 用正則 + Presidio 把手機號/身分證/郵箱等替換成 <code>[xxx_REDACTED]</code>；</li>
+      <li><b>③ 請求外部模型</b>：遮蔽後的請求發給 DeepSeek / GPT / Claude；</li>
+      <li><b>④ 還原 PII</b>：響應回來時 LiteLLM 把敏感資訊還原；</li>
+      <li><b>⑤ 返回</b>：最終結果回到客戶端。</li>
+    </ol>
+    <h3>其它幾條流</h3>
+    <ul>
+      <li><b>認證流</b>：Keycloak OIDC SSO 統一登入所有 Web 產品（共用 <code>ai_all_in_one_admin</code>）；</li>
+      <li><b>可觀測流</b>：LiteLLM <code>success_callback</code> → Langfuse 追蹤每次呼叫；</li>
+      <li><b>自動更新流</b>：Gitea Actions 構建 → 更新伺服器（:8091）→ DeepChat 檢查 <code>version.txt</code> 自動下載安裝；</li>
+      <li><b>統一日誌流</b>：Promtail 採集各容器日誌 → Loki 聚合 → AI 管理中心「統一日誌」頁查詢。</li>
+    </ul>
+
+    <h2>1.5 本書結構導航</h2>
+    <p>本手冊分三部分：<b>部署篇</b>（第 1–13 章，從零把平台跑起來）、<b>管理篇</b>（第 14–26 章，13 個產品各自的日常操作）、<b>維運篇</b>（第 27–29 章，備份/健康檢查/疑難排解）。側邊欄可隨時跳轉，頁面底部有上一章/下一章翻頁。</p>
+    <div class="tip">✅ 部署時也可以直接交給 <b>AI Agent 工具</b>（WorkBuddy / OpenClaw 等）自動化：把本手冊 + <code>docker-compose.yml</code> + <code>.env.example</code> + <code>scripts/</code> 交給 Agent，讓它按「部署篇」順序逐步執行（詳見第 2 章開頭的 Agent 部署提示詞）。</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch01';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

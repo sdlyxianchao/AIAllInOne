@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제20장 MCP Gateway 일상 관리 · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제2부 · 관리편</div>
+      <h1>MCP Gateway 일상 관리</h1>
+      <div class="sub">MCP Server 증감, Skill 업로드/삭제, 내장 도구 확장.</div>
+    </div>
+
+    <p><b>진입점</b>: <span class="entry">http://&lt;서버-IP&gt;:3100</span> (마켓 페이지 <code>/market</code>). 관리는 AI 관리 센터 「MCP Gateway」 페이지로 작업 (<code>ai-platform-admin</code> 역할), 또는 관리 API 직접 호출.</p>
+
+    <h2>20.1 MCP Server 관리</h2>
+    <ol>
+      <li><code>mcp-gateway/mcp-servers.json</code> 편집해 서버 추가/삭제 (stdio/http 두 유형);</li>
+      <li><code>docker compose restart mcp-gateway</code> 재시작;</li>
+      <li>또는 AI 관리 센터 MCP Gateway 페이지에서 추가/삭제 (설정에 다시 쓰기 + 자동 재연결).</li>
+    </ol>
+
+    <h2>20.2 Skill (스킬 패키지) 관리</h2>
+    <ol>
+      <li><b>업로드</b>: AI 관리 센터 MCP Gateway 페이지 → 스킬 zip 업로드 (SKILL.md 포함 검증, 경로 이탈 방지);</li>
+      <li><b>삭제</b>: 해당 스킬 삭제;</li>
+      <li>스킬은 <code>mcp-gateway/skills/</code>에 두고 (SKILL.md 포함 서브디렉터리), 매 요청마다 자동 스캔되어 재시작 불필요.</li>
+    </ol>
+
+    <h2>20.3 내장 도구 확장</h2>
+    <p><code>mcp-gateway/gateway.js</code>에 두 단계 추가:</p>
+    <pre><code>// ① 도구 정의 (builtinTools 배열에 항목 추가)
+{ name: 'platform_health', description: '서비스 상태 조회',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② 실행 로직 (callBuiltin에 분기 추가)
+if (name === 'platform_health') { return '모든 서비스 정상 동작 중'; }</code></pre>
+    <p>수정 후 <code>docker compose restart mcp-gateway</code>.</p>
+
+    <h2>20.4 skill-market 마켓 주소 유지보수</h2>
+    <p>「스킬 매니저」의 <code>market_url</code>은 <code>mcp-gateway/skills/skill-market/config.json</code> + <code>SKILL.md</code>에 있으며, 반드시 호스트명 사용 (IP 불가), 배포 파라미터입니다 (제11장 참조).</p>
+
+    <div class="warn">⚠️ 관리 API는 <code>X-Admin-Token</code> 헤더 필요 (<code>.env</code>의 <code>MCP_ADMIN_TOKEN</code>); 미설정 시 503, 잘못된 token 시 401 반환.</div>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>MCP 프로토콜 공식 <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch20';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

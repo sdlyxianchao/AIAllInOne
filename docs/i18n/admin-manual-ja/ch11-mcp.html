@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第11章 MCP Gateway とスキルマーケット · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部 · デプロイ編</div>
+      <h1>MCP Gateway とスキルマーケット</h1>
+      <div class="sub">スキルと MCP ツールを集中管理するゲートウェイ。DeepChat/Dify は 1 つのアドレスに接続するだけで全ツールを取得できます。</div>
+    </div>
+
+    <div class="note">📌 MCP Gateway は公式 <code>@modelcontextprotocol/sdk</code> を基盤とし、標準 Streamable HTTP <code>/mcp</code> エンドポイントを公開します。メイン <code>docker-compose.yml</code> に統合済み（ポート 3100）で、コアサービスとともに起動します。ソースは <code>mcp-gateway/</code>。</div>
+
+    <h2>11.1 組み込みプラットフォームツール</h2>
+    <table>
+      <tr><th>ツール</th><th>用途</th></tr>
+      <tr><td><code>platform_time</code></td><td>サーバーの現在時刻を返す</td></tr>
+      <tr><td><code>platform_echo</code></td><td>テキストをエコー（接続テスト）</td></tr>
+      <tr><td><code>platform_services</code></td><td>プラットフォームサービスの一覧を表示</td></tr>
+    </table>
+
+    <h2>11.2 外部 MCP Server の集約</h2>
+    <p><code>mcp-gateway/mcp-servers.json</code> を編集し、stdio または http タイプを追加して <code>mcp-gateway</code> を再起動すると反映されます：</p>
+    <pre><code>{
+  "servers": [
+    { "name": "filesystem", "type": "stdio", "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/data"] },
+    { "name": "github", "type": "http", "url": "https://api.githubcopilot.com/mcp" }
+  ]
+}</code></pre>
+    <p>集約したツールには自動で <code>{serverName}_</code> プレフィックスが付き、重複を防ぎます。</p>
+
+    <h2>11.3 クライアント接続</h2>
+    <ol>
+      <li>DeepChat：設定 → MCP → サーバー追加 → タイプ「ストリーミング可能な HTTP」、URL <code>http://&lt;サーバーIP&gt;:3100/mcp</code>；</li>
+      <li>Dify ワークフロー：カスタムツール / MCP ツール設定を同じアドレスに向けます。</li>
+    </ol>
+    <div class="note">検証：<code>curl http://&lt;サーバーIP&gt;:3100/health</code> が <code>{"status":"ok"}</code> を返すこと。<code>curl -X POST .../mcp -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code> がツールリストを返します。</div>
+
+    <h2>11.4 スキルマーケット（イントラネットスキルパッケージ配布）</h2>
+    <table>
+      <tr><th>エンドポイント</th><th>役割</th></tr>
+      <tr><td><code>/market</code></td><td>スキルマーケットページ（カード閲覧 + ZIP ダウンロード + インストールアドレスコピー）</td></tr>
+      <tr><td><code>/skills</code></td><td>スキル一覧 JSON（name/description/version）</td></tr>
+      <tr><td><code>/skills/&lt;名前&gt;.zip</code></td><td>スキルパッケージのダウンロード（動的パッキング）</td></tr>
+    </table>
+    <p>スキルは <code>mcp-gateway/skills/</code> ディレクトリ（SKILL.md を含むサブディレクトリ）に置き、<b>リクエストごとに自動スキャンされ、再起動不要</b>。組み込みの <code>skill-market</code> ガイドスキルがあります。</p>
+    <div class="note">📌 DeepChat における MCP と Skill は別概念です：MCP は「ツール」（function calling）、Skill は「エージェントスキルパッケージ」（SKILL.md + スクリプト）。DeepChat の Skill には「カスタムマーケット URL」がなく、フォルダ/ZIP/URL の 3 方式のインストールのみ対応。イントラネット配布は「URL インストール」で実現します。</div>
+
+    <h2>11.5 ⚠️ スキルマーケットのホスト名（デプロイパラメータ、置換必須）</h2>
+    <p>「スキルマネージャー」は <code>config.json</code> の <code>market_url</code> を読み、<code>/skills</code> 一覧を要求します。重要な 2 点：</p>
+    <ul>
+      <li><b>ホスト名を使い、IP は使わない</b>：DeepChat の agent 環境は IP を <code>[IP_ADDRESS_REDACTED]</code> にマスキングするため、実際のアドレスを読み取れなくなります；</li>
+      <li><b>ホスト名はデプロイパラメータ</b>：各デプロイで異なるため、そのままコピーできません。</li>
+    </ul>
+    <pre><code># mcp-gateway/skills/skill-market/config.json
+{ "market_url": "http://&lt;マーケットホスト名&gt;:3100" }</code></pre>
+    <h4>自動（Agent でデプロイ）</h4>
+    <p>Agent はパラメータ収集時に「スキルマーケットのホスト名」を尋ね、<code>config.json</code> と <code>SKILL.md</code> 内の <code>&lt;マーケットホスト名&gt;</code> を自動置換します。</p>
+    <h4>手動</h4>
+    <ol>
+      <li><code>config.json</code> + <code>SKILL.md</code> のフォールバックアドレスを編集し、<code>&lt;マーケットホスト名&gt;</code> を置換；</li>
+      <li>ホスト名を解決可能にする：単一マシンでは <code>C:\Windows\System32\drivers\etc\hosts</code> に <code>&lt;サーバーIP&gt;  &lt;ホスト名&gt;</code> を追加。会社イントラネットでは DNS に A レコードを追加。</li>
+    </ol>
+    <div class="tip">✅ ホスト名は「サービス名+会社ドメイン」の FQDN を推奨。例：<code>skillmarket.あなたの会社ドメイン</code>。DNS に A レコード追加：ドメインコントローラ「DNS → 前方参照ゾーン → あなたのドメイン → 新しいホスト(A)」、または <code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "あなたのドメイン" -IPv4Address "&lt;サーバーIP&gt;"</code>。</div>
+
+    <h2>11.6 管理 API（AI 管理センターの増改削用）</h2>
+    <table>
+      <tr><th>エンドポイント</th><th>役割</th></tr>
+      <tr><td><code>GET/POST /api/servers</code>、<code>PUT/DELETE /api/servers/:name</code></td><td>MCP Server の CRUD（設定に書き戻し+自動再接続）</td></tr>
+      <tr><td><code>POST /api/skills/upload</code></td><td>スキル zip アップロード（SKILL.md 検証、パストラバーサル防止）</td></tr>
+      <tr><td><code>DELETE /api/skills/:name</code></td><td>スキル削除</td></tr>
+    </table>
+    <p><code>X-Admin-Token</code> ヘッダーが必要（<code>.env</code> の <code>MCP_ADMIN_TOKEN</code>）。AI 管理センター「MCP Gateway」ページが代理呼び出しします（<code>ai-platform-admin</code> ロールで保護）。</p>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>MCP プロトコル公式 <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch11';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

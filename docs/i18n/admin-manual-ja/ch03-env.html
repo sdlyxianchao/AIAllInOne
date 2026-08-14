@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 設定ファイルと環境変数 · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部 · デプロイ編</div>
+      <h1>設定ファイルと環境変数</h1>
+      <div class="sub">3 つのコア設定ファイル + 全環境変数の説明。どれを今設定し、どれを後で設定するか。</div>
+    </div>
+
+    <h2>3.1 3 つのコア設定ファイル</h2>
+    <table>
+      <tr><th>ファイル</th><th>用途</th><th>変更が必要か</th></tr>
+      <tr><td><code>.env.windows</code></td><td>すべてのパスワードと外部 API Key</td><td><b>変更必須</b>：DeepSeek API Key を記入、その他 provider は必要に応じて</td></tr>
+      <tr><td><code>litellm-config.yaml</code></td><td>LiteLLM モデルリスト + PII マスキングルール</td><td>通常変更しない（DeepSeek のみ使用なら OpenAI/Claude の項目を削除可）</td></tr>
+      <tr><td><code>docker-compose.yml</code></td><td>コアサービスオーケストレーション</td><td>設定済み（Keycloak <code>KC_HOSTNAME</code> + 永続化ボリューム含む）</td></tr>
+    </table>
+
+    <h2>3.2 環境変数の分類概要</h2>
+    <p><code>.env</code>（<code>.env.windows</code> からコピー）を開き、優先度順に設定します。</p>
+    <table>
+      <tr><th>変数</th><th>優先度</th><th>説明</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>🔴 今すぐ</td><td>外部 LLM API Key。未設定なら経路がつながらない</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>🔴 今すぐ</td><td>LiteLLM 内部認証キー。NewAPI が使用</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>🔴 今すぐ</td><td>MySQL root パスワード。初回作成後の変更は非推奨</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>🔴 今すぐ</td><td>Keycloak 管理者パスワード</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>🔴 今すぐ</td><td>NewAPI セッション暗号化、ランダム文字列</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>🔴 今すぐ</td><td>NewAPI データ暗号化、ランダム文字列</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>🔴 今すぐ</td><td>AI 管理センター Global Admin パスワード</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>🔴 今すぐ</td><td>AI 管理センターセッション暗号化、ランダム文字列</td></tr>
+      <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td>🟡 後で設定可</td><td>まず Keycloak で OIDC Client を作成して Secret を取得（第 12 章参照）</td></tr>
+      <tr><td><code>GITEA_RUNNER_TOKEN</code></td><td>🟡 後で設定可</td><td>まず Gitea を起動して管理画面で Token を取得（第 9 章参照）</td></tr>
+      <tr><td><code>OPENAI_API_KEY</code> / <code>ANTHROPIC_API_KEY</code></td><td>🟢 必要時</td><td>使う場合にコメント解除し、同時に <code>litellm-config.yaml</code> も変更</td></tr>
+      <tr><td><code>GLOBAL_WEB_RATE_LIMIT</code> などのレート制限項目</td><td>⚪ デフォルト</td><td>テスト期間は 999999、本番では適宜引き下げ</td></tr>
+      <tr><td><code>DEFAULT_QUOTA</code></td><td>⚪ デフォルト</td><td>新規ユーザーのデフォルトクォータ（ドル）。100 なら新規ユーザーに 100 ドル付与</td></tr>
+      <tr><td><code>GENERATE_DEFAULT_TOKEN</code></td><td>⚪ デフォルト</td><td>新規ユーザー登録時に初期 Key を自動生成。true ならログイン即利用可</td></tr>
+      <tr><td><code>TZ</code> / <code>KEYCLOAK_ADMIN</code> / <code>ADMIN_USERNAME</code> / <code>ADMIN_EMAIL</code></td><td>⚪ デフォルト</td><td>デフォルト値で可</td></tr>
+    </table>
+
+    <h2>3.3 🔴 今すぐ設定（初回起動前に必須）</h2>
+    <table>
+      <tr><th>変数</th><th>説明</th><th>入手方法</th><th>形式</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>DeepSeek クラウド LLM Key</td><td><span class="url">https://platform.deepseek.com</span> に登録 → API Keys</td><td><code>sk-xxxx</code></td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>LiteLLM 内部管理者キー（外部 LLM Key ではない）</td><td>ランダム生成（下記参照）</td><td><code>sk-litellm-xxxx</code></td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>MySQL パスワード</td><td>自分で決める。初回作成後は<b>変更非推奨</b></td><td>任意</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>Keycloak 管理者パスワード</td><td>自分で決める。8 文字以上</td><td>任意</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>NewAPI セッション暗号化</td><td>ランダム生成</td><td>32 桁</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>NewAPI データ暗号化</td><td>ランダム生成</td><td>32 桁</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>AI 管理センター管理者パスワード</td><td>自分で決める。8 文字以上</td><td>任意</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>AI 管理センターセッション暗号化</td><td>ランダム生成</td><td>64 桁</td></tr>
+    </table>
+    <p>ランダム文字列の生成（PowerShell）：</p>
+    <pre><code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></pre>
+
+    <h3>API Key 記入の例</h3>
+    <pre><code># デフォルトで DeepSeek を設定済み（コメント解除して Key を記入）
+DEEPSEEK_API_KEY=sk-あなたの実際のDeepSeekキー
+
+# OpenAI / Claude が必要な場合はコメント解除し、litellm-config.yaml の対応する model ブロックのコメントも解除
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...</code></pre>
+
+    <h2>3.4 パスワード変更の方針</h2>
+    <div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> は作成済みデータベースに関わるため、変更後に対応 volume を削除して再構築する必要があります（データ消失）。初回にしっかり決めてください。<br>
+    <code>KEYCLOAK_ADMIN_PASSWORD</code>、<code>ADMIN_PASSWORD</code> などの管理パスワードは各製品の管理画面で変更でき、変更後に <code>.env</code> を同期更新します（メモ用であり、実行には影響しません）。</div>
+
+    <h2>3.5 litellm-config.yaml の説明</h2>
+    <ul>
+      <li><code>model_list</code> — 利用可能な外部モデルを定義。NewAPI が LiteLLM 経由で呼び出します。デフォルトでは <code>deepseek-chat</code> のみ有効；</li>
+      <li><code>general_settings.master_key</code> — LiteLLM 管理者キー。<code>.env</code> の <code>LITELLM_MASTER_KEY</code> を読み込み；</li>
+      <li>PII マスキング（Presidio）は現在<b>一時的にコメントアウト</b>（新版 LiteLLM の guardrail API 変更で非互換）。後からの有効化は第 25 章参照；</li>
+      <li>安定版 <code>v1.95.1</code> を使用（<code>main-latest</code> には既知のバグあり）。</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

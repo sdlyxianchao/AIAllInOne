@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第6章 データセキュリティ規程 · AI AllInOne ユーザーマニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">クイックスタート</div>
+      <h1>データセキュリティ規程</h1>
+      <div class="sub">何を AI に送ってよいか、何を絶対に送ってはならないか——全員が守るべき一線。</div>
+    </div>
+
+    <p>プラットフォームは<b>携帯番号、身分証番号、銀行カード番号、メール</b>などの機密情報を自動で<b>マスキング</b>し（大規模モデル送信前に自動で伏字化）、機密語をブロックします。ただし、以下の一線は自覚して守ってください。</p>
+
+    <h2>6.1 送ってよいもの、送ってはいけないもの</h2>
+    <h3>❌ AI への送信を厳禁</h3>
+    <ul>
+      <li>内部機密 / 商業機密（未公開の製品コード、価格、顧客リスト、契約条項）；</li>
+      <li>個人プライバシー（身分証番号、銀行カード番号、パスワード、健康情報、他者のプライバシー）；</li>
+      <li>ソースコード / 未公開の技術方案。</li>
+    </ul>
+    <h3>✅ 安心して利用できるもの</h3>
+    <ul>
+      <li>公開資料、一般知識、文書作成、翻訳、要約；</li>
+      <li>マスキング後の業務データ（具体的な人名/番号/機密フィールドを除去したもの）。</li>
+    </ul>
+
+    <h2>6.2 データ分類クイックリファレンス</h2>
+    <table>
+      <tr><th>データ等級</th><th>外部大規模モデルへ送信可か</th><th>説明</th></tr>
+      <tr><td>公開データ</td><td>✅ 可</td><td>公開済みの資料、一般情報</td></tr>
+      <tr><td>内部一般データ</td><td>⚠️ マスキング後に可</td><td>機密フィールドを除去すれば利用可</td></tr>
+      <tr><td>内部機密 / 個人プライバシー</td><td>❌ 禁止</td><td>送信厳禁</td></tr>
+    </table>
+    <blockquote>判断基準：<b>「この内容が外部の人の目に触れたら問題があるか？」</b>ある → 送らない。</blockquote>
+
+    <h2>6.3 3 つの典型的なシーン</h2>
+    <table>
+      <tr><th>シーン</th><th>どうするか</th></tr>
+      <tr><td>週報作成で顧客名が関わる</td><td>「ある顧客」「A 顧客」で実際の顧客名を代替</td></tr>
+      <tr><td>AI にデータ表を分析させる</td><td>先に氏名、電話、身分証番号などの列を削除し、集計データのみ残す</td></tr>
+      <tr><td>契約条項の翻訳</td><td>先に金額、相手方名称などの機密情報を削除、または「甲/乙」で代替</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

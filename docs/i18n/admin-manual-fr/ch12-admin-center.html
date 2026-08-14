@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 12 · Centre d'administration IA · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Première partie · Déploiement</div>
+      <h1>Centre d'administration IA</h1>
+      <div class="sub">Portail d'administration unifié : authentification Keycloak, menu de gauche intégrant tous les produits, état du cluster dans le Dashboard.</div>
+    </div>
+
+    <div class="note">📌 Positionnement : ce n'est pas une plateforme de gestion Docker (1Panel/Portainer), mais une console d'administration unifiée destinée aux administrateurs — authentification Keycloak + menu de gauche liant tous les produits + état du cluster dans le Dashboard + compte administrateur unifié.</div>
+
+    <h2>12.1 Capacités principales</h2>
+    <table>
+      <tr><th>Élément de menu</th><th>Comportement</th><th>Description</th></tr>
+      <tr><td>📊 Tableau de bord général</td><td>Page intégrée</td><td>8 indicateurs métier des produits + services Docker (groupés par produit) + informations système</td></tr>
+      <tr><td>Ghost / Dify / Gitea / Keycloak</td><td>Page de statistiques intégrée</td><td>Voir d'abord les statistiques, cliquer sur « Ouvrir l'interface » pour basculer</td></tr>
+      <tr><td>🔀 Gestion NewAPI</td><td>Page intégrée</td><td>Canaux/utilisateurs/clés + rapports de coûts + journal d'audit</td></tr>
+      <tr><td>🔌 MCP Gateway</td><td>Page d'administration intégrée</td><td>Ajouter/supprimer des MCP Server, téléverser/supprimer des Skills</td></tr>
+      <tr><td>📈 Surveillance / 🔍 Observabilité</td><td>Nouvel onglet</td><td>Grafana :3030 / Langfuse :3010</td></tr>
+      <tr><td>📜 Journaux unifiés</td><td>Page intégrée</td><td>Interroger Loki par conteneur + mot-clé + temps</td></tr>
+      <tr><td>💾 Sauvegarde et restauration</td><td>Page intégrée</td><td>Liste des sauvegardes + sauvegarde immédiate + restauration en un clic</td></tr>
+      <tr><td>🩺 Test de disponibilité</td><td>Page intégrée</td><td>Test de toute la chaîne en planifié + manuel</td></tr>
+      <tr><td>📄 Génération de rapports</td><td>Page intégrée</td><td>Export .md à période personnalisable</td></tr>
+      <tr><td>⚙️ Paramètres système</td><td>Page intégrée</td><td>9 langues d'interface + URL d'accès des produits</td></tr>
+    </table>
+
+    <h2>12.2 Initialiser le Global Administrator</h2>
+    <pre><code># Configuration dans .env
+ADMIN_USERNAME=ai_all_in_one_admin
+ADMIN_PASSWORD=voir la liste des comptes et mots de passe
+ADMIN_EMAIL=admin@company.com</code></pre>
+    <p>Au démarrage, l'utilisateur <code>ai_all_in_one_admin</code> est créé automatiquement dans Keycloak (ignoré s'il existe déjà), avec le rôle Realm <code>ai-platform-admin</code>. Principe fondamental : <b>un seul compte Global Admin pour gérer toute la plateforme</b>.</p>
+
+    <h2>12.3 Déploiement Docker Compose</h2>
+    <pre><code># Prérequis : installer d'abord les dépendances (une fois)
+cd admin-portal
+npm install
+cd ..</code></pre>
+    <pre><code>  admin-portal:
+    image: node:20-alpine
+    container_name: admin-portal
+    restart: always
+    ports: ["10086:3000"]
+    working_dir: /app
+    command: sh -c "node server.js"
+    environment:
+      - PORT=3000
+      - KEYCLOAK_URL=http://&lt;IP-du-serveur&gt;:9090
+      - KEYCLOAK_REALM=enterprise-ai
+      - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_URL=http://&lt;IP-du-serveur&gt;:4001
+    volumes:
+      - ./admin-portal:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [ai-platform]</code></pre>
+
+    <h2>12.4 Configuration du client Keycloak</h2>
+    <ol>
+      <li>Keycloak → enterprise-ai → Clients → Create ;</li>
+      <li>Client ID <code>AI-all-in-one-admin-portal</code>, Client authentication / Standard flow : On ;</li>
+      <li>Valid Redirect URIs : <code>http://127.0.0.1:10086/*</code> et <code>http://&lt;IP-du-serveur&gt;:10086/*</code> ;</li>
+      <li>Copiez le Client Secret → renseignez <code>KEYCLOAK_CLIENT_SECRET</code> de <code>.env</code> → <code>docker compose up -d admin-portal</code> ;</li>
+      <li>Créez le rôle Realm <code>ai-platform-admin</code>, assignez-le à <code>ai_all_in_one_admin</code>.</li>
+    </ol>
+
+    <div class="warn">⚠️ Points de déploiement / dépannage :
+      <ul>
+        <li>La session d'admin-portal est stockée en mémoire ; <code>up -d</code> reconstruisant le conteneur <b>vide la session de connexion</b> (reconnexion nécessaire) ;</li>
+        <li>La page d'accueil <code>/</code> doit être protégée par Keycloak (<code>express.static(..., {index:false})</code> + <code>app.get('/', keycloak.protect())</code> explicite), sinon un tableau de bord vide est rendu sans connexion ;</li>
+        <li>Pour les statistiques Dify, utilisez l'e-mail administrateur réel (<code>ai_all_in_one_admin@&lt;domaine-entreprise&gt;</code>), pas l'ancien <code>ADMIN_EMAIL=admin@company.com</code> ;</li>
+        <li><b>Après modification de server.js, faites impérativement <code>docker restart admin-portal</code></b>, pas <code>up -d</code> (le changement de contenu du volume ne déclenche pas la reconstruction).</li>
+      </ul>
+    </div>
+
+    <h2>12.5 Vérification</h2>
+    <ol>
+      <li>Ouvrez <code>http://&lt;IP-du-serveur&gt;:10086</code> → redirection automatique vers la connexion Keycloak (pas de tableau de bord vide sans connexion) ;</li>
+      <li>Connectez-vous avec <code>ai_all_in_one_admin</code> → entrez dans le tableau de bord général ;</li>
+      <li>Le Dashboard affiche 8 indicateurs de produits + regroupement des conteneurs ;</li>
+      <li>Cliquez sur chaque produit pour voir les statistiques, puis sur « Ouvrir l'interface » pour basculer ;</li>
+      <li>Les paramètres système permettent de changer de langue parmi 9 langues.</li>
+    </ol>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch12';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

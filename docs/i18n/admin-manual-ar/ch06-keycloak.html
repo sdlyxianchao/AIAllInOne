@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل السادس Keycloak: Realm والمستخدمون وAD · دليل مدير AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">الجزء الأول · قسم النشر</div>
+      <h1>Keycloak: Realm والمستخدمون وAD</h1>
+      <div class="sub">إنشاء Realm وحسابات محلية، أو استيراد حسابات النطاق من Active Directory — وهو أساس SSO لجميع المنتجات.</div>
+    </div>
+
+    <div class="note">📌 الوصول: على المضيف <code>http://127.0.0.1:9090</code>، وعلى الشبكة الداخلية <code>http://&lt;عنوان-IP-الخادم&gt;:9090</code>. تُخزَّن البيانات في الحجم المسمى <code>keycloak-data</code> ولا تُفقد عند إعادة بناء الحاوية. راجع بيانات الدخول في <code>KEYCLOAK_ADMIN</code> / <code>KEYCLOAK_ADMIN_PASSWORD</code> داخل <code>.env.windows</code>.</div>
+
+    <h2>6.1 إنشاء Realm</h2>
+    <ol>
+      <li>افتح <code>http://127.0.0.1:9090</code> في المتصفح ← Administration Console ← تسجيل دخول المدير؛</li>
+      <li>من القائمة المنسدلة أعلى اليسار ← <b>Create Realm</b> ← اكتب <code>enterprise-ai</code> في Realm name ← Create.</li>
+    </ol>
+
+    <h2>6.2 الطريقة A: إنشاء حسابات محلية (للفرق الصغيرة/الاختبار بدون AD)</h2>
+    <ol>
+      <li><b>Groups</b> ← Create Group ← <code>ai-admin</code>؛ ثم أنشئ <code>ai-user</code>؛</li>
+      <li><b>Users</b> ← Add user ← اسم المستخدم ← Create؛</li>
+      <li>من تبويب Credentials ← عيّن كلمة المرور ← أوقف خيار Temporary؛</li>
+      <li>من تبويب Groups ← أضف إلى مجموعة <code>ai-user</code>.</li>
+    </ol>
+
+    <h2>6.3 الطريقة B: استيراد الحسابات من Active Directory (موصى بها)</h2>
+    <p>عندما يكون لدى الشركة نطاق Windows AD بالفعل، يسجّل الموظفون الدخول بحسابات النطاق دون الحاجة لإنشاء حسابات يدويًا في Keycloak. المتطلب المسبق: أن تكون شبكة حاويات Docker متصلة بشبكة نطاق التحكم (راجع طوبولوجيا الشبكة وHyper-V Internal Switch وإعادة توجيه المنافذ في «دليل دمج Keycloak مع AD» <code>windows-ad-integration.html</code>).</p>
+    <div class="note">📌 حسابات AD المطلوبة: حساب خدمة <code>svc_keycloak</code> (كلمة مروره لا تنتهي، ويُستخدم لربط LDAP) + مستخدما نطاق للاختبار (للتحقق من المزامنة).</div>
+
+    <h3>إنشاء اتحاد مستخدمي LDAP</h3>
+    <ol>
+      <li>من Realm الخاص بـ enterprise-ai ← في اليسار <b>User Federation</b> ← Add provider ← <b>ldap</b>؛</li>
+      <li>املأ وفقًا للجدول التالي.</li>
+    </ol>
+    <table>
+      <tr><th>عنصر الإعداد</th><th>القيمة</th><th>الوصف</th></tr>
+      <tr><td>Vendor</td><td><b>Active Directory</b></td><td>اختر AD ولا تختر Other (وإلا لن يتعرف على objectGUID)</td></tr>
+      <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>عبر Hyper-V مع إعادة توجيه المنافذ؛ في الإنتاج اكتب <code>ldap://dc.نطاق_الشركة:389</code></td></tr>
+      <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>LDAP 389 أو LDAPS 636</td></tr>
+      <tr><td>Bind type</td><td><b>simple</b></td><td>مصادقة باسم المستخدم + كلمة المرور</td></tr>
+      <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>يجب استخدام صيغة LDAP DN</b> وليس <s>DOMAIN\المستخدم</s></td></tr>
+      <tr><td>Bind credentials</td><td><code>كلمة مرور svc_keycloak</code></td><td>راجع <code>.env.windows</code></td></tr>
+      <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>للقراءة فقط دون الكتابة مرة أخرى إلى AD</td></tr>
+      <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>عند وجود OU فرعية غيّر إلى <code>DC=testcompany,DC=local</code></td></tr>
+      <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>لا تكتب cn</b></td></tr>
+      <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>خاصية تسمية الإدخال</td></tr>
+      <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>المعرّف الفريد غير القابل للتغيير في AD</td></tr>
+      <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>مفصولة بفواصل</td></tr>
+      <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>لا تختر One Level</b> (وإلا لن يجد OU الفرعية)</td></tr>
+      <tr><td>Pagination</td><td><b>On</b></td><td>للجلب على دفعات عند كثرة المستخدمين</td></tr>
+      <tr><td>Referral</td><td><b>ignore</b></td><td>لتجنب الانتقال إلى نطاق تحكم غير موجود</td></tr>
+      <tr><td>Import users</td><td><b>On</b></td><td>استيراد متزامن كامل</td></tr>
+      <tr><td>Sync Registrations</td><td><b>On</b></td><td>مزامنة فورية عند أول تسجيل دخول</td></tr>
+    </table>
+    <p>احفظ ← <b>Synchronize all users</b> ← انتظر اكتمال المزامنة.</p>
+
+    <div class="warn">⚠️ أخطاء شائعة في التعبئة:
+      <ul>
+        <li>استخدم <b>صيغة LDAP</b> في Bind DN (<code>CN=svc_keycloak,CN=Users,DC=xxx</code>) وليس <s>DOMAIN\المستخدم</s>؛</li>
+        <li>Username LDAP attribute = <code>sAMAccountName</code> وليس <code>cn</code>؛</li>
+        <li>Search scope = <b>Subtree</b>؛</li>
+        <li><b>حافظ على المسافات في CN كما هي</b>: إذا كان اسم العرض يحتوي مسافات (مثل المسافة في منتصف <code>ai all in one admin</code>)، فيجب كتابة Bind DN على النحو <code>CN=ai all in one admin,...</code>؛ أما استبدالها بشرطة سفلية فيمنع الاتصال.</li>
+      </ul>
+    </div>
+
+    <h3>التحقق من تسجيل الدخول عبر AD</h3>
+    <ol>
+      <li>افتح <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code> في نافذة تصفح خفي؛</li>
+      <li>سجّل الدخول بحساب النطاق (يُقبل اسم المستخدم <code>aitest1</code> أو UPN <code>aitest1@chxia.lab</code>)؛</li>
+      <li>إذا تم الانتقال بنجاح إلى Account Console فالمصادقة ناجحة.</li>
+    </ol>
+
+    <h2>6.4 مصادر هوية مؤسسية أخرى (ملخص الملحق N)</h2>
+    <p>يدعم Keycloak أيضًا مصادر هوية متعددة، جميعها متصل بنفس Realm <code>enterprise-ai</code>:</p>
+    <table>
+      <tr><th>مصدر الهوية</th><th>طريقة الاتصال</th><th>النقاط المهمة</th></tr>
+      <tr><td>Microsoft Entra ID (سابقًا Azure AD)</td><td>Identity Providers ← OpenID Connect v1.0</td><td>سجّل التطبيق في Azure للحصول على client id/secret، وredirect URI <code>/realms/enterprise-ai/broker/entra-id/endpoint</code></td></tr>
+      <tr><td>Google Workspace</td><td>Identity Providers ← Google (مدمج)</td><td>يمكن استخدام Mapper لإضافة <code>hd=اسم_النطاق</code> لتقييد النطاق</td></tr>
+      <tr><td>GitHub</td><td>Identity Providers ← GitHub (مدمج)</td><td>رد نداء OAuth App <code>/broker/github/endpoint</code></td></tr>
+      <tr><td>LDAP عام (OpenLDAP/FreeIPA)</td><td>User Federation ← ldap</td><td>اختر Other في Vendor واستخدم <code>uid</code> كـ Username attribute</td></tr>
+      <tr><td>SAML 2.0 عام (Okta/ADFS)</td><td>Identity Providers ← SAML v2.0</td><td>الصق عنوان URL لبيانات IdP لتعبئتها تلقائيًا</td></tr>
+    </table>
+    <div class="tip">✅ تعدد مصادر الهوية في آن واحد: يمكن إضافة Identity Provider Redirector في Authentication ← Browser flow لاختيار IdP تلقائيًا حسب نطاق البريد الإلكتروني (<code>@شركة.com</code> ← AD، <code>@شركة.onmicrosoft.com</code> ← Entra ID).</div>
+
+    <div class="docbox"><span class="label">📖 الوثائق الرسمية:</span>وثائق Keycloak الرسمية <span class="url">https://www.keycloak.org/documentation</span> · دليل إدارة الخادم <span class="url">https://www.keycloak.org/server/</span> · اتحاد LDAP <span class="url">https://www.keycloak.org/docs/latest/server_admin/#_ldap</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

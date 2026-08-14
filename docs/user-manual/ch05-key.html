@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 5 Requesting an API Key · AI AllInOne User Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Quick Start</div>
+      <h1>Requesting an API Key</h1>
+      <div class="sub">To connect the company's AI capabilities to third-party tools, you need an API Key.</div>
+    </div>
+
+    <p>If you want to connect the company's AI capabilities to <b>third-party tools</b> (your own scripts, other software supporting the OpenAI interface), you need an API Key (a key starting with <code>sk-</code>).</p>
+
+    <h2>5.1 Log In to NewAPI</h2>
+    <ol>
+      <li>Open <code>http://IP:3000</code> in a browser;</li>
+      <li>Log in with the unified account (or click "one-click login / OIDC" to use the domain account).</li>
+    </ol>
+
+    <h2>5.2 Create a New Token</h2>
+    <ol>
+      <li>Left menu "<b>API Keys / Tokens</b>";</li>
+      <li>Click "<b>New token</b>", name it (e.g. <code>my-script</code>), and optionally set quota and expiry;</li>
+      <li>After saving, copy the generated <code>sk-xxxx</code> string. <b>It is shown only once; be sure to save it immediately</b>.</li>
+    </ol>
+
+    <h2>5.3 Fill Into the Client</h2>
+    <ul>
+      <li><b>API Base URL</b>: <code>http://IP:3000/v1</code></li>
+      <li><b>API Key</b>: the <code>sk-xxxx</code> you just copied</li>
+    </ul>
+
+    <h2>5.4 Common Usage Examples</h2>
+    <div class="example">💡 Test with curl:<br>
+    <code>curl http://IP:3000/v1/chat/completions -H "Authorization: Bearer sk-xxxx" -H "Content-Type: application/json" -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"hello"}]}'</code></div>
+
+    <div class="warn">⚠️ When your quota is exhausted you'll see "insufficient balance"; contact the admin to request a raise. The Key is like your account password; <b>don't share it with others and don't commit it to a code repository</b>.</div>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>NewAPI official docs <span class="url">https://docs.newapi.pro</span> · website <span class="url">https://www.newapi.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

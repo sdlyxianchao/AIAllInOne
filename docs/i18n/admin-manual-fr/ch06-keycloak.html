@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 6 · Keycloak : Realm, utilisateurs et AD · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Première partie · Déploiement</div>
+      <h1>Keycloak : Realm, utilisateurs et AD</h1>
+      <div class="sub">Créer un Realm, créer des comptes locaux, ou importer des comptes de domaine depuis Active Directory — le fondement du SSO de tous les produits.</div>
+    </div>
+
+    <div class="note">📌 Accès : hôte <code>http://127.0.0.1:9090</code>, intranet <code>http://&lt;IP-du-serveur&gt;:9090</code>. Les données sont stockées dans le volume nommé <code>keycloak-data</code>, conservées lors de la reconstruction du conteneur. Les identifiants figurent dans <code>KEYCLOAK_ADMIN</code> / <code>KEYCLOAK_ADMIN_PASSWORD</code> de <code>.env.windows</code>.</div>
+
+    <h2>6.1 Créer un Realm</h2>
+    <ol>
+      <li>Ouvrez <code>http://127.0.0.1:9090</code> dans le navigateur → Administration Console → connexion administrateur ;</li>
+      <li>Menu déroulant en haut à gauche → <b>Create Realm</b> → saisissez <code>enterprise-ai</code> dans Realm name → Create.</li>
+    </ol>
+
+    <h2>6.2 Méthode A : créer des comptes locaux (petite équipe sans AD / tests)</h2>
+    <ol>
+      <li><b>Groups</b> → Create Group → <code>ai-admin</code> ; puis <code>ai-user</code> ;</li>
+      <li><b>Users</b> → Add user → nom d'utilisateur → Create ;</li>
+      <li>Onglet Credentials → définir le mot de passe → Temporary désactivé ;</li>
+      <li>Onglet Groups → ajouter au groupe <code>ai-user</code>.</li>
+    </ol>
+
+    <h2>6.3 Méthode B : importer des comptes depuis Active Directory (recommandé)</h2>
+    <p>Lorsque l'entreprise dispose déjà d'un contrôleur de domaine Windows AD, les employés se connectent avec leur compte de domaine, sans création manuelle dans Keycloak. Prérequis : la connectivité réseau entre le conteneur Docker et le contrôleur de domaine est établie (topologie réseau, Hyper-V Internal Switch, redirection de ports : voir le « Guide d'intégration Keycloak AD » <code>windows-ad-integration.html</code>).</p>
+    <div class="note">📌 Comptes AD requis : le compte de service <code>svc_keycloak</code> (mot de passe sans expiration, utilisé pour la liaison LDAP) + 2 utilisateurs de domaine de test (pour valider la synchronisation).</div>
+
+    <h3>Créer une fédération d'utilisateurs LDAP</h3>
+    <ol>
+      <li>Realm enterprise-ai → <b>User Federation</b> à gauche → Add provider → <b>ldap</b> ;</li>
+      <li>Remplissez selon le tableau ci-dessous.</li>
+    </ol>
+    <table>
+      <tr><th>Élément de configuration</th><th>Valeur</th><th>Description</th></tr>
+      <tr><td>Vendor</td><td><b>Active Directory</b></td><td>Choisissez AD, pas Other (sinon objectGUID n'est pas reconnu)</td></tr>
+      <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V via redirection de ports ; en production, renseignez <code>ldap://dc.domaine-entreprise:389</code></td></tr>
+      <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>LDAP 389 ou LDAPS 636</td></tr>
+      <tr><td>Bind type</td><td><b>simple</b></td><td>Authentification par nom d'utilisateur + mot de passe</td></tr>
+      <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>Doit être au format DN LDAP</b>, pas <s>DOMAINE\utilisateur</s></td></tr>
+      <tr><td>Bind credentials</td><td><code>mot de passe de svc_keycloak</code></td><td>Voir <code>.env.windows</code></td></tr>
+      <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>Lecture seule, sans réécriture dans AD</td></tr>
+      <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>En cas de sous-OU, mettez <code>DC=testcompany,DC=local</code></td></tr>
+      <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>Ne renseignez pas cn</b></td></tr>
+      <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>Attribut de nommage de l'entrée</td></tr>
+      <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>Identifiant unique immuable d'AD</td></tr>
+      <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>Séparés par des virgules</td></tr>
+      <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>Ne choisissez pas One Level</b> (sinon les sous-OU ne sont pas trouvés)</td></tr>
+      <tr><td>Pagination</td><td><b>On</b></td><td>Récupération par lots lorsqu'il y a beaucoup d'utilisateurs</td></tr>
+      <tr><td>Referral</td><td><b>ignore</b></td><td>Éviter de suivre un contrôleur de domaine inexistant</td></tr>
+      <tr><td>Import users</td><td><b>On</b></td><td>Import par synchronisation complète</td></tr>
+      <tr><td>Sync Registrations</td><td><b>On</b></td><td>Synchronisation immédiate à la première connexion</td></tr>
+    </table>
+    <p>Save → <b>Synchronize all users</b> → attendez la fin de la synchronisation.</p>
+
+    <div class="warn">⚠️ Erreurs de saisie fréquentes :
+      <ul>
+        <li>Bind DN au <b>format LDAP</b> (<code>CN=svc_keycloak,CN=Users,DC=xxx</code>), pas <s>DOMAINE\utilisateur</s> ;</li>
+        <li>Username LDAP attribute = <code>sAMAccountName</code>, pas <code>cn</code> ;</li>
+        <li>Search scope = <b>Subtree</b> ;</li>
+        <li><b>Les espaces dans le CN sont conservés tels quels</b> : si le nom d'affichage contient des espaces (par exemple <code>ai all in one admin</code> avec des espaces), le Bind DN doit être <code>CN=ai all in one admin,...</code> ; écrire des underscores empêchera la connexion.</li>
+      </ul>
+    </div>
+
+    <h3>Vérifier la connexion AD</h3>
+    <ol>
+      <li>Ouvrez <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code> dans une fenêtre privée ;</li>
+      <li>Connectez-vous avec un compte de domaine (nom d'utilisateur <code>aitest1</code> ou UPN <code>aitest1@chxia.lab</code> acceptés) ;</li>
+      <li>La redirection réussie vers l'Account Console signifie que c'est validé.</li>
+    </ol>
+
+    <h2>6.4 Autres sources d'identité d'entreprise (résumé de l'annexe N)</h2>
+    <p>Keycloak prend en charge plusieurs sources d'identité, toutes rattachées au même Realm <code>enterprise-ai</code> :</p>
+    <table>
+      <tr><th>Source d'identité</th><th>Méthode de connexion</th><th>Points clés</th></tr>
+      <tr><td>Microsoft Entra ID (anciennement Azure AD)</td><td>Identity Providers → OpenID Connect v1.0</td><td>Inscrivez une application dans Azure pour obtenir client id/secret, redirect URI <code>/realms/enterprise-ai/broker/entra-id/endpoint</code></td></tr>
+      <tr><td>Google Workspace</td><td>Identity Providers → Google (intégré)</td><td>Utilisable avec un Mapper pour limiter le domaine via <code>hd=domaine</code></td></tr>
+      <tr><td>GitHub</td><td>Identity Providers → GitHub (intégré)</td><td>Callback OAuth App <code>/broker/github/endpoint</code></td></tr>
+      <tr><td>LDAP générique (OpenLDAP/FreeIPA)</td><td>User Federation → ldap</td><td>Vendor sur Other, Username attribute avec <code>uid</code></td></tr>
+      <tr><td>SAML 2.0 générique (Okta/ADFS)</td><td>Identity Providers → SAML v2.0</td><td>Collez l'URL de métadonnées IdP pour un remplissage automatique</td></tr>
+    </table>
+    <div class="tip">✅ Coexistence de plusieurs sources d'identité : ajoutez un Identity Provider Redirector dans Authentication → Browser flow pour sélectionner automatiquement l'IdP selon le domaine de l'e-mail (<code>@entreprise.com</code>→AD, <code>@entreprise.onmicrosoft.com</code>→Entra ID).</div>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>documentation officielle de Keycloak <span class="url">https://www.keycloak.org/documentation</span> · guide d'administration du serveur <span class="url">https://www.keycloak.org/server/</span> · fédération LDAP <span class="url">https://www.keycloak.org/docs/latest/server_admin/#_ldap</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI AllInOne On-Premise Deployment Guide — Windows 11 + Docker Desktop</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1117; color: #c9d1d9;
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    line-height: 1.7; padding: 0; max-width: 1200px; margin: 0 auto;
+  }
+  h1 { color: #58a6ff; font-size: 1.8em; padding: 30px 24px 10px; border-bottom: 1px solid #30363d; }
+  h2 { color: #58a6ff; font-size: 1.4em; margin: 36px 24px 16px; padding-bottom: 8px; border-bottom: 1px solid #30363d; }
+  h3 { color: #d2a8ff; font-size: 1.15em; margin: 24px 24px 12px; }
+  h4 { color: #79c0ff; font-size: 1em; margin: 20px 24px 8px; }
+  p { margin: 8px 24px; }
+  ul, ol { margin: 8px 24px; padding-left: 24px; }
+  li { margin: 4px 0; }
+  code {
+    background: #161b22; color: #e06c75; padding: 2px 6px;
+    border-radius: 4px; font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+  }
+  pre {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 16px; margin: 12px 24px; overflow-x: auto;
+  }
+  pre code {
+    background: none; color: #c9d1d9; padding: 0;
+    font-size: 0.85em; line-height: 1.5;
+  }
+  .comment { color: #8b949e; }
+  .keyword { color: #ff7b72; }
+  .property { color: #79c0ff; }
+  .string { color: #a5d6ff; }
+  table {
+    width: calc(100% - 48px); margin: 12px 24px; border-collapse: collapse;
+    border: 1px solid #30363d; border-radius: 8px; overflow: hidden;
+  }
+  th { background: #21262d; color: #58a6ff; padding: 10px 14px; text-align: left; font-size: 0.9em; }
+  td { border-top: 1px solid #30363d; padding: 8px 14px; font-size: 0.88em; }
+  tr:hover td { background: #161b22; }
+  .callout {
+    margin: 12px 24px; padding: 14px 18px; border-radius: 8px;
+    border-left: 4px solid;
+  }
+  .callout-success { border-color: #56d364; background: #1a7f3722; }
+  .callout-warn { border-color: #d29922; background: #9e6a0322; }
+  .callout-info { border-color: #58a6ff; background: #1f6feb22; }
+  .callout-danger { border-color: #f85149; background: #da363322; }
+  .step {
+    margin: 16px 24px; padding: 16px 20px; background: #161b22;
+    border: 1px solid #30363d; border-radius: 8px;
+  }
+  .step-num {
+    display: inline-block; width: 28px; height: 28px; line-height: 28px;
+    text-align: center; background: #1f6feb; color: #fff; border-radius: 50%;
+    font-weight: 700; margin-right: 8px; font-size: 0.85em;
+  }
+  .verify {
+    margin: 12px 24px; padding: 12px 18px; background: #1a7f3718;
+    border: 1px solid #1a7f3744; border-radius: 8px;
+  }
+  .verify::before { content: "✅ Verify: "; color: #56d364; font-weight: 700; }
+  .port-badge {
+    display: inline-block; padding: 2px 8px; background: #1f6feb33;
+    color: #58a6ff; border-radius: 4px; font-size: 0.85em; font-family: monospace;
+  }
+  .toc {
+    margin: 16px 24px; padding: 16px 20px; background: #161b22;
+    border: 1px solid #30363d; border-radius: 8px;
+  }
+  .toc a { color: #58a6ff; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { margin: 6px 0; padding-left: 8px; }
+  .toc > ul > li { font-weight: 600; }
+  .toc ul ul { padding-left: 20px; }
+  .toc ul ul li { font-weight: 400; }
+  .nav-top {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #21262d; border: 1px solid #30363d; border-radius: 8px;
+    padding: 8px 16px; z-index: 999;
+  }
+  .nav-top a { color: #58a6ff; text-decoration: none; font-size: 0.85em; }
+  .arch-box {
+    border: 2px solid; border-radius: 8px; padding: 10px 16px;
+    text-align: center; margin: 4px; display: inline-block;
+    font-size: 0.85em;
+  }
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li {
+    padding: 6px 0 6px 28px; position: relative;
+  }
+  .checklist li::before {
+    content: "☐"; position: absolute; left: 0; color: #58a6ff; font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<h1>AI AllInOne On-Premise Deployment Guide — Windows 11 + Docker Desktop</h1>
+
+<div class="callout callout-info">
+  <p><strong>Goal:</strong> Deploy all 9 products on a single Windows 11 machine via Docker Desktop,
+  accessed at <code>&lt;server-IP&gt;:port</code> — no domain or SSL certificate needed — to establish a complete AI platform pipeline.<span class="note" style="font-size:smaller">(Docker Desktop WSL2 has unstable IPv6 <code>::1</code> support; always use <code>&lt;server-IP&gt;</code> rather than <code>localhost</code>)</span></p>
+  <p><strong>Hardware/software requirements:</strong></p>
+  <table>
+    <tr><th>Item</th><th>Minimum</th><th>Recommended</th></tr>
+    <tr><td>OS</td><td>Windows 11 (Docker Desktop + WSL2 backend)</td><td>Windows 11 Pro / Enterprise (extra Hyper-V support for an AD domain controller)</td></tr>
+    <tr><td>CPU</td><td>4 cores / 8 threads</td><td>8 cores / 16 threads</td></tr>
+    <tr><td>Memory</td><td>16 GB</td><td>32 GB</td></tr>
+    <tr><td>Disk</td><td>60 GB free SSD</td><td>150 GB+ free SSD</td></tr>
+    <tr><td>GPU</td><td>Not required</td><td>Not required</td></tr>
+  </table>
+  <p><strong>Based on measurements</strong> (~30 containers idle use about 5 GB RAM total; Dify processing/indexing, Keycloak JVM, MySQL/Postgres caches add 3–5 GB at peak, plus Docker Desktop's WSL2 virtual memory — 16 GB is the minimum, 32 GB is comfortable). Disk is mostly consumed by Docker images (~10–15 GB) and DeepChat installers (~740 MB per version, accumulating by retained version count). All large models run via external APIs (deepseek-chat, etc.) with no local inference, so <b>no GPU is required</b>.</p>
+</div>
+
+<div class="toc">
+  <strong>Table of Contents</strong>
+  <ul>
+    <li><a href="#agent-deploy">0. Automated Deployment with AI Agent (Recommended)</a></li>
+    <li><a href="#overview">1. Overview &amp; Port Allocation</a></li>
+    <li><a href="#prereq">2. Prerequisites (Docker Desktop + Directory + Network)</a></li>
+    <li><a href="#files">3. Configuration Files</a></li>
+    <li><a href="#start">4. Start Core Services</a></li>
+    <li><a href="#dify">5. Standalone Dify Deployment</a></li>
+    <li><a href="#config">6. Per-Product Web UI Configuration</a></li>
+    <li><a href="#deepchat">7. DeepChat Installation &amp; Configuration</a></li>
+    <li><a href="#mcp">8. MCP Gateway — Skill / MCP Management Hub</a></li>
+    <li><a href="#cicd">9. CI/CD — DeepChat Build &amp; Release</a></li>
+    <li><a href="#interconnect">10. Interconnection Verification</a></li>
+    <li><a href="#admin-portal">11. AI Admin Center — Unified Admin Portal</a></li>
+    <li><a href="#ops">12. Operations — Health Checks &amp; Startup Self-Check</a></li>
+    <li><a href="#security">13. Security, Compliance &amp; Observability</a></li>
+    <li><a href="#identity-sources">N. Appendix: Keycloak Enterprise Identity Source Integration</a></li>
+  </ul>
+</div>
+
+<!-- ==================== 0. Agent automated deployment ==================== -->
+<h2 id="agent-deploy">0. Automated Deployment with AI Agent (Recommended)</h2>
+
+<p>This guide can be executed <b>manually chapter by chapter</b>, or <b>handed to an AI Agent tool for automated execution</b>. If you use a tool like OpenClaw / Microsoft Scout / WorkBuddy, provide this directory (this document, <code>windows-checklist.html</code>, <code>docker-compose.yml</code>, <code>.env.example</code>, <code>scripts/</code>) to the Agent, then paste the prompt below. The Agent will: detect the platform → collect parameters from you → generate a local progress file → configure step by step per this guide → iterate on problems until resolved → update progress throughout → run a full test at the end and report results.</p>
+
+<div class="step">
+<p><strong>Prompt to give the Agent (Windows platform)</strong></p>
+<pre><code>You are a deployment engineer for an enterprise intranet AI platform. Based on the "windows-deploy-guide-v2.html" deployment guide, windows-checklist.html progress checklist, docker-compose.yml and .env.example in this directory, fully deploy and verify this "AI AllInOne" platform on the current Windows machine. Communicate with me in Chinese throughout.
+
+## Step 1: Collect required parameters (ask me one by one; do not skip or guess)
+Before starting, collect from me: 1) the intranet IP for external service access; 2) the Skill market hostname (domain, used to replace &lt;market-hostname&gt; in mcp-gateway/skills/skill-market/config.json and SKILL.md, and resolved via hosts/DNS); 3) identity source (if connecting an AD domain controller, the domain/DC IP/LDAP base DN/bind DN/bind password/sAMAccountName, or another IdP's config; otherwise confirm none); 4) the unified admin account and password; 5) LLM API keys (DeepSeek/OpenAI/Claude etc.); 6) optionally ask about alert webhook, HTTPS, backup retention policy.
+
+## Step 2: Generate a local progress file
+Based on windows-checklist.html, create "deployment-progress-&lt;date&gt;.md" in this directory, copying all items as incomplete (- [ ]). Update it and report briefly after completing each item or resolving each issue.
+
+## Step 3: Execute step by step per the guide
+Read windows-deploy-guide-v2.html carefully, execute chapters 1~13 strictly in order, paying special attention to each chapter's "⚠️ pitfalls". Prefer the automation scripts under scripts/ (bootstrap.ps1, keycloak-realm-init.ps1, backup.ps1, restore.ps1, etc.); automate rather than clicking the UI manually.
+
+## Step 4: Test and resolve iteratively
+On error, first check logs (docker logs, health endpoints, config) to find the root cause before fixing; do not blindly retry. When admin privileges or my manual confirmation are needed, clearly tell me "what to do and why". After resolving, write back to the progress file and report briefly.
+
+## Step 5: Full end-to-end verification
+When everything is done, run end-to-end tests: all containers Up, Keycloak SSO login, send a real conversation through NewAPI/LiteLLM to verify PII masking, identity-source login, monitoring/logging/alerting, backup/restore. Finally summarize each item as ✅/❌, with root cause and suggestion for failures.</code></pre>
+</div>
+
+<div class="callout callout-info"><p>💡 Even if you <b>don't use an Agent</b>, the prompt above clearly lists all parameters to prepare before deployment — use it as a "pre-deployment information checklist".</p></div>
+
+<!-- ==================== 1. Overview ==================== -->
+<h2 id="overview">1. Overview &amp; Port Allocation</h2>
+
+<h3>1.1 Architecture Overview</h3>
+<div style="margin: 12px 24px;">
+<svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
+  <!-- ====== Layer Background Bands ====== -->
+  <rect x="0" y="30" width="1200" height="90" rx="4" fill="#d2a8ff08" stroke="#d2a8ff22" stroke-width="0.5"/>
+  <rect x="0" y="140" width="1200" height="95" rx="4" fill="#d2992208" stroke="#d2992222" stroke-width="0.5"/>
+  <rect x="0" y="255" width="1200" height="90" rx="4" fill="#1f6feb08" stroke="#1f6feb22" stroke-width="0.5"/>
+  <rect x="0" y="365" width="1200" height="60" rx="4" fill="#39c5cf08" stroke="#39c5cf22" stroke-width="0.5"/>
+  <rect x="0" y="445" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
+  <rect x="0" y="565" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
+
+  <!-- ====== Layer Labels ====== -->
+  <rect x="8" y="36" width="56" height="18" rx="9" fill="#d2a8ff22"/><text x="36" y="49" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Users</text>
+  <rect x="8" y="146" width="76" height="18" rx="9" fill="#d2992222"/><text x="46" y="159" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">Portal&amp;Apps</text>
+  <rect x="8" y="261" width="66" height="18" rx="9" fill="#1f6feb22"/><text x="41" y="274" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">LLM Route</text>
+  <rect x="8" y="371" width="76" height="18" rx="9" fill="#39c5cf22"/><text x="46" y="384" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">Observability</text>
+  <rect x="8" y="451" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="464" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Infrastructure</text>
+  <rect x="8" y="571" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="584" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">Unified Admin</text>
+
+  <!-- ====== Layer 1: User ====== -->
+  <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
+  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DeepChat Desktop Client</text>
+  <text x="140" y="90" fill="#8b949e" font-size="10">Win/Mac/Linux · local file access · MCP/Skill</text>
+
+  <g filter="url(#sh)"><rect x="820" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="820" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
+  <text x="840" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🌐 Browser Users</text>
+  <text x="840" y="90" fill="#8b949e" font-size="10">Access portal / Dify Web / Grafana / Langfuse</text>
+
+  <!-- ====== Layer 2: Portal & App ====== -->
+  <g filter="url(#sh)"><rect x="300" y="160" width="300" height="70" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="2"/><rect x="300" y="160" width="4" height="70" rx="2" fill="#d29922"/></g>
+  <text x="320" y="183" fill="#d29922" font-size="14" font-weight="700">📰 Ghost Portal</text>
+  <text x="320" y="200" fill="#8b949e" font-size="11">News · download center · Dify entry · help docs</text>
+
+  <g filter="url(#sh)"><rect x="700" y="160" width="300" height="70" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="2"/><rect x="700" y="160" width="4" height="70" rx="2" fill="#58a6ff"/></g>
+  <text x="720" y="183" fill="#58a6ff" font-size="14" font-weight="700">🤖 Dify</text>
+  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI app platform · RAG/Agent/Workflow</text>
+
+  <!-- ====== Layer 3: LLM Routing ====== -->
+  <g filter="url(#sh)"><rect x="130" y="275" width="220" height="60" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="1.5"/><rect x="130" y="275" width="4" height="60" rx="2" fill="#58a6ff"/></g>
+  <text x="150" y="297" fill="#58a6ff" font-size="13" font-weight="600">🔀 NewAPI</text>
+  <text x="150" y="314" fill="#8b949e" font-size="10">LLM Router · billing · rate limiting</text>
+
+  <g filter="url(#sh)"><rect x="440" y="275" width="240" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="440" y="275" width="4" height="60" rx="2" fill="#56d364"/></g>
+  <text x="460" y="297" fill="#56d364" font-size="13" font-weight="600">🛡️ LiteLLM + Presidio</text>
+  <text x="460" y="314" fill="#8b949e" font-size="10">PII masking → restore (built-in regex + Presidio)</text>
+
+  <path d="M 780 280 Q 755 280 755 305 Q 755 323 770 327 Q 775 340 800 340 Q 815 347 845 347 Q 880 347 895 340 Q 920 340 925 327 Q 940 323 940 305 Q 940 280 915 280 Q 905 270 880 270 Q 860 267 845 270 Q 820 270 810 275 Q 800 275 780 280 Z" fill="url(#g-cloud)" stroke="#484f58" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="847" y="303" text-anchor="middle" fill="#8b949e" font-size="13" font-weight="600">☁️ External LLM</text>
+  <text x="847" y="320" text-anchor="middle" fill="#8b949e" font-size="10">GPT-4 · Claude · DeepSeek</text>
+
+  <!-- ====== Layer 4: Observability (Langfuse) ====== -->
+  <g filter="url(#sh)"><rect x="440" y="380" width="260" height="50" rx="10" fill="#0d2b33" stroke="#39c5cf" stroke-width="1.5"/><rect x="440" y="380" width="4" height="50" rx="2" fill="#39c5cf"/></g>
+  <text x="460" y="401" fill="#39c5cf" font-size="13" font-weight="600">🔍 Langfuse Observability</text>
+  <text x="460" y="418" fill="#8b949e" font-size="10">Prompt/response/latency/token/cost tracing</text>
+  <!-- LiteLLM -> Langfuse bypass -->
+  <path d="M 560 335 L 560 380" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#at)"/>
+  <text x="568" y="360" fill="#39c5cf" font-size="8" font-weight="600">report</text>
+
+  <!-- ====== Layer 5: Infrastructure ====== -->
+  <g filter="url(#sh)"><rect x="60" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="80" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
+  <text x="80" y="505" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
+
+  <g filter="url(#sh)"><rect x="285" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="305" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
+  <text x="305" y="505" fill="#8b949e" font-size="10">Skill / MCP management hub</text>
+
+  <g filter="url(#sh)"><rect x="510" y="465" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="465" width="4" height="60" rx="2" fill="#f85149"/></g>
+  <text x="530" y="488" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
+  <text x="530" y="505" fill="#8b949e" font-size="10">Source + Actions CI/CD</text>
+
+  <g filter="url(#sh)"><rect x="735" y="465" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="465" width="4" height="60" rx="2" fill="#56d364"/></g>
+  <text x="755" y="488" fill="#56d364" font-size="13" font-weight="600">📦 Update Server</text>
+  <text x="755" y="505" fill="#8b949e" font-size="10">DeepChat installer hosting</text>
+
+  <g filter="url(#sh)"><rect x="960" y="465" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="465" width="4" height="60" rx="2" fill="#d29922"/></g>
+  <text x="980" y="488" fill="#d29922" font-size="13" font-weight="600">📈 Monitoring · Logging</text>
+  <text x="980" y="505" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
+
+  <!-- ====== Layer 6: Management ====== -->
+  <g filter="url(#sh)"><rect x="80" y="575" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="575" width="4" height="55" rx="2" fill="#58a6ff"/></g>
+  <text x="600" y="598" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI Admin Center (unified admin portal + Keycloak auth)</text>
+  <text x="600" y="618" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard container status/business metrics · embedded product stats · audit/cost reports · Keycloak SSO</text>
+
+  <!-- ====== Connections ====== -->
+  <path d="M 250 105 L 250 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="258" y="190" fill="#58a6ff" font-size="9" font-weight="600">LLM request</text>
+  <path d="M 850 230 L 850 247 L 240 247 L 240 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <path d="M 350 305 L 440 305" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="395" y="299" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">① forward</text>
+  <path d="M 680 305 L 750 305" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="718" y="299" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">② masked</text>
+  <path d="M 750 323 L 680 320" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <text x="718" y="337" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">③ response</text>
+  <path d="M 440 320 L 350 320" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <text x="395" y="337" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">④ restore PII</text>
+
+  <!-- Portal flow -->
+  <path d="M 950 105 L 950 135 L 450 135 L 450 160" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+  <text x="700" y="128" text-anchor="middle" fill="#d29922" font-size="8" font-weight="600">portal entry</text>
+  <path d="M 600 195 L 700 195" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+  <path d="M 880 105 L 880 130 L 850 130 L 850 160" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+
+  <!-- Observability: browser -> Langfuse -->
+  <path d="M 950 105 L 950 370 L 700 370 L 700 380" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#at)"/>
+  <text x="960" y="240" fill="#39c5cf" font-size="8" font-weight="600">view traces</text>
+
+  <!-- Monitoring: browser -> Grafana -->
+  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 465" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+
+  <!-- CI/CD -->
+  <path d="M 612 465 L 735 465" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <text x="674" y="458" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">build artifact</text>
+  <path d="M 1062 465 L 1175 465 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DeepChat auto-update (check version.txt → download & install)</text>
+
+  <!-- Keycloak OIDC -->
+  <path d="M 162 465 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
+  <text x="162" y="442" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ OIDC SSO → all web products</text>
+
+  <!-- MCP -->
+  <path d="M 387 465 L 387 447" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 387 447 Q 387 425 250 425 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
+  <text x="387" y="444" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+
+  <!-- Management bracket -->
+  <path d="M 80 575 L 80 545 L 1120 545 L 1120 575" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
+  <text x="600" y="541" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI Admin Center (Keycloak auth → Dashboard → all product entries + audit/cost)</text>
+
+  <!-- ====== Legend ====== -->
+  <rect x="20" y="670" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="40" y="695" fill="#58a6ff" font-size="13" font-weight="700">📊 Data flow legend</text>
+
+  <line x1="40" y1="715" x2="80" y2="715" stroke="#58a6ff" stroke-width="2"/>
+  <text x="90" y="719" fill="#c9d1d9" font-size="11">LLM request flow: DeepChat / Dify → NewAPI → LiteLLM masking → external model → restore PII → return</text>
+
+  <line x1="40" y1="740" x2="80" y2="740" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="744" fill="#c9d1d9" font-size="11">Observability flow: LiteLLM success_callback → Langfuse traces every call (prompt/response/latency/token/cost)</text>
+
+  <line x1="40" y1="765" x2="80" y2="765" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="769" fill="#c9d1d9" font-size="11">Auto-update flow: Gitea Actions build → update server → DeepChat auto-download & install</text>
+
+  <line x1="620" y1="715" x2="660" y2="715" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="670" y="719" fill="#c9d1d9" font-size="11">Portal flow: browser → Ghost portal → browse news/download/redirect to Dify</text>
+
+  <line x1="620" y1="740" x2="660" y2="740" stroke="#d29922" stroke-width="1.5"/>
+  <text x="670" y="744" fill="#c9d1d9" font-size="11">Monitoring flow: browser → Grafana dashboard (Prometheus + cadvisor container resources/alerts)</text>
+
+  <line x1="620" y1="765" x2="660" y2="765" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
+  <text x="670" y="769" fill="#c9d1d9" font-size="11">Auth flow: Keycloak OIDC SSO unified login (all web products share ai_all_in_one_admin)</text>
+
+  <line x1="40" y1="790" x2="80" y2="790" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
+  <text x="90" y="794" fill="#c9d1d9" font-size="11">Unified logging flow: Promtail collects container logs → Loki aggregation → AI Admin Center "Unified Logs" query</text>
+
+  <line x1="40" y1="795" x2="1160" y2="795" stroke="#30363d" stroke-width="0.5"/>
+  <text x="40" y="812" fill="#d2a8ff" font-size="10" font-weight="700">🔐 Component interactions:</text>
+  <text x="40" y="827" fill="#8b949e" font-size="9">Keycloak OIDC SSO → all web products　　MCP Gateway provides Skill/MCP → DeepChat/Dify　　LiteLLM report → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+  <text x="40" y="842" fill="#8b949e" font-size="9">Gitea build → update server + Ghost announcement　　AI Admin Center — unified admin portal (Dashboard + embedded product pages + audit/cost reports + backup/restore + unified logs)</text>
+
+  <rect x="40" y="850" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
+  <text x="600" y="866" text-anchor="middle" fill="#8b949e" font-size="10">16 independent open-source components · all Docker-deployed · zero code · interconnected via URL + API Key / OIDC · Keycloak unified SSO</text>
+
+</div>
+
+<h3>1.2 Port Allocation Table</h3>
+<div class="callout callout-info">
+  <strong>Intranet access addresses:</strong> Below, <code>&lt;server-IP&gt;</code> denotes the host machine's "external server address" (e.g. <code>192.168.31.117</code> in the current environment; replace it with your own intranet IP or domain when deploying). Employees access via the "Intranet" column from their own machines; for on-host debugging use the "Local" column (<code>127.0.0.1</code>). Both point to the same service, differing only in access origin.
+</div>
+<table>
+  <tr><th>#</th><th>Product</th><th>Purpose</th><th>Local (host)</th><th>Intranet (employees)</th><th>Container</th></tr>
+  <tr><td>1</td><td><strong>AI Admin Center</strong></td><td>Unified admin portal / Keycloak auth</td><td><code>http://127.0.0.1:10086</code></td><td><code>http://&lt;server-IP&gt;:10086</code></td><td>admin-portal</td></tr>
+  <tr><td>2</td><td><strong>Keycloak</strong></td><td>User auth / SSO</td><td><code>http://127.0.0.1:9090</code></td><td><code>http://&lt;server-IP&gt;:9090</code></td><td>keycloak</td></tr>
+  <tr><td>3</td><td><strong>NewAPI</strong></td><td>LLM Router / API gateway</td><td><code>http://127.0.0.1:3000</code></td><td><code>http://&lt;server-IP&gt;:3000</code></td><td>new-api</td></tr>
+  <tr><td>4</td><td><strong>LiteLLM</strong></td><td>PII masking proxy</td><td><code>http://&lt;server-IP&gt;:4001</code></td><td>— (internal, only called by NewAPI)</td><td>litellm</td></tr>
+  <tr><td>5</td><td><strong>Dify</strong></td><td>Web AI app platform</td><td><code>http://127.0.0.1</code></td><td><code>http://&lt;server-IP&gt;</code></td><td>dify-* (multi-container)</td></tr>
+  <tr><td>6</td><td><strong>Ghost</strong></td><td>Enterprise portal</td><td><code>http://127.0.0.1:8090</code></td><td><code>http://&lt;server-IP&gt;:8090</code></td><td>ghost</td></tr>
+  <tr><td>7</td><td><strong>Gitea</strong></td><td>Source control + CI/CD</td><td><code>http://127.0.0.1:3002</code></td><td><code>http://&lt;server-IP&gt;:3002</code></td><td>gitea</td></tr>
+  <tr><td>8</td><td><strong>Update Server</strong></td><td>DeepChat installer hosting</td><td><code>http://127.0.0.1:8091</code></td><td><code>http://&lt;server-IP&gt;:8091</code></td><td>update-server</td></tr>
+  <tr><td>9</td><td><strong>DeepChat</strong></td><td>Local AI desktop client</td><td colspan="2">Desktop app; API address <code>http://&lt;server-IP&gt;:3000</code> (on employee machines)</td><td>—</td></tr>
+  <tr><td>10</td><td><strong>Grafana</strong></td><td>Monitoring visualization dashboard</td><td><code>http://127.0.0.1:3030</code></td><td><code>http://&lt;server-IP&gt;:3030</code></td><td>grafana</td></tr>
+  <tr><td>11</td><td><strong>Prometheus</strong></td><td>Metrics collection / alerting</td><td><code>http://127.0.0.1:9091</code></td><td><code>http://&lt;server-IP&gt;:9091</code></td><td>prometheus</td></tr>
+  <tr><td>12</td><td><strong>Langfuse</strong></td><td>LLM observability / call tracing</td><td><code>http://127.0.0.1:3010</code></td><td><code>http://&lt;server-IP&gt;:3010</code></td><td>langfuse</td></tr>
+  <tr><td>13</td><td><strong>cadvisor</strong></td><td>Container resource monitoring (internal)</td><td><code>http://127.0.0.1:8080</code></td><td>— (scraped only by Prometheus)</td><td>cadvisor</td></tr>
+  <tr><td>14</td><td><strong>Loki</strong></td><td>Unified log aggregation (internal)</td><td><code>http://127.0.0.1:3110</code></td><td>— (viewed via AI Admin Center "Unified Logs")</td><td>loki</td></tr>
+  <tr><td>15</td><td><strong>Promtail</strong></td><td>Container log collection (internal)</td><td>—</td><td>— (pushes to Loki)</td><td>promtail</td></tr>
+  <tr><td>16</td><td><strong>MailHog</strong></td><td>Local mail sink (Ghost codes/notifications)</td><td><code>http://127.0.0.1:8025</code></td><td><code>http://&lt;server-IP&gt;:8025</code></td><td>mailhog</td></tr>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Inter-container communication:</strong> All containers communicate over the <code>ai-platform</code> Docker network, using container names as hostnames.
+  E.g. NewAPI reaches LiteLLM at <code>http://litellm:4000</code>, not via localhost.<br>
+  <strong>Databases/caches (MySQL, Redis, PostgreSQL) are not exposed to users</strong>, communicating only within the Docker network.
+</div>
+
+<h3>1.3 Data Flow</h3>
+<h4>LLM Request Flow (core pipeline)</h4>
+<div style="margin: 12px 24px;"><svg viewBox="0 0 1000 170" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1000px;"><defs>
+    <linearGradient id="g-host" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2333"/><stop offset="100%" stop-color="#0d1117"/></linearGradient>
+    <linearGradient id="g-docker" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c2a3e"/><stop offset="100%" stop-color="#141d2e"/></linearGradient>
+    <linearGradient id="g-purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2d1b4e"/><stop offset="100%" stop-color="#1a1030"/></linearGradient>
+    <linearGradient id="g-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d2b4e"/><stop offset="100%" stop-color="#0a1e3a"/></linearGradient>
+    <linearGradient id="g-green" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d3b2e"/><stop offset="100%" stop-color="#0a2a20"/></linearGradient>
+    <linearGradient id="g-amber" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b2e0d"/><stop offset="100%" stop-color="#2a210a"/></linearGradient>
+    <linearGradient id="g-red" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b0d0d"/><stop offset="100%" stop-color="#2a0a0a"/></linearGradient>
+    <linearGradient id="g-cloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2a3a"/><stop offset="100%" stop-color="#0f1a26"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#56d364"/></marker>
+    <marker id="ay" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d29922"/></marker>
+    <marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d2a8ff"/></marker>
+    <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#39c5cf"/></marker>
+</defs>
+  <!-- Step 1: DeepChat/Dify -->
+  <g filter="url(#sh)"><rect x="8" y="18" width="135" height="58" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="18" width="4" height="58" rx="2" fill="#d2a8ff"/></g>
+  <text x="24" y="40" fill="#d2a8ff" font-size="11" font-weight="700">💬 DeepChat</text>
+  <text x="24" y="54" fill="#d2a8ff" font-size="11" font-weight="700">/ Dify</text>
+  <text x="24" y="68" fill="#8b949e" font-size="8">sends request</text>
+
+  <path d="M 143 47 L 170 47" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <circle cx="156" cy="35" r="9" fill="#1f6feb"/><text x="156" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">1</text>
+
+  <!-- Step 2: NewAPI -->
+  <g filter="url(#sh)"><rect x="172" y="18" width="135" height="58" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="0.8"/><rect x="172" y="18" width="4" height="58" rx="2" fill="#58a6ff"/></g>
+  <text x="188" y="40" fill="#58a6ff" font-size="11" font-weight="700">🔀 NewAPI</text>
+  <text x="188" y="56" fill="#8b949e" font-size="8">route/billing/rate-limit</text>
+  <rect x="188" y="60" width="34" height="13" rx="3" fill="#1f6feb33"/><text x="205" y="70" text-anchor="middle" fill="#58a6ff" font-size="7" font-family="monospace">:3000</text>
+
+  <path d="M 307 47 L 334 47" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <circle cx="320" cy="35" r="9" fill="#1f6feb"/><text x="320" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">2</text>
+
+  <!-- Step 3: LiteLLM (mask) -->
+  <g filter="url(#sh)"><rect x="336" y="18" width="155" height="58" rx="10" fill="url(#g-green)" stroke="#56d364" stroke-width="0.8"/><rect x="336" y="18" width="4" height="58" rx="2" fill="#56d364"/></g>
+  <text x="352" y="40" fill="#56d364" font-size="11" font-weight="700">🛡️ LiteLLM</text>
+  <text x="352" y="56" fill="#56d364" font-size="8" font-weight="600">Presidio PII masking</text>
+  <rect x="352" y="60" width="34" height="13" rx="3" fill="#1a7f3733"/><text x="369" y="70" text-anchor="middle" fill="#56d364" font-size="7" font-family="monospace">:4000</text>
+
+  <path d="M 491 47 L 518 47" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <circle cx="504" cy="35" r="9" fill="#1f6feb"/><text x="504" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">3</text>
+
+  <!-- Step 4: External LLM -->
+  <g filter="url(#sh)"><rect x="520" y="18" width="135" height="58" rx="10" fill="url(#g-cloud)" stroke="#484f58" stroke-width="1" stroke-dasharray="4"/></g>
+  <text x="536" y="40" fill="#8b949e" font-size="11" font-weight="700">☁️ External LLM</text>
+  <text x="536" y="56" fill="#8b949e" font-size="8">GPT-4o/Claude</text>
+  <text x="536" y="68" fill="#8b949e" font-size="8">/DeepSeek</text>
+
+  <path d="M 655 47 L 682 47" fill="none" stroke="#56d364" stroke-width="2" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <circle cx="668" cy="35" r="9" fill="#56d364"/><text x="668" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">4</text>
+
+  <!-- Step 5: LiteLLM (restore) -->
+  <g filter="url(#sh)"><rect x="684" y="18" width="145" height="58" rx="10" fill="url(#g-green)" stroke="#56d364" stroke-width="0.8"/><rect x="684" y="18" width="4" height="58" rx="2" fill="#56d364"/></g>
+  <text x="700" y="40" fill="#56d364" font-size="11" font-weight="700">🛡️ LiteLLM</text>
+  <text x="700" y="56" fill="#56d364" font-size="8" font-weight="600">PII restore</text>
+
+  <path d="M 829 47 L 856 47" fill="none" stroke="#56d364" stroke-width="2" stroke-dasharray="4" marker-end="url(#ag)"/>
+  <circle cx="842" cy="35" r="9" fill="#56d364"/><text x="842" y="39" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">5</text>
+
+  <!-- Step 6: Return -->
+  <g filter="url(#sh)"><rect x="858" y="18" width="95" height="58" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="858" y="18" width="4" height="58" rx="2" fill="#d2a8ff"/></g>
+  <text x="874" y="42" fill="#d2a8ff" font-size="11" font-weight="700">✅ Return</text>
+  <text x="874" y="58" fill="#8b949e" font-size="8">show reply</text>
+
+  <!-- Direction labels -->
+  <text x="426" y="12" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">━━ Request direction ━━→</text>
+  <text x="770" y="12" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">←━━ Response direction ━━</text>
+
+  <!-- Step labels -->
+  <text x="253" y="100" text-anchor="middle" fill="#8b949e" font-size="8">① forward</text>
+  <text x="413" y="100" text-anchor="middle" fill="#56d364" font-size="8">② auto-mask PII</text>
+  <text x="587" y="100" text-anchor="middle" fill="#8b949e" font-size="8">③ process request</text>
+  <text x="756" y="100" text-anchor="middle" fill="#56d364" font-size="8">④ auto-restore PII</text>
+  <text x="905" y="100" text-anchor="middle" fill="#8b949e" font-size="8">⑤ return result</text>
+
+  <!-- Bypass: LLM observability (Langfuse) -->
+  <path d="M 413 76 L 413 118" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#at)"/>
+  <text x="425" y="98" fill="#39c5cf" font-size="8" font-weight="600">success_callback report</text>
+  <g filter="url(#sh)"><rect x="280" y="122" width="266" height="40" rx="10" fill="#0d2b33" stroke="#39c5cf" stroke-width="0.8"/><rect x="280" y="122" width="4" height="40" rx="2" fill="#39c5cf"/></g>
+  <text x="330" y="139" fill="#39c5cf" font-size="11" font-weight="700">🔍 Langfuse Observability</text>
+  <text x="330" y="154" fill="#8b949e" font-size="8">Prompt/response/latency/token/cost tracing per call</text>
+</svg></div>
+<h4>User Access Flow</h4>
+<div style="margin: 12px 24px;"><svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:900px;"><defs>
+    <linearGradient id="g-host" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2333"/><stop offset="100%" stop-color="#0d1117"/></linearGradient>
+    <linearGradient id="g-docker" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c2a3e"/><stop offset="100%" stop-color="#141d2e"/></linearGradient>
+    <linearGradient id="g-purple" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2d1b4e"/><stop offset="100%" stop-color="#1a1030"/></linearGradient>
+    <linearGradient id="g-blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d2b4e"/><stop offset="100%" stop-color="#0a1e3a"/></linearGradient>
+    <linearGradient id="g-green" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d3b2e"/><stop offset="100%" stop-color="#0a2a20"/></linearGradient>
+    <linearGradient id="g-amber" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b2e0d"/><stop offset="100%" stop-color="#2a210a"/></linearGradient>
+    <linearGradient id="g-red" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b0d0d"/><stop offset="100%" stop-color="#2a0a0a"/></linearGradient>
+    <linearGradient id="g-cloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2a3a"/><stop offset="100%" stop-color="#0f1a26"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="2"/><feOffset dx="0" dy="2"/><feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#56d364"/></marker>
+    <marker id="ay" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#29922"/></marker>
+    <marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d2a8ff"/></marker>
+    <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#39c5cf"/></marker>
+</defs>
+  <!-- Flow 1: Browser -> Ghost -> Dify -->
+  <g filter="url(#sh)"><rect x="8" y="8" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="8" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="26" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 Browser</text>
+
+  <path d="M 123 22 L 150 22" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#ay)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="8" width="145" height="28" rx="8" fill="url(#g-amber)" stroke="#d29922" stroke-width="0.8"/><rect x="152" y="8" width="4" height="28" rx="2" fill="#d29922"/></g>
+  <text x="224" y="26" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">📰 Ghost :8090</text>
+
+  <path d="M 297 22 L 324 22" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#ay)"/>
+  <text x="310" y="15" text-anchor="middle" fill="#d29922" font-size="7" font-weight="600">AI workbench</text>
+
+  <g filter="url(#sh)"><rect x="326" y="8" width="145" height="28" rx="8" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="0.8"/><rect x="326" y="8" width="4" height="28" rx="2" fill="#58a6ff"/></g>
+  <text x="398" y="26" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">🤖 Dify :80</text>
+
+  <text x="490" y="26" fill="#8b949e" font-size="9">← Web AI app</text>
+
+  <!-- Flow 2: Browser -> AI Admin Center -->
+  <g filter="url(#sh)"><rect x="8" y="48" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="48" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="66" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 Browser</text>
+
+  <path d="M 123 62 L 150 62" fill="none" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="48" width="165" height="28" rx="8" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="0.8"/><rect x="152" y="48" width="4" height="28" rx="2" fill="#58a6ff"/></g>
+  <text x="234" y="66" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">📊 AI Admin Center :10086</text>
+
+  <text x="335" y="66" fill="#8b949e" font-size="9">← manage all Docker containers (start/stop/logs/monitor)</text>
+
+  <!-- Flow 3: Browser -> Grafana (monitoring) -->
+  <g filter="url(#sh)"><rect x="8" y="88" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="88" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="106" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 Browser</text>
+
+  <path d="M 123 102 L 150 102" fill="none" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#at)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="88" width="185" height="28" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="0.8"/><rect x="152" y="88" width="4" height="28" rx="2" fill="#39c5cf"/></g>
+  <text x="244" y="106" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">📈 Grafana monitoring :3030</text>
+
+  <text x="355" y="106" fill="#8b949e" font-size="9">← Prometheus + cadvisor container resource/alert dashboard</text>
+
+  <!-- Flow 4: Browser -> Langfuse (observability) -->
+  <g filter="url(#sh)"><rect x="8" y="128" width="115" height="28" rx="8" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="128" width="4" height="28" rx="2" fill="#d2a8ff"/></g>
+  <text x="65" y="146" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">🌐 Browser</text>
+
+  <path d="M 123 142 L 150 142" fill="none" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#at)"/>
+
+  <g filter="url(#sh)"><rect x="152" y="128" width="185" height="28" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="0.8"/><rect x="152" y="128" width="4" height="28" rx="2" fill="#39c5cf"/></g>
+  <text x="244" y="146" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">🔍 Langfuse observability :3010</text>
+
+  <text x="355" y="146" fill="#8b949e" font-size="9">← prompt/response/latency/cost tracing per model call</text>
+</svg></div>
+
+<h3>1.4 Intranet Address List (for employees)</h3>
+<p>Employees access each product from their own machines using the "intranet addresses" below. Replace <code>&lt;server-IP&gt;</code> with the host machine's actual external address (currently <code>192.168.31.117</code> in this environment; see <a href="#prereq">2. Prerequisites</a> for pinning it).</p>
+
+<h4>Daily use for employees</h4>
+<table>
+  <tr><th>Product</th><th>Intranet address</th><th>Who</th><th>Notes</th></tr>
+  <tr><td><strong>Dify</strong></td><td><code>http://&lt;server-IP&gt;</code></td><td>All employees</td><td>AI app platform (chat / workflow / knowledge base)</td></tr>
+  <tr><td><strong>Ghost portal</strong></td><td><code>http://&lt;server-IP&gt;:8090</code></td><td>All employees</td><td>Enterprise portal, announcements, download center</td></tr>
+  <tr><td><strong>NewAPI</strong></td><td><code>http://&lt;server-IP&gt;:3000</code></td><td>All employees</td><td>View / request own API key, playground testing</td></tr>
+  <tr><td><strong>Gitea</strong></td><td><code>http://&lt;server-IP&gt;:3002</code></td><td>Dev team</td><td>Source control + CI/CD</td></tr>
+</table>
+
+<h4>Clients &amp; special purposes</h4>
+<table>
+  <tr><th>Purpose</th><th>Address</th><th>Notes</th></tr>
+  <tr><td>DeepChat client API</td><td><code>http://&lt;server-IP&gt;:3000/v1</code></td><td>DeepChat API Base URL on employee machines</td></tr>
+  <tr><td>DeepChat download</td><td><code>http://&lt;server-IP&gt;:8091</code></td><td>Installer hosting, click link to download</td></tr>
+  <tr><td>AI Admin Center</td><td><code>http://&lt;server-IP&gt;:10086</code></td><td>Admins only, unified management entry</td></tr>
+  <tr><td>Grafana monitoring</td><td><code>http://&lt;server-IP&gt;:3030</code></td><td>Admins only, container resource monitoring / alert dashboard</td></tr>
+  <tr><td>Langfuse observability</td><td><code>http://&lt;server-IP&gt;:3010</code></td><td>Admins only, LLM call tracing / cost / quality analysis</td></tr>
+</table>
+
+<h4>Internal services (not exposed to users)</h4>
+<table>
+  <tr><th>Product</th><th>Port</th><th>Notes</th></tr>
+  <tr><td>LiteLLM</td><td>4001</td><td>Only called by NewAPI (PII masking proxy)</td></tr>
+  <tr><td>MySQL / Redis / PostgreSQL</td><td>—</td><td>Databases / caches, internal Docker network only</td></tr>
+</table>
+
+<h4>Local access addresses (host debugging, 127.0.0.1)</h4>
+<p>Admins use these <code>127.0.0.1</code> addresses for on-host operations, debugging, and troubleshooting (valid only on the host machine; employees cannot reach them).</p>
+
+<table>
+  <tr><th>Product</th><th>Local address</th><th>Notes</th></tr>
+  <tr><td>Keycloak admin console</td><td><code>http://127.0.0.1:9090</code></td><td>SSO config, Realm / user / OIDC client management</td></tr>
+  <tr><td>NewAPI</td><td><code>http://127.0.0.1:3000</code></td><td>API gateway admin UI</td></tr>
+  <tr><td>Dify</td><td><code>http://127.0.0.1</code></td><td>AI app platform (port 80)</td></tr>
+  <tr><td>Ghost portal</td><td><code>http://127.0.0.1:8090</code></td><td>Enterprise portal admin</td></tr>
+  <tr><td>Gitea</td><td><code>http://127.0.0.1:3002</code><br><code>ssh://git@127.0.0.1:2222</code></td><td>Source control (Web + Git SSH)</td></tr>
+  <tr><td>Update Server</td><td><code>http://127.0.0.1:8091</code></td><td>DeepChat installer distribution</td></tr>
+  <tr><td>AI Admin Center</td><td><code>http://127.0.0.1:10086</code></td><td>Unified management entry</td></tr>
+  <tr><td>LiteLLM</td><td><code>http://&lt;server-IP&gt;:4001</code></td><td>PII masking proxy (internal)</td></tr>
+  <tr><td>Grafana</td><td><code>http://127.0.0.1:3030</code></td><td>Monitoring dashboard</td></tr>
+  <tr><td>Prometheus</td><td><code>http://127.0.0.1:9091</code></td><td>Metrics collection / alert rules</td></tr>
+  <tr><td>Langfuse</td><td><code>http://127.0.0.1:3010</code></td><td>LLM observability</td></tr>
+</table>
+
+<div class="callout callout-info">
+  <strong>Login note:</strong> Employees don't need to remember the Keycloak address. Clicking "Login" on any product auto-redirects to Keycloak (<code>http://&lt;server-IP&gt;:9090</code>); after logging in with a domain account it auto-redirects back to the original product.
+</div>
+
+<!-- ==================== 2. Prerequisites ==================== -->
+<h2 id="prereq">2. Prerequisites</h2>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Docker Desktop configuration</strong>
+  <p>Docker Desktop uses the WSL2 backend by default after installation (no extra config needed). To manually adjust resource limits, create a <code>.wslconfig</code> file in your user directory:</p>
+  <pre><code># %UserProfile%\.wslconfig (e.g. C:\Users\your-username\.wslconfig)
+[wsl2]
+memory=24GB       # Docker max memory (min 16GB, recommended 24~32GB; allocate about half of host memory)
+processors=8      # CPU cores (per host physical cores)
+swap=4GB</code></pre>
+  <p>After saving, run <code>wsl --shutdown</code> in PowerShell, then restart Docker Desktop to apply.</p>
+  <div class="verify">Docker Desktop status bar shows "Engine running" (green)</div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>Create working directory</strong>
+  <pre><code><span class="comment"># In PowerShell</span>
+mkdir deepchat-updates</code></pre>
+  <p>Directory structure:</p>
+  <div style="margin: 8px 0; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.85em; line-height: 2;">
+    <div><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">C:\ai-platform\windows\</span> &nbsp;&nbsp;<span style="color:#8b949e"># assumed deploy root</span></div>
+    <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">docker-compose.yml</span> &nbsp;&nbsp;<span style="color:#8b949e"># core service orchestration (generated)</span></div>
+    <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">.env.windows</span> &nbsp;&nbsp;<span style="color:#8b949e"># env vars (generated; fill in API keys)</span></div>
+    <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">litellm-config.yaml</span> &nbsp;&nbsp;<span style="color:#8b949e"># LiteLLM PII masking config (generated)</span></div>
+    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">deepchat-updates\</span> &nbsp;&nbsp;<span style="color:#8b949e"># DeepChat installer hosting dir</span></div>
+    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">admin-portal\</span> &nbsp;&nbsp;<span style="color:#8b949e"># AI Admin Center implementation</span></div>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>Edit .env.windows and fill in API keys</strong>
+  <p>Open <code>.env.windows</code>, copy it to <code>.env</code>, and modify the following:</p>
+  <pre><code><span class="comment"># DeepSeek is pre-configured by default (uncomment and fill in your key)</span>
+DEEPSEEK_API_KEY=sk-your-real-deepseek-key
+
+<span class="comment"># For OpenAI or Claude, uncomment and fill in the key</span>
+<span class="comment"># Also uncomment the corresponding model block in litellm-config.yaml</span>
+# OPENAI_API_KEY=sk-your-real-openai-key
+# ANTHROPIC_API_KEY=sk-ant-your-real-claude-key</code></pre>
+  <div class="callout callout-warn">
+    <strong>Note:</strong> You need at least one external model API key to establish the LLM pipeline.
+    DeepSeek is the default (cheapest). After adding a new provider, <strong>you must also edit <code>litellm-config.yaml</code></strong> and uncomment the corresponding model block.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>Create the Docker shared network</strong>
+  <pre><code><span class="comment"># In PowerShell</span>
+docker network create ai-platform
+
+<span class="comment"># Verify</span>
+docker network ls | findstr ai-platform</code></pre>
+  <div class="verify">Output contains the <code>ai-platform</code> network</div>
+</div>
+
+<div class="step">
+  <span class="step-num">5</span><strong>Pin the host intranet IP (recommended; otherwise the external address changes)</strong>
+  <p>When the host joins the company intranet over WiFi, the router's DHCP dynamically assigns the IP, which can change after reboot or lease expiry. When it changes, all employee access addresses (see <a href="#overview">1.4 Intranet Address List</a>) break. It is recommended to reserve a fixed IP via <b>DHCP reservation (MAC binding)</b> on the router:</p>
+  <ol>
+    <li>Find the WiFi adapter MAC: run <code>ipconfig /all</code> in PowerShell, look for the physical address of "Wireless LAN adapter WLAN" (e.g. <code>60-A3-E3-41-8F-61</code>)</li>
+    <li>Log into the router admin (e.g. Xiaomi router <code>http://192.168.31.1</code>) → LAN settings / DHCP static IP assignment</li>
+    <li>Add a rule: MAC <code>60-A3-E3-41-8F-61</code> → IP <code>192.168.31.117</code>, save</li>
+    <li>Reconnect WiFi or reboot the router, confirm the IP is fixed to <code>192.168.31.117</code></li>
+  </ol>
+  <div class="callout callout-info">DHCP reservation is more robust than setting a static IP in Windows (router-managed, no IP conflicts, transparent to Windows). If you switch to a wired NIC, you can reserve its MAC the same way.</div>
+</div>
+
+<!-- ==================== 3. Configuration files ==================== -->
+<h2 id="files">3. Configuration Files</h2>
+
+<p>Three core configuration files are generated in the directory:</p>
+
+<table>
+  <tr><th>File</th><th>Purpose</th><th>Needs modification?</th></tr>
+  <tr>
+    <td><code>.env.windows</code></td>
+    <td>All passwords and external API keys</td>
+    <td><strong>Must modify</strong>: fill in the DeepSeek API key (other providers optional via uncommenting)</td>
+  </tr>
+  <tr>
+    <td><code>litellm-config.yaml</code></td>
+    <td>LiteLLM model list + Presidio PII masking rules</td>
+    <td>Usually no change (if only using DeepSeek, remove OpenAI/Claude entries)</td>
+  </tr>
+  <tr>
+    <td><code>docker-compose.yml</code></td>
+    <td>Docker orchestration for 7 core services</td>
+    <td>Pre-configured (includes Keycloak <code>KC_HOSTNAME=&lt;server-IP&gt;</code> + <code>keycloak-data</code> persistent volume)</td>
+  </tr>
+</table>
+
+<div class="callout callout-info">
+  <strong>litellm-config.yaml notes:</strong>
+  <ul>
+    <li><code>model_list</code> — defines available external models; NewAPI calls them through LiteLLM. Only <code>deepseek-chat</code> is enabled by default; uncomment others + set .env as needed</li>
+    <li><code>general_settings.master_key</code> — LiteLLM admin key, reads <code>LITELLM_MASTER_KEY</code> from <code>.env</code></li>
+    <li>PII masking (Presidio) is temporarily commented out. The newer LiteLLM guardrail API changed incompatibly. To re-enable, see <a href="https://docs.litellm.ai/docs/proxy/guardrails/presidio" target="_blank">LiteLLM official docs</a></li>
+    <li>Currently using stable <code>v1.95.1</code> (<code>main-latest</code> has known bugs)</li>
+  </ul>
+</div>
+
+<h3>3.1 Environment Variable Configuration Guide (what to set now vs. later)</h3>
+
+<h4>Variable classification overview</h4>
+<table>
+  <tr><th>Variable</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>DEEPSEEK_API_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>External LLM API key; the pipeline fails without it</td></tr>
+  <tr><td><code>LITELLM_MASTER_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>LiteLLM internal auth key, needed by NewAPI</td></tr>
+  <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>MySQL root password; avoid changing after initial creation</td></tr>
+  <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>Keycloak admin password</td></tr>
+  <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>NewAPI session encryption; any random string</td></tr>
+  <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>NewAPI data encryption; any random string</td></tr>
+  <tr><td><code>GLOBAL_WEB_RATE_LIMIT</code></td><td style="color:#8b949e">⚪ Default</td><td>Web login rate limit (per min); set 999999 for testing, lower in production</td></tr>
+  <tr><td><code>GLOBAL_API_RATE_LIMIT</code></td><td style="color:#8b949e">⚪ Default</td><td>API route rate limit (per 3 min); set 999999 for testing</td></tr>
+  <tr><td><code>CRITICAL_RATE_LIMIT_ENABLE</code></td><td style="color:#8b949e">⚪ Default</td><td>Critical endpoint rate-limit switch (login/OAuth callback), default 20/20min easily triggers 429; set false for testing</td></tr>
+  <tr><td><code>CRITICAL_RATE_LIMIT</code></td><td style="color:#8b949e">⚪ Default</td><td>Critical endpoint rate-limit threshold; set 999999 for testing</td></tr>
+  <tr><td><code>DEFAULT_QUOTA</code></td><td style="color:#8b949e">⚪ Default</td><td>New-user default quota (USD), default 0 (cannot call models). 100 = new users get $100</td></tr>
+  <tr><td><code>GENERATE_DEFAULT_TOKEN</code></td><td style="color:#8b949e">⚪ Default</td><td>Auto-generate an initial API key on registration, default false. true = usable immediately after login</td></tr>
+  <tr><td><code>ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>AI Admin Center Global Admin password</td></tr>
+  <tr><td><code>SESSION_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>AI Admin Center session encryption; any random string</td></tr>
+  <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td style="color:#d29922">🟡 Later</td><td>First create the OIDC client in Keycloak, get the secret, then fill in (see step 11.6)</td></tr>
+  <tr><td><code>GITEA_RUNNER_TOKEN</code></td><td style="color:#d29922">🟡 Later</td><td>First start Gitea, get the token from the admin, then fill in (see step 6.6)</td></tr>
+  <tr><td><code>OPENAI_API_KEY</code> / <code>ANTHROPIC_API_KEY</code></td><td style="color:#56d364">🟢 On demand</td><td>Uncomment and fill when needed. Also uncomment the corresponding model block in <code>litellm-config.yaml</code></td></tr>
+  <tr><td><code>TZ</code> / <code>KEYCLOAK_ADMIN</code> / <code>ADMIN_USERNAME</code> / <code>ADMIN_EMAIL</code></td><td style="color:#8b949e">⚪ Default</td><td>Default values are fine, no change needed</td></tr>
+</table>
+
+<h4>Configure immediately (must complete before first start)</h4>
+<p>Open <code>.env</code>; the 🔴 items below must be configured before first start. Each value has inline comments in <code>.env</code> explaining how to generate/obtain it.</p>
+
+<div class="card">
+<table>
+  <tr><th>Variable</th><th>Description</th><th>How to get/generate</th><th>Format example</th></tr>
+  <tr>
+    <td style="color:#f85149"><code>DEEPSEEK_API_KEY</code></td>
+    <td>DeepSeek cloud LLM API key</td>
+    <td>Register at <a href="https://platform.deepseek.com">platform.deepseek.com</a> → API Keys</td>
+    <td><code>sk-xxxxxxxxxxxxxxxx</code></td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>LITELLM_MASTER_KEY</code></td>
+    <td>LiteLLM <strong>internal</strong> admin key (not an external LLM key!)</td>
+    <td>PowerShell: <code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code><br>NewAPI uses this key to connect LiteLLM</td>
+    <td><code>sk-litellm-xxxx</code></td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>NEWAPI_DB_PASSWORD</code></td>
+    <td>MySQL database password</td>
+    <td>Set your own; <strong>avoid changing</strong> after initial creation (changing requires dropping the DB)</td>
+    <td>Any string</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>KEYCLOAK_ADMIN_PASSWORD</code></td>
+    <td>Keycloak admin password</td>
+    <td>Set your own, at least 8 chars</td>
+    <td>Any string</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>NEWAPI_SESSION_SECRET</code></td>
+    <td>NewAPI web session encryption key</td>
+    <td>Generate randomly: Windows PowerShell:<br><code>-join ((48..57)+(65..90)+(97..122) &#124; Get-Random -Count 32 &#124; % {[char]$_})</code></td>
+    <td>32-char random string</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>NEWAPI_CRYPTO_SECRET</code></td>
+    <td>Encryption key for API keys stored in NewAPI</td>
+    <td>Same: PowerShell: <code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></td>
+    <td>32-char random string</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>ADMIN_PASSWORD</code></td>
+    <td>AI Admin Center Global Admin password</td>
+    <td>Set your own, at least 8 chars</td>
+    <td>Any string</td>
+  </tr>
+  <tr>
+    <td style="color:#f0883e"><code>SESSION_SECRET</code></td>
+    <td>AI Admin Center session encryption key</td>
+    <td>Same: PowerShell: <code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></td>
+    <td>64-char random string</td>
+  </tr>
+</table>
+</div>
+
+<p>See <code>.env.windows</code> for the full configuration; each variable has inline comments describing purpose, usage and format.</p>
+
+<h4>Password change policy</h4>
+<div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> involves the already-created database; changing it requires deleting the corresponding volume and recreating it (data loss). Set it once at the start and don't change it later.</div>
+<p><code>KEYCLOAK_ADMIN_PASSWORD</code>, <code>ADMIN_PASSWORD</code> and other admin passwords can be changed in each product's admin UI; sync the change back to <code>.env</code> afterwards (doesn't affect runtime, just a memo).</p>
+
+<h2 id="start">4. Start Core Services</h2>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Copy .env.windows to .env</strong>
+  <p>Docker Compose reads the <code>.env</code> file by default:</p>
+  <pre><code><span class="comment"># PowerShell</span>
+copy .env.windows .env</code></pre>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>Start all core services</strong>
+  <pre><code><span class="comment"># PowerShell</span>
+docker compose -f docker-compose.yml up -d</code></pre>
+  <p>The first start pulls all images (about 5-10 minutes depending on network speed).</p>
+  <div class="callout callout-warn">
+    <strong>First image pull (~3-4GB disk):</strong>
+    <table>
+      <tr><th>Image</th><th>Container</th><th>Size</th></tr>
+      <tr><td><code>quay.io/keycloak/keycloak:25.0</code></td><td>keycloak</td><td>~600MB</td></tr>
+      <tr><td><code>calciumion/new-api</code></td><td>new-api</td><td>~200MB</td></tr>
+      <tr><td><code>mysql:8.0</code></td><td>new-api-db</td><td>~600MB</td></tr>
+      <tr><td><code>redis:7-alpine</code></td><td>new-api-redis</td><td>~40MB</td></tr>
+      <tr><td><code>ghcr.io/berriai/litellm:v1.95.1</code></td><td>litellm</td><td>~1GB</td></tr>
+      <tr><td><code>ghost:5-alpine</code></td><td>ghost</td><td>~150MB</td></tr>
+      <tr><td><code>gitea/gitea</code></td><td>gitea</td><td>~300MB</td></tr>
+      <tr><td><code>gitea/act_runner</code></td><td>gitea-runner</td><td>~100MB</td></tr>
+      <tr><td><code>nginx:alpine</code></td><td>update-server</td><td>~50MB</td></tr>
+      <tr><td><code>node:20-alpine</code></td><td>admin-portal</td><td>~50MB</td></tr>
+    </table>
+  </div>
+</div>
+
+  <div class="step">
+  <span class="step-num">3</span><strong>Check all container statuses</strong>
+  <pre><code><span class="comment"># View running containers (expect 10 all Up)</span>
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+<span class="comment"># Expected output</span>
+<span class="comment">NAME              STATUS         PORTS</span>
+<span class="comment">admin-portal      Up             0.0.0.0:10086->3000/tcp</span>
+<span class="comment">keycloak          Up             0.0.0.0:9090->8080/tcp</span>
+<span class="comment">new-api           Up             0.0.0.0:3000->3000/tcp</span>
+<span class="comment">new-api-db        Up (healthy)   3306/tcp</span>
+<span class="comment">new-api-redis     Up             6379/tcp</span>
+<span class="comment">litellm           Up             0.0.0.0:4000->4000/tcp</span>
+<span class="comment">ghost             Up             0.0.0.0:8090->2368/tcp</span>
+<span class="comment">gitea             Up             0.0.0.0:3002->3000/tcp, 0.0.0.0:2222->22/tcp</span>
+<span class="comment">gitea-runner      Up             </span>
+<span class="comment">update-server     Up             0.0.0.0:8091->80/tcp</span></code></pre>
+  <div class="verify">All containers show <code>Up</code>. If a container keeps Restarting, check logs: <code>docker logs container-name</code></div>
+</div>
+
+<div class="step">
+  <span class="step-num">3.5</span><strong>Known issue fix: force Ghost to SQLite</strong>
+  <p>If the <code>ghost</code> container keeps <code>Restarting</code> in the previous step, run <code>docker logs ghost</code> and see <code>Error: connect ECONNREFUSED &lt;server-IP&gt;:3306</code> — this means the <code>ghost-data</code> volume contains a leftover <code>config.production.json</code> pointing to MySQL (leftover from an old deployment). Ghost reads that stale file instead of defaulting to SQLite. The Windows stack has no MySQL for Ghost, so it can't connect.</p>
+  <p>Fix: explicitly declare SQLite under the ghost service's <code>environment</code> in <code>docker-compose.yml</code>, overriding the leftover config in the volume with env vars:</p>
+  <pre><code><span class="comment"># The environment section of the ghost service in docker-compose.yml</span>
+  ghost:
+    image: ghost:5-alpine
+    container_name: ghost
+    restart: always
+    ports:
+      - "8090:2368"
+    environment:
+      url: http://127.0.0.1:8090
+      <span class="comment"># Force SQLite, overriding any leftover MySQL config.production.json</span>
+      database__client: sqlite3
+      database__connection__filename: /var/lib/ghost/content/data/ghost.db
+      database__use_null_pool: "true"
+    volumes:
+      - ghost-data:/var/lib/ghost/content
+    networks:
+      - ai-platform</code></pre>
+  <p>Rebuild the container after the change:</p>
+  <pre><code>docker compose up -d ghost
+
+<span class="comment"># Wait 10 seconds, then check logs to confirm SQLite started successfully</span>
+docker logs ghost --tail 20</code></pre>
+  <div class="callout callout-warn">
+    <strong>⚠️ Note: Docker Desktop volumes are not visible:</strong> Under Windows + Docker Desktop WSL2, <code>/var/lib/docker/volumes/windows_ghost-data/_data/</code> is <b>not visible</b> in the host git bash (volume data is sealed inside the WSL2 virtual disk), so you can't directly delete the <code>config.production.json</code> inside. You must use the "env-var override" route so Ghost reads env vars first at startup.
+  </div>
+  <div class="callout callout-info">
+    <strong>📌 Why not just delete the volume?</strong> Deleting the volume <code>docker volume rm windows_ghost-data</code> also works, but loses all published posts/themes/uploads. The env-var override keeps the data and only changes the DB connection path. Ghost 5.x's default SQLite is fully sufficient for an enterprise portal; no extra MySQL is needed.
+  </div>
+  <div class="verify">Logs show <code>Ghost database ready in X.Xs</code> + <code>Ghost booted in X.Xs</code> + <code>Database is in a ready state</code> means the fix worked. <code>curl.exe -I http://127.0.0.1:8090</code> returns <code>HTTP 200</code>.</div>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>Verify each service is reachable</strong>
+
+  <h4>Externally accessible services (browser / curl test)</h4>
+  <pre><code><span class="comment"># Keycloak — 302 means OK</span>
+curl.exe -I http://127.0.0.1:9090/admin/
+
+<span class="comment"># NewAPI — 200</span>
+curl.exe -I http://127.0.0.1:3000
+
+<span class="comment"># Ghost portal — 302 (redirect to /ghost/ init page)</span>
+curl.exe -I http://127.0.0.1:8090
+
+<span class="comment"># Gitea — 200</span>
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:3002
+
+<span class="comment"># Update Server — 403 (empty dir, nginx is running)</span>
+curl.exe -I http://127.0.0.1:8091
+
+<span class="comment"># AI Admin Center — 200</span>
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:10086</code></pre>
+
+  <h4>Docker-internal services (verify via inter-container communication)</h4>
+  <div class="callout callout-info">
+    <strong>Note:</strong> LiteLLM is a pure API service with no web UI. It is called by NewAPI over the Docker network (<code>http://litellm:4000</code>); the host doesn't need direct access. Docker Desktop WSL2's HTTP proxy can make LiteLLM unreachable from the host (returning HEART or empty response) — a known bug that doesn't affect actual functionality.
+  </div>
+  <pre><code><span class="comment"># LiteLLM model list (read key → store var → one-shot call)</span>
+$K = docker exec litellm printenv LITELLM_MASTER_KEY
+docker exec gitea wget -qO- --header="Authorization: Bearer $K" http://litellm:4000/v1/models
+
+<span class="comment"># Expected JSON: {"data":[{"id":"deepseek-chat",...}]}</span></code></pre>
+  <div class="verify">Keycloak 302 / NewAPI 200 / Gitea 200 / Admin Center 200 = pass. LiteLLM returning the model list from inside a container = pass.<br>Simpler: open <code>http://127.0.0.1:3000</code> (NewAPI), <code>http://127.0.0.1:9090</code> (Keycloak), <code>http://127.0.0.1:8090</code> (Ghost) in a browser.</div>
+</div>
+
+<!-- ==================== 5. Dify ==================== -->
+<h2 id="dify">5. Standalone Dify Deployment (official Docker Compose)</h2>
+
+<div class="callout callout-info">
+  Dify uses the official docker-compose (~15 containers), deployed standalone to avoid port conflicts. Dify containers use their own default network.
+</div>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Clone Dify</strong>
+  <p>Choose one (GitHub requires a proxy; Gitee is direct in China):</p>
+  <pre><code><span class="comment"># Option A: GitHub</span>
+$tag = (Invoke-RestMethod https://api.github.com/repos/langgenius/dify/releases/latest).tag_name
+git clone --branch $tag https://github.com/langgenius/dify.git
+
+<span class="comment"># Option B: Gitee official mirror (recommended)</span>
+git clone https://gitee.com/dify_ai/dify.git</code></pre>
+  <div class="note">Option A also needs <code>jq</code>: <code>winget install jqlang.jq</code>.</div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>Fix Yaml compatibility + copy env vars</strong>
+  <p>Dify uses the newer Docker Compose <code>env_file</code> syntax; fix it if your version is older. Also copy all <code>.env.example</code> templates to <code>.env</code>:</p>
+  <pre><code><span class="comment"># Enter the Docker directory</span>
+cd dify\docker
+
+<span class="comment"># Fix env_file format (compatible with older Docker Compose)</span>
+python -c "import re; c=open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml').read(); c=re.sub(r'  - path: (\./envs/[^\n]+\.env)\n\s+required: (?:true|false)', r'  - \1', c); open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml','w').write(c); print('Fixed')"
+
+<span class="comment"># Copy the main env vars</span>
+copy .env.example .env
+
+<span class="comment"># Copy all sub-templates (sandbox.env, local-sandbox.env, etc.)</span>
+Get-ChildItem envs -Recurse -Filter *.example | ForEach-Object {
+    $target = $_.FullName -replace '\.example$', ''
+    if (-not (Test-Path $target)) { Copy-Item $_.FullName $target }
+}
+
+<span class="comment"># Fix Dify 1.16.1 upstream validation issue (required)</span>
+<span class="comment"># 1.16.1 image upgraded GRAPH_ENGINE_SCALE_UP_THRESHOLD from NonNegativeInt to PositiveInt,</span>
+<span class="comment"># but shared.env still defaults to 0, causing api/worker/worker_beat/api_websocket to crash on start,</span>
+<span class="comment"># with logs showing ValidationError: Input should be greater than 0</span>
+(Get-Content envs\core-services\shared.env) -replace 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=0', 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=50' | Set-Content envs\core-services\shared.env
+
+<span class="comment"># Verify Yaml has no errors</span>
+docker compose config --quiet
+
+<span class="comment"># Verify the GRAPH_ENGINE change succeeded</span>
+findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
+<span class="comment"># Expected: GRAPH_ENGINE_SCALE_UP_THRESHOLD=50</span></code></pre>
+  <div class="callout callout-warn">
+    <strong>⚠️ Why this line must change:</strong> the Dify 1.16.1 image upgraded <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> from <code>NonNegativeInt</code> (allows 0) to <code>PositiveInt</code> (must be &gt; 0), but the <code>shared.env</code> template still has <code>=0</code>. Without the change, <code>docker-api-1</code> / <code>docker-worker-1</code> / <code>docker-worker_beat-1</code> / <code>docker-api_websocket-1</code> keep <code>Restarting (1)</code>, and <code>docker logs docker-api-1</code> shows <code>pydantic_core._pydantic_core.ValidationError</code>. This is an upstream breaking default change, unrelated to your local config.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>Start Dify</strong>
+  <pre><code><span class="comment"># Start all containers (first run ~5-10 min, 15 containers)</span>
+docker compose up -d
+
+<span class="comment"># Check status</span>
+docker compose ps</code></pre>
+  <div class="verify">All containers <code>Up</code> (<code>init_permissions</code> showing <code>Exited</code> is normal). Open <code>http://127.0.0.1/install</code> in a browser to initialize the admin account.</div>
+</div>
+
+<div class="callout callout-warn">
+  <strong>⚠️ WebSocket address config (without this, creating apps keeps reconnecting to <code>ws://localhost</code>):</strong> Dify's <code>.env</code> defaults <code>NEXT_PUBLIC_SOCKET_URL</code> to <code>ws://localhost</code>. In an intranet deployment, <code>localhost</code> in the browser points to the user's own machine (not the server), causing the frontend to keep reconnecting to <code>ws://localhost/socket.io</code> with empty responses (real-time features like app creation / workflow debugging get stuck). Fix:
+  <pre><code><span class="comment"># In .env, change the WebSocket address to the intranet IP (consistent with the access address)</span>
+NEXT_PUBLIC_SOCKET_URL=ws://&lt;server-IP&gt;
+
+<span class="comment"># Also update the web service fallback in docker-compose.yaml</span>
+NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-ws://&lt;server-IP&gt;}
+
+<span class="comment"># Rebuild the web container to apply</span>
+docker compose up -d web</code></pre>
+  <div class="note">After the change, hard-refresh the browser (<code>Ctrl+F5</code>); WebSocket becomes <code>ws://&lt;server-IP&gt;/socket.io</code> and connects normally (nginx has a built-in <code>/socket.io/</code> → <code>api_websocket:5001</code> proxy). This variable is read at <b>runtime</b> (the web image entrypoint exports it); edit <code>.env</code> + restart the web container, no image rebuild needed.</div>
+</div>
+
+<p>Dify Keycloak SSO config: Dify settings → login method → OIDC → fill in the Keycloak OIDC endpoints. When adding a model provider in Dify, <b>set the API Base URL to <code>http://host.docker.internal:3000/v1</code></b>, routed through NewAPI.</p>
+
+<div class="callout callout-warn">
+  <strong>⚠️ Pitfall: Dify login password is base64-encoded, not plaintext/RSA:</strong> In Dify 1.16.x's login endpoint <code>POST /console/api/login</code>, the <code>password</code> field is <b>the base64-encoded password</b> (<code>/app/api/libs/encryption.py</code> comment explicitly says "Base64 obfuscation, not encryption"). So: ① when logging in via script/API, do <code>base64(password)</code> first; ② when "clicking login does nothing" in the frontend, <code>GET /console/api/account/profile 401</code> + <code>POST /console/api/refresh-token 401</code> in the console are <b>normal when not logged in</b>, not a backend failure (switch browser / clear cache / retry).
+</div>
+<div class="callout callout-danger">
+  <strong>⚠️ Pitfall: Dify admin password reset when forgotten:</strong> Dify's password hash is <code>pbkdf2_hmac('sha256', password, salt, 10000)</code> (<b>10000 iterations, not the common 100000</b>), can't be reverse-engineered. Reset via in-container command (<b>new password must be ≥ 8 chars</b>):
+  <pre style="margin:8px 0;"><code>docker exec docker-api-1 flask reset-password \
+  --email ai_all_in_one_admin@&lt;company-domain&gt; \
+  --new-password '&lt;new-password&gt;' \
+  --password-confirm '&lt;new-password&gt;'</code></pre>
+  Also note: if Dify's <code>SECRET_KEY</code> is empty, it doesn't affect password login (passwords use PBKDF2+salt), but does affect provider credential encryption (encrypted_config) — usually no need to handle.
+</div>
+
+<!-- ==================== 6. Per-product config ==================== -->
+<h2 id="config">6. Per-Product Web UI Configuration</h2>
+
+<p>All services are up; now configure the interconnection between products via the browser. Follow this order:</p>
+
+<h3 id="config-keycloak">6.1 Keycloak — create Realm and users</h3>
+<div class="callout callout-info">
+  <strong>Keycloak configuration notes:</strong>
+  <ul>
+    <li><strong>Access address:</strong> host machine uses <code>http://127.0.0.1:9090</code>, intranet employees use <code>http://&lt;server-IP&gt;:9090</code>. Compose sets <code>KC_HOSTNAME</code> to <code>&lt;server-IP&gt;</code> (intranet IP) and enables <code>KC_HOSTNAME_STRICT=false</code> so both addresses redirect correctly, avoiding the <code>localhost</code> blank redirect page caused by Docker Desktop WSL2 IPv6 compatibility.</li>
+    <li><strong>Data persistence:</strong> the H2 database is stored in the named volume <code>keycloak-data</code> (mapped to <code>/opt/keycloak/data</code>); container rebuilds don't lose realms, users, OIDC clients, etc.</li>
+    <li><strong>Credentials:</strong> username and password are in <code>.env.windows</code> under <code>KEYCLOAK_ADMIN</code> and <code>KEYCLOAK_ADMIN_PASSWORD</code>.</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">1</span>Open <code>http://127.0.0.1:9090</code> in a browser
+  <ul>
+    <li>Username and password are in <code>.env.windows</code> under <code>KEYCLOAK_ADMIN</code> and <code>KEYCLOAK_ADMIN_PASSWORD</code></li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Create a Realm</strong>
+  <ul>
+    <li>Top-left dropdown → <strong>Create Realm</strong></li>
+    <li>Realm name: <code>enterprise-ai</code> → Create</li>
+  </ul>
+</div>
+
+<h4>6.1.1 Method A: create accounts locally (default)</h4>
+<p>For small teams without an enterprise AD or for dev/test scenarios; manage users directly in Keycloak.</p>
+<div class="step">
+  <span class="step-num">3a</span><strong>Create user groups and users</strong>
+  <ul>
+    <li><strong>Groups</strong> → Create Group → <code>ai-admin</code></li>
+    <li>Then create <code>ai-user</code></li>
+    <li><strong>Users</strong> → Add user → username (custom) → Create</li>
+    <li>Credentials tab → set password → Temporary off</li>
+    <li>Groups tab → join the <code>ai-user</code> group</li>
+  </ul>
+</div>
+<div class="verify">You can log in successfully on the Keycloak login page with the newly created local user.</div>
+
+<h4>6.1.2 Method B: import accounts from Active Directory</h4>
+<p>For companies with an existing Windows AD domain controller. Employees log in with domain accounts, no need to manually create accounts in Keycloak.</p>
+<p><strong>Prerequisite:</strong> network connectivity from Docker containers to the DC is established. If not configured (port forwarding, firewall), see the standalone doc first:
+<a href="windows-ad-integration.html" style="color:#58a6ff;">📄 Keycloak AD Integration Complete Guide — network topology, Hyper-V Internal Switch, port forwarding, troubleshooting</a></p>
+<p><strong>AD accounts needed:</strong></p>
+<table>
+  <tr><th>Account</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>svc_keycloak</code></td><td>Service account (required, password never expires)</td><td>For Keycloak LDAP binding; password in <code>.env.windows</code></td></tr>
+  <tr><td>2 regular domain users</td><td>For testing (create as needed)</td><td>To verify Keycloak user sync and domain-account login</td></tr>
+</table>
+
+<div class="step">
+  <span class="step-num">3b-1</span><strong>Create the LDAP user federation</strong>
+  <ol>
+    <li>Keycloak admin console → select the <b>enterprise-ai</b> realm</li>
+    <li>Left sidebar <b>User Federation</b> → <b>Add provider</b> → select <b>ldap</b></li>
+    <li>Fill in the following config:</li>
+  </ol>
+  <table style="margin:12px 0; width:100%;">
+    <tr><th style="width:28%;">Setting</th><th style="width:32%;">Value</th><th>Notes</th></tr>
+    <tr><td>UI display name</td><td><code>Company AD</code></td><td>Display name in Keycloak UI, arbitrary</td></tr>
+    <tr><td>Vendor</td><td><b>Active Directory</b></td><td>Select AD (not Other, otherwise objectGUID isn't recognized)</td></tr>
+    <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V via port forwarding; production: <code>ldap://dc.company.com:389</code></td></tr>
+    <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>No StartTLS; use LDAP 389 or LDAPS 636 directly</td></tr>
+    <tr><td>Use Truststore SPI</td><td><b>Always</b></td><td>Only matters for LDAPS; no effect on plaintext LDAP</td></tr>
+    <tr><td>Connection pooling</td><td><b>Off</b></td><td>Default off; enable under high concurrency</td></tr>
+    <tr><td>Connection timeout</td><td><i>blank</i></td><td>Keycloak default timeout</td></tr>
+    <tr><td>Bind type</td><td><b>simple</b></td><td>Username + password auth</td></tr>
+    <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>Must be LDAP DN format!</b> Don't use <s>DOMAIN\user</s></td></tr>
+    <tr><td>Bind credentials</td><td><code>svc_keycloak password</code></td><td>See <code>.env.windows</code></td></tr>
+    <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>Read-only, no writes back to AD</td></tr>
+    <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>Container where users live. For child OUs use <code>DC=testcompany,DC=local</code></td></tr>
+    <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>Don't use cn</b> — this is the AD login name</td></tr>
+    <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>Entry naming attribute</td></tr>
+    <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>AD's immutable unique identifier</td></tr>
+    <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>AD user object classes, comma-separated</td></tr>
+    <tr><td>User LDAP filter</td><td><i>blank</i></td><td>To filter, use <code>(department=IT)</code></td></tr>
+    <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>Don't select One Level</b> — otherwise users in child OUs won't be found</td></tr>
+    <tr><td>Read timeout</td><td><i>blank</i></td><td>Default value</td></tr>
+    <tr><td>Pagination</td><td><b>On</b></td><td>Fetch in batches when there are many users</td></tr>
+    <tr><td>Referral</td><td><b>ignore</b></td><td>Avoid Keycloak following a non-existent DC</td></tr>
+    <tr><td>Import users</td><td><b>On</b></td><td>Import on full sync</td></tr>
+    <tr><td>Sync Registrations</td><td><b>On</b></td><td>Instant sync on first login</td></tr>
+    <tr><td>Batch size / Periodic sync</td><td><i>blank / Off</i></td><td>Manual sync during testing</td></tr>
+    <tr><td>Kerberos (2 items)</td><td><b>Off / Off</b></td><td>No Kerberos</td></tr>
+    <tr><td>Cache policy</td><td><b>DEFAULT</b></td><td>Default cache</td></tr>
+    <tr><td>Advanced (3 items)</td><td><b>Off / Off / Off</b></td><td>Not needed in READ_ONLY mode</td></tr>
+  </table>
+  <ol start="4">
+    <li>Click <b>Save</b></li>
+    <li>Click <b>Synchronize all users</b> → wait for sync to complete</li>
+  </ol>
+  <div class="callout callout-warn" style="margin:12px 0;">
+    <strong>Common mistakes:</strong>
+    <ul>
+      <li><b>Bind DN = LDAP format</b> (<code>CN=svc_keycloak,CN=Users,DC=xxx</code>), not <s>DOMAIN\user</s></li>
+      <li><b>Username LDAP attribute = <code>sAMAccountName</code></b>, not <code>cn</code></li>
+      <li><b>Search scope = Subtree</b>, not One Level</li>
+      <li style="color:#f0883e"><b>⚠️ Keep spaces in CN as-is:</b> if the bind account's display name has spaces (e.g. the unified account display name is <code>ai all in one admin</code> with <b>spaces</b> not underscores), the Bind DN must be <code>CN=ai all in one admin,CN=Users,DC=xxx</code> (<b>spaces preserved</b>); writing <code>ai_all_in_one_admin</code> will fail to connect to the DC. After changing the DC display name, update the Bind DN here too.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">3b-2</span><strong>Configure LDAP group mapping (optional)</strong>
+  <p>Map AD groups to Keycloak roles:</p>
+  <ol>
+    <li>Click the LDAP Provider you just created in the User Federation list</li>
+    <li><b>Mappers</b> tab → add <code>group-ldap-mapper</code></li>
+    <li>Set Groups DN: <code>CN=Users,DC=testcompany,DC=local</code></li>
+    <li>After saving, AD groups are automatically mapped to Keycloak</li>
+  </ol>
+</div>
+<div class="verify">
+<p>You can see domain users synced from AD in the Keycloak <b>Users</b> list. Test login using:</p>
+
+<h5>Method A: Keycloak Account Console login test (recommended, no downstream app needed)</h5>
+<ol>
+  <li>Open a browser (private/incognito recommended to avoid session cache interference)</li>
+  <li>Go to <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code></li>
+  <li>
+    Enter AD domain user credentials:
+    <ul>
+      <li>Username: <code>aitest1</code> (sAMAccountName) or <code>aitest1@chxia.lab</code> (UPN) — both work</li>
+      <li>Password: the domain user's AD password</li>
+    </ul>
+  </li>
+  <li>Click <b>Sign In</b> → expected to redirect to the <b>Account Console</b>, showing username and profile info</li>
+</ol>
+<div class="callout" style="border-left: 3px solid #d29922; padding: 10px 16px; margin: 12px 0; background: rgba(210,153,34,0.08); border-radius: 0 4px 4px 0;">
+  <strong>Troubleshooting:</strong><br>
+  <code>Invalid username or password</code> → wrong password or user outside Users DN scope<br>
+  <code>Account is disabled</code> → AD user is disabled<br>
+  No response → press F12, check Console/Network panels
+</div>
+
+<h5>Method B: Admin Console to check user source</h5>
+<ol>
+  <li>Keycloak admin console → <b>Users</b> → search <code>aitest1</code></li>
+  <li>Click the user → <b>Attributes</b>: <code>LDAP_ID</code> / <code>LDAP_ENTRY_DN</code> present means the source is AD sync</li>
+  <li><b>Sessions</b>: after Method A login succeeds, there is an active session here</li>
+</ol>
+
+<h5>Method C: downstream app SSO (after configuring Dify etc.'s OIDC later)</h5>
+<p>Open <code>http://127.0.0.1/apps</code> → auto-redirect to Keycloak login → enter domain account → login succeeds into the Dify workspace.</p>
+</div>
+
+<h3 id="config-newapi">6.2 NewAPI — initial setup + configure LLM channels and API keys</h3>
+
+<h4>Initial setup wizard (first visit)</h4>
+<p>NewAPI pops up a 4-step system setup wizard on first start. Complete as follows:</p>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Database check</strong>
+  <p>Click <b>"Verify database connection"</b>; the system auto-detects whether MySQL is reachable.</p>
+  <div class="callout" style="border-left:3px solid #56d364;padding:10px 16px;margin:8px 0;background:rgba(86,211,100,0.06);border-radius:0 4px 4px 0;">
+    <strong>Expected:</strong> green check + "Database connection normal". If it fails, check <code>docker logs new-api</code> for MySQL connection errors.
+  </div>
+</div>
+
+<div class="step">
+    <span class="step-num">2</span><strong>Admin account</strong>
+  <table style="margin:8px 0;width:100%;">
+    <tr><th style="width:25%;">Setting</th><th>Recommended value</th><th>Notes</th></tr>
+    <tr><td>Admin username</td><td style="color:#f0883e"><b><code>ai_all_in_one_admin</code></b></td><td>Unified admin account (see credentials list <code>credentials.html</code>)</td></tr>
+    <tr><td>Admin email</td><td><code>ai_all_in_one_admin@&lt;company-domain&gt;</code></td><td>Replace <code>&lt;company-domain&gt;</code> with your company domain</td></tr>
+    <tr><td>Admin password</td><td style="color:#f0883e"><b>Unified admin password</b></td><td>≥ 8 chars, see credentials list <code>credentials.html</code></td></tr>
+  </table>
+  <div class="callout" style="border-left:3px solid #d29922;padding:10px 16px;margin:8px 0;background:rgba(210,153,34,0.06);border-radius:0 4px 4px 0;">
+    <strong>Why create a local admin?</strong> OIDC isn't configured yet, so NewAPI doesn't know Keycloak; you must have a local account to "get in the door" and finish config. After registering this admin, enable OIDC in system settings; afterwards everyone (including AD users) can log in with Keycloak accounts.
+  </div>
+</div>
+
+<div class="step">
+    <span class="step-num">3</span><strong>Usage mode</strong>
+  <p>Select <b>"Personal use"</b>.</p>
+  <div class="callout" style="border-left:3px solid #8b949e;padding:10px 16px;margin:8px 0;background:rgba(139,148,158,0.06);border-radius:0 4px 4px 0;">
+    <strong>Difference between the three options:</strong>
+    <ul>
+      <li><b>Personal use:</b> no user registration restriction, API logs isolated per user, simple config. For dev/test and company internal use</li>
+      <li><b>Commercial operation:</b> for external users, adds recharge/pricing/user plans/billing modules. For commercial external operation</li>
+      <li><b>Demo site:</b> read-only, for demonstration only, no config changes allowed</li>
+    </ul>
+    <p><b>Recommendation:</b> for company internal use, choose <b>Personal use</b> — employees can register, usage is viewable separately, no unused recharge/billing modules, cleaner UI. If there's a future need for external operation, switch to Commercial then. You can switch anytime in system settings.</p>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>Review and initialize</strong>
+  <ul>
+    <li>Confirm the previous three steps are correct</li>
+    <li>Click <b>"Confirm and complete initialization"</b> (or similar)</li>
+    <li>The system auto-creates DB tables → redirects to login → log in with the admin account from step 1</li>
+  </ul>
+</div>
+
+<h4>Configure LLM channels</h4>
+<div class="step">
+  <span class="step-num">1</span><strong>Add an LLM channel (pointing to LiteLLM)</strong>
+  <ul>
+    <li><strong>Channels</strong> → <strong>Add new channel</strong></li>
+    <li>Type: <code>OpenAI</code></li>
+    <li>Name: <code>LiteLLM-OpenAI</code></li>
+    <li>Base URL: <code>http://litellm:4000</code> (container name, via Docker network)</li>
+    <li>Key: <b style="color:#e5534b;">⚠️ see <code>LITELLM_MASTER_KEY</code> in <code>.env</code></b> (not a doc example value; use the actual running key, otherwise "No connected db")</li>
+    <li>Models: <code>gpt-4o, gpt-4o-mini</code></li>
+    <li>Save</li>
+  </ul>
+  <p>Repeat for other model channels (if corresponding API keys are configured):</p>
+  <ul>
+    <li>Claude: type <code>Anthropic Claude</code>, Base URL <code>http://litellm:4000</code>, model <code>claude-3-5-sonnet-20241022</code></li>
+    <li>DeepSeek: type <code>OpenAI</code>, Base URL <code>http://litellm:4000</code>, model <code>deepseek-chat</code></li>
+  </ul>
+  <div class="callout callout-warn">
+    <strong>Key:</strong> all channels use Base URL <code>http://litellm:4000</code> (container name), not localhost.
+    NewAPI and LiteLLM are in the same Docker network, communicating via container name.
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Test channel connectivity</strong>
+  <ul>
+    <li>Channel list → click the channel just created → <strong>Test</strong> button</li>
+    <li>Select a model → a normal reply means the NewAPI → LiteLLM → external model chain works</li>
+  </ul>
+  <div class="callout callout-danger">
+    If the test fails: check <code>docker logs litellm</code> for API key errors.
+    Confirm <code>OPENAI_API_KEY</code> etc. in <code>.env</code> have real keys.
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Create API keys</strong>
+  <p>Create separate keys for Dify and DeepChat for easier usage tracking:</p>
+  <ul>
+    <li>Left menu <strong>API Keys</strong> → <strong>New</strong></li>
+    <li>Name: <code>dify-key</code> → Save → copy <code>sk-xxx</code>, fill into Dify model provider later</li>
+    <li>Create another, Name: <code>deepchat-key</code> → Save → copy <code>sk-xxx</code>, distribute to DeepChat users later</li>
+  </ul>
+  <div class="callout" style="border-left:3px solid #8b949e;padding:10px 16px;margin:8px 0;background:rgba(139,148,158,0.06);border-radius:0 4px 4px 0;">
+    <strong>Why separate?</strong> Dify is server-side, DeepChat is client-side. Separating the two keys lets you view each one's consumption in NewAPI usage stats, and easier to locate problems.
+  </div>
+</div>
+
+<h4>Allow regular users to self-service API keys</h4>
+<p>Employees (including AD-synced users) can create their own keys on the <b>API Keys</b> page after login — a built-in feature, no extra switch. But to actually call models, two conditions must hold:</p>
+<ol>
+  <li><b>User has quota</b>: new-user default quota is <code>0</code> (can't call). Set <code>DEFAULT_QUOTA=100</code> in <code>.env</code> so new users get $100 on registration.</li>
+  <li><b>User has a token</b>: set <code>GENERATE_DEFAULT_TOKEN=true</code> so new users auto-get an initial token on registration; users can also create their own on the API keys page.</li>
+</ol>
+<div class="callout callout-warn">
+  <strong>⚠️ Only affects "newly registered" users:</strong> <code>DEFAULT_QUOTA</code> and <code>GENERATE_DEFAULT_TOKEN</code> only take effect on a user's <b>first registration / first OIDC login</b>. Users who already logged in (e.g. <code>aitest1</code>) won't be backfilled automatically; an admin must set their quota in <b>Users</b> → edit user, or let the user create a token on the API keys page.
+</div>
+<div class="verify">A regular user can send messages and receive replies normally after selecting their token in the playground.</div>
+<div class="verify">NewAPI dashboard shows request count &gt; 0. Channel test returns an AI reply.</div>
+
+<h4>Connect Keycloak OIDC (let AD users log in directly)</h4>
+<p>After the initialization and channel config above, employees can log into NewAPI directly with AD domain accounts, no manual local registration needed.</p>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Create the NewAPI OIDC client in Keycloak</strong>
+  <ol>
+    <li>Keycloak admin console → <code>enterprise-ai</code> realm → <b>Clients</b> → <b>Create client</b></li>
+    <li>Client ID: <code>newapi</code>, Client type: <b>OpenID Connect</b> → Next</li>
+    <li><b>Client authentication: On</b> (⚠️ required, otherwise no Credentials tab)</li>
+    <li>Standard flow: <b>On</b>, Direct access grants: <b>On</b> → Next</li>
+    <li>Valid redirect URIs: <code>http://&lt;server-IP&gt;:3000/*</code> (intranet) and <code>http://127.0.0.1:3000/*</code> (local debugging), add both</li>
+    <li>Web origins: <code>http://&lt;server-IP&gt;:3000</code> and <code>http://127.0.0.1:3000</code> → Save</li>
+    <li>After saving, a <b>Credentials</b> tab appears at the top → open it → copy the <b>Client secret</b></li>
+  </ol>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>Enable OIDC in NewAPI</strong>
+  <ol>
+    <li>NewAPI admin console → <b>System settings</b> → <b>Authentication</b> → <b>Custom OAuth</b> → <b>Add OAuth provider</b></li>
+    <li>Fill in by group:</li>
+  </ol>
+
+  <p><strong>Quick setup</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>Preset template</td><td><code>Keycloak</code></td></tr>
+    <tr><td>API address</td><td><code>http://127.0.0.1:9090</code></td></tr>
+  </table>
+
+  <p><strong>Basic info</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>Enabled</td><td>On</td></tr>
+    <tr><td>Provider name</td><td><code>Keycloak</code></td></tr>
+    <tr><td>Identifier</td><td><code>keycloak</code></td></tr>
+    <tr><td>Icon</td><td><code>keycloak</code> (optional)</td></tr>
+  </table>
+
+  <p><strong>Credentials</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>Client ID</td><td><code>newapi</code></td></tr>
+    <tr><td>Client Secret</td><td>Value copied from Keycloak Credentials</td></tr>
+    <tr><td>Auth method</td><td>Default (Auto Detect)</td></tr>
+  </table>
+
+  <p><strong>Endpoints (auto-discover first, then manually fix)</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>Well-Known URL</td><td><code>http://host.docker.internal:9090/realms/enterprise-ai/.well-known/openid-configuration</code></td></tr>
+    <tr><td colspan="2">Click <b>"Auto discover"</b> → the three endpoints auto-fill (all with <code>&lt;server-IP&gt;:9090</code> prefix) → <b style="color:#e5534b;">then manually change</b>:</td></tr>
+    <tr><td>Authorization endpoint</td><td><b>Keep <code>&lt;server-IP&gt;:9090</code> unchanged</b> (browser redirect, directly accessible)</td></tr>
+    <tr><td>Token endpoint</td><td>Change <code>&lt;server-IP&gt;:9090</code> to <b><code>host.docker.internal:9090</code></b> (NewAPI container calls Keycloak to exchange token)</td></tr>
+    <tr><td>User info endpoint</td><td>Change <code>&lt;server-IP&gt;:9090</code> to <b><code>host.docker.internal:9090</code></b> (NewAPI container fetches user info)</td></tr>
+  </table>
+  <div class="callout" style="border-left:3px solid #58a6ff;padding:10px 16px;margin:4px 0 12px;background:rgba(86,211,100,0.06);border-radius:0 4px 4px 0;">
+    <strong>Why not &lt;server-IP&gt;?</strong> NewAPI is a Docker container; <code>&lt;server-IP&gt;</code> points to the container itself rather than the host, so you must use <code>host.docker.internal</code> (Docker Desktop resolves it to the host). After auto-discovery, the authorization endpoint is also auto-filled as <code>http://host.docker.internal:9090/...</code>, which the browser can also reach — no extra change needed.
+  </div>
+
+  <p><strong>Scopes</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>Scopes</td><td><code>openid profile email</code></td></tr>
+  </table>
+
+  <p><strong>Field mapping</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>User ID field</td><td><code>sub</code></td></tr>
+    <tr><td>Username field</td><td><code>preferred_username</code></td></tr>
+    <tr><td>Display name field</td><td><code>name</code></td></tr>
+    <tr><td>Email field</td><td><code>email</code></td></tr>
+  </table>
+
+  <p><strong>Advanced</strong></p>
+  <table style="margin:4px 0 12px;width:100%;">
+    <tr><th style="width:22%;">Setting</th><th>Recommended value</th></tr>
+    <tr><td>Access policy (JSON)</td><td>blank (allow all users)</td></tr>
+    <tr><td>Access denied message</td><td>blank</td></tr>
+  </table>
+
+  <div class="callout" style="border-left:3px solid #d29922;padding:10px 16px;margin:12px 0;background:rgba(210,153,34,0.06);border-radius:0 4px 4px 0;">
+    <strong>⚠️ After saving, one extra step:</strong> go back to Keycloak → <code>newapi</code> Client → Settings → Valid redirect URIs, add the auto-generated <b>authorization callback URL</b> (intranet <code>http://&lt;server-IP&gt;:3000/oauth/keycloak</code>, local <code>http://127.0.0.1:3000/oauth/keycloak</code>), Save. Otherwise the callback fails.
+  </div>
+  <div class="callout" style="border-left:3px solid #e5534b;padding:10px 16px;margin:12px 0;background:rgba(229,83,75,0.06);border-radius:0 4px 4px 0;">
+    <strong>⚠️ Must change: NewAPI's server address must be set to an address employees can reach (otherwise token exchange fails with invalid_grant / Incorrect redirect_uri)</strong><br>
+    When NewAPI's backend exchanges the authorization code for a token, it builds redirect_uri using the system setting <b>"Server address"</b>. The default is <code>http://localhost:3000</code>, which mismatches the browser access address → Keycloak returns <code>invalid_grant - Incorrect redirect_uri</code>.<br><br>
+    For intranet deployment, set it to <code>http://&lt;server-IP&gt;:3000</code> (for local debugging use <code>http://127.0.0.1:3000</code>): NewAPI admin → <b>Settings → System settings → General settings → Server address</b>.<br>
+    <b style="color:#f0883e">⚠️ Key: after setting the server address to the intranet IP, the local machine must also use the intranet IP to access (<code>http://&lt;server-IP&gt;:3000</code>), not <code>127.0.0.1:3000</code>.</b> Because during authorization redirect_uri takes the browser address (127.0.0.1) while token exchange takes the server address (intranet IP); a mismatch causes <code>invalid_grant - Incorrect redirect_uri</code> again.<br>
+    Or change the DB directly:<br>
+    <code>docker exec new-api-db mysql -uroot -p... new-api -e "INSERT INTO options (\`key\`, value) VALUES ('ServerAddress','http://&lt;server-IP&gt;:3000') ON DUPLICATE KEY UPDATE value='http://&lt;server-IP&gt;:3000';"</code> then <code>docker compose restart new-api</code>
+  </div>
+  <ol start="4">
+    <li>Log out of NewAPI → the login page shows a <b>Keycloak</b> button → test login with a domain account</li>
+  </ol>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>Test login with an AD account</strong>
+  <ol>
+    <li>Open <code>http://127.0.0.1:3000</code> → the login page should show a <b>Keycloak/OIDC login</b> button</li>
+    <li>Click → redirect to Keycloak login → enter AD domain account (e.g. <code>aitest1</code> + domain password)</li>
+    <li>Login succeeds → back to NewAPI, username shows the AD account</li>
+  </ol>
+</div>
+
+<div class="verify">AD user <code>aitest1</code> can log in directly via the OIDC button on the NewAPI login page, without extra registration in NewAPI.</div>
+
+<div class="callout callout-danger" style="margin-top:12px;">
+  <strong>Troubleshooting: login returns 429 (Too Many Requests)</strong><br>
+  NewAPI's default rate limit is strict; consecutive failures during OIDC debugging easily trigger it. Login/OAuth callback uses <b>CriticalRateLimit</b>, default <b>20 per 20 minutes</b>, independent from the global limit (GW/GA). Env vars: <code>CRITICAL_RATE_LIMIT_ENABLE</code> / <code>CRITICAL_RATE_LIMIT</code> (not the "Rate limit" page in system settings).<br><br>
+  <b>Temporary relief:</b><br>
+  <code>docker exec new-api-redis redis-cli --scan --pattern "rateLimit:*" | xargs -r docker exec new-api-redis redis-cli DEL</code><br><br>
+  <b>Permanent fix:</b> already preset in <code>.env.windows</code>: <code>GLOBAL_WEB_RATE_LIMIT=999999</code>, <code>GLOBAL_API_RATE_LIMIT=999999</code>, <code>CRITICAL_RATE_LIMIT_ENABLE=false</code>, <code>CRITICAL_RATE_LIMIT=999999</code>; docker-compose.yml references these. Recreate containers to apply.
+</div>
+
+<h3 id="config-litellm">6.3 LiteLLM — verification (PII masking temporarily disabled)</h3>
+<div class="callout callout-warn">
+  <strong>⚠️ PII masking (Presidio guardrail) temporarily disabled:</strong> the newer LiteLLM guardrail config format changed; the block in <code>litellm-config.yaml</code> is commented out. Currently LiteLLM only proxies LLM traffic (no masking). <b>You can skip this step</b>; re-enable after guardrail compatibility.
+</div>
+<div class="step">
+  <span class="step-num">1</span><strong>Verify LiteLLM is basically functional</strong>
+  <pre><code><span class="comment"># Send a test message</span>
+curl -X POST http://&lt;server-IP&gt;:4001/v1/chat/completions ^
+  -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}"</code></pre>
+  <div class="verify">
+    <ul>
+      <li>A normal AI reply (e.g. <code>Hi there...</code>) means pass</li>
+      <li><b style="color:#f0883e">⚠️ <code>&lt;LITELLM_MASTER_KEY&gt;</code> is the LiteLLM admin key</b>: use the actual <code>LITELLM_MASTER_KEY</code> value in <code>.env</code> (see credentials list <code>credentials.html</code>), not the placeholder itself, otherwise <code>401 Unauthorized</code></li>
+      <li><b style="color:#f0883e">⚠️ Must use the intranet IP</b> <code>&lt;server-IP&gt;:4001</code>, not <code>127.0.0.1:4001</code> (WSL2 port forwarding issue; 127.0.0.1 doesn't work in practice)</li>
+      <li>Only <code>deepseek-chat</code> is enabled (<code>gpt-4o-mini</code> etc. not configured)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>Enable exact-match response cache (built-in)</strong>
+  <p>LiteLLM has Redis exact-match cache enabled: identical requests (model + messages + params) return cached responses directly, no external model call, <b>shared across users, saving tokens</b>. Any parameter change misses the cache; no cache collisions.</p>
+  <pre><code><span class="comment"># end of litellm-config.yaml</span>
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis   <span class="comment"># dedicated cache Redis (compose added litellm-redis service)</span>
+    port: 6379
+    ttl: 3600            <span class="comment"># cache 1 hour, adjust per data update frequency</span></code></pre>
+  <div class="verify">
+    <ul>
+      <li><b>Verify connectivity</b>: <code>curl http://&lt;server-IP&gt;:4001/cache/ping -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;"</code> → returns <code>ping_response: true</code></li>
+      <li><b>Hit signature</b>: two identical consecutive requests; the second's response <code>id</code> equals the first, latency drops from seconds to milliseconds</li>
+      <li><b>Disable cache</b>: <code>cache: false</code> or comment the block, restart <code>litellm</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <strong>Extension: add more LLM providers</strong> (e.g. OpenAI / Claude, on demand):
+  <ol style="margin:8px 0 0 20px;">
+    <li>In <code>.env</code>, uncomment <code># OPENAI_API_KEY=</code> and fill in the real key</li>
+    <li>In <code>litellm-config.yaml</code>, uncomment the corresponding model block</li>
+    <li>Restart LiteLLM: <code>docker compose up -d litellm</code></li>
+  </ol>
+</div>
+
+<h3 id="config-dify">6.4 Dify — configure model provider</h3>
+<div class="step">
+  <span class="step-num">1</span>Open <code>http://&lt;server-IP&gt;</code> in a browser
+  <ul>
+    <li>First visit → set admin email and password → log in</li>
+    <li style="color:#f0883e"><b>Unified account suggestion:</b> email <code>ai_all_in_one_admin@&lt;company-domain&gt;</code> (replace <code>&lt;company-domain&gt;</code> with your company domain, e.g. <code>company.com</code>); if the product has a "username/account" field use <code>ai_all_in_one_admin</code>; password = unified admin password (see credentials list <code>credentials.html</code>)</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Add a model provider (pointing to NewAPI)</strong>
+  <ul>
+    <li><strong>Settings</strong> → <strong>Model Providers</strong></li>
+    <li>Find <strong>OpenAI-API-compatible</strong> → <strong>Add model</strong></li>
+    <li>Config (<b>example uses DeepSeek; fill in per the channels/models you actually configured in NewAPI</b>):
+      <ul>
+        <li>Model name: <code>deepseek-chat</code> (example; use your actual model name)</li>
+        <li>API Key: <code>dify-key</code>'s <code>sk-xxx</code> (copied from NewAPI API Keys)</li>
+        <li>API endpoint: <code>http://host.docker.internal:3000/v1</code></li>
+      </ul>
+    </li>
+    <li>For more models, add repeatedly (e.g. <code>gpt-4o</code>, <code>claude-3-5-sonnet</code>, depending on what channels you configured in NewAPI)</li>
+  </ul>
+  <div class="callout callout-warn">
+    <strong>Note:</strong> Dify uses <code>host.docker.internal</code> rather than the container name,
+    because Dify is on its own Docker network, not the same as NewAPI.
+    <code>host.docker.internal</code> works automatically on Docker Desktop for Windows.
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Create a test app</strong>
+  <ul>
+    <li><strong>Studio</strong> → <strong>Create blank app</strong> → choose "Chat assistant"</li>
+    <li>Top-right select model <code>deepseek-chat</code> (example; use your actual configured model)</li>
+    <li>Send a message → receive an AI reply → pipeline verified</li>
+  </ul>
+</div>
+<div class="verify">Dify returns AI replies normally. <code>docker logs new-api</code> shows Dify's request records.</div>
+
+<h3 id="config-ghost">6.5 Ghost — configure the portal</h3>
+<div class="step">
+  <span class="step-num">1</span>Open the admin entry <code>http://&lt;server-IP&gt;:8090/ghost/</code> in a browser (<b>note the /ghost/ suffix, this is the admin console</b>)
+  <ul>
+    <li>First visit → Ghost setup wizard → set site title + name + email + password (create admin account). <b>Note: Ghost 5 admin login is passwordless</b> — afterwards, each login enters the email and Ghost sends a 6-digit code to MailHog (<code>:8025</code>); or in the AI Admin Center click "Open" on the "Ghost Admin" entry to log in without a password (see 13.10).</li>
+    <li style="color:#f0883e"><b>Unified account suggestion:</b> email <code>ai_all_in_one_admin@&lt;company-domain&gt;</code> (replace <code>&lt;company-domain&gt;</code> with your company domain), password = unified admin password (see <code>credentials.html</code>, needs at least 10 chars)</li>
+    <li style="color:#f0883e"><b>⚠️ Don't click "Sign up" on the portal homepage (<code>/</code>):</b> that's the <b>member signup</b> for visitors, which uses magic-link email verification and will 500 without an SMTP service. The admin entry is <code>/ghost/</code>.</li>
+  </ul>
+  <div class="callout callout-info"><strong>🤖 Automation (optional):</strong> instead of clicking through the wizard, run <code>scripts\ghost-setup.ps1</code> to create the admin in one shot via the setup API (reads <code>GHOST_ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code> from <code>.env</code>), equivalent to completing the wizard: <code>powershell -File .\scripts\ghost-setup.ps1</code> (auto-skips if already initialized).</div>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Install a theme</strong>
+  <ul>
+    <li>Admin → <strong>Design</strong> → <strong>Themes</strong>; Ghost ships <code>Casper</code> and <code>Source</code> (100% compatible), just activate.</li>
+    <li>For more styles: install from the <strong>theme market</strong> (Design → Change theme → browse themes), which matches themes compatible with the current version.</li>
+    <li style="color:#f0883e"><b>⚠️ Don't install the latest theme from GitHub:</b> some official themes (e.g. <code>Journal</code>) have main branches adapted to Ghost 6.x and will fail on Ghost 5.x with <code>Theme is not compatible or contains errors</code> (invalid Handlebars syntax). For those, find a 5.x-compatible old-version zip and upload manually.</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Configure the navigation menu</strong>
+  <p>Admin → <strong>Design</strong> → <strong>Navigation</strong> → create "Primary navigation":</p>
+  <table>
+    <tr><th>Menu item</th><th>Type</th><th>URL</th></tr>
+    <tr><td>Home</td><td>Page</td><td><code>/</code></td></tr>
+    <tr><td>News</td><td>Tag</td><td><code>/category/news</code></td></tr>
+    <tr><td>Download center</td><td>Page</td><td><code>/downloads</code></td></tr>
+    <tr><td>AI workbench</td><td>Custom link</td><td><code>http://&lt;server-IP&gt;</code></td></tr>
+    <tr><td>Help docs</td><td>Tag</td><td><code>/category/docs</code></td></tr>
+  </table>
+</div>
+<div class="step">
+  <span class="step-num">4</span><strong>Create the download center page</strong>
+  <p>Admin → <strong>Pages</strong> → new "Download center" (slug <code>downloads</code>):</p>
+  <pre><code>## DeepChat Enterprise
+
+### Windows
+- [DeepChat v1.1.0 (Windows x64)](http://&lt;server-IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+
+### macOS
+- [DeepChat v1.1.0 (macOS x64)](http://&lt;server-IP&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+
+### Version history
+- **v1.1.0** — released 2026-08-11</code></pre>
+</div>
+<div class="verify">Ghost homepage shows the theme; the nav menu includes the "AI workbench" link which redirects to Dify.</div>
+
+<h3 id="config-gitea">6.6 Gitea — initialization and Runner registration</h3>
+<div class="step">
+  <span class="step-num">1</span>Open <code>http://&lt;server-IP&gt;:3002</code> in a browser
+  <ul>
+    <li>Complete the install wizard (choose SQLite, pre-configured)</li>
+    <li>Create the admin account</li>
+    <li style="color:#f0883e"><b>Unified account suggestion:</b> username <code>ai_all_in_one_admin</code>, email <code>ai_all_in_one_admin@&lt;company-domain&gt;</code> (replace <code>&lt;company-domain&gt;</code> with your company domain), password = unified admin password (see <code>credentials.html</code>)</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Enable Actions and get the Runner token</strong>
+  <ul>
+    <li>Top-right avatar → <strong>Site Administration</strong> → <strong>Actions</strong></li>
+    <li>Confirm <code>Enabled Actions</code> is on</li>
+    <li><strong>Runners</strong> → <strong>Create new Runner</strong> → copy the Registration Token</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Restart the Runner container with the token</strong>
+  <pre><code><span class="comment"># Edit .env and fill in the Runner token</span>
+<span class="comment"># .env</span>
+GITEA_RUNNER_TOKEN=the-token-you-copied-from-gitea
+
+<span class="comment"># Recreate the Runner container (⚠️ must use up -d, not restart:
+# restart only restarts the process, it won't re-read .env, so a changed token won't apply)</span>
+docker compose -f docker-compose.yml up -d gitea-runner
+
+<span class="comment"># Wait a few seconds, then check Runner status ("Runner registered successfully." means success)</span>
+docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
+  <div class="verify">Gitea → Site Administration → Runners shows the Runner as <strong>Idle</strong> (green).</div>
+</div>
+<div class="callout callout-danger">
+  <strong>⚠️ Pitfall 1: Gitea reports <code>readonly database</code> / page won't open:</strong> usually because <code>gitea.db</code> in the <code>gitea-data</code> volume was created by root (rather than the container's <code>git</code> user), so Gitea can't write. Fix: stop Gitea, delete the empty/root-owned <code>gitea.db</code> (at <code>gitea-data/git/gitea.db</code> on the host, or locate via <code>docker exec</code>), then <code>docker compose up -d gitea</code> to let it rebuild as the git user.
+</div>
+<div class="callout callout-warn">
+  <strong>⚠️ Pitfall 2: Gitea's <code>ROOT_URL</code> must be set to the intranet address:</strong> if <code>GITEA__server__ROOT_URL</code> in docker-compose is still <code>http://localhost:3002/</code>, Gitea generates repo links and API <code>html_url</code> with <code>localhost</code>/container addresses (intranet employees can't open them). Change to <code>http://&lt;server-IP&gt;:3002/</code> then <code>docker compose up -d gitea</code> to rebuild.
+</div>
+
+<!-- ==================== 7. DeepChat ==================== -->
+
+<h2 id="deepchat">7. DeepChat Installation &amp; Configuration</h2>
+<p>DeepChat is a desktop AI chat client that calls backend large models through NewAPI. Choose any of the three methods below.</p>
+
+<h3>7.1 Method A: intranet distribution (recommended, employees download from intranet)</h3>
+<div class="callout callout-info">
+  <strong>Note:</strong> distribution chain = GitHub Releases installer → <code>deepchat-sync</code> repo's Gitea Actions workflow → Update Server (8091) → Ghost download page → employee download. <b>No longer needs a Gitea source mirror repo</b> (the <code>deepchat</code> mirror was deleted) — mirroring only syncs git source, <b>not release installers</b>, and runs every 8 hours taking ~107 MB, with no benefit for "distributing installers". Create one separately later only if you need source audit / secondary development.
+</div>
+<div class="step">
+  <span class="step-num">1</span><strong>(Optional) create a source mirror repo, for source audit / secondary development only</strong>
+  <p>Only useful when you need to view DeepChat source on the intranet, do security review, or self-build; unrelated to "distributing installers", can be skipped:</p>
+  <pre><code>curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/migrate" \
+  -u "ai_all_in_one_admin:&lt;password&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"clone_addr":"https://github.com/ThinkInAIXYZ/deepchat","repo_name":"deepchat","mirror":true}'</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Download the installer to the Update Server</strong>
+  <pre><code><span class="comment"># Download from GitHub release (example v1.1.0; replace with latest version)</span>
+mkdir -p deepchat-updates/deepchat
+curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-windows-x64.exe \
+  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-windows-x64.exe
+curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
+  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-mac-x64.dmg</code></pre>
+  <div class="verify">Download link reachable: <code>curl -I http://&lt;server-IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe</code> → HTTP 200/206.</div>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Update the Ghost download center page</strong>
+  <p>Put the intranet download links on Ghost's <code>downloads</code> page (see 6.5 step 4). Employees open <code>http://&lt;server-IP&gt;:8090/downloads/</code> to download.</p>
+</div>
+
+<h4>Auto-sync (Gitea Actions, optional)</h4>
+<p>The three steps above can be solidified into a Gitea Actions workflow that checks GitHub for new versions daily and syncs. Implemented:</p>
+<table>
+  <tr><th>Component</th><th>Notes</th></tr>
+  <tr><td><code>deepchat-sync</code> repo</td><td>A normal Gitea repo (<b>not</b> a mirror repo, which is read-only), containing <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
+  <tr><td>Workflow trigger</td><td><code>schedule</code> (daily 2 AM UTC) + <code>workflow_dispatch</code> (manual)</td></tr>
+  <tr><td>Sync logic</td><td>Query GitHub API latest tag → compare <code>version.txt</code> → if newer, download installer + update Ghost download page + write version</td></tr>
+  <tr><td>Runner config</td><td><code>gitea-runner-config.yaml</code> mounted to the runner, add <code>CONFIG_FILE</code> env var; <code>container.network: ai-platform</code> (so job containers resolve the gitea hostname)</td></tr>
+</table>
+<pre><code><span class="comment"># Manually trigger a sync</span>
+curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+  -u "ai_all_in_one_admin:&lt;password&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'
+
+<span class="comment"># Or Gitea Web UI: deepchat-sync → Actions → run workflow</span></code></pre>
+<div class="note">Key pitfalls: ① act_runner's <code>container.network</code> must be set via <code>config.yaml</code> (+ <code>CONFIG_FILE</code> env var), otherwise job containers can't resolve the <code>gitea</code> hostname on an isolated network; ② docker.sock is auto-mounted by act_runner, don't mount it again in <code>options</code> (Duplicate mount point error); ③ downloading the Docker CLI occasionally hits <code>curl (18) HTTP/2 stream</code> transient network failure — the workflow added <code>--http1.1 --retry 5</code> to that download.</div>
+
+<h4>China download source config (<code>sync-config.json</code>)</h4>
+<div class="callout callout-warn">
+  <strong>⚠️ GitHub is largely unreachable in China; the official "download page" doesn't actually solve downloading:</strong> the official site <code>deepchatai.cn</code> gets its download data from its own server at <code>https://deepchatai.cn/download-cache.json</code> (reachable in China), but the installer <code>browser_download_url</code> inside <b>still points to <code>github.com/.../releases/download/...</code></b>; clicking "download" on the frontend jumps straight to GitHub, no domestic mirror/acceleration. Also this cache <b>lags</b> (when the official stable shows v1.0.7, GitHub is already v1.1.0).
+</div>
+<p>So actually solving China downloads relies on <code>sync-config.json</code> in the <code>deepchat-sync</code> repo root, with these switches:</p>
+<table>
+  <tr><th style="width:28%;">Field</th><th>Purpose</th><th>Default</th></tr>
+  <tr><td><code>version_source</code></td><td>Where to check versions: <code>github</code> (GitHub API, most accurate) or <code>official</code> (official download-cache.json, reachable in China but lags)</td><td><code>github</code></td></tr>
+  <tr><td><code>download_prefix</code></td><td>Download acceleration prefix; download link becomes <code>prefix + github.com/...</code>; blank = direct</td><td><code>""</code></td></tr>
+  <tr><td><code>keep_releases</code></td><td>How many versions to keep in download page history (newest first, trimmed when exceeded)</td><td><code>5</code></td></tr>
+  <tr><td><code>market_url</code></td><td>The intranet Skill market address shown in the download page's "install skill manager first" hint</td><td><code>http://&lt;server-IP&gt;:3100</code></td></tr>
+</table>
+<pre><code><span class="comment"># ① GitHub reachable: leave default</span>
+{ "version_source": "github", "download_prefix": "" }
+<span class="comment"># ② GitHub acceleration proxy (most common)</span>
+{ "version_source": "github", "download_prefix": "https://ghproxy.com/" }
+<span class="comment"># ③ GitHub API fully unreachable: check version via official + proxy download</span>
+{ "version_source": "official", "download_prefix": "https://ghproxy.com/" }</code></pre>
+<div class="note">The workflow has a built-in <code>version_cmp.py</code> for version comparison, downloading <b>only when "latest &gt; locally deployed"</b> — because the official cache lags (v1.0.7 &lt; local v1.1.0), downloading on "version differs" would <b>downgrade employee clients</b>. Meanwhile <code>update_ghost.py</code> maintains the download page: new versions accumulate as a timeline, trimmed by <code>keep_releases</code>, idempotent per version (no duplicate append), auto-rebuilds the page if accidentally deleted (UPSERT).</div>
+
+<h3>7.2 Method B: build a custom version with Docker</h3>
+<div class="step">
+  <span class="step-num">1</span><strong>Build with a temporary Docker container</strong>
+  <pre><code><span class="comment"># PowerShell</span>
+mkdir deepchat-build
+
+<span class="comment"># Start a temporary Node.js container for building</span>
+docker run -it --rm ^
+  -v ${PWD}/deepchat-build:/app ^
+  -w /app ^
+  node:20 bash
+
+<span class="comment"># === inside the container ===</span>
+git clone https://github.com/ThinkInAIXYZ/deepchat.git .
+npm ci
+
+<span class="comment"># Build the Windows installer</span>
+npx electron-builder --win --x64
+
+<span class="comment"># Build output in dist/</span>
+ls dist/
+<span class="comment"># DeepChat-Setup-0.0.1.exe  latest.yml</span>
+
+<span class="comment"># Exit the container</span>
+exit
+
+<span class="comment"># === back in PowerShell ===</span>
+<span class="comment"># Copy the installer to the Update Server directory</span>
+mkdir deepchat-updates
+copy deepchat-build\dist\*.exe windows\deepchat-updates\
+copy deepchat-build\dist\latest.yml windows\deepchat-updates\</code></pre>
+  <div class="verify">Open <code>http://127.0.0.1:8091/deepchat/latest.yml</code> in a browser to see the YAML content.</div>
+</div>
+
+<h3>7.3 Configure the DeepChat client</h3>
+<div class="step">
+  <span class="step-num">1</span><strong>Configure the LLM provider</strong>
+  <ul>
+    <li>Open DeepChat → <strong>Settings</strong> → <strong>Model service</strong></li>
+    <li>Select "Custom Provider" or "OpenAI-compatible"</li>
+    <li>API Base URL: <code>http://&lt;server-IP&gt;:3000/v1</code> (NewAPI; on employee machines must use the intranet IP, not &lt;server-IP&gt;)</li>
+    <li>API Key: <code>deepchat-key</code>'s <code>sk-xxx</code> (copied from NewAPI API Keys)</li>
+    <li>Model: <code>gpt-4o-mini</code> (or <code>deepseek-chat</code>)</li>
+    <li>Save</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Test conversation</strong>
+  <ul>
+    <li>New conversation → send "hello" → receive an AI reply</li>
+    <li>Send "my email is test@example.com" → check the reply</li>
+  </ul>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Verify PII masking</strong>
+  <pre><code><span class="comment"># Check LiteLLM logs to confirm masking</span>
+docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
+  <div class="verify">
+    Logs show <code>EMAIL_ADDRESS</code> detected and replaced with <code>[EMAIL]</code>.
+    The email address is restored in DeepChat's received reply.
+  </div>
+</div>
+<div class="step">
+  <span class="step-num">4</span><strong>Configure MCP Server (optional)</strong>
+  <ul>
+    <li>DeepChat → <strong>Settings</strong> → <strong>MCP</strong></li>
+    <li>Add MCP Server: name <code>filesystem</code></li>
+    <li>Command: <code>npx -y @modelcontextprotocol/server-filesystem C:\Users</code></li>
+    <li>Save → test "list my files" in a conversation</li>
+  </ul>
+</div>
+
+<h2 id="mcp">8. MCP Gateway — Skill / MCP Management Hub</h2>
+<div class="note"><strong>Note:</strong> the MCP Gateway is a centralized management gateway for Skills and MCP tools, implemented on the official <code>@modelcontextprotocol/sdk</code>, exposing a standard Streamable HTTP <code>/mcp</code> endpoint. DeepChat and Dify connect to this single address to get all tools (built-in platform tools + aggregated external MCP servers). It's merged into the main docker-compose.yml and starts with the core services.</div>
+
+<h3>8.1 Deployment (merged into main docker-compose.yml)</h3>
+<p>The MCP Gateway is added as the <code>mcp-gateway</code> service in the main <code>docker-compose.yml</code>, port <code>3100</code>, starts with <code>docker compose up -d</code>, no separate deployment. Source in the <code>mcp-gateway/</code> directory (gateway.js + package.json + mcp-servers.json).</p>
+
+<h3>8.2 Built-in platform tools</h3>
+<table>
+  <tr><th>Tool</th><th>Purpose</th></tr>
+  <tr><td><code>platform_time</code></td><td>Return the server's current time</td></tr>
+  <tr><td><code>platform_echo</code></td><td>Echo text (connectivity test)</td></tr>
+  <tr><td><code>platform_services</code></td><td>List platform services</td></tr>
+</table>
+
+<h3>8.3 Aggregate external MCP servers</h3>
+<p>Edit <code>mcp-gateway/mcp-servers.json</code>, add stdio or http type MCP servers, restart <code>mcp-gateway</code> to apply. See <code>mcp-servers.example.json</code>:</p>
+<pre><code>{
+  "servers": [
+    { "name": "filesystem", "type": "stdio", "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/data"] },
+    { "name": "github", "type": "http", "url": "https://api.githubcopilot.com/mcp" }
+  ]
+}</code></pre>
+<p style="color:#8b949e;font-size:0.9em">Aggregated tools get a <code>{serverName}_</code> prefix automatically to avoid name conflicts with built-in tools.</p>
+
+<h3>8.4 Client integration (DeepChat / Dify)</h3>
+<ol>
+  <li>DeepChat: Settings → MCP settings → add server → type <b>Streamable HTTP (http)</b></li>
+  <li>Base URL: <code>http://&lt;server-IP&gt;:3100/mcp</code></li>
+  <li>Dify workflow: custom tool / MCP tool config points to the same <code>http://&lt;server-IP&gt;:3100/mcp</code></li>
+</ol>
+
+<h3>8.5 Verification</h3>
+<ol>
+  <li><code>curl http://&lt;server-IP&gt;:3100/health</code> → returns <code>{"status":"ok"}</code></li>
+  <li><code>curl -X POST http://&lt;server-IP&gt;:3100/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code> → returns the built-in tool list</li>
+</ol>
+<div class="tip">Once the MCP Gateway is running, add <code>http://&lt;server-IP&gt;:3100/mcp</code> in DeepChat's MCP settings to use platform tools. Dify workflows can also connect to the same address via MCP tool config.</div>
+
+<h3>8.6 Extension: add a custom built-in tool</h3>
+<p>In <code>mcp-gateway/gateway.js</code>, two steps: add the tool definition to the <code>builtinTools</code> array, then add execution logic in <code>callBuiltin</code>.</p>
+<pre><code>// ① tool definition (add an item to the builtinTools array)
+{ name: 'platform_health', description: 'query service health status',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② execution logic (add a branch in the callBuiltin function)
+if (name === 'platform_health') {
+  return 'all services running normally';
+}</code></pre>
+<p>Restart to apply: <code>docker compose restart mcp-gateway</code>. Then reconnect the MCP server in DeepChat to see the new tool.</p>
+
+<h3>8.7 Skill Market (intranet skill package distribution)</h3>
+<p>The MCP Gateway also hosts intranet Skills (skill packages), providing browse, download, and install endpoints:</p>
+<table>
+  <tr><th>Endpoint</th><th>Purpose</th></tr>
+  <tr><td><code>/market</code></td><td>Skill market page (browser, card browsing + ZIP download + copy install address)</td></tr>
+  <tr><td><code>/skills</code></td><td>Skill list (JSON, with name/description/version)</td></tr>
+  <tr><td><code>/skills/&lt;name&gt;.zip</code></td><td>Skill package download (<code>adm-zip</code> dynamic packaging)</td></tr>
+</table>
+<p>Skills live under the <code>mcp-gateway/skills/</code> directory (subdirectories containing <code>SKILL.md</code>), <b>auto-scanned on every request, no restart needed</b>. Built-in example: <code>platform-report</code> (generates platform status reports).</p>
+<div class="callout callout-info">
+  <strong>DeepChat install Skill:</strong> Settings → Skills → <b>Install from URL</b>, fill <code>http://&lt;server-IP&gt;:3100/skills/&lt;name&gt;.zip</code>.<br>
+  <strong>Key concept:</strong> in DeepChat, MCP and Skill are two separate concepts — MCP is a "tool" (function calling), Skill is an "agent skill package" (SKILL.md instructions + scripts). DeepChat's Skill has <b>no "custom market URL"</b>; it officially supports only "folder / ZIP / URL" installation, so intranet distribution relies on "install from URL" (gateway hosts the zip + market page).
+</div>
+
+<h4>"Skill Manager" Skill (install first, for employees to find/install/update skills)</h4>
+<p>A guided <code>skill-market</code> skill is built in; employees install it first, then ask "what skills are there / install X for me / update skills" in a conversation. It doesn't touch DeepChat's internal directories (100% reliable), and only: reads <code>market_url</code> from <code>config.json</code> → requests the <code>/skills</code> list → filters/recommends → gives install instructions → compares version to suggest updates. The Ghost download page has a pinned "install the skill manager first" hint at the top.</p>
+<pre><code><span class="comment"># The skill manager's own market address (packaged into the zip for employees)</span>
+<span class="comment"># mcp-gateway/skills/skill-market/config.json</span>
+<span class="comment"># ⚠️ Use a hostname, not an IP (DeepChat masks IPs)</span>
+<span class="comment"># ⚠️ &lt;market-hostname&gt; is a deployment parameter, must be replaced (see "Auto / Manual" below)</span>
+{ "market_url": "http://&lt;market-hostname&gt;:3100" }</code></pre>
+
+<div class="callout callout-warn">
+  <strong>⚠️ Important: <code>market_url</code> uses a hostname, and <code>&lt;market-hostname&gt;</code> is a <b>deployment parameter that must be replaced</b>.</strong> DeepChat's agent environment masks IP addresses into <code>[IP_ADDRESS_REDACTED]</code>, causing the "skill manager" to fail to read the real IP and unable to request the <code>/skills</code> list; hostnames are unaffected by masking. But the hostname is a <b>local value that differs per deployment</b> and must not be copied as-is (this environment currently uses <code>skillmarket.chxia.lab</code>, where <code>chxia.lab</code> is this company's AD domain; other deployments must replace it with their own).
+  <ul>
+    <li><b>Auto (recommended, via Agent deployment):</b> the Agent asks you "Skill market hostname (domain)" during "Chapter 0 · Step 1 collect parameters", then automatically replaces all <code>&lt;market-hostname&gt;</code> in <code>mcp-gateway/skills/skill-market/config.json</code> and the sibling <code>SKILL.md</code> with your value.</li>
+    <li><b>Manual:</b> edit <code>mcp-gateway/skills/skill-market/config.json</code> (and the <code>SKILL.md</code> fallback address), replace <code>&lt;market-hostname&gt;</code> with your hostname; then make the hostname resolvable — single machine: add a line <code>&lt;server-IP&gt;  &lt;your-hostname&gt;</code> in <code>C:\Windows\System32\drivers\etc\hosts</code> (for local debugging you can use <code>127.0.0.1</code>); company intranet: add an A record in DNS.</li>
+  </ul>
+  <p><b>Hostname naming suggestion</b>: use an FQDN of "service name + company domain", e.g. <code>skillmarket.your-company-domain</code> (in this environment, <code>skillmarket.chxia.lab</code>). Adding an A record in DNS: DC "Server Manager → DNS → Forward Lookup Zones → your domain → New Host (A) → name <code>skillmarket</code>, IP <code>&lt;server-IP&gt;</code>"; or PowerShell: <code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "your-domain" -IPv4Address "&lt;server-IP&gt;"</code>.</p>
+</div>
+
+<h3>8.8 Admin API (for AI Admin Center CRUD)</h3>
+<p>The gateway exposes an admin API (requires <code>X-Admin-Token</code> header, value from <code>MCP_ADMIN_TOKEN</code> in <code>.env</code>; unconfigured returns 503, wrong token returns 401). Public <code>/mcp</code>, <code>/skills</code>, <code>/market</code> are unaffected:</p>
+<table>
+  <tr><th>Endpoint</th><th>Purpose</th></tr>
+  <tr><td><code>GET/POST /api/servers</code>, <code>PUT/DELETE /api/servers/:name</code></td><td>MCP server CRUD (writes back to <code>mcp-servers.json</code> + auto-reconnect)</td></tr>
+  <tr><td><code>POST /api/skills/upload</code></td><td>Upload a skill zip (validates SKILL.md, prevents path traversal, extracts to <code>skills/</code>)</td></tr>
+  <tr><td><code>DELETE /api/skills/:name</code></td><td>Delete a skill</td></tr>
+</table>
+<p>These endpoints are called by the AI Admin Center (Chapter 11) "MCP Gateway" page via proxy endpoints (protected by the Keycloak <code>ai-platform-admin</code> role); admins can add/remove MCP servers and upload/delete skills in the UI, while the employee-facing <code>/market</code> remains a read-only market.</p>
+
+<h2 id="cicd">9. CI/CD — DeepChat Build &amp; Release</h2>
+
+<h3>9.1 Fork DeepChat source to Gitea</h3>
+<pre><code>git clone https://github.com/ThinkInAIXYZ/deepchat.git
+cd deepchat
+# After creating an empty repo "deepchat" in Gitea:
+git remote add internal http://127.0.0.1:3002/your-org/deepchat.git
+git push -u internal main</code></pre>
+
+<h3>9.2 Configure the DeepChat release address</h3>
+<p>Edit <code>package.json</code> in the Gitea Web UI, change <code>publish.url</code> to point to the update server:</p>
+<pre><code>"build": {
+  "publish": [{
+    "provider": "generic",
+    "url": "http://&lt;server-IP&gt;:8091/deepchat/"
+  }]
+}</code></pre>
+
+<h3>9.3 Create the CI/CD workflow</h3>
+<div class="file-name">.gitea/workflows/release.yml</div>
+<pre><code>name: Build & Release DeepChat
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: npm ci
+      - name: Build Linux
+        run: npx electron-builder --linux --x64
+      - name: Build Windows
+        run: npx electron-builder --win --x64
+      - name: Upload to update server
+        run: |
+          cp dist/*.exe dist/*.AppImage dist/latest*.yml /tmp/
+          curl -X PUT -T /tmp/latest.yml http://update-server/deepchat/latest.yml || true</code></pre>
+
+<div class="note"><strong>Note:</strong> the Gitea Runner needs Docker access (docker.sock already mounted). Build artifacts must be uploaded to the <code>update-server</code> container (port 8091) manually or via a script.</div>
+
+<h3>9.4 Generate a Ghost API token (for Gitea release announcements)</h3>
+<ol>
+  <li>Ghost admin → <b>Integrations</b> → add a custom integration → generate an Admin API Key (format <code>id:secret</code>)</li>
+  <li>Add an announcement step to the Gitea Actions workflow:</li>
+</ol>
+<pre><code>      - name: Post release announcement to Ghost
+        run: |
+          curl -X POST http://ghost:8090/ghost/api/admin/posts/ \
+            -H "Authorization: Ghost ${{ secrets.GHOST_ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"posts":[{"title":"DeepChat new release","status":"published","html":"A new version has been released; go to the download center to update."}]}'</code></pre>
+
+<h2 id="interconnect">10. Interconnection Verification (12 items)</h2>
+<div class="card">
+<ol>
+  <li><span class="check">☑</span> NewAPI → LiteLLM: receive OK in the NewAPI channel test</li>
+  <li><span class="check">☑</span> Dify → NewAPI: receive a reply in the Dify model provider test</li>
+  <li><span class="check">☑</span> DeepChat → NewAPI: send a message and receive a reply</li>
+  <li><span class="check">☑</span> Keycloak → NewAPI: log into the NewAPI admin with a Keycloak account (OIDC mode)</li>
+  <li><span class="check">☑</span> Keycloak → Dify: SSO login to Dify with a Keycloak account</li>
+  <li><span class="check">☑</span> MCP Gateway → DeepChat: DeepChat fetches the MCP tool list and calls</li>
+  <li><span class="check">☑</span> MCP Gateway → Dify: call MCP Gateway tools in a Dify workflow</li>
+  <li><span class="check">☑</span> Gitea Runner → Docker: Runner can execute CI/CD jobs</li>
+  <li><span class="check">☑</span> Gitea → update server: CI/CD artifacts upload to the update server</li>
+  <li><span class="check">☑</span> Ghost API → Gitea: Gitea Actions can call the Ghost API to post announcements</li>
+  <li><span class="check">☑</span> Ghost → Dify redirect: the portal AI workbench link redirects to Dify correctly</li>
+  <li><span class="check">☑</span> AI Admin Center → Dashboard shows all container statuses + left menu can access all products</li>
+</ol>
+</div>
+
+<h2 id="identity-sources">N. Keycloak Enterprise Identity Source Integration (AD / Entra ID / LDAP / SAML / OIDC)</h2>
+<div class="note"><strong>Note:</strong> Keycloak supports multiple enterprise identity sources; users log in with existing company accounts without extra account creation, for Dify, Ghost and all other Keycloak SSO-connected apps.</div>
+
+<h3>N.1 Active Directory (LDAP) — on-premise DC integration</h3>
+<div class="tip"><strong>Use case:</strong> the company has a local Windows Active Directory domain controller and wants employees to log in to all AI platform apps with domain accounts.</div>
+<p><strong>Network + deployment</strong> (Hyper-V setup, Internal Switch, port forwarding, firewall) is in a separate document. The Keycloak LDAP user federation steps are integrated into <a href="#config-keycloak" style="color:#58a6ff;">6.1.2 Method B</a>.</p>
+<p style="margin-top: 8px;"><a href="windows-ad-integration.html" style="color:#58a6ff; font-size:1.05em; font-weight:600;">📄 Keycloak AD Integration Complete Guide — windows-ad-integration.html</a> (includes the one-click detect/fix script <code>scripts\setup-hyperv-dc-network.ps1</code>)</p>
+
+<h3>N.2 Microsoft Entra ID (formerly Azure AD) — cloud directory integration</h3>
+<div class="tip"><strong>Use case:</strong> the company uses Microsoft 365 / Azure, with employee accounts managed in Entra ID. Connect via OpenID Connect.</div>
+
+<h4>Step 1: register an app in Entra ID</h4>
+<ol>
+  <li><a href="https://portal.azure.com">Azure Portal</a> → <b>Microsoft Entra ID</b> → <b>App registrations</b> → <b>New registration</b></li>
+  <li>Name: <code>AI-Platform-Keycloak</code></li>
+  <li>Supported account types: <b>Accounts in this organizational directory only</b></li>
+  <li>Redirect URI: <b>Web</b>, URL <code>http://127.0.0.1:9090/realms/enterprise-ai/broker/entra-id/endpoint</code></li>
+  <li>Click <b>Register</b></li>
+  <li>Note the <b>Application (client) ID</b> and <b>Directory (tenant) ID</b></li>
+  <li><b>Certificates & secrets</b> → New client secret → note the <b>Secret Value</b></li>
+</ol>
+
+<h4>Step 2: add the Entra ID identity provider in Keycloak</h4>
+<ol>
+  <li>Keycloak → enterprise-ai realm → <b>Identity Providers</b> → <b>Add provider</b> → <b>OpenID Connect v1.0</b></li>
+  <li>Alias: <code>entra-id</code></li>
+  <li>Display Name: <code>Microsoft Entra ID</code></li>
+  <li>Fill in the config:</li>
+</ol>
+<table>
+  <tr><th>Setting</th><th>Value</th></tr>
+  <tr><td>Authorization URL</td><td><code>https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/authorize</code></td></tr>
+  <tr><td>Token URL</td><td><code>https://login.microsoftonline.com/{tenant-id}/oauth2/v2.0/token</code></td></tr>
+  <tr><td>Client ID</td><td><code>{application-client-id}</code></td></tr>
+  <tr><td>Client Secret</td><td><code>{client-secret-value}</code></td></tr>
+  <tr><td>Default Scopes</td><td><code>openid profile email</code></td></tr>
+  <tr><td>Client Authentication</td><td><b>Client secret sent as post</b></td></tr>
+</table>
+<ol start="4">
+  <li>Click <b>Save</b></li>
+</ol>
+
+<h4>Step 3: configure attribute mapping (optional)</h4>
+<p>Add attribute mappings in Identity Provider → <b>Mappers</b>, e.g.:</p>
+<pre><code>Mapper Type: Attribute Importer
+Claim: preferred_username  →  User Attribute: username
+Claim: email               →  User Attribute: email
+Claim: name                →  User Attribute: firstName</code></pre>
+
+<h4>Verification</h4>
+<ol>
+  <li>Open the Dify login page → a <b>Microsoft Entra ID</b> login button should appear</li>
+  <li>Click → redirect to Microsoft login → log in with a company Entra ID account</li>
+  <li>After first login, the user synced from Entra ID appears in Keycloak's <b>Users</b> list</li>
+</ol>
+
+<h3>N.3 Google Workspace (OpenID Connect)</h3>
+<div class="tip"><strong>Use case:</strong> the company uses Google Workspace; employees log in with Google accounts.</div>
+<ol>
+  <li><a href="https://console.cloud.google.com">Google Cloud Console</a> → APIs & Services → Credentials → Create OAuth 2.0 Client ID</li>
+  <li>Authorized redirect URI: <code>http://127.0.0.1:9090/realms/enterprise-ai/broker/google/endpoint</code></li>
+  <li>Note the <b>Client ID</b> and <b>Client Secret</b></li>
+  <li>Keycloak → Identity Providers → Add <b>Google</b> (built-in)</li>
+  <li>Fill in Client ID and Client Secret → Save</li>
+  <li>To restrict domains: Identity Provider → <b>Mappers</b> → add <code>Hardcoded Attribute</code> → allow login only when <code>hd=your-domain.com</code></li>
+</ol>
+
+<h3>N.4 GitHub (OAuth2)</h3>
+<ol>
+  <li>GitHub → Settings → Developer settings → OAuth Apps → New OAuth App</li>
+  <li>Authorization callback URL: <code>http://127.0.0.1:9090/realms/enterprise-ai/broker/github/endpoint</code></li>
+  <li>Note the Client ID and Client Secret</li>
+  <li>Keycloak → Identity Providers → Add <b>GitHub</b> (built-in)</li>
+  <li>Fill in Client ID/Secret → Save</li>
+  <li>Optional: add an <code>Attribute Importer</code> in Mappers to map GitHub org/team to Keycloak roles</li>
+</ol>
+
+<h3>N.5 Generic LDAP (OpenLDAP / FreeIPA / 389 DS)</h3>
+<ol>
+  <li>Keycloak → User Federation → Add <b>ldap</b></li>
+  <li>Vendor: <b>Other</b> (not Active Directory)</li>
+  <li>Connection URL: <code>ldap://openldap-server:389</code></li>
+  <li>Users DN: <code>ou=users,dc=company,dc=com</code></li>
+  <li>Username LDAP attribute: <code>uid</code> (OpenLDAP uses uid; AD uses sAMAccountName)</li>
+  <li>RDN LDAP attribute: <code>uid</code></li>
+  <li>UUID LDAP attribute: <code>entryUUID</code></li>
+  <li>User Object Classes: <code>inetOrgPerson, organizationalPerson</code></li>
+  <li>Save → Synchronize all users</li>
+</ol>
+
+<h3>N.6 Generic SAML 2.0 (Okta / PingFederate / ADFS / Shibboleth)</h3>
+<div class="tip"><strong>Use case:</strong> integrate any SAML 2.0 identity provider (Okta, Ping, ADFS, Shibboleth, etc.).</div>
+<ol>
+  <li>Create a SAML app in the target IdP (e.g. Okta):
+    <ul>
+      <li>ACS URL: <code>http://127.0.0.1:9090/realms/enterprise-ai/broker/saml/endpoint</code></li>
+      <li>Entity ID: <code>http://127.0.0.1:9090/realms/enterprise-ai</code></li>
+      <li>Export the IdP metadata XML file</li>
+    </ul>
+  </li>
+  <li>Keycloak → Identity Providers → Add <b>SAML v2.0</b></li>
+  <li>Alias: <code>okta-saml</code></li>
+  <li>Two config methods:
+    <ul>
+      <li><b>Method A:</b> paste the IdP metadata URL (recommended, auto-fills all fields)</li>
+      <li><b>Method B:</b> import the IdP metadata XML file</li>
+    </ul>
+  </li>
+  <li>Service Provider Entity ID: <code>http://127.0.0.1:9090/realms/enterprise-ai</code></li>
+  <li>Save → SAML login is ready</li>
+</ol>
+
+<h3>N.7 Multi-identity-source coexistence strategy</h3>
+<div class="note"><strong>Best practice:</strong> Keycloak supports multiple identity sources simultaneously (AD + Entra ID + Google + GitHub). All identity sources share one realm; users choose which to use on the login page. Recommendations:</div>
+<ol>
+  <li>Add an <b>Identity Provider Redirector</b> in <b>Authentication</b> → <b>Browser flow</b> to auto-select the IdP by user email domain</li>
+  <li>Example: <code>@company.com</code> → AD; <code>@company.onmicrosoft.com</code> → Entra ID</li>
+  <li>External partners use GitHub / Google accounts → assign lower-privilege Keycloak roles</li>
+</ol>
+
+<h3>N.8 Verification checklist</h3>
+<div class="card">
+<ol>
+  <li><span class="check">☑</span> LDAP users synced to the Keycloak Users list</li>
+  <li><span class="check">☑</span> Logged into Dify with an AD domain account</li>
+  <li><span class="check">☑</span> Logged into Dify with an Entra ID account</li>
+  <li><span class="check">☑</span> Dify / Ghost login pages show multiple IdP buttons (AD, Entra ID, Google, etc.)</li>
+  <li><span class="check">☑</span> First login auto-creates the Keycloak user; later logins recognize it directly</li>
+  <li><span class="check">☑</span> IdP users' roles/permissions mapped correctly</li>
+  <li><span class="check">☑</span> AD group → Keycloak role mapping takes effect</li>
+</ol>
+</div>
+
+<h2 id="admin-portal">11. AI Admin Center — Unified Admin Portal</h2>
+<div class="note"><strong>Positioning:</strong> not a Docker management platform (like 1Panel/Portainer), but an admin-facing unified console — Keycloak-authenticated, left menu links all products, Dashboard shows cluster status, and it uniformly manages all platform admin accounts.</div>
+
+<h3>11.1 Why not use an existing tool</h3>
+<p>Researched open-source panels Organizr, Dashy, Homarr, Heimdall — none satisfy these core needs:</p>
+<table>
+  <tr><th>Requirement</th><th>Organizr</th><th>Dashy</th><th>AI Admin Center</th></tr>
+  <tr><td>Keycloak OIDC login</td><td>Plugin (not native)</td><td>Supported</td><td><span class="check">☑</span> Native</td></tr>
+  <tr><td>Sidebar menu + iframe embedding</td><td><span class="check">☑</span></td><td>Partial</td><td><span class="check">☑</span></td></tr>
+  <tr><td>Docker container status monitoring</td><td>Not supported</td><td>Widget</td><td><span class="check">☑</span> Real-time</td></tr>
+  <tr><td>Unified Keycloak admin account management</td><td>Not supported</td><td>Not supported</td><td><span class="check">☑</span></td></tr>
+  <tr><td>Global Admin initial config</td><td>Not supported</td><td>Not supported</td><td><span class="check">☑</span></td></tr>
+  <tr><td>Unified entry + auth for all products</td><td>Partial</td><td>Partial</td><td><span class="check">☑</span></td></tr>
+</table>
+
+<h3>11.2 Architecture design</h3>
+<pre style="background:none;border:none;font-size:0.9em;">
+User browser → AI Admin Center (&lt;server-IP&gt;:10086)
+                  │
+    ┌─────────────┼─────────────┐
+    │  Keycloak    │  Admin API  │  Docker API
+    │  OIDC login  │  (user mgmt) │  (container status)
+    │             │             │
+    ▼             ▼             ▼
+ Keycloak     Keycloak      Docker
+ (9090)       Admin REST    Socket
+</pre>
+
+<div class="card">
+<h4 style="color:#58a6ff;margin-top:0">Left menu structure</h4>
+<table>
+  <tr><th>Icon</th><th>Menu item</th><th>Behavior</th><th>Target</th></tr>
+  <tr><td>📊</td><td><b>Overview Dashboard</b></td><td>Embedded page</td><td>8 product business metrics + Docker services (grouped by product) + system info</td></tr>
+  <tr><td>📰</td><td>Ghost Admin</td><td>Embedded stats page</td><td>Posts/pages/subscribers/tags stats + "Open Ghost admin" button → <code>:8090/ghost/</code></td></tr>
+  <tr><td>🤖</td><td>Dify AI Platform</td><td>Embedded stats page</td><td>Apps/workspaces/version stats + "Open Dify platform" button</td></tr>
+  <tr><td>📦</td><td>Gitea Source</td><td>Embedded stats page</td><td>Repo list (name/description/language/size/updated) + deepchat-sync last run + "Open Gitea" button</td></tr>
+  <tr><td>🔀</td><td>NewAPI Management</td><td>Embedded page</td><td>Channels/users/keys (with used quota) + 💰 cost report (by user/model/date) + 📋 audit log (recent calls), Admin API, admins only</td></tr>
+  <tr><td>🔐</td><td>Keycloak Auth</td><td>Embedded stats page</td><td>Users/clients/roles/identity-source stats + "Open Keycloak" button</td></tr>
+  <tr><td>🔌</td><td>MCP Gateway</td><td>Embedded management page</td><td>Endpoint info + add/remove MCP servers + upload/delete skills (ai-platform-admin only)</td></tr>
+  <tr><td>🛡️</td><td>LiteLLM+PII</td><td>Embedded page</td><td>Copy Master Key + open LiteLLM admin center</td></tr>
+  <tr><td>⬇️</td><td>Update Server</td><td>Embedded stats page</td><td>DeepChat version + installer list (filename/size/updated)</td></tr>
+  <tr><td>📈</td><td>Monitoring & Alerts</td><td>New tab</td><td>Grafana dashboard → <code>:3030</code></td></tr>
+  <tr><td>🔍</td><td>LLM Observability</td><td>New tab</td><td>Langfuse traces → <code>:3010</code></td></tr>
+  <tr><td>🔐</td><td><b>Central Auth</b></td><td>Embedded page</td><td>Unified account system (ai-platform-admin only)</td></tr>
+  <tr><td>👥</td><td><b>Admin Account Management</b></td><td>Embedded page</td><td>Keycloak Admin API</td></tr>
+  <tr><td>⚙️</td><td><b>System Settings</b></td><td>Embedded page</td><td>Basic config + UI language (9 languages)</td></tr>
+</table>
+</div>
+
+<h3>11.3 Initialization: Global Administrator</h3>
+<p>On first start, the AI Admin Center configures the Global Admin via env vars:</p>
+<pre><code># Add to .env:
+ADMIN_USERNAME=ai_all_in_one_admin
+ADMIN_PASSWORD=see-credentials-list
+ADMIN_EMAIL=admin@company.com</code></pre>
+<p>On startup it auto-creates the <code>ai_all_in_one_admin</code> user in Keycloak (skips if exists) and assigns the <code>ai-platform-admin</code> realm role. All Keycloak SSO-connected products (Dify, NewAPI, Ghost) can identify admins via this role.</p>
+<div class="tip"><strong>Core idea:</strong> one Global Admin account manages all platforms. Each product's admin role is uniformly controlled via the Keycloak realm role <code>ai-platform-admin</code>.</div>
+
+<div class="callout callout-info">
+  <strong>Unified admin account (global convention):</strong> all platforms use username <code>ai_all_in_one_admin</code> (Keycloak / NewAPI / AI Admin Center / Ghost / Gitea / Dify), and the AD DC's LDAP bind service account is also named <code>ai_all_in_one_admin</code>.<strong>The concrete passwords are in the separate credentials list</strong> (<code>credentials.html</code>, internal confidential, not distributed with this guide).
+</div>
+
+<h3>11.4 Docker Compose deployment</h3>
+<p><strong>Prerequisite:</strong> first enter <code>admin-portal/</code> and install Node.js dependencies, once.</p>
+<pre><code>cd admin-portal
+npm install
+cd ..</code></pre>
+<p>Then add to <code>docker-compose.yml</code>:</p>
+<pre><code>  # ═══ AI Admin Center ═══
+  admin-portal:
+    image: node:20-alpine
+    container_name: admin-portal
+    restart: always
+    ports:
+      - "10086:3000"
+    working_dir: /app
+    command: sh -c "node server.js"
+    environment:
+      - PORT=3000
+      - KEYCLOAK_URL=http://192.168.31.117:9090
+      - KEYCLOAK_REALM=enterprise-ai
+      - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_URL=http://&lt;server-IP&gt;:4001
+    volumes:
+      - ./admin-portal:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ai-platform</code></pre>
+
+<h3>11.5 Admin Center code implementation (key points)</h3>
+<p>Source in <code>admin-portal/</code> (<code>server.js</code> + <code>public/index.html</code>), dependencies <code>express</code> / <code>keycloak-connect</code> / <code>dockerode</code> / <code>@keycloak/keycloak-admin-client</code>. Functionality far exceeds the initial "container status dashboard", full capabilities:</p>
+<ul>
+  <li><b>Overview Dashboard</b>: 8 product business metrics (NewAPI/Gitea/Ghost/Dify/Keycloak/MCP/LiteLLM/Update Server, each with an independent aggregation endpoint; a single failure doesn't affect the whole) + Docker services (grouped by product) + system info.</li>
+  <li><b>Product stats pages</b>: Ghost/Dify/Gitea/Keycloak/update server show key stats first + an "Open admin" button (see 11.2 menu table). Data sources: Gitea REST API (Basic Auth + X-Total-Count), Keycloak Admin API, Dify console API (base64 password + cookie/CSRF), Ghost in-container sqlite (docker exec), Update Server version.txt + stat.</li>
+  <li><b>MCP Gateway management</b>: add/remove MCP servers, upload/delete skills (proxy the gateway <code>/api/*</code> management endpoints, inject <code>X-Admin-Token</code>).</li>
+  <li><b>Central auth / admin management</b>: unified accounts, SSO mechanism, per-platform login methods (ai-platform-admin only).</li>
+  <li><b>System settings</b>: env var documentation + product entry URLs + <b>UI language (9: zh-CN/zh-TW/en/fr/es/pt/ja/ko/ar, Arabic supports RTL)</b>.</li>
+  <li><b>🧬 PII masking</b>: shows Presidio analyzer/anonymizer health + LiteLLM guardrails (content-safety-filter / presidio-pii-mask) rule list + connected models.</li>
+  <li><b>📜 Unified logs</b>: query Loki aggregated logs by container dropdown + keyword + time range (backend <code>/api/logs/query</code>).</li>
+  <li><b>💾 Backup & restore</b>: backup list + "backup now" + one-click restore (backend <code>/api/backup/list|run|restore</code>, via docker.sock + the mounted <code>C:\AIAllInOne\backups</code>, same format as backup.ps1).</li>
+  <li><b>📄 Report generation</b>: generate detailed system reports by criteria (statistics period 1/7/30/90 days + select included modules), covering system overview, product health, usage stats (calls/tokens/cost, by user·model·day), client stats (by IP + by API-key app), recent issues (Loki error log summary + availability failures + stopped containers), availability tests, backup status, PII masking status; report language follows the current UI language (zh/en, others fall back to English); exportable as <code>.md</code> (backend <code>/api/report?days=&lang=&sections=</code>).</li>
+  <li><b>Monitoring alerts / LLM observability</b>: embedded stats pages (Prometheus targets/alert count, Langfuse version/trace count) + open-dashboard buttons.</li>
+  <li><b>🩺 Availability testing</b>: scheduled (default every 10 min, <code>AVAILABILITY_INTERVAL_MIN</code> adjustable) + manual "test all" + per-item tests; covers Keycloak auth / NewAPI / LiteLLM / DeepChat·Dify chat (real conversation via NewAPI) / Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / update server / backup / Docker / Redis; each item card shows result and key logs in a small window. Backend <code>/api/availability|run|test/:id</code>. Dashboard product metrics area adds an "availability test" summary card.</li>
+  <li><b>📰 Ghost passwordless login</b>: clicking "Open" on the "Ghost Admin" entry, the backend <code>/api/ghost/auto-login</code> auto-completes — password login (<code>POST /session/</code>) → read Ghost DB's <code>admin_session_secret</code> to compute the 6-digit TOTP code locally (<code>HMAC-SHA1(secret+userId)</code>, identical to the emailed code, no need to read MailHog) → <code>PUT /session/verify</code> to verify the session → write the <code>ghost-admin-api-session</code> cookie into the browser → redirect to the Ghost admin, seamless. Details in 13.10.</li>
+</ul>
+<div class="callout callout-warn">
+  <strong>⚠️ Deployment / troubleshooting points:</strong>
+  <ul>
+    <li>admin-portal sessions are in-memory (MemoryStore); <code>docker compose up -d</code> rebuilds the container and <b>clears login sessions</b> (re-login needed). For multi-replica / persistent sessions, switch to Redis storage.</li>
+    <li>The homepage <code>/</code> must be Keycloak-protected: <code>express.static(..., { index:false })</code> must not serve index.html + explicit <code>app.get('/', keycloak.protect(), ...)</code>, otherwise unauthenticated users see an empty dashboard and all APIs return 401 (symptoms: "no login page opens, pages fail massively").</li>
+    <li>When aggregating Dify stats, the email must be Dify's actual admin email (<code>ai_all_in_one_admin@&lt;company-domain&gt;</code>), not the old <code>ADMIN_EMAIL=admin@company.com</code> in <code>.env</code>.</li>
+  </ul>
+</div>
+
+<h3>11.6 Keycloak client configuration</h3>
+<p>Create an OIDC client in Keycloak for the AI Admin Center:</p>
+<ol>
+  <li>Keycloak → enterprise-ai realm → <b>Clients</b> → Create</li>
+  <li>Client ID: <code>AI-all-in-one-admin-portal</code>, type: <b>OpenID Connect</b> → Next</li>
+  <li><b>Client authentication: On</b> (⚠️ required, otherwise no Credentials tab)</li>
+  <li><b>Standard flow: On</b> (⚠️ required, otherwise login can't callback)</li>
+  <li>Valid Redirect URIs: <code>http://127.0.0.1:10086/*</code> and <code>http://&lt;server-IP&gt;:10086/*</code>, Web origins: <code>http://127.0.0.1:10086</code> and <code>http://&lt;server-IP&gt;:10086</code> → Save</li>
+  <li>After saving, a <b>Credentials</b> tab appears → copy the <b>Client Secret</b></li>
+  <li>Fill the secret into <code>KEYCLOAK_CLIENT_SECRET</code> in <code>.env</code>, restart admin-portal: <code>docker compose up -d admin-portal</code></li>
+  <li>Create the realm role: <b>ai-platform-admin</b></li>
+  <li>Assign this role to the <code>ai_all_in_one_admin</code> user</li>
+  <li>For other platforms (Dify, Ghost, NewAPI), create the same <code>ai-platform-admin</code> role for cross-platform unified admin</li>
+</ol>
+
+<h3>11.7 Verification</h3>
+<ol>
+  <li>Open <b>http://&lt;server-IP&gt;:10086</b> in a browser → auto-redirects to Keycloak login (unauthenticated users get a 302 to the login page, not an empty dashboard)</li>
+  <li>Log in with the Global Admin <code>ai_all_in_one_admin</code> → enter the overview dashboard</li>
+  <li>The Dashboard top "product business metrics" shows real stats for 8 products; below, "Docker services" shows all containers grouped by product</li>
+  <li>Click Ghost/Dify/Gitea/Keycloak in the left menu → show their stats cards first; click "Open admin" to jump to the actual admin</li>
+  <li>NewAPI management → shows channels/users/keys (keys with "used quota"); MCP Gateway → can add/remove MCP servers, upload/delete skills</li>
+  <li>Admin management → shows users with the ai-platform-admin role</li>
+  <li>System settings → can switch UI language (zh-CN/zh-TW/en/fr/es/pt/ja/ko/ar)</li>
+  <li>Unauthenticated user visiting http://&lt;server-IP&gt;:10086 → redirected to the Keycloak login page</li>
+</ol>
+
+<div class="tip"><strong>Compare with the old approach:</strong> earlier architecture diagrams used 1Panel/Portainer as the "unified management platform". But those are only Docker container management tools, unable to do application-layer unified auth and management. The AI Admin Center fills this gap: a unified external entry, internally controlling all products' admin permissions via Keycloak.</div>
+
+<!-- ==================== 8. Operations ==================== -->
+<h2 id="ops">12. Operations — Health Checks &amp; Startup Self-Check</h2>
+
+<div class="callout callout-info">
+  <strong>Script location:</strong> <code>C:\AIAllInOne\windows\scripts\health-check.ps1</code><br>
+  <strong>Output:</strong> <code>C:\AIAllInOne\windows\scripts\health_check_&lt;yyyymmdd_hhmmss&gt;.log</code> (each run generates an independent report, doesn't overwrite history)<br>
+  <strong>Coverage:</strong> 41 containers (25 Windows core + 16 Dify), 9 stages (including full LLM chain, AD account auth + admin login, MCP/Skill functional verification, disk space). Credentials read from the sibling <code>.env</code>; the script doesn't hardcode passwords.
+</div>
+
+<h3>12.1 Check scope</h3>
+
+<table>
+  <tr><th>Stage</th><th>Check</th><th>Method</th></tr>
+  <tr><td>Stage 1</td><td>Docker daemon running (waits for readiness, adapted for startup self-check)</td><td><code>docker info</code></td></tr>
+  <tr><td>Stage 2</td><td>41 container statuses (Up/Exited/Restarting)</td><td><code>docker ps -a</code></td></tr>
+  <tr><td>Stage 3</td><td>10 HTTP endpoint responses (including MCP Gateway)</td><td><code>curl.exe 127.0.0.1:port</code></td></tr>
+  <tr><td>Stage 4</td><td>LiteLLM /readiness + <b>model registration</b>, litellm-redis PING, Dify API /health, MySQL/PostgreSQL/Redis/Sandbox health</td><td><code>docker exec</code> + <code>docker inspect</code></td></tr>
+  <tr><td>Stage 5</td><td><b>Full LLM chain</b>: NewAPI channel status + send a real request each as DeepChat and Dify (NewAPI → LiteLLM → DeepSeek)</td><td><code>curl /v1/chat/completions</code></td></tr>
+  <tr><td>Stage 6</td><td><b>AD account auth chain</b>: Keycloak well-known + AD user sync (aitest1) + NewAPI OIDC config + OIDC client integrity + <b>NewAPI admin login</b></td><td>curl + Admin API + mysql</td></tr>
+  <tr><td>Stage 7</td><td><b>MCP Gateway + Skill</b>: /health + tools/list + tools/call + external Skill aggregation</td><td>curl MCP protocol</td></tr>
+  <tr><td>Stage 8</td><td><b>DeepChat / Dify login prerequisites</b>: NewAPI service available + Dify initialized</td><td>curl + psql</td></tr>
+  <tr><td>Stage 9</td><td><b>Disk space</b>: system drive free + Docker disk usage</td><td><code>Get-PSDrive</code> + <code>docker system df</code></td></tr>
+</table>
+
+<h3>12.2 Manual execution</h3>
+
+<div class="step">
+  <span class="step-num">1</span>Open a PowerShell terminal
+  <pre><code><span class="comment"># Run directly</span>
+C:\AIAllInOne\windows\scripts\health-check.ps1
+
+<span class="comment"># View the result file (timestamped, e.g. health_check_2026_08_13_10_05_31.log)</span>
+dir C:\AIAllInOne\windows\scripts\health_check_*.log
+notepad C:\AIAllInOne\windows\scripts\health_check_&lt;latest-timestamp&gt;.log</code></pre>
+</div>
+
+<div class="verify">The output ends with <code>ALL CLEAR</code> and <code>Fail: 0</code> means all normal.</div>
+
+<h3>12.3 Auto-run at startup (Scheduled Task)</h3>
+
+<div class="step">
+  <span class="step-num">1</span>Open PowerShell as administrator, run:
+  <pre><code><span class="comment"># Create the startup scheduled task</span>
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # delay 2 min after login, waiting for Docker Desktop + containers to start
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
+
+<span class="comment"># Verify created</span>
+Get-ScheduledTask -TaskName "AI-Platform-HealthCheck"
+
+<span class="comment"># Manually trigger a test run</span>
+Start-ScheduledTask -TaskName "AI-Platform-HealthCheck"</code></pre>
+</div>
+
+<div class="callout callout-info">
+  <strong>📌 Notes:</strong>
+  <ul>
+    <li>The script uses <code>127.0.0.1</code> not <code>localhost</code>, to avoid Docker Desktop WSL2 IPv6 compatibility issues</li>
+    <li>Credentials read from the sibling <code>.env</code> (Keycloak admin, NewAPI DB/admin passwords); the script itself doesn't hardcode passwords</li>
+    <li>LiteLLM internal health uses <code>/health/readiness</code> (no auth) rather than <code>/health</code> (requires Bearer token)</li>
+    <li><code>docker-init_permissions-1</code> container Exited (0) is a normal one-time init task</li>
+    <li>Update Server returning HTTP 403 is normal (no default index.html, but the service is running)</li>
+    <li>Script exit code: 0 = all pass, 1 = some failures</li>
+  </ul>
+</div>
+
+<h3>12.4 Common troubleshooting</h3>
+
+<pre><code><span class="comment"># If a container keeps Restarting</span>
+docker logs &lt;container-name&gt; --tail 30
+
+<span class="comment"># If an HTTP endpoint is unresponsive</span>
+docker ps --filter "name=&lt;container-name&gt;" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+<span class="comment"># Rebuild a single service</span>
+docker compose up -d &lt;service-name&gt;
+
+<span class="comment"># Re-run the health check</span>
+C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
+
+<h2 id="security">13. Security, Compliance &amp; Observability</h2>
+<p>This chapter covers the three pillars of enterprise AI deployment — <b>security &amp; compliance, data governance, operability</b> — the key increment from "usable" to "enterprise-grade".</p>
+
+<h3>13.1 PII masking &amp; content safety (LiteLLM Guardrails)</h3>
+<p>All requests to external large models go through LiteLLM guardrails preprocessing; sensitive information <b>is masked before leaving the intranet</b>.</p>
+<div class="step">
+  <span class="step-num">1</span><strong>Built-in content filter (enabled by default, no external service)</strong>
+  <p>Uses <code>litellm_content_filter</code>, regex-masking the following types (action = MASK, replace with <code>[xxx_REDACTED]</code> on match):</p>
+  <table>
+    <tr><th>Rule</th><th>Regex</th><th>Type</th></tr>
+    <tr><td>China mobile number</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+    <tr><td>ID card number</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+    <tr><td>Bank card number</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+    <tr><td>Email</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+    <tr><td>Unified social credit code</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+    <tr><td>Passport number</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+    <tr><td>IPv4 address</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+  </table>
+  <p>There's also a sensitive-word blacklist (match → <b>BLOCK</b> reject the request): <code>internal confidential</code>, <code>commercial secret</code>, etc. Add/remove per the company's actual sensitive words in <code>blocked_words</code> in <code>litellm-config.yaml</code>.</p>
+  <div class="note">⚠️ <b>Key pitfall</b>: after registering guardrails, they're <b>not globally active by default</b>; you must add <code>default_on: true</code>, otherwise they only trigger when the request body explicitly passes a <code>guardrails</code> field.</div>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Presidio advanced entity recognition (enabled)</strong>
+  <p>Microsoft Presidio (<code>presidio-analyzer</code> / <code>presidio-anonymizer</code>) recognizes finer-grained entities like English names, emails, complementing the built-in regex above. Endpoints set by env vars <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code>.</p>
+  <div class="note">⚠️ <b>Key pitfall (endpoint format)</b>: LiteLLM auto-appends <code>/analyze</code>, <code>/anonymize</code> to the base URL, so the env var <b>must be the base URL</b> (e.g. <code>http://presidio-analyzer:3000</code>), <b>not</b> with the <code>/analyze</code> path, otherwise it becomes <code>/analyze/analyze</code> returning 404. Also the analyzer's <code>/analyze</code> must include the <code>language</code> field (LiteLLM adds it automatically).</div>
+  <div class="note">⚠️ <b>Slow image pull</b>: presidio-analyzer is ~965MB; direct MCR in China is very slow (~1 hour measured). If it won't pull, use the built-in regex first (already covers core Chinese PII); Presidio is an optional enhancement.</div>
+</div>
+<div class="verify">Verify: send a request containing a phone number/email → the original value is replaced with <code>[REDACTED]</code> in the model reply; send one containing "internal confidential" → directly returns <code>Content blocked</code>.</div>
+
+<h3>13.2 Data backup &amp; restore</h3>
+<p>The backup script <code>scripts\backup.ps1</code> backs up all critical data daily to <code>C:\AIAllInOne\backups\</code>, auto-retaining the last 7 days.</p>
+<table>
+  <tr><th>Backup item</th><th>Content</th><th>Method</th></tr>
+  <tr><td>NewAPI</td><td>MySQL (new-api DB: users/channels/keys/logs)</td><td><code>mysqldump</code></td></tr>
+  <tr><td>Dify</td><td>PostgreSQL (dify DB: apps/knowledge/workflows)</td><td><code>pg_dump</code></td></tr>
+  <tr><td>Ghost</td><td>SQLite (ghost.db: posts/pages/settings)</td><td>File copy</td></tr>
+  <tr><td>Gitea</td><td>SQLite (gitea.db: repo metadata)</td><td>File copy</td></tr>
+  <tr><td>Config</td><td>.env / docker-compose.yml / litellm-config.yaml etc.</td><td>File copy</td></tr>
+</table>
+<div class="step">
+  <span class="step-num">1</span><strong>Run manually once</strong>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Scheduled execution (Windows Task Scheduler)</strong>
+  <p>The scheduled task <code>AI-Platform-Backup</code> is registered (daily 02:00, current user). If not auto-registered, create it manually in "Task Scheduler": Action → New → program <code>powershell.exe</code>, argument <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>, trigger daily 02:00.</p>
+</div>
+<div class="note">⚠️ Backups are on the C drive by default; sync <code>C:\AIAllInOne\backups\</code> to another disk or object storage periodically for off-site disaster recovery.</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Restore (<code>scripts\restore.ps1</code>)</strong>
+  <p>Restore all data from a backup directory (MySQL / PostgreSQL / SQLite / config):</p>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+  <p>The script asks for <code>yes</code> confirmation before executing (add <code>-Force</code> to skip, scripts/CI only).</p>
+</div>
+<div class="step">
+  <span class="step-num">4</span><strong>AI Admin Center "💾 Backup & restore" page</strong>
+  <p>Log into the AI Admin Center to see the backup list, click "backup now", or click "restore" on a backup to restore in one click (backend via <code>docker.sock</code> + the mounted <code>C:\AIAllInOne\backups</code>, producing the same backup format as backup.ps1). Requires the <code>ai-platform-admin</code> role.</p>
+  <div class="note">⚠️ <b>Key pitfall</b>: the old backup.ps1 used <code>Copy-Item</code> to bulk-copy config files, and the dotfile <code>.env</code> silently failed the whole batch (<code>-ErrorAction SilentlyContinue</code> swallowed the error); in practice the backup's <code>config/</code> only had <code>dify.env</code> + <code>mcp-servers.json</code>. Changed to per-file <code>-LiteralPath</code> copy + verification. Also: AI Admin Center backup uses <code>base64</code> relay + <code>tar-fs</code>/<code>putArchive</code> for binary safety (<code>docker exec</code> stdout via utf8 corrupts SQLite .db).</div>
+</div>
+
+<h3>13.3 Monitoring &amp; alerting (Prometheus + Grafana + cadvisor)</h3>
+<p>Three containers provide container-level resource monitoring and alerting:</p>
+<table>
+  <tr><th>Component</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td>cadvisor</td><td>8080 (internal)</td><td>Collects per-container CPU/memory/network/disk metrics</td></tr>
+  <tr><td>Prometheus</td><td>9091</td><td>Aggregates metrics + alert rules (<code>monitoring/alerts.yml</code>)</td></tr>
+  <tr><td>Grafana</td><td>3030</td><td>Visualization dashboard (preset "AI All In One — Container Monitoring" panel)</td></tr>
+</table>
+<p>Log into Grafana: <code>http://&lt;server-IP&gt;:3030</code>, account <code>ai_all_in_one_admin</code> / unified password. Preset alert rules: container down (critical), container memory &gt;90% (warning), container CPU &gt;80% (warning).</p>
+<div class="note">⚠️ <b>Port conflicts</b>: Prometheus's default 9090 is taken by Keycloak, so changed to <b>9091</b>; Grafana's default 3000 conflicts with NewAPI and 3001 is also taken, so changed to <b>3030</b>.</div>
+<div class="note">⚠️ <b>Alert false-positive pitfall</b>: cadvisor reports the host's <b>all cgroups</b> (systemd services like snap, docker, etc.), which have no <code>name</code> label. If the alert rule doesn't write <code>{name!=""}</code>, it false-alerts on systemd services; memory alerts also need <code>container_spec_memory_limit_bytes &gt; 0</code> (otherwise limit=0 containers divide by zero producing <code>+Inf</code> that always triggers). <code>alerts.yml</code> has fixed these filters.</div>
+<div class="callout callout-warn">
+  <strong>Alert notification:</strong> alert rules are ready, but <b>notification channels are not connected</b> (DingTalk/WeCom webhook). To connect: in Grafana's Alerting → Contact points add a Webhook (or deploy Alertmanager) pointing to the company's DingTalk/WeCom bot address.
+</div>
+
+<h3>13.4 LLM observability (Langfuse)</h3>
+<p>Langfuse v4 self-hosted, tracing every model call's <b>prompt, response, model, latency, token, cost</b> for retrospective troubleshooting.</p>
+<table>
+  <tr><th>Component</th><th>Purpose</th></tr>
+  <tr><td>langfuse</td><td>Web UI + trace display (port 3010)</td></tr>
+  <tr><td>langfuse-worker</td><td>Async event processing</td></tr>
+  <tr><td>langfuse-postgres</td><td>Metadata storage</td></tr>
+  <tr><td>langfuse-clickhouse</td><td>Event/trace data storage</td></tr>
+  <tr><td>langfuse-minio</td><td>S3 attachment/media storage</td></tr>
+  <tr><td>langfuse-redis</td><td>Queue</td></tr>
+</table>
+<p>LiteLLM auto-reports via <code>success_callback: ["langfuse"]</code> (<code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code> / <code>LANGFUSE_HOST</code> in <code>.env</code>).</p>
+<p>Log into Langfuse: <code>http://&lt;server-IP&gt;:3010</code>, account <code>ai_all_in_one_admin@company.com</code> / unified password. First start auto-creates the org <code>AI All In One</code> and project <code>AI Platform</code> via headless init.</p>
+<div class="note">⚠️ <b>Key pitfall</b>: Langfuse v4 defaults <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=events_only</code>, so old clients (LiteLLM's langfuse SDK) fail reporting <code>trace-create</code>. You must set <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code> (both web and worker), otherwise no trace data appears.</div>
+<div class="note">⚠️ <b>SSO login sees no data pitfall</b>: the headless-initialized org <code>AI All In One</code> only binds the init account <code>ai_all_in_one_admin@company.com</code>. If you log in via Keycloak SSO (AD email <code>ai_all_in_one_admin@chxia.lab</code>), Langfuse <b>auto-creates a separate account not in any org</b>, so you see no trace data. Fix: add the SSO user to the org —</p>
+<pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
+"INSERT INTO organization_memberships (id, org_id, user_id, role) \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
+</div>
+
+<h3>13.5 Audit logs &amp; cost reports (embedded in AI Admin Center)</h3>
+<p>In the AI Admin Center → "🔀 NewAPI Management" page, two new blocks were added:</p>
+<ul>
+  <li><b>💰 Cost report</b>: total cost/calls/tokens for the last N days, aggregated by user, by model, by date (data from the NewAPI logs table; $1 = 500000 quota).</li>
+  <li><b>📋 Audit log</b>: the last 100 model call records (user, model, tokens, quota, cost, IP, time), for compliance audit and tracing.</li>
+</ul>
+<div class="note">⚠️ <b>Key pitfall</b>: running <code>mysql -p"password"</code> directly outputs <code>Using a password on the command line</code> to stderr, which the backend misjudges as an error returning 500. Changed to use the <code>MYSQL_PWD</code> env var + <code>2&gt;/dev/null</code> to suppress.</div>
+
+<h3>13.6 Org structure &amp; quota mapping</h3>
+<p>Mechanism to control model permissions and quotas by department/role:</p>
+<ol>
+  <li><b>NewAPI groups</b>: in "Group management" create groups by department, set model multipliers/quotas; putting users into a group controls them by department. The AI Admin Center NewAPI page's user table already shows the <code>group</code> field.</li>
+  <li><b>Keycloak roles</b>: use realm roles (e.g. <code>ai-platform-admin</code>) to control admin permissions; can extend department roles (<code>ai-dept-R&D</code> etc.) mapped to NewAPI groups.</li>
+  <li><b>Mapping chain</b>: AD group → Keycloak role → NewAPI group → model permission/quota.</li>
+</ol>
+<p>Specific department quota adjustments are done in the NewAPI admin (AI Admin Center "Open NewAPI admin ↗").</p>
+
+<h3>13.7 Employee training &amp; policy</h3>
+<p>The training manual has been split into two <b>multi-page e-books</b> and translated into <b>9 languages</b> (matching the AI Admin Center): the <b>administrator manual</b> (30 chapters: deployment + day-to-day operations for 13 products + operations) and the <b>end-user manual</b> (8 chapters: platform intro, AI All In One Hub (portal) usage, DeepChat/Dify quick start, <b>data classification rules</b>, API key request, FAQ, code of conduct). Language layout: English in <code>docs/admin-manual/</code> and <code>docs/user-manual/</code>; Simplified Chinese in <code>docs/i18n/admin-manual-zh-cn/</code> and <code>docs/i18n/user-manual-zh-cn/</code>; the other 7 (Traditional Chinese / French / Spanish / Portuguese / Japanese / Korean / Arabic) in the corresponding <code>docs/i18n/</code> folders. Each is an e-book with a cover + table of contents + one page per chapter + prev/next navigation, ready to send to employees or later move to the Ghost portal.</p>
+<p><b>Data classification suggestion</b>: public info can use external models directly; internal info (project docs) is usable but needs redaction; confidential info (customer data/source code/ID numbers) must not be uploaded to external models — use local models or manual handling.</p>
+
+<h3>13.8 Unified SSO login (Keycloak)</h3>
+<p>All web-UI products use Keycloak for single sign-on, uniformly using the admin account <code>ai_all_in_one_admin</code>.</p>
+<table>
+  <tr><th>Product</th><th>Integration</th><th>Keycloak Client</th><th>Login method</th></tr>
+  <tr><td>AI Admin Center</td><td>keycloak-connect (OIDC)</td><td>AI-all-in-one-admin-portal</td><td>Forced SSO (auto-redirect to Keycloak when not logged in)</td></tr>
+  <tr><td>NewAPI</td><td>OIDC</td><td>newapi</td><td>Click "OIDC login" on the login page</td></tr>
+  <tr><td>Ghost</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@company.com</code></td></tr>
+  <tr><td>Dify</td><td>OIDC (optional)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@company.com</code></td></tr>
+  <tr><td>Gitea</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin</code></td></tr>
+  <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td>grafana</td><td>Auto-login (<code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>, click link to enter directly, no button)</td></tr>
+  <tr><td>Langfuse</td><td>Keycloak provider</td><td>langfuse</td><td>Auto-login (AI Admin Center entry points to <code>/auth/sso-initiate?provider=KEYCLOAK</code>, IdP-initiated SSO)</td></tr>
+</table>
+<div class="step">
+  <span class="step-num">1</span><strong>Grafana SSO</strong>
+  <p>Integrated via <code>GF_AUTH_GENERIC_OAUTH_*</code> env vars (client id <code>grafana</code>, redirect URI <code>http://&lt;server-IP&gt;:3030/login/generic_oauth</code>).</p>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Langfuse SSO</strong>
+  <p>Integrated via <code>AUTH_KEYCLOAK_*</code> env vars (client id <code>langfuse</code>, redirect URI <code>http://&lt;server-IP&gt;:3010/api/auth/callback/keycloak</code>).</p>
+</div>
+<div class="note">⚠️ <b>Key pitfall</b>: Keycloak's <code>ai_all_in_one_admin</code> is federated to the AD DC via LDAP, so password verification goes through AD. If the AD DC (Hyper-V DC VM) is off, SSO login's password verification returns <code>unknown_error</code> (LDAP Connection refused). Ensure the DC VM is on and reachable (see Chapter 2 Hyper-V network config).</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Remove the "click button" step (auto-login)</strong>
+  <p>Goal: given the AI Admin Center is already logged in, clicking the Grafana / Langfuse entry <b>goes straight into the admin UI</b>, without going through each product's "Sign in with Keycloak" button.</p>
+  <ul>
+    <li><b>Grafana</b>: set <code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code> (already in <code>docker-compose.yml</code>). Accessing any page unauthenticated → auto 302 <code>/login</code> → 307 <code>/login/generic_oauth</code> → Keycloak (already logged in → callback enters directly).</li>
+    <li><b>Langfuse</b>: Auth.js has no native auto-login; use <b>IdP-initiated SSO</b> — point the AI Admin Center "LLM observability" open button to <code>http://&lt;server-IP&gt;:3010/auth/sso-initiate?provider=KEYCLOAK</code>, which auto-initiates Keycloak auth on browser open.</li>
+  </ul>
+  <div class="note">⚠️ <b>Key pitfall</b>: Langfuse's <code>/auth/sso-initiate</code> returns the Next.js app shell (HTTP 200); the redirect happens browser-side, so curl won't see a 302. This is normal; open it in a browser. If you still want fully server-side redirect, keep the login page (at least the repeated password entry is already removed).</div>
+</div>
+
+<h3>13.9 Unified logs (Loki + Promtail)</h3>
+<p>Added Loki (aggregation) + Promtail (collection) containers to gather <b>all containers' application logs</b> in one place; the AI Admin Center "📜 Unified Logs" page filters by container + keyword search.</p>
+<table>
+  <tr><th>Component</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td>Loki</td><td>3110</td><td>Log storage &amp; query (single-node, local filesystem)</td></tr>
+  <tr><td>Promtail</td><td>— (internal)</td><td>Discovers containers via docker.sock and collects <code>/var/lib/docker/containers/*/*-json.log</code> to Loki</td></tr>
+</table>
+<p>Config: <code>monitoring/loki.yml</code> (Loki storage/table structure), <code>monitoring/promtail.yml</code> (docker_sd discovery + <code>container</code>/<code>service</code>/<code>project</code> labels). The AI Admin Center backend <code>/api/logs/query</code> queries Loki with LogQL; the frontend provides container dropdown + keyword + time range.</p>
+<div class="note">⚠️ <b>Key pitfall (Docker Desktop mounts)</b>: Promtail needs <code>/var/run/docker.sock</code> and <code>/var/lib/docker/containers</code> mounted. Under Docker Desktop (WSL2) these paths point inside the Docker Desktop VM, exactly where container logs live, readable directly (same as cadvisor); but <b>don't</b> map the host Windows <code>C:\...\containers</code> path. Loki single-node uses <code>store: tsdb</code> + <code>filesystem</code> object storage, stable in 2.9.x.</div>
+
+<h3>13.10 MailHog mail sink + Ghost passwordless login</h3>
+<p>Ghost 5 admin is <b>passwordless</b> (no password field in the frontend): entering the email makes Ghost send an email with a 6-digit code. Without SMTP on the intranet this email can't be sent, and login returns <code>Failed to send email</code>. The solution is to add a local mail sink <b>MailHog</b> as the "mail exit", and let the AI Admin Center complete the login automatically.</p>
+<p><b>Admin creation (automated):</b> passwordless login requires Ghost to already have an admin. Run <code>scripts\ghost-setup.ps1</code> to create the admin in one shot via the setup API (<code>POST /ghost/api/admin/authentication/setup</code>) (email <code>GHOST_ADMIN_EMAIL</code>, password <code>ADMIN_PASSWORD</code>, read from <code>.env</code>), equivalent to the browser wizard, auto-skips if initialized.</p>
+<table>
+  <tr><th>Component</th><th>Port</th><th>Purpose</th></tr>
+  <tr><td>MailHog</td><td>8025 (Web UI, SMTP 1025 internal only)</td><td>Receives Ghost's verification/notification emails, viewable in the browser</td></tr>
+</table>
+<p>Ghost-side env vars (<code>docker-compose.yml</code>):</p>
+<pre><code><span class="comment"># Ghost mail → local MailHog (SMTP 1025, no auth)</span>
+mail__transport: SMTP
+mail__from: noreply@company.com
+mail__options__host: mailhog
+mail__options__port: 1025</code></pre>
+
+<p><b>Ghost passwordless login (AI Admin Center auto-login, no need to check MailHog):</b> Ghost's 6-digit code is essentially <b>TOTP</b> — <code>TOTP(admin_session_secret + userId)</code>, 6 digits / 60 s / HMAC-SHA1. So the AI Admin Center can compute the code locally, without digging through MailHog emails. Clicking "Open" on the "Ghost Admin" entry, the backend <code>POST /api/ghost/auto-login</code> does in order:</p>
+<ol>
+  <li>Password login <code>POST /ghost/api/admin/session/</code> (email + password) → get an unverified session cookie (this triggers the code email, swallowed by MailHog, which we ignore);</li>
+  <li>Read Ghost DB's <code>settings</code> table <code>admin_session_secret</code> + admin <code>userId</code>, compute the TOTP code locally;</li>
+  <li><code>PUT /ghost/api/admin/session/verify</code> (with cookie + computed code) → session verified;</li>
+  <li>Write the <code>ghost-admin-api-session</code> cookie into the browser (<code>Path=/ghost</code>, cookies shared by domain across ports on the same host), redirect to <code>:8090/ghost/</code> straight into the admin.</li>
+</ol>
+<div class="note">⚠️ <b>Key pitfalls</b>: ① Ghost 5's backend <b>still supports password login</b> (<code>POST /session/</code>), but a correct password triggers "new device 2FA" (returns 403 <code>Needs2FAError</code> + sends a code), so the verification step is required; ② the code is TOTP, reproducible exactly with <code>crypto.createHmac('sha1', secret+userId)</code>, verified to match the emailed code digit-for-digit; ③ even computing the code yourself, Ghost still really "sends email", so MailHog (or any SMTP) must be kept, otherwise login returns <code>Failed to send email</code>; ④ <code>/session/verify</code> has brute-force rate limiting; a normal single click won't trigger it, but don't spam it repeatedly in a short time.</div>
+
+</body>
+</html>

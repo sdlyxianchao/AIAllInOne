@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제28장 상태 점검 및 부팅 자체 점검 · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제3부 · 운영편</div>
+      <h1>상태 점검 및 부팅 자체 점검</h1>
+      <div class="sub">전체 41개 컨테이너 + LLM 전체 링크 + 인증 링크 원클릭 점검.</div>
+    </div>
+
+    <p><b>스크립트</b>: <code>C:\AIAllInOne\windows\scripts\health-check.ps1</code>, 출력 <code>health_check_&lt;타임스탬프&gt;.log</code>. 41개 컨테이너 (25 Windows 핵심 + 16 Dify) 커버, 자격 증명은 <code>.env</code>에서 읽고 비밀번호를 하드코딩하지 않음.</p>
+
+    <h2>28.1 점검 범위 (9개 단계)</h2>
+    <table>
+      <tr><th>단계</th><th>점검 항목</th></tr>
+      <tr><td>Stage 1</td><td>Docker Daemon 실행 여부 (준비 대기, 부팅 자체 점검 대응)</td></tr>
+      <tr><td>Stage 2</td><td>41개 컨테이너 상태 (Up/Exited/Restarting)</td></tr>
+      <tr><td>Stage 3</td><td>10개 HTTP 엔드포인트 응답</td></tr>
+      <tr><td>Stage 4</td><td>LiteLLM readiness + 모델 등록, Dify API, 데이터베이스/Redis/Sandbox 상태</td></tr>
+      <tr><td>Stage 5</td><td>LLM 전체 링크 (NewAPI → LiteLLM → DeepSeek 실제 요청)</td></tr>
+      <tr><td>Stage 6</td><td>AD 계정 인증 링크 + NewAPI 관리자 로그인</td></tr>
+      <tr><td>Stage 7</td><td>MCP Gateway + Skill 기능</td></tr>
+      <tr><td>Stage 8</td><td>DeepChat/Dify 로그인 전제 조건</td></tr>
+      <tr><td>Stage 9</td><td>디스크 공간</td></tr>
+    </table>
+
+    <h2>28.2 수동 실행</h2>
+    <pre><code>C:\AIAllInOne\windows\scripts\health-check.ps1
+dir C:\AIAllInOne\windows\scripts\health_check_*.log</code></pre>
+    <div class="note">✅ 출력 끝에 <code>ALL CLEAR</code> 및 <code>Fail: 0</code>이면 전부 정상.</div>
+
+    <h2>28.3 부팅 자동 시작 (예약 작업)</h2>
+    <pre><code>$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # 로그인 후 2분 지연으로 Docker + 컨테이너 시작 대기
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest</code></pre>
+
+    <div class="note">📌 주의: 스크립트는 <code>127.0.0.1</code> 사용, localhost 사용 안 함; LiteLLM 내부 상태는 <code>/health/readiness</code> 사용 (인증 불필요); <code>docker-init_permissions-1</code> Exited(0) 정상; Update Server 403 반환 정상 (기본 index.html 없음); exit code 0=통과, 1=실패 있음.</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch28';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

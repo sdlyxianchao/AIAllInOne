@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 28 — Verificação de integridade e autoteste na inicialização · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 3 · Operações</div>
+      <h1>Verificação de integridade e autoteste na inicialização</h1>
+      <div class="sub">Exame completo de todos os 41 contêineres + cadeia completa de LLM + cadeia de autenticação com um clique.</div>
+    </div>
+
+    <p><b>Script</b>: <code>C:\AIAllInOne\windows\scripts\health-check.ps1</code>, saída <code>health_check_&lt;timestamp&gt;.log</code>. Cobre 41 contêineres (25 do núcleo Windows + 16 do Dify), lê as credenciais do <code>.env</code>, sem senhas fixas no código.</p>
+
+    <h2>28.1 Escopo da verificação (9 estágios)</h2>
+    <table>
+      <tr><th>Estágio</th><th>Item verificado</th></tr>
+      <tr><td>Stage 1</td><td>Se o Docker Daemon está em execução (aguarda a prontidão, adequado ao autoteste na inicialização)</td></tr>
+      <tr><td>Stage 2</td><td>Status dos 41 contêineres (Up/Exited/Restarting)</td></tr>
+      <tr><td>Stage 3</td><td>Resposta de 10 endpoints HTTP</td></tr>
+      <tr><td>Stage 4</td><td>Readiness do LiteLLM + registro de modelos, API do Dify, saúde de banco/Redis/Sandbox</td></tr>
+      <tr><td>Stage 5</td><td>Cadeia completa de LLM (NewAPI → LiteLLM → DeepSeek com requisição real)</td></tr>
+      <tr><td>Stage 6</td><td>Cadeia de autenticação da conta AD + login de administrador do NewAPI</td></tr>
+      <tr><td>Stage 7</td><td>MCP Gateway + funcionalidade de Skill</td></tr>
+      <tr><td>Stage 8</td><td>Pré-condições de login do DeepChat/Dify</td></tr>
+      <tr><td>Stage 9</td><td>Espaço em disco</td></tr>
+    </table>
+
+    <h2>28.2 Execução manual</h2>
+    <pre><code>C:\AIAllInOne\windows\scripts\health-check.ps1
+dir C:\AIAllInOne\windows\scripts\health_check_*.log</code></pre>
+    <div class="note">✅ No final da saída, <code>ALL CLEAR</code> e <code>Fail: 0</code> indicam que tudo está normal.</div>
+
+    <h2>28.3 Inicialização automática (tarefa agendada)</h2>
+    <pre><code>$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # atraso de 2 minutos após o login para aguardar o Docker + contêineres iniciarem
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest</code></pre>
+
+    <div class="note">📌 Atenção: o script usa <code>127.0.0.1</code>, não localhost; a saúde interna do LiteLLM usa <code>/health/readiness</code> (sem autenticação); <code>docker-init_permissions-1</code> Exited(0) é normal; o Servidor de Atualização retorna 403 normalmente (sem index.html padrão); exit code 0=aprovado, 1=com falhas.</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch28';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

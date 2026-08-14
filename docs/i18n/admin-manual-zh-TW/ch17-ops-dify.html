@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 17 章 Dify 日常管理 · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部分 · 管理篇</div>
+      <h1>Dify 日常管理</h1>
+      <div class="sub">AI 應用平台：應用、知識庫、模型供應商、成員權限、釋出。</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/dify-logo.svg" alt="Dify"></span><b>入口</b>：<span class="entry">http://&lt;伺服器IP&gt;</span>（80 埠，獨立官方 compose，升級維護在 <code>dify/docker/</code> 單獨操作）。</p>
+
+    <h2>17.1 應用管理（工作室）</h2>
+    <ol>
+      <li><b>建立應用</b>：工作室 → 建立空白應用 → 選型別（聊天助手 / Agent / 工作流 / 文字生成）；</li>
+      <li><b>編排</b>：拖拽節點編排提示詞、工具、知識庫、變數；</li>
+      <li><b>除錯</b>：右上角「預覽」執行除錯；</li>
+      <li><b>釋出</b>：除錯透過後「釋出」→ 生成分享連結或嵌入 Web 應用。</li>
+    </ol>
+
+    <h2>17.2 知識庫管理</h2>
+    <ol>
+      <li>知識庫 → 建立知識庫；</li>
+      <li>上傳文件（Word / PDF / Markdown / 網頁連結），選分段規則 + 索引方式（高質量/經濟）；</li>
+      <li>在應用裡「新增」該知識庫，AI 即可基於文件回答。</li>
+    </ol>
+    <div class="note">📌 知識庫內容會被 AI 用於回答，機密資料不要上傳（遵守資料分級規範）。</div>
+
+    <h2>17.3 模型供應商</h2>
+    <ul>
+      <li><b>新增模型</b>：設定 → 模型供應商 → OpenAI-API-compatible → API endpoint <code>http://host.docker.internal:3000/v1</code>（走 NewAPI）+ <code>dify-key</code>；</li>
+      <li><b>系統模型設定</b>：指定預設聊天/推理/嵌入模型。</li>
+    </ul>
+
+    <h2>17.4 成員與權限</h2>
+    <ul>
+      <li><b>成員</b>：邀請成員進工作空間，設 Owner/Admin/Editor/Normal 角色；</li>
+      <li><b>登入方式</b>：設定 → 登入方式 → 可接 OIDC（Keycloak）實現 SSO。</li>
+    </ul>
+
+    <h2>17.5 升級與維護</h2>
+    <pre><code>cd dify\docker
+git pull                          # 拉最新版
+docker compose pull               # 拉新映像
+docker compose up -d              # 重建</code></pre>
+    <div class="warn">⚠️ 關鍵坑：① WebSocket <code>NEXT_PUBLIC_SOCKET_URL</code> 要設內網 IP；② 登入密碼是 base64 編碼；③ 忘密碼用 <code>docker exec docker-api-1 flask reset-password</code>（≥8 位）。</div>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>Dify 官方文件 <span class="url">https://docs.dify.ai</span> · 自託管 <span class="url">https://docs.dify.ai/getting-started/install-self-hosted</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch17';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

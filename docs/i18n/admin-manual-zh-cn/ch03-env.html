@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 3 章 配置文件与环境变量 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>配置文件与环境变量</h1>
+      <div class="sub">三个核心配置文件 + 全套环境变量说明，哪些现在配、哪些以后配。</div>
+    </div>
+
+    <h2>3.1 三个核心配置文件</h2>
+    <table>
+      <tr><th>文件</th><th>用途</th><th>需要修改吗</th></tr>
+      <tr><td><code>.env.windows</code></td><td>所有密码和外部 API Key</td><td><b>必须修改</b>：填 DeepSeek API Key，其它 provider 按需</td></tr>
+      <tr><td><code>litellm-config.yaml</code></td><td>LiteLLM 模型列表 + PII 脱敏规则</td><td>通常不改（只用 DeepSeek 可删 OpenAI/Claude 条目）</td></tr>
+      <tr><td><code>docker-compose.yml</code></td><td>核心服务编排</td><td>已预配置（含 Keycloak <code>KC_HOSTNAME</code> + 持久化卷）</td></tr>
+    </table>
+
+    <h2>3.2 环境变量分类总览</h2>
+    <p>打开 <code>.env</code>（把 <code>.env.windows</code> 复制而来），按优先级配置。</p>
+    <table>
+      <tr><th>变量</th><th>优先级</th><th>说明</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>🔴 立即</td><td>外部 LLM API Key，不配则链路不通</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>🔴 立即</td><td>LiteLLM 内部鉴权密钥，NewAPI 要用</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>🔴 立即</td><td>MySQL root 密码，首次创建后不宜改</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>🔴 立即</td><td>Keycloak 管理员密码</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>🔴 立即</td><td>NewAPI 会话加密，随机字符串</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>🔴 立即</td><td>NewAPI 数据加密，随机字符串</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>🔴 立即</td><td>AI 管理中心 Global Admin 密码</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>🔴 立即</td><td>AI 管理中心会话加密，随机字符串</td></tr>
+      <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td>🟡 可后配</td><td>需先在 Keycloak 建 OIDC Client 拿 Secret（见第 12 章）</td></tr>
+      <tr><td><code>GITEA_RUNNER_TOKEN</code></td><td>🟡 可后配</td><td>先启动 Gitea 在后台拿 Token（见第 9 章）</td></tr>
+      <tr><td><code>OPENAI_API_KEY</code> / <code>ANTHROPIC_API_KEY</code></td><td>🟢 按需</td><td>要用时取消注释，并同步改 <code>litellm-config.yaml</code></td></tr>
+      <tr><td><code>GLOBAL_WEB_RATE_LIMIT</code> 等限流项</td><td>⚪ 默认</td><td>测试期设 999999，生产酌情调低</td></tr>
+      <tr><td><code>DEFAULT_QUOTA</code></td><td>⚪ 默认</td><td>新用户默认额度（美元），设 100 即新用户送 100 美元</td></tr>
+      <tr><td><code>GENERATE_DEFAULT_TOKEN</code></td><td>⚪ 默认</td><td>新用户注册自动生成初始 Key，设 true 让用户登录即用</td></tr>
+      <tr><td><code>TZ</code> / <code>KEYCLOAK_ADMIN</code> / <code>ADMIN_USERNAME</code> / <code>ADMIN_EMAIL</code></td><td>⚪ 默认</td><td>默认值即可</td></tr>
+    </table>
+
+    <h2>3.3 🔴 立即配置（首次启动前必须完成）</h2>
+    <table>
+      <tr><th>变量</th><th>说明</th><th>如何获取</th><th>格式</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>DeepSeek 云端 LLM Key</td><td>注册 <span class="url">https://platform.deepseek.com</span> → API Keys</td><td><code>sk-xxxx</code></td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>LiteLLM 内部管理员密钥（不是外部 LLM Key）</td><td>随机生成（见下）</td><td><code>sk-litellm-xxxx</code></td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>MySQL 密码</td><td>自己定，首次创建后<b>不宜再改</b></td><td>任意</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>Keycloak 管理员密码</td><td>自己定，≥ 8 位</td><td>任意</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>NewAPI 会话加密</td><td>随机生成</td><td>32 位</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>NewAPI 数据加密</td><td>随机生成</td><td>32 位</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>AI 管理中心管理员密码</td><td>自己定，≥ 8 位</td><td>任意</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>AI 管理中心会话加密</td><td>随机生成</td><td>64 位</td></tr>
+    </table>
+    <p>生成随机字符串（PowerShell）：</p>
+    <pre><code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></pre>
+
+    <h3>填入 API Key 的示例</h3>
+    <pre><code># 默认已配 DeepSeek（取消注释并填入 Key）
+DEEPSEEK_API_KEY=sk-你的真实DeepSeek密钥
+
+# 需要 OpenAI / Claude 时取消注释，并同步取消 litellm-config.yaml 对应 model 块注释
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...</code></pre>
+
+    <h2>3.4 密码修改策略</h2>
+    <div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> 涉及已建数据库，改后需删对应 volume 重建（数据会丢），建议首次就定好。<br>
+    <code>KEYCLOAK_ADMIN_PASSWORD</code>、<code>ADMIN_PASSWORD</code> 等管理密码可在各产品后台改，改完同步更新 <code>.env</code>（只是备忘，不影响运行）。</div>
+
+    <h2>3.5 litellm-config.yaml 说明</h2>
+    <ul>
+      <li><code>model_list</code> — 定义可用外部模型，NewAPI 经 LiteLLM 调用。默认只启用 <code>deepseek-chat</code>；</li>
+      <li><code>general_settings.master_key</code> — LiteLLM 管理员密钥，读 <code>.env</code> 的 <code>LITELLM_MASTER_KEY</code>；</li>
+      <li>PII 脱敏（Presidio）当前<b>临时注释</b>（新版 LiteLLM guardrail API 变更不兼容），后续启用见第 25 章；</li>
+      <li>用稳定版本 <code>v1.95.1</code>（<code>main-latest</code> 有已知 bug）。</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 21 — Gestão do Servidor de Atualização · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 2 · Gestão</div>
+      <h1>Gestão do Servidor de Atualização</h1>
+      <div class="sub">Hospedagem de instaladores do DeepChat e atualização automática.</div>
+    </div>
+
+    <p><b>Entrada</b>: <span class="entry">http://&lt;IP-do-servidor&gt;:8091</span>, dados em <code>deepchat-updates/</code>.</p>
+
+    <h2>21.1 Colocar uma nova versão manualmente</h2>
+    <ol>
+      <li>Baixe o instalador oficial do DeepChat para <code>deepchat-updates/deepchat/</code>;</li>
+      <li>Atualize o <code>version.txt</code> (gravar o novo número de versão);</li>
+      <li>Na atualização automática, o DeepChat do funcionário verifica o <code>version.txt</code> e, ao encontrar nova versão, baixa e instala.</li>
+    </ol>
+
+    <h2>21.2 Sincronização automática (recomendado)</h2>
+    <p>Use o Gitea Actions do repositório <code>deepchat-sync</code> para verificar diariamente novas versões no GitHub e sincronizar (veja o capítulo 10). Disparo manual:</p>
+    <pre><code>curl -X POST "http://&lt;IP-do-servidor&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+  -u "ai_all_in_one_admin:&lt;senha&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'</code></pre>
+
+    <h2>21.3 Configuração de sincronização (sync-config.json)</h2>
+    <table>
+      <tr><th>Campo</th><th>Função</th></tr>
+      <tr><td><code>version_source</code></td><td><code>github</code> / <code>official</code></td></tr>
+      <tr><td><code>download_prefix</code></td><td>Prefixo de aceleração de download (como ghproxy.com)</td></tr>
+      <tr><td><code>keep_releases</code></td><td>Quantidade de versões históricas retidas</td></tr>
+      <tr><td><code>market_url</code></td><td>Endereço de mercado do «Assistente de Skills» na página de downloads</td></tr>
+    </table>
+
+    <div class="note">📌 Quando o cliente DeepChat reporta «tempo esgotado de conexão com o modelo», geralmente o cliente passou por um proxy de sistema que caiu (<code>ECONNREFUSED 127.0.0.1:33210</code>). Oriente o usuário a alterar em «Configurações → rede/proxy» do DeepChat para «não usar proxy / conexão direta».</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>guia rápido do DeepChat <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · repositório open source <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch21';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 8 章 LiteLLM：驗證與快取 · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>LiteLLM：驗證與快取</h1>
+      <div class="sub">驗證 LiteLLM 代理可用、開啟響應快取節省 token。</div>
+    </div>
+
+    <div class="warn">⚠️ PII 遮蔽（Presidio guardrail）當前<b>暫時禁用</b>：新版 LiteLLM 的 guardrail 配置格式變更，<code>litellm-config.yaml</code> 該段已註釋，當前 LiteLLM 僅做代理轉發（不遮蔽）。啟用方法見第 25 章。</div>
+
+    <h2>8.1 驗證 LiteLLM 基本可用</h2>
+    <pre><code>curl -X POST http://&lt;伺服器IP&gt;:4001/v1/chat/completions ^
+  -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}"</code></pre>
+    <div class="warn">⚠️ <code>&lt;LITELLM_MASTER_KEY&gt;</code> 是 LiteLLM 管理員金鑰，取 <code>.env</code> 實際值（不是佔位符本身，否則 401）。且必須用內網 IP <code>&lt;伺服器IP&gt;:4001</code>，不能用 <code>127.0.0.1:4001</code>（WSL2 埠轉發問題）。</div>
+
+    <h2>8.2 響應快取（已內建，節省 token）</h2>
+    <p>LiteLLM 已啟用 Redis exact match 快取：完全相同的請求（模型+訊息+參數）直接返回快取，跨使用者共享、省 token。</p>
+    <pre><code># litellm-config.yaml 末尾
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis   # 獨立快取 Redis
+    port: 6379
+    ttl: 3600            # 快取 1 小時</code></pre>
+    <div class="note">驗證：<code>curl http://&lt;伺服器IP&gt;:4001/cache/ping -H "Authorization: Bearer &lt;KEY&gt;"</code> 返回 <code>ping_response: true</code>；連續兩次相同請求，第二次耗時降到毫秒級。關閉快取：<code>cache: false</code> 後重啟 litellm。</div>
+
+    <h2>8.3 新增更多 LLM 提供商</h2>
+    <ol>
+      <li><code>.env</code> 取消 <code># OPENAI_API_KEY=</code> 註釋填 Key；</li>
+      <li><code>litellm-config.yaml</code> 取消對應 model 塊註釋；</li>
+      <li><code>docker compose up -d litellm</code>。</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>LiteLLM 官方文件 <span class="url">https://docs.litellm.ai</span> · Presidio guardrail <span class="url">https://docs.litellm.ai/docs/proxy/guardrails/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch08';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

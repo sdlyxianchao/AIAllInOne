@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 26 章 MailHog 邮件接收器 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部分 · 管理篇</div>
+      <h1>MailHog 邮件接收器</h1>
+      <div class="sub">内网无 SMTP 时的「邮件出口」，承接 Ghost 验证码/通知邮件。</div>
+    </div>
+
+    <p><b>入口</b>：<span class="entry">http://&lt;服务器IP&gt;:8025</span>（Web 收件箱，SMTP 1025 仅内部）。</p>
+
+    <h2>26.1 为什么需要它</h2>
+    <p>Ghost 5 后台是免密登录：输入邮箱后 Ghost 发一封带 6 位验证码的邮件。内网没有 SMTP 时邮件发不出去，登录就报 <code>Failed to send email</code>。MailHog 当「邮件出口」接住这些邮件。</p>
+
+    <h2>26.2 Ghost 侧配置</h2>
+    <pre><code># docker-compose.yml 里 Ghost 的环境变量
+mail__transport: SMTP
+mail__from: noreply@company.com
+mail__options__host: mailhog
+mail__options__port: 1025</code></pre>
+
+    <h2>26.3 查看邮件</h2>
+    <ol>
+      <li>浏览器打开 <code>http://&lt;服务器IP&gt;:8025</code>；</li>
+      <li>收件箱里看到 Ghost 发的验证码/通知邮件。</li>
+    </ol>
+
+    <h2>26.4 Ghost 免登录（AI 管理中心自动登录）</h2>
+    <p>Ghost 的 6 位验证码本质是 <b>TOTP</b>（<code>TOTP(admin_session_secret + userId)</code>，6 位/60 秒/HMAC-SHA1）。AI 管理中心能本地算出验证码，点「Ghost 后台 → 打开」自动完成：密码登录 → 本地算码 → 验证会话 → 写 cookie → 进后台，全程无感、免翻 MailHog。</p>
+    <div class="warn">⚠️ 就算自己算码，Ghost 仍会真发邮件，所以 MailHog 必须保留，否则登录报 <code>Failed to send email</code>。</div>
+
+    <div class="docbox"><span class="label">📖 原厂文档：</span>MailHog 源码仓库 <span class="url">https://github.com/mailhog/MailHog</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch26';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

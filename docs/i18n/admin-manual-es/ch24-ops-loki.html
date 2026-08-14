@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 24 — Registro unificado (Loki) · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte II · Administración</div>
+      <h1>Registro unificado (Loki)</h1>
+      <div class="sub">Agrega los registros de todos los contenedores y permite buscar por contenedor + palabra clave + tiempo.</div>
+    </div>
+
+    <p><b>Entrada</b>: página «📜 Registro unificado» del Centro de administración de IA (la más cómoda), o Loki <span class="entry">http://&lt;IP-del-servidor&gt;:3110</span>.</p>
+
+    <h2>24.1 Componentes</h2>
+    <table>
+      <tr><th>Componente</th><th>Puerto</th><th>Uso</th></tr>
+      <tr><td>Loki</td><td>3110</td><td>Almacenamiento y consulta de registros (monomáquina, sistema de archivos local)</td></tr>
+      <tr><td>Promtail</td><td>— (interno)</td><td>Descubre contenedores mediante docker.sock, recolecta los registros json y los envía a Loki</td></tr>
+    </table>
+
+    <h2>24.2 Consultar registros</h2>
+    <ol>
+      <li>Centro de administración de IA → Registro unificado;</li>
+      <li>Elige el contenedor (desplegable) → rellena la palabra clave → elige el rango de tiempo → consulta;</li>
+      <li>El backend <code>/api/logs/query</code> consulta Loki con LogQL.</li>
+    </ol>
+
+    <h2>24.3 Referencia rápida de LogQL</h2>
+    <pre><code>{container="new-api"} |= "error"              # líneas de un contenedor que contienen error
+{container=~".+"} |~ "(?i)error|exception"      # coincide en todos los contenedores
+{service="litellm"} |= "EMAIL"                  # consulta por servicio</code></pre>
+    <div class="note">📌 Las labels de Loki son <code>container / project / service</code>, <b>no hay <code>job</code></b>. Consulta con <code>{container=~".+"}</code> y no con <code>{job="docker"}</code>.</div>
+
+    <div class="warn">⚠️ Punto crítico (montajes de Docker Desktop): Promtail debe montar <code>/var/run/docker.sock</code> y <code>/var/lib/docker/containers</code> (en WSL2 apuntan al interior de la VM de Docker Desktop, que es precisamente donde están los registros); no uses la ruta <code>C:\...\containers</code> del Windows host. Loki monomáquina usa <code>store: tsdb</code> + filesystem.</div>
+
+    <div class="docbox"><span class="label">📖 Documentación oficial:</span>Documentación oficial de Loki <span class="url">https://grafana.com/docs/loki/latest/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch24';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

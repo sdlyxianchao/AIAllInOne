@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第15章 NewAPI の日常管理 · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部 · 管理編</div>
+      <h1>NewAPI の日常管理</h1>
+      <div class="sub">LLM ゲートウェイ：チャネル、トークン、クォータ、ユーザー、ログ、コストの管理。</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/newapi-logo.png" alt="NewAPI"></span><b>入口</b>：<span class="entry">http://&lt;サーバーIP&gt;:3000</span>。</p>
+
+    <h2>15.1 チャネル管理（上流モデル）</h2>
+    <ol>
+      <li><b>チャネル追加</b>：チャネル → 新規チャネル追加 → タイプ OpenAI（または Claude など）→ Base URL <code>http://litellm:4000</code> → キー <code>LITELLM_MASTER_KEY</code> → モデル名入力 → 保存；</li>
+      <li><b>テスト</b>：チャネルリストの「テスト」をクリックし、モデルを選んで接続検証；</li>
+      <li><b>無効化/有効化</b>：チャネルリストのスイッチ。無効化するとそのチャネルはリクエストを受けなくなります；</li>
+      <li><b>優先度/重み</b>：複数チャネルで同一モデルの場合、優先度/重みで振り分け。</li>
+    </ol>
+
+    <h2>15.2 トークン（API Key）管理</h2>
+    <ol>
+      <li><b>新規作成</b>：API キー → 新規トークン → 名前付け（例：<code>deepchat-key</code>）→ クォータ/有効期限/モデル制限を設定可能 → 保存；</li>
+      <li><b>Key コピー</b>：<code>sk-</code> で始まり、<b>一度しか表示されないため即保存</b>；</li>
+      <li><b>無効化/削除</b>：トークンリストの操作（無効化するとその Key は即時失効）；</li>
+      <li><b>利用量確認</b>：トークン詳細で消費済みクォータを確認。</li>
+    </ol>
+
+    <h2>15.3 クォータとユーザー</h2>
+    <ul>
+      <li><b>新規ユーザーデフォルトクォータ</b>：<code>DEFAULT_QUOTA</code>（100 ドル推奨）；</li>
+      <li><b>単一ユーザーの引き上げ</b>：ユーザーページ → 該当ユーザー編集 → クォータ設定；</li>
+      <li><b>チャージ/凍結</b>：ユーザーページの操作；</li>
+      <li><b>グループ管理</b>：部署ごとにグループを作成し、モデル倍率/クォータを設定。ユーザーをグループに所属させて部署単位で管理。</li>
+    </ul>
+
+    <h2>15.4 ログとコスト</h2>
+    <ul>
+      <li><b>ログページ</b>：各呼び出しのユーザー/モデル/token/クォータ/コスト/送信元 IP を照会；</li>
+      <li><b>コストレポート</b>：AI 管理センター「NewAPI 管理」ページにユーザー/モデル/日付別に集約したコストレポート + 直近 100 件の監査ログ。</li>
+    </ul>
+    <div class="note">📌 クライアント IP の記録はユーザーの「IP ログ記録」設定（<code>record_ip_log</code>、デフォルトオフ）に依存します。IP 監査が必要な場合は該当ユーザーで有効にします。</div>
+
+    <h2>15.5 システム設定の要点</h2>
+    <ul>
+      <li><b>サーバーアドレス</b>：必ずイントラネット <code>http://&lt;サーバーIP&gt;:3000</code> に設定（しないと OIDC が <code>invalid_grant - Incorrect redirect_uri</code> を返す）；</li>
+      <li><b>認証 → カスタム OAuth</b>：Keycloak OIDC 接続（第 7 章参照）；</li>
+      <li><b>利用モード</b>：個人利用 ↔ 対外運用を切り替え可能。</li>
+    </ul>
+
+    <div class="warn">⚠️ 重要な落とし穴の復習：① チャネル Base URL はすべてコンテナ名 <code>http://litellm:4000</code>；② レート制限 429 は <code>CRITICAL_RATE_LIMIT_ENABLE=false</code> などの変数で制御；③ データベース変更は <code>MYSQL_PWD</code> 環境変数を直接使い、stderr のパスワード警告が誤ってエラー判定されるのを避けます。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>NewAPI 公式ドキュメント <span class="url">https://docs.newapi.pro</span> · 公式サイト <span class="url">https://www.newapi.ai</span> · オープンソースリポジトリ <span class="url">https://github.com/QuantumNous/new-api</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch15';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

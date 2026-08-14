@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل الثالث الأداة الأولى: DeepChat · دليل مستخدم AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">البداية السريعة</div>
+      <h1>الأداة الأولى: DeepChat</h1>
+      <div class="sub">عميل سطح مكتب لمحادثات الذكاء الاصطناعي: التنزيل والإعداد والمحادثة والنصائح المتقدمة.</div>
+    </div>
+
+    <h2>3.1 التنزيل والتثبيت</h2>
+    <ol>
+      <li>افتح مركز التنزيلات في البوابة <code>http://IP:8090/downloads/</code>؛</li>
+      <li>نزّل حزمة التثبيت المناسبة لنظامك وثبّتها؛</li>
+      <li>شغّل DeepChat.</li>
+    </ol>
+
+    <h2>3.2 إعداد النموذج (الاتصال ببوابة الشركة)</h2>
+    <p>عند أول استخدام تحتاج إلى إخبار DeepChat بمكان النموذج. لقد جمعت الشركة النماذج في بوابة واحدة هي <b>NewAPI</b>، وما عليك سوى تعبئة ثلاث قيم:</p>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin:12px 0;">
+      <p><span class="step-num">1</span>افتح DeepChat ← أسفل اليسار <b>الإعدادات (⚙️)</b> ← <b>خدمة النماذج / مزوّدو النماذج</b>.</p>
+      <p><span class="step-num">2</span>أضف «<b>مزوّد مخصص</b>» أو «<b>متوافق مع OpenAI</b>».</p>
+      <p><span class="step-num">3</span>املأ العناصر الثلاثة التالية:</p>
+      <table>
+        <tr><th>الحقل</th><th>ما الذي تكتبه</th></tr>
+        <tr><td>API Base URL</td><td><code>http://IP:3000/v1</code></td></tr>
+        <tr><td>API Key</td><td>مفتاح <code>sk-</code> الذي طلبته من NewAPI (انظر الفصل 5)</td></tr>
+        <tr><td>النموذج</td><td><code>deepseek-chat</code> (الافتراضي للشركة، ويمكن اختيار نماذج أخرى مفتوحة)</td></tr>
+      </table>
+      <p><span class="step-num">4</span>احفظ.</p>
+    </div>
+    <div class="warn">⚠️ <b>مهم</b>: يجب استخدام <b>عنوان IP الداخلي</b> في API Base URL (<code>http://IP:3000/v1</code>) وليس <code>localhost</code>، وإلا فلن تتمكن من الاتصال بخادم الشركة.</div>
+
+    <h2>3.3 بدء المحادثة</h2>
+    <ol>
+      <li>انقر على «<b>+ محادثة جديدة</b>»؛</li>
+      <li>اكتب في مربع الإدخال واضغط Enter للإرسال؛</li>
+      <li>عند وصول الرد فهذا يعني أن المسار يعمل بشكل سليم.</li>
+    </ol>
+    <div class="example">💡 <b>جرّب</b>: أرسل «اكتب لي رسالة مطالبة بالدفع لعميل بأسلوب مهذب» وشاهد كيف يجيب الذكاء الاصطناعي. وجرّب أيضًا «ترجم الفقرة التالية إلى الإنجليزية: ……». يدعم DeepChat المحادثات متعددة الجولات، ويمكنك المتابعة بأسئلة إضافية وطلب تعديل الإجابة من الذكاء الاصطناعي.</div>
+
+    <h2>3.4 الوظائف والحيل الشائعة</h2>
+    <table>
+      <tr><th>الوظيفة</th><th>كيفية الاستخدام</th></tr>
+      <tr><td>تبديل النماذج</td><td>اختر نموذجًا مختلفًا أعلى المحادثة (إن كانت الشركة تفتح عدة نماذج)</td></tr>
+      <tr><td>أدوات قراءة/كتابة الملفات / MCP</td><td>الإعدادات ← MCP لتفعيل أدوات الشركة (مثل نظام الملفات) ليتسنى للذكاء الاصطناعي قراءة الملفات المحلية</td></tr>
+      <tr><td>الوضع الداكن/الفاتح</td><td>الإعدادات ← المظهر</td></tr>
+      <tr><td>مشكلة وكيل الشبكة</td><td>عند ظهور «انتهاء مهلة الاتصال» ← الإعدادات ← الشبكة/الوكيل ← غيّرها إلى «بدون وكيل/اتصال مباشر»</td></tr>
+    </table>
+
+    <h2>3.5 نصائح لطرح الأسئلة</h2>
+    <div class="tip">✅ <b>كلما كان السؤال أكثر تحديدًا كان أفضل</b> — قدّم الخلفية ووضّح المتطلبات وأعطِ أمثلة لتحصل على إجابات أجود.</div>
+    <div class="example">💡 مثال جيد: «أنت كاتب محتوى محترف، اكتب لي مقدمة منتج من 200 كلمة موجّهة إلى جمهور مدراء التقنية CTO بأسلوب مهني متزن» — وهذا أفضل بكثير من مجرد «اكتب مقدمة».</div>
+    <ul>
+      <li><b>حدّد الدور</b>: «أنت خبير مالي، ساعدني في...»؛</li>
+      <li><b>حدّد القيود</b>: «في حدود 100 كلمة / استخدم جدولًا / قسّمها إلى ثلاث خطوات»؛</li>
+      <li><b>أعطِ مثالًا</b>: «أعد الصياغة وفق هذا التنسيق...»؛</li>
+      <li><b>تابع خطوة بخطوة</b>: إن لم يعجبك الرد فاطلب «عدّل مرة أخرى» أو «غيّر النبرة».</li>
+    </ul>
+
+    <div class="docbox"><span class="label">📖 الوثائق الرسمية:</span>البداية السريعة لـ DeepChat <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · المستودع مفتوح المصدر <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

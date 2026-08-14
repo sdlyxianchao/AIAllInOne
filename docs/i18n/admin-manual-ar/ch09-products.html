@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل التاسع إعداد Dify / Ghost / Gitea · دليل مدير AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">الجزء الأول · قسم النشر</div>
+      <h1>إعداد Dify / Ghost / Gitea</h1>
+      <div class="sub">تهيئة كل منتج من المنتجات الثلاثة وإعدادات الترابط الخاصة به.</div>
+    </div>
+
+    <h2>9.1 Dify: إعداد مزوّد النماذج</h2>
+    <ol>
+      <li>افتح <code>http://&lt;عنوان-IP-الخادم&gt;</code> ← عند أول استخدام عيّن بريد المدير وكلمة المرور (البريد <code>ai_all_in_one_admin@&lt;نطاق-الشركة&gt;</code>)؛</li>
+      <li><b>الإعدادات ← مزوّدو النماذج</b> ← OpenAI-API-compatible ← إضافة نموذج:
+        <ul>
+          <li>اسم النموذج <code>deepseek-chat</code> (حسب الفعلي)؛</li>
+          <li>مفتاح API: <code>sk-xxx</code> الخاص بـ <code>dify-key</code>؛</li>
+          <li>نقطة نهاية API: <code>http://host.docker.internal:3000/v1</code>.</li>
+        </ul>
+      </li>
+      <li>الاستوديو ← إنشاء مساعد محادثة ← اختر النموذج ← أرسل رسالة للتحقق.</li>
+    </ol>
+    <div class="warn">⚠️ يستخدم Dify <code>host.docker.internal</code> بدلًا من اسم الحاوية، لأن Dify يعمل في شبكته الخاصة وهي مختلفة عن شبكة NewAPI.</div>
+
+    <h2>9.2 Ghost: إعداد البوابة</h2>
+    <ol>
+      <li>مدخل اللوحة <code>http://&lt;عنوان-IP-الخادم&gt;:8090/ghost/</code> (<b>انتبه للاحقة /ghost/</b>). عند أول استخدام مرّ عبر معالج setup لإنشاء المدير (البريد <code>ai_all_in_one_admin@&lt;نطاق-الشركة&gt;</code> وكلمة مرور لا تقل عن 10 أحرف)؛</li>
+      <li>الأتمتة: شغّل مباشرة <code>scripts\ghost-setup.ps1</code> لإنشاء المدير دفعة واحدة عبر setup API بما يعادل المعالج (ويتخطى تلقائيًا إن كانت التهيئة تمت بالفعل)؛</li>
+      <li><b>القالب</b>: المظهر ← القوالب، فعّل القوالب المدمجة Casper/Source مباشرة؛</li>
+      <li><b>قائمة التنقل</b>: المظهر ← القوائم ← أنشئ «التنقل الرئيسي».</li>
+    </ol>
+    <table>
+      <tr><th>عنصر القائمة</th><th>النوع</th><th>URL</th></tr>
+      <tr><td>الرئيسية</td><td>صفحة</td><td><code>/</code></td></tr>
+      <tr><td>الأخبار</td><td>تصنيف</td><td><code>/category/news</code></td></tr>
+      <tr><td>مركز التنزيلات</td><td>صفحة</td><td><code>/downloads</code></td></tr>
+      <tr><td>منضدة عمل AI</td><td>رابط مخصص</td><td><code>http://&lt;عنوان-IP-الخادم&gt;</code></td></tr>
+      <tr><td>مستندات المساعدة</td><td>تصنيف</td><td><code>/category/docs</code></td></tr>
+    </table>
+    <ol start="5">
+      <li><b>صفحة مركز التنزيلات</b>: الصفحات ← أنشئ «مركز التنزيلات» (slug <code>downloads</code>) وضع فيه الروابط الداخلية لحزم تثبيت DeepChat.</li>
+    </ol>
+    <pre><code>## DeepChat إصدار المؤسسات
+### Windows
+- [DeepChat v1.1.0 (Windows x64)](http://&lt;عنوان-IP-الخادم&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+### macOS
+- [DeepChat v1.1.0 (macOS x64)](http://&lt;عنوان-IP-الخادم&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)</code></pre>
+    <div class="warn">⚠️ لا تنقر «التسجيل» في الصفحة الرئيسية للبوابة <code>/</code> — فهي مخصصة لتسجيل الزوار المشتركين (وستظهر خطأ 500 إن لم يُضبط SMTP)؛ مدخل المدير هو <code>/ghost/</code>. ولا تثبّت أحدث إصدار من القوالب من GitHub (لأنها قد تكون متوافقة مع Ghost 6.x وستظهر رسالة incompatible مع 5.x).</div>
+
+    <h2>9.3 Gitea: التهيئة وتسجيل Runner</h2>
+    <ol>
+      <li>افتح <code>http://&lt;عنوان-IP-الخادم&gt;:3002</code> ← معالج التثبيت (قاعدة البيانات SQLite مُعدّة مسبقًا) ← أنشئ المدير (اسم المستخدم <code>ai_all_in_one_admin</code>)؛</li>
+      <li>من الصورة الرمزية أعلى اليمين ← <b>Site Administration ← Actions</b> ← تأكد من تفعيل Enabled Actions؛</li>
+      <li><b>Runners ← Create new Runner</b> ← انسخ Registration Token؛</li>
+      <li>ضع الرمز في <code>GITEA_RUNNER_TOKEN</code> داخل <code>.env</code> ثم أعد بناء Runner:</li>
+    </ol>
+    <pre><code># ⚠️ يجب استخدام up -d وليس restart (لأن restart لا يعيد قراءة الرمز من .env)
+docker compose -f docker-compose.yml up -d gitea-runner
+docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
+    <div class="danger">⚠️ المزلق 1: خطأ <code>readonly database</code> غالبًا لأن مالك <code>gitea.db</code> هو root؛ احذف قاعدة البيانات التي يملكها root ليعاد إنشاؤها بحساب المستخدم git.<br>
+    ⚠️ المزلق 2: يجب ضبط <code>ROOT_URL</code> إلى <code>http://&lt;عنوان-IP-الخادم&gt;:3002/</code> وإلا ستُولَّد روابط المستودعات بصيغة localhost وتصبح غير صالحة عند فتحها من أجهزة الموظفين.</div>
+
+    <div class="docbox"><span class="label">📖 الوثائق الرسمية:</span>Dify <span class="url">https://docs.dify.ai</span> · Ghost <span class="url">https://ghost.org/docs/</span> · Gitea (بالصينية) <span class="url">https://docs.gitea.com/zh-cn</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch09';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

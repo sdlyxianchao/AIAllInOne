@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 6 — Keycloak: Realm, usuarios y AD · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte I · Implementación</div>
+      <h1>Keycloak: Realm, usuarios y AD</h1>
+      <div class="sub">Crear el Realm, crear cuentas locales o importar cuentas de dominio desde Active Directory — la base del SSO de todos los productos.</div>
+    </div>
+
+    <div class="note">📌 Acceso: host <code>http://127.0.0.1:9090</code>, intranet <code>http://&lt;IP-del-servidor&gt;:9090</code>. Los datos se guardan en el volumen con nombre <code>keycloak-data</code> y no se pierden al reconstruir el contenedor. Las credenciales están en <code>KEYCLOAK_ADMIN</code> / <code>KEYCLOAK_ADMIN_PASSWORD</code> de <code>.env.windows</code>.</div>
+
+    <h2>6.1 Crear el Realm</h2>
+    <ol>
+      <li>Abre <code>http://127.0.0.1:9090</code> en el navegador → Administration Console → iniciar sesión como administrador;</li>
+      <li>Menú desplegable de la esquina superior izquierda → <b>Create Realm</b> → en Realm name pon <code>enterprise-ai</code> → Create.</li>
+    </ol>
+
+    <h2>6.2 Opción A: crear cuentas localmente (equipos pequeños sin AD / pruebas)</h2>
+    <ol>
+      <li><b>Groups</b> → Create Group → <code>ai-admin</code>; luego crea <code>ai-user</code>;</li>
+      <li><b>Users</b> → Add user → nombre de usuario → Create;</li>
+      <li>Pestaña Credentials → establece la contraseña → desactiva Temporary;</li>
+      <li>Pestaña Groups → únelo al grupo <code>ai-user</code>.</li>
+    </ol>
+
+    <h2>6.3 Opción B: importar cuentas desde Active Directory (recomendado)</h2>
+    <p>Si la empresa ya tiene un controlador de dominio Windows AD, los empleados inician sesión con su cuenta de dominio sin necesidad de crear cuentas manualmente en Keycloak. Requisito previo: que la red entre el contenedor Docker y el controlador de dominio esté interconectada (la topología de red, Hyper-V Internal Switch y el reenvío de puertos se explican en la «Guía de integración de Keycloak con AD» <code>windows-ad-integration.html</code>).</p>
+    <div class="note">📌 Cuentas de AD necesarias: la cuenta de servicio <code>svc_keycloak</code> (contraseña sin caducidad, para el enlace LDAP) + 2 usuarios de dominio de prueba (para verificar la sincronización).</div>
+
+    <h3>Crear la federación de usuarios LDAP</h3>
+    <ol>
+      <li>Realm enterprise-ai → a la izquierda <b>User Federation</b> → Add provider → <b>ldap</b>;</li>
+      <li>Rellena según la siguiente tabla.</li>
+    </ol>
+    <table>
+      <tr><th>Configuración</th><th>Valor</th><th>Descripción</th></tr>
+      <tr><td>Vendor</td><td><b>Active Directory</b></td><td>Elige AD, no Other (de lo contrario no se reconoce objectGUID)</td></tr>
+      <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V mediante reenvío de puertos; en producción pon <code>ldap://dc.dominio-empresa:389</code></td></tr>
+      <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>LDAP 389 o LDAPS 636</td></tr>
+      <tr><td>Bind type</td><td><b>simple</b></td><td>Autenticación por usuario + contraseña</td></tr>
+      <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>Debe estar en formato LDAP DN</b>, no uses <s>DOMINIO\usuario</s></td></tr>
+      <tr><td>Bind credentials</td><td><code>contraseña de svc_keycloak</code></td><td>Ver <code>.env.windows</code></td></tr>
+      <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>Solo lectura, no escribe en AD</td></tr>
+      <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>Si hay sub-OU, cámbialo por <code>DC=testcompany,DC=local</code></td></tr>
+      <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>No pongas cn</b></td></tr>
+      <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>Atributo de nomenclatura de la entrada</td></tr>
+      <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>Identificador único inmutable de AD</td></tr>
+      <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>Separadas por comas</td></tr>
+      <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>No elijas One Level</b> (de lo contrario no encuentra las sub-OU)</td></tr>
+      <tr><td>Pagination</td><td><b>On</b></td><td>Descarga por lotes cuando hay muchos usuarios</td></tr>
+      <tr><td>Referral</td><td><b>ignore</b></td><td>Evita seguir a controladores de dominio inexistentes</td></tr>
+      <tr><td>Import users</td><td><b>On</b></td><td>Importación por sincronización completa</td></tr>
+      <tr><td>Sync Registrations</td><td><b>On</b></td><td>Sincronización inmediata en el primer inicio de sesión</td></tr>
+    </table>
+    <p>Save → <b>Synchronize all users</b> → espera a que termine la sincronización.</p>
+
+    <div class="warn">⚠️ Errores de rellenado frecuentes:
+      <ul>
+        <li>El Bind DN usa <b>formato LDAP</b> (<code>CN=svc_keycloak,CN=Users,DC=xxx</code>), no <s>DOMINIO\usuario</s>;</li>
+        <li>Username LDAP attribute = <code>sAMAccountName</code>, no <code>cn</code>;</li>
+        <li>Search scope = <b>Subtree</b>;</li>
+        <li><b>El CN con espacios se conserva tal cual</b>: si el nombre mostrado lleva espacios (por ejemplo <code>ai all in one admin</code> tiene un espacio en medio), el Bind DN debe escribirse <code>CN=ai all in one admin,...</code>; si escribes guiones bajos no conectará.</li>
+      </ul>
+    </div>
+
+    <h3>Verificar el inicio de sesión con AD</h3>
+    <ol>
+      <li>Abre en una ventana de incógnito <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code>;</li>
+      <li>Inicia sesión con una cuenta de dominio (sirve tanto el nombre de usuario <code>aitest1</code> como el UPN <code>aitest1@chxia.lab</code>);</li>
+      <li>Si redirige correctamente a Account Console, ha pasado la prueba.</li>
+    </ol>
+
+    <h2>6.4 Otras fuentes de identidad corporativas (resumen del apéndice N)</h2>
+    <p>Keycloak admite además múltiples fuentes de identidad, todas conectadas al mismo Realm <code>enterprise-ai</code>:</p>
+    <table>
+      <tr><th>Fuente de identidad</th><th>Forma de integración</th><th>Puntos clave</th></tr>
+      <tr><td>Microsoft Entra ID (antes Azure AD)</td><td>Identity Providers → OpenID Connect v1.0</td><td>Registra una aplicación en Azure para obtener client id/secret; redirect URI <code>/realms/enterprise-ai/broker/entra-id/endpoint</code></td></tr>
+      <tr><td>Google Workspace</td><td>Identity Providers → Google (integrado)</td><td>Puedes usar un Mapper con <code>hd=dominio</code> para restringir el dominio</td></tr>
+      <tr><td>GitHub</td><td>Identity Providers → GitHub (integrado)</td><td>Callback de la OAuth App <code>/broker/github/endpoint</code></td></tr>
+      <tr><td>LDAP genérico (OpenLDAP/FreeIPA)</td><td>User Federation → ldap</td><td>Vendor Other; Username attribute con <code>uid</code></td></tr>
+      <tr><td>SAML 2.0 genérico (Okta/ADFS)</td><td>Identity Providers → SAML v2.0</td><td>Pega la URL de metadatos del IdP para que se rellene automáticamente</td></tr>
+    </table>
+    <div class="tip">✅ Convivencia de varias fuentes de identidad: puedes añadir Identity Provider Redirector en Authentication → Browser flow para seleccionar automáticamente el IdP por el dominio del correo (<code>@empresa.com</code>→AD, <code>@empresa.onmicrosoft.com</code>→Entra ID).</div>
+
+    <div class="docbox"><span class="label">📖 Documentación oficial:</span>Documentación oficial de Keycloak <span class="url">https://www.keycloak.org/documentation</span> · Guía de administración del servidor <span class="url">https://www.keycloak.org/server/</span> · Federación LDAP <span class="url">https://www.keycloak.org/docs/latest/server_admin/#_ldap</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

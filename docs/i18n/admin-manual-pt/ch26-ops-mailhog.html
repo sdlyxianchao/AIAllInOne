@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 26 — MailHog: receptor de e-mails · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 2 · Gestão</div>
+      <h1>MailHog: receptor de e-mails</h1>
+      <div class="sub">A «saída de e-mail» quando a intranet não tem SMTP, recebendo os códigos de verificação/e-mails de notificação do Ghost.</div>
+    </div>
+
+    <p><b>Entrada</b>: <span class="entry">http://&lt;IP-do-servidor&gt;:8025</span> (caixa de entrada Web, SMTP 1025 apenas interno).</p>
+
+    <h2>26.1 Por que ele é necessário</h2>
+    <p>O painel do Ghost 5 usa login sem senha: ao digitar o e-mail, o Ghost envia uma mensagem com código de 6 dígitos. Sem SMTP na intranet, o e-mail não sai e o login dá <code>Failed to send email</code>. O MailHog funciona como a «saída de e-mail» que recebe essas mensagens.</p>
+
+    <h2>26.2 Configuração do lado do Ghost</h2>
+    <pre><code># variáveis de ambiente do Ghost no docker-compose.yml
+mail__transport: SMTP
+mail__from: noreply@company.com
+mail__options__host: mailhog
+mail__options__port: 1025</code></pre>
+
+    <h2>26.3 Ver os e-mails</h2>
+    <ol>
+      <li>Abra <code>http://&lt;IP-do-servidor&gt;:8025</code> no navegador;</li>
+      <li>Na caixa de entrada, veja os códigos de verificação/e-mails de notificação enviados pelo Ghost.</li>
+    </ol>
+
+    <h2>26.4 Login sem senha do Ghost (login automático pela Central de Administração de IA)</h2>
+    <p>O código de 6 dígitos do Ghost é essencialmente <b>TOTP</b> (<code>TOTP(admin_session_secret + userId)</code>, 6 dígitos/60 segundos/HMAC-SHA1). A Central de Administração de IA calcula o código localmente; ao clicar em «Painel do Ghost → Abrir», conclui automaticamente: login por senha → cálculo local do código → validação da sessão → gravação de cookie → entrada no painel, tudo sem fricção e sem consultar o MailHog.</p>
+    <div class="warn">⚠️ Mesmo calculando o código por conta própria, o Ghost ainda envia o e-mail de verdade, então o MailHog deve ser mantido, senão o login dá <code>Failed to send email</code>.</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>repositório do código-fonte do MailHog <span class="url">https://github.com/mailhog/MailHog</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch26';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

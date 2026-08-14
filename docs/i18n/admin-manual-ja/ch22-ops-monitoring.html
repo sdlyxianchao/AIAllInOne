@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第22章 監視・アラート管理 · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部 · 管理編</div>
+      <h1>監視・アラート管理</h1>
+      <div class="sub">Prometheus + Grafana + Alertmanager：コンテナリソース監視とアラート通知。</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/grafana-logo.svg" alt="Grafana"></span><b>入口</b>：Grafana <span class="entry">http://&lt;サーバーIP&gt;:3030</span>（SSO 自動ログイン）；Prometheus <span class="entry">:9091</span>；Alertmanager <span class="entry">:9093</span>。</p>
+
+    <h2>22.1 コンポーネントとポート</h2>
+    <table>
+      <tr><th>コンポーネント</th><th>ポート</th><th>用途</th></tr>
+      <tr><td>cadvisor</td><td>8080（内部）</td><td>各コンテナの CPU/メモリ/ネットワーク/ディスクを収集</td></tr>
+      <tr><td>Prometheus</td><td>9091</td><td>メトリクス集約 + アラートルール（<code>monitoring/alerts.yml</code>）</td></tr>
+      <tr><td>Grafana</td><td>3030</td><td>可視化ダッシュボード（プリセット「AI All In One — コンテナ監視」）</td></tr>
+      <tr><td>Alertmanager</td><td>9093</td><td>アラートの重複排除/グループ化/ルーティング/通知</td></tr>
+    </table>
+
+    <h2>22.2 ダッシュボードの閲覧</h2>
+    <ol>
+      <li>Grafana にログイン（<code>ai_all_in_one_admin</code> / 統一パスワード、SSO 自動ログイン）；</li>
+      <li>「AI All In One — コンテナ監視」パネルを開き、各コンテナの CPU/メモリ/ネットワークを確認。</li>
+    </ol>
+
+    <h2>22.3 アラートルール</h2>
+    <p>プリセットルール（<code>monitoring/alerts.yml</code>）：コンテナ停止（critical）、コンテナメモリ &gt;90%（warning）、コンテナ CPU &gt;80%（warning）。</p>
+    <div class="warn">⚠️ アラート誤報の落とし穴：cadvisor はホストマシンの全 cgroup（systemd 含む）を報告するため、アラートルールに <code>{name!=""}</code> フィルタを書く必要があります。メモリアラートはさらに <code>container_spec_memory_limit_bytes &gt; 0</code> を追加します（ないと limit=0 のゼロ除算で常時発火）。</div>
+
+    <h2>22.4 アラート通知の接続</h2>
+    <p>現在アラートルールは準備済みですが<b>通知チャネル未接続</b>。接続方法：Grafana → Alerting → Contact points で Webhook（DingTalk/WeCom Work/Feishu ボット）を追加、または Alertmanager の receiver を設定します。</p>
+    <pre><code># Alertmanager 設定例（alertmanager.yml の receiver）
+receivers:
+  - name: 'dingtalk'
+    webhook_configs:
+      - url: 'https://oapi.dingtalk.com/robot/send?access_token=xxx'</code></pre>
+
+    <div class="note">📌 ポート競合の説明：Prometheus のデフォルト 9090 は Keycloak が使用するため 9091 に変更。Grafana のデフォルト 3000/3001 は使用中のため 3030 に変更。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>Grafana <span class="url">https://grafana.com/docs/grafana/latest/</span> · Prometheus <span class="url">https://prometheus.io/docs/</span> · Alertmanager <span class="url">https://prometheus.io/docs/alerting/latest/alertmanager/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch22';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

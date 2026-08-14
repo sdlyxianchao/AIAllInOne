@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제3장 도구 1: DeepChat · AI AllInOne 사용자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">빠른 시작</div>
+      <h1>도구 1: DeepChat</h1>
+      <div class="sub">데스크톱 AI 대화 클라이언트: 다운로드, 설정, 대화, 고급 팁.</div>
+    </div>
+
+    <h2>3.1 다운로드 및 설치</h2>
+    <ol>
+      <li>포털 다운로드 센터 <code>http://IP:8090/downloads/</code> 열기;</li>
+      <li>시스템에 따라 설치 패키지 다운로드 후 설치;</li>
+      <li>DeepChat 실행.</li>
+    </ol>
+
+    <h2>3.2 모델 설정 (회사 게이트웨이 연결)</h2>
+    <p>최초 사용 시 DeepChat에 모델 위치를 알려줘야 합니다. 회사가 모델을 게이트웨이 <b>NewAPI</b>로 통합 수용했으므로, 세 값만 입력하면 됩니다:</p>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin:12px 0;">
+      <p><span class="step-num">1</span>DeepChat 열기 → 좌측 하단 <b>설정 (⚙️)</b> → <b>모델 서비스 / 모델 공급자</b>.</p>
+      <p><span class="step-num">2</span>「<b>사용자 지정 Provider</b>」 또는 「<b>OpenAI 호환</b>」 추가.</p>
+      <p><span class="step-num">3</span>아래 세 항목 입력:</p>
+      <table>
+        <tr><th>필드</th><th>무엇을 입력</th></tr>
+        <tr><td>API Base URL</td><td><code>http://IP:3000/v1</code></td></tr>
+        <tr><td>API Key</td><td>NewAPI에서 신청한 <code>sk-</code> 키 (제5장 참조)</td></tr>
+        <tr><td>모델</td><td><code>deepseek-chat</code> (회사 기본, 기타 개방된 모델 선택 가능)</td></tr>
+      </table>
+      <p><span class="step-num">4</span>저장.</p>
+    </div>
+    <div class="warn">⚠️ <b>핵심</b>: API Base URL은 반드시 <b>내부망 IP</b> (<code>http://IP:3000/v1</code>) 사용, <code>localhost</code> 사용 금지, 아니면 회사 서버에 연결되지 않습니다.</div>
+
+    <h2>3.3 대화 시작</h2>
+    <ol>
+      <li>「<b>+ 새 대화</b>」 클릭;</li>
+      <li>입력창에 타이핑, 엔터로 전송;</li>
+      <li>응답 수신 시 링크 정상.</li>
+    </ol>
+    <div class="example">💡 <b>한번 해보세요</b>: 「고객에게 보내는 정중한 독촉 메일을 써줘, 톤은 부드럽게」를 보내 AI 답변 확인. 이어서 「아래 문장을 영어로 번역해줘: ……」도 시도. DeepChat은 다중 턴 대화를 지원하므로 계속 추궁하거나 AI에게 수정 요청 가능.</div>
+
+    <h2>3.4 자주 쓰는 기능 및 팁</h2>
+    <table>
+      <tr><th>기능</th><th>사용법</th></tr>
+      <tr><td>다중 모델 전환</td><td>대화 상단에서 다른 모델 선택 (회사가 여러 개 개방한 경우)</td></tr>
+      <tr><td>파일 읽기/쓰기 / MCP 도구</td><td>설정 → MCP에서 회사 도구 (예: 파일 시스템) 활성화, AI가 로컬 파일 읽기</td></tr>
+      <tr><td>다크/라이트 테마</td><td>설정 → 디자인</td></tr>
+      <tr><td>네트워크 프록시 문제</td><td>「연결 타임아웃」 오류 → 설정 → 네트워크/프록시 → 「프록시 사용 안 함/직접 연결」로 변경</td></tr>
+    </table>
+
+    <h2>3.5 질문 팁</h2>
+    <div class="tip">✅ <b>구체적일수록 좋습니다</b>——배경 제공, 요구 명확히, 예시 제공, AI 답변 품질이 높아집니다.</div>
+    <div class="example">💡 좋은 예: 「당신은 시니어 카피라이터입니다. CTO 독자 대상, 전문적이고 절제된 톤으로 200자 제품 소개를 써줘」——「소개 써줘」보다 훨씬 낫습니다.</div>
+    <ul>
+      <li><b>역할 부여</b>: 「당신은 재무 전문가입니다, ...도와주세요」;</li>
+      <li><b>제약 부여</b>: 「100자 이내로 / 표로 / 세 단계로」;</li>
+      <li><b>예시 부여</b>: 「이 형식을 참고해 다시 써줘……」;</li>
+      <li><b>단계별 추궁</b>: 만족스럽지 않으면 「다시 고쳐줘」「톤을 바꿔줘」.</li>
+    </ul>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>DeepChat 빠른 시작 <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · 오픈소스 저장소 <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

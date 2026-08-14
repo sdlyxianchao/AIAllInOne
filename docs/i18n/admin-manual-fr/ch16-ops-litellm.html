@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 16 · Administration quotidienne de LiteLLM · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Deuxième partie · Administration</div>
+      <h1>Administration quotidienne de LiteLLM</h1>
+      <div class="sub">Proxy d'anonymisation PII : liste des modèles, règles d'anonymisation, cache, remontée vers Langfuse.</div>
+    </div>
+
+    <p><b>Accès</b> : <span class="entry">http://&lt;IP-du-serveur&gt;:4001</span> (pure API, sans interface Web ; pour le débogage, utilisez <code>/v1/models</code>). La configuration se trouve dans <code>litellm-config.yaml</code>.</p>
+
+    <h2>16.1 Maintenance de la liste des modèles</h2>
+    <p>Modifiez <code>model_list</code> de <code>litellm-config.yaml</code> pour ajouter/supprimer des modèles et les clés API correspondantes. Étapes pour ajouter un nouveau fournisseur :</p>
+    <ol>
+      <li>Dans <code>.env</code>, décommentez <code># OPENAI_API_KEY=</code> et renseignez la clé ;</li>
+      <li>Dans <code>litellm-config.yaml</code>, décommentez le bloc model correspondant ;</li>
+      <li><code>docker compose up -d litellm</code>.</li>
+    </ol>
+
+    <h2>16.2 Cache de réponses</h2>
+    <p>Cache Redis exact match, partagé entre utilisateurs pour les requêtes strictement identiques. Ajustez <code>cache_params.ttl</code> (3600 secondes par défaut). Désactivation : <code>cache: false</code> puis redémarrage.</p>
+
+    <h2>16.3 Remontée vers Langfuse</h2>
+    <p>Via <code>success_callback: ["langfuse"]</code> + <code>LANGFUSE_PUBLIC_KEY/SECRET_KEY/HOST</code> de <code>.env</code>, chaque appel est automatiquement remonté.</p>
+
+    <h2>16.4 Redémarrage et dépannage</h2>
+    <pre><code>docker compose restart litellm          # Redémarrer après modification de la configuration
+docker logs litellm --tail 50           # Consulter les journaux</code></pre>
+    <div class="warn">⚠️ Pièges clés : ① les guardrails nécessitent <code>default_on: true</code> pour s'appliquer globalement ; ② l'anonymisation PII (Presidio) est actuellement commentée en raison d'un changement d'API en amont, elle ne fait que du proxy pur ; ③ utilisez la version stable <code>v1.95.1</code> (<code>main-latest</code> a des bugs).</div>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>documentation officielle de LiteLLM <span class="url">https://docs.litellm.ai</span> · guardrail Presidio <span class="url">https://docs.litellm.ai/docs/proxy/guardrails/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch16';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

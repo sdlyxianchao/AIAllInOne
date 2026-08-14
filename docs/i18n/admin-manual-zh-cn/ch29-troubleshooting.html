@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 29 章 故障排查手册 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第三部分 · 运维篇</div>
+      <h1>故障排查手册</h1>
+      <div class="sub">按症状速查，快速定位根因。</div>
+    </div>
+
+    <h2>29.1 通用排查三步</h2>
+    <ol>
+      <li><b>看容器状态</b>：<code>docker ps -a</code> 找 Exited/Restarting；</li>
+      <li><b>看日志</b>：<code>docker logs &lt;容器名&gt; --tail 30</code>；</li>
+      <li><b>看健康检查</b>：跑 <code>health-check.ps1</code> 定位失败阶段。</li>
+    </ol>
+
+    <h2>29.2 症状速查表</h2>
+    <table>
+      <tr><th>症状</th><th>根因</th><th>解决</th></tr>
+      <tr><td>localhost 打不开任何产品</td><td>WSL2 IPv6 <code>::1</code> 兼容问题</td><td>改用内网 IP 或 127.0.0.1</td></tr>
+      <tr><td>Ghost 一直 Restarting，报 ECONNREFUSED :3306</td><td>卷内残留 MySQL config</td><td>环境变量强制 SQLite（第 4 章）</td></tr>
+      <tr><td>Dify 4 容器启动即崩 ValidationError</td><td>GRAPH_ENGINE_SCALE_UP_THRESHOLD=0</td><td>改成 50（第 5 章）</td></tr>
+      <tr><td>NewAPI 渠道测试报 No connected db</td><td>渠道密钥填了示例值</td><td>填 <code>LITELLM_MASTER_KEY</code> 实际值</td></tr>
+      <tr><td>NewAPI OIDC 报 invalid_grant / Incorrect redirect_uri</td><td>服务器地址是 localhost</td><td>设内网地址（第 7 章）</td></tr>
+      <tr><td>NewAPI 登录 429</td><td>关键接口限流</td><td>清 redis rateLimit:* 或改 .env</td></tr>
+      <tr><td>Dify 建应用反复连 ws://localhost</td><td>WebSocket 地址未改</td><td>NEXT_PUBLIC_SOCKET_URL 设内网 IP</td></tr>
+      <tr><td>Dify 点登录没反应</td><td>密码需 base64 / 未登录 401 正常</td><td>脚本先 base64；浏览器重试</td></tr>
+      <tr><td>Gitea 报 readonly database</td><td>gitea.db 被 root 属主</td><td>删 root 属主的 db 重建</td></tr>
+      <tr><td>Gitea 仓库链接是 localhost</td><td>ROOT_URL 未改</td><td>设内网地址</td></tr>
+      <tr><td>SSO 登录报 unknown_error</td><td>AD 端口转发失效（iphlpsvc）</td><td>检查 iphlpsvc + Hyper-V 网络</td></tr>
+      <tr><td>Keycloak 看不到域用户</td><td>Search scope = One Level</td><td>改 Subtree</td></tr>
+      <tr><td>Langfuse 看不到数据</td><td>V4_WRITE_MODE 或 SSO 账号未入组织</td><td>设 dual；SQL 加组织（第 23 章）</td></tr>
+      <tr><td>DeepChat 模型连接超时</td><td>客户端走了挂掉的系统代理</td><td>设为不使用代理/直连</td></tr>
+      <tr><td>Loki 查不到日志</td><td>用了 job 标签</td><td>用 <code>{container=~".+"}</code></td></tr>
+      <tr><td>Presidio 404 /analyze/analyze</td><td>端点带了路径</td><td>只填 base URL</td></tr>
+      <tr><td>改 server.js 后新接口 404</td><td>up -d 不重读 volume 变化</td><td>docker restart admin-portal</td></tr>
+    </table>
+
+    <h2>29.3 常用命令</h2>
+    <pre><code>docker ps -a                                        # 所有容器状态
+docker logs &lt;容器&gt; --tail 50                         # 看日志
+docker compose up -d &lt;服务&gt;                          # 重建某服务
+docker compose restart &lt;服务&gt;                        # 重启某服务（不重读 .env）
+docker system df                                     # Docker 磁盘占用
+C:\AIAllInOne\windows\scripts\health-check.ps1       # 一键体检</code></pre>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch29';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 10 章 DeepChat 分發與 CI/CD · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>DeepChat 分發與 CI/CD</h1>
+      <div class="sub">把 DeepChat 安裝包分發給員工，以及用 Gitea Actions 自動同步官方新版本。</div>
+    </div>
+
+    <h2>10.1 分發鏈路</h2>
+    <p>分發鏈路 = GitHub Releases 安裝包 → <code>deepchat-sync</code> 倉庫的 Gitea Actions → 更新伺服器（:8091）→ Ghost 下載頁 → 員工下載。</p>
+    <div class="note">📌 已刪除 <code>deepchat</code> 原始碼 mirror 倉庫——mirror 只同步 git 原始碼、不同步 release 安裝包，對分發無用。若要做原始碼審計/二次開發再單獨建。</div>
+
+    <h2>10.2 下載安裝包到更新伺服器</h2>
+    <pre><code>mkdir -p deepchat-updates/deepchat
+curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-windows-x64.exe \
+  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-windows-x64.exe
+curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
+  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-mac-x64.dmg</code></pre>
+    <p>驗證：<code>curl -I http://&lt;伺服器IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe</code> → 200/206。再更新 Ghost 下載頁（見第 9 章）。</p>
+
+    <h2>10.3 自動同步（Gitea Actions，推薦）</h2>
+    <table>
+      <tr><th>元件</th><th>說明</th></tr>
+      <tr><td><code>deepchat-sync</code> 倉庫</td><td>普通倉庫（不能用 mirror），放 <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
+      <tr><td>觸發</td><td><code>schedule</code>（每天 UTC 2 點）+ <code>workflow_dispatch</code>（手動）</td></tr>
+      <tr><td>邏輯</td><td>查 GitHub 最新 tag → 對比 <code>version.txt</code> → 有新版則下載 + 更新 Ghost 下載頁 + 寫版本</td></tr>
+    </table>
+    <pre><code># 手動觸發一次
+curl -X POST "http://&lt;伺服器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+  -u "ai_all_in_one_admin:&lt;密碼&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'</code></pre>
+    <div class="warn">⚠️ 關鍵坑：① act_runner 的 <code>container.network</code> 必須透過 <code>config.yaml</code>（+<code>CONFIG_FILE</code> 環境變數）配，否則 job 容器解析不了 <code>gitea</code> 主機名；② docker.sock 由 runner 自動掛載，別在 options 裡再掛（報 Duplicate mount point）。</div>
+
+    <h2>10.4 國內下載源配置（sync-config.json）</h2>
+    <p>官網 <code>deepchatai.cn</code> 下載頁的安裝包仍指向 GitHub，國內基本不通。真正解決靠 <code>sync-config.json</code>：</p>
+    <table>
+      <tr><th>欄位</th><th>作用</th><th>預設</th></tr>
+      <tr><td><code>version_source</code></td><td><code>github</code>（GitHub API 最準）或 <code>official</code>（官網快取，可達但滯後）</td><td><code>github</code></td></tr>
+      <tr><td><code>download_prefix</code></td><td>下載加速字首，如 <code>https://ghproxy.com/</code></td><td><code>""</code></td></tr>
+      <tr><td><code>keep_releases</code></td><td>版本歷史保留數</td><td><code>5</code></td></tr>
+      <tr><td><code>market_url</code></td><td>下載頁「先裝技能管家」的內網市場地址</td><td><code>http://&lt;伺服器IP&gt;:3100</code></td></tr>
+    </table>
+    <pre><code># 能連 GitHub：預設不改
+{ "version_source": "github", "download_prefix": "" }
+# GitHub 加速代理（最常用）
+{ "version_source": "github", "download_prefix": "https://ghproxy.com/" }</code></pre>
+    <div class="note">📌 工作流內建 <code>version_cmp.py</code> 版本比較，只有「最新版 > 本地版」才下載（避免官網快取滯後把客戶端回退舊版）。</div>
+
+    <h2>10.5 方式 B：Docker 構建自定義版本（可選）</h2>
+    <pre><code>mkdir deepchat-build
+docker run -it --rm -v ${PWD}/deepchat-build:/app -w /app node:20 bash
+# 容器內
+git clone https://github.com/ThinkInAIXYZ/deepchat.git .
+npm ci
+npx electron-builder --win --x64
+# 產物在 dist/，退出後 copy 到 deepchat-updates/</code></pre>
+
+    <h2>10.6 配置 DeepChat 客戶端（員工側）</h2>
+    <ol>
+      <li>DeepChat → 設定 → 模型服務 → 自定義 Provider / OpenAI 相容；</li>
+      <li>API Base URL：<code>http://&lt;伺服器IP&gt;:3000/v1</code>（必須內網 IP）；</li>
+      <li>API Key：<code>deepchat-key</code> 的 <code>sk-xxx</code>；</li>
+      <li>模型：<code>deepseek-chat</code>，儲存後測試對話。</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>DeepChat 快速開始 <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · 開源倉庫 <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch10';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

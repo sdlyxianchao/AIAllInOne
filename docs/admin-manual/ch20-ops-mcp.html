@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 20 MCP Gateway Day-to-Day Administration · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 2 · Administration</div>
+      <h1>MCP Gateway Day-to-Day Administration</h1>
+      <div class="sub">Add/remove MCP Servers, upload/delete Skills, extend built-in tools.</div>
+    </div>
+
+    <p><b>Entry</b>: <span class="entry">http://&lt;server-IP&gt;:3100</span> (marketplace page <code>/market</code>). Management is done via the "MCP Gateway" page of the AI Admin Center (<code>ai-platform-admin</code> role), or by calling the management API directly.</p>
+
+    <h2>20.1 Manage MCP Servers</h2>
+    <ol>
+      <li>Edit <code>mcp-gateway/mcp-servers.json</code> to add/remove servers (stdio/http types);</li>
+      <li>Restart: <code>docker compose restart mcp-gateway</code>;</li>
+      <li>Or add/remove on the AI Admin Center's MCP Gateway page (writes back config + auto-reconnects).</li>
+    </ol>
+
+    <h2>20.2 Manage Skills (skill packages)</h2>
+    <ol>
+      <li><b>Upload</b>: AI Admin Center MCP Gateway page → upload a skill zip (validates it contains SKILL.md, prevents path traversal);</li>
+      <li><b>Delete</b>: delete the corresponding skill;</li>
+      <li>Skills are placed in <code>mcp-gateway/skills/</code> (subdirectories containing SKILL.md), automatically scanned on each request, no restart needed.</li>
+    </ol>
+
+    <h2>20.3 Extend Built-in Tools</h2>
+    <p>In <code>mcp-gateway/gateway.js</code>, add two steps:</p>
+    <pre><code>// ① tool definition (add one item to the builtinTools array)
+{ name: 'platform_health', description: 'query service health status',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② execution logic (add one branch to callBuiltin)
+if (name === 'platform_health') { return 'all services running normally'; }</code></pre>
+    <p>After editing, <code>docker compose restart mcp-gateway</code>.</p>
+
+    <h2>20.4 Maintain the skill-market Marketplace Address</h2>
+    <p>"Skill Butler"'s <code>market_url</code> is in <code>mcp-gateway/skills/skill-market/config.json</code> + <code>SKILL.md</code>; it must use a hostname (not an IP) and is a deployment parameter (see Chapter 11).</p>
+
+    <div class="warn">⚠️ The management API requires the <code>X-Admin-Token</code> header (<code>MCP_ADMIN_TOKEN</code> in <code>.env</code>); unconfigured returns 503, wrong token returns 401.</div>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>MCP protocol official <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch20';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

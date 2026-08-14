@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 20 — Administración diaria de MCP Gateway · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte II · Administración</div>
+      <h1>Administración diaria de MCP Gateway</h1>
+      <div class="sub">Altas y bajas de MCP Server, subir/eliminar Skills y ampliar las herramientas integradas.</div>
+    </div>
+
+    <p><b>Entrada</b>: <span class="entry">http://&lt;IP-del-servidor&gt;:3100</span> (página del mercado <code>/market</code>). La administración se hace desde la página «MCP Gateway» del Centro de administración de IA (rol <code>ai-platform-admin</code>), o directamente llamando a la API de administración.</p>
+
+    <h2>20.1 Gestionar MCP Server</h2>
+    <ol>
+      <li>Edita <code>mcp-gateway/mcp-servers.json</code> para añadir o quitar servidores (tipos stdio/http);</li>
+      <li>Reinicia con <code>docker compose restart mcp-gateway</code>;</li>
+      <li>O hazlo desde la página MCP Gateway del Centro de administración de IA (escribe la configuración + reconexión automática).</li>
+    </ol>
+
+    <h2>20.2 Gestionar Skills (paquetes de habilidades)</h2>
+    <ol>
+      <li><b>Subir</b>: página MCP Gateway del Centro de administración de IA → subir zip de habilidad (valida que contenga SKILL.md, evita path traversal);</li>
+      <li><b>Eliminar</b>: elimina la habilidad correspondiente;</li>
+      <li>Las habilidades se colocan en <code>mcp-gateway/skills/</code> (subdirectorios con SKILL.md); se escanean automáticamente en cada petición, sin reiniciar.</li>
+    </ol>
+
+    <h2>20.3 Ampliar las herramientas integradas</h2>
+    <p>En <code>mcp-gateway/gateway.js</code> añade dos pasos:</p>
+    <pre><code>// ① Definición de herramienta (añade una entrada al array builtinTools)
+{ name: 'platform_health', description: 'Consultar el estado de salud del servicio',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② Lógica de ejecución (añade una rama en callBuiltin)
+if (name === 'platform_health') { return 'Todos los servicios funcionan correctamente'; }</code></pre>
+    <p>Tras el cambio, <code>docker compose restart mcp-gateway</code>.</p>
+
+    <h2>20.4 Mantener la dirección del mercado skill-market</h2>
+    <p>El <code>market_url</code> del «administrador de habilidades» está en <code>mcp-gateway/skills/skill-market/config.json</code> + <code>SKILL.md</code>; debe usar hostname (no IP) y es un parámetro de implementación (ver capítulo 11).</p>
+
+    <div class="warn">⚠️ La API de administración requiere la cabecera <code>X-Admin-Token</code> (<code>MCP_ADMIN_TOKEN</code> de <code>.env</code>); sin configurar devuelve 503 y con token incorrecto devuelve 401.</div>
+
+    <div class="docbox"><span class="label">📖 Documentación oficial:</span>Sitio oficial del protocolo MCP <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch20';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

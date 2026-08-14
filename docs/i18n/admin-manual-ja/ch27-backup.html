@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第27章 バックアップと復元 · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第三部 · 運用編</div>
+      <h1>バックアップと復元</h1>
+      <div class="sub">全データの毎日バックアップ、ワンクリック復元。</div>
+    </div>
+
+    <p><b>入口</b>：AI 管理センター「💾 バックアップと復元」ページ、またはコマンドライン <code>scripts/backup.ps1</code> / <code>restore.ps1</code>。毎日 02:00 のスケジュールタスクで自動バックアップし、7 日間保持します。</p>
+
+    <h2>27.1 バックアップ項目</h2>
+    <table>
+      <tr><th>バックアップ項目</th><th>方式</th></tr>
+      <tr><td>NewAPI MySQL</td><td><code>mysqldump</code></td></tr>
+      <tr><td>Dify PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Langfuse PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Ghost / Gitea / Grafana SQLite</td><td>ファイルコピー</td></tr>
+      <tr><td>Keycloak</td><td><b>realm export（JSON）</b></td></tr>
+      <tr><td>設定ファイル</td><td>ファイルコピー</td></tr>
+    </table>
+
+    <h2>27.2 手動バックアップ</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+
+    <h2>27.3 定期バックアップ（スケジュールタスク）</h2>
+    <p>スケジュールタスク <code>AI-Platform-Backup</code>（毎日 02:00）を登録済み。自動登録されていない場合は手動作成：タスクスケジューラ → 新規作成 → プログラム <code>powershell.exe</code>、引数 <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>、トリガー毎日 02:00。</p>
+    <div class="note">📌 バックアップはデフォルトで C ドライブにあります。定期的に <code>C:\AIAllInOne\backups\</code> を別のディスクやオブジェクトストレージに同期して異地災害対策を行うことを推奨します。</div>
+
+    <h2>27.4 復元</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+    <p>スクリプトは <code>yes</code> の入力確認を要求します（<code>-Force</code> でスキップ。スクリプト/CI 専用）。AI 管理センター「バックアップと復元」ページで任意のバックアップの「復元」をクリックしてワンクリック復元も可能です。</p>
+
+    <h2>27.5 重要な落とし穴（演習で検証済み）</h2>
+    <div class="warn">⚠️
+      <ul>
+        <li>Keycloak は必ず <b>realm export/import（JSON）</b> を使用します。pg_dump 復元は default role の関連付けが失われ起動できなくなります；</li>
+        <li>SQLite 復元後の所有権は root になるため、対応する uid に chown する必要があります（grafana=472、gitea=1000）。しないと readonly エラー；</li>
+        <li>pg_dump に <code>--clean --if-exists</code> を付けて復元競合を回避；</li>
+        <li>旧版 backup.ps1 は <code>Copy-Item</code> のバッチコピーでドットファイル <code>.env</code> が原因で全体が静かに失敗していました。ファイルごとの <code>-LiteralPath</code> に修正済み；</li>
+        <li>AI 管理センターのバックアップは base64 中継 + tar-fs でバイナリ安全を保証します（docker exec の stdout は utf8 経由で SQLite .db を壊すため）。</li>
+      </ul>
+    </div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch27';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

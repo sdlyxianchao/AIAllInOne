@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 14 Keycloak Day-to-Day Administration · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 2 · Administration</div>
+      <h1>Keycloak Day-to-Day Administration</h1>
+      <div class="sub">Authentication hub: manage users, roles, OIDC clients, AD federation, and sessions.</div>
+    </div>
+
+    <p><span class="logo"><img src="../images/keycloak-logo.svg" alt="Keycloak"></span><b>Entry</b>: <span class="entry">http://&lt;server-IP&gt;:9090</span> → Administration Console → log in as admin.</p>
+
+    <h2>14.1 Manage Users</h2>
+    <ol>
+      <li><b>Create user</b>: Users → Add user → enter username → Create;</li>
+      <li><b>Set password</b>: the user's Credentials tab → set password → turn Temporary off (otherwise first login forces a password change);</li>
+      <li><b>Reset password</b>: Users → search the user → Credentials → Set password;</li>
+      <li><b>Disable/enable</b>: the Enabled toggle at the top of the user detail (after disabling, all of that user's SSO immediately becomes invalid);</li>
+      <li><b>Delete</b>: user detail → Delete.</li>
+    </ol>
+
+    <h2>14.2 Roles and Permissions</h2>
+    <ul>
+      <li><b>Realm Role</b>: Realm roles → Create role to create a role (e.g. <code>ai-platform-admin</code>);</li>
+      <li><b>Assign role</b>: user → Role mapping → Assign role;</li>
+      <li><b>Groups</b>: Groups → create groups (<code>ai-admin</code> / <code>ai-user</code>) → add users to the group, assign roles to the group, users inherit permissions through the group.</li>
+    </ul>
+    <div class="tip">✅ Admin permissions are uniformly controlled by the <code>ai-platform-admin</code> role; products use this role to identify admins when integrating SSO.</div>
+
+    <h2>14.3 OIDC Clients (new products integrating SSO)</h2>
+    <ol>
+      <li>Clients → Create client → set Client ID to the product name (e.g. <code>newapi</code> / <code>grafana</code> / <code>langfuse</code>);</li>
+      <li>Client authentication: On (otherwise there is no Credentials tab), Standard flow: On;</li>
+      <li>Valid redirect URIs / Web origins: fill in the product's callback addresses (add both the intranet IP and 127.0.0.1);</li>
+      <li>Save → Credentials tab, copy the Client secret for the product side.</li>
+    </ol>
+
+    <h2>14.4 AD / LDAP Federation Maintenance</h2>
+    <ul>
+      <li><b>Change DC/password</b>: User Federation → click the LDAP Provider → change Connection URL / Bind credentials → Save;</li>
+      <li><b>Manual sync</b>: Synchronize all users;</li>
+      <li><b>Group mapping</b>: Mappers tab → group-ldap-mapper → set Groups DN to the container holding the AD groups, mapping AD groups to Keycloak roles.</li>
+    </ul>
+
+    <h2>14.5 Session Management</h2>
+    <ul>
+      <li><b>View active sessions</b>: Users → a user → Sessions;</li>
+      <li><b>Force logout</b>: Sessions → Sign out all;</li>
+      <li><b>Global session/token configuration</b>: Realm settings → Sessions / Tokens tabs to adjust timeouts.</li>
+    </ul>
+
+    <div class="warn">⚠️ Key pitfall review: ① keep spaces in the bind DN's CN as-is; ② Username LDAP attribute uses <code>sAMAccountName</code>, not <code>cn</code>; ③ Search scope: Subtree; ④ SSO reporting <code>unknown_error</code> is usually because the host's iphlpsvc is not running, breaking AD port forwarding; ⑤ when the AD domain controller VM is off, LDAP-federated account logins report <code>LDAP Connection refused</code>.</div>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>Keycloak official docs <span class="url">https://www.keycloak.org/documentation</span> · server admin guide <span class="url">https://www.keycloak.org/server/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch14';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

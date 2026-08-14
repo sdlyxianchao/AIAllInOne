@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第12章 AI 管理センター · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部 · デプロイ編</div>
+      <h1>AI 管理センター</h1>
+      <div class="sub">統合管理者ポータル：Keycloak 認証、左メニューに全製品を埋め込み、Dashboard のクラスタ状態表示。</div>
+    </div>
+
+    <div class="note">📌 位置づけ：Docker 管理プラットフォーム（1Panel/Portainer）ではなく、管理者向けの統合バックエンド——Keycloak 認証 + 左メニューで全製品にリンク + Dashboard クラスタ状態 + 統合管理者アカウント。</div>
+
+    <h2>12.1 コア機能</h2>
+    <table>
+      <tr><th>メニュー項目</th><th>動作</th><th>説明</th></tr>
+      <tr><td>📊 概要ダッシュボード</td><td>埋め込みページ</td><td>8 製品の業務指標 + Docker サービス（製品別グループ）+ システム情報</td></tr>
+      <tr><td>Ghost / Dify / Gitea / Keycloak</td><td>埋め込み統計ページ</td><td>先に統計を見て、「バックエンドを開く」をクリックして遷移</td></tr>
+      <tr><td>🔀 NewAPI 管理</td><td>埋め込みページ</td><td>チャネル/ユーザー/キー + コストレポート + 監査ログ</td></tr>
+      <tr><td>🔌 MCP Gateway</td><td>埋め込み管理ページ</td><td>MCP Server の増減、スキルのアップロード/削除</td></tr>
+      <tr><td>📈 監視 / 🔍 可観測性</td><td>新規タブ</td><td>Grafana :3030 / Langfuse :3010</td></tr>
+      <tr><td>📜 統合ログ</td><td>埋め込みページ</td><td>コンテナ+キーワード+時間で Loki を照会</td></tr>
+      <tr><td>💾 バックアップ・復元</td><td>埋め込みページ</td><td>バックアップリスト + 即時バックアップ + ワンクリック復元</td></tr>
+      <tr><td>🩺 可用性テスト</td><td>埋め込みページ</td><td>定期+手動で全経路をテスト</td></tr>
+      <tr><td>📄 レポート生成</td><td>埋め込みページ</td><td>カスタム期間で .md をエクスポート</td></tr>
+      <tr><td>⚙️ システム設定</td><td>埋め込みページ</td><td>UI 言語 9 種 + 製品入口 URL</td></tr>
+    </table>
+
+    <h2>12.2 Global Administrator の初期化</h2>
+    <pre><code># .env で設定
+ADMIN_USERNAME=ai_all_in_one_admin
+ADMIN_PASSWORD=アカウントパスワード一覧参照
+ADMIN_EMAIL=admin@company.com</code></pre>
+    <p>起動後に自動で Keycloak に <code>ai_all_in_one_admin</code> ユーザーを作成（既存ならスキップ）し、<code>ai-platform-admin</code> Realm Role を割り当てます。核心理念：<b>1 つの Global Admin アカウントで全プラットフォームを管理</b>。</p>
+
+    <h2>12.3 Docker Compose デプロイ</h2>
+    <pre><code># 前提：先に依存関係をインストール（1 回）
+cd admin-portal
+npm install
+cd ..</code></pre>
+    <pre><code>  admin-portal:
+    image: node:20-alpine
+    container_name: admin-portal
+    restart: always
+    ports: ["10086:3000"]
+    working_dir: /app
+    command: sh -c "node server.js"
+    environment:
+      - PORT=3000
+      - KEYCLOAK_URL=http://&lt;サーバーIP&gt;:9090
+      - KEYCLOAK_REALM=enterprise-ai
+      - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - LITELLM_URL=http://&lt;サーバーIP&gt;:4001
+    volumes:
+      - ./admin-portal:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: [ai-platform]</code></pre>
+
+    <h2>12.4 Keycloak クライアント設定</h2>
+    <ol>
+      <li>Keycloak → enterprise-ai → Clients → Create；</li>
+      <li>Client ID <code>AI-all-in-one-admin-portal</code>、Client authentication / Standard flow を On；</li>
+      <li>Valid Redirect URIs：<code>http://127.0.0.1:10086/*</code> と <code>http://&lt;サーバーIP&gt;:10086/*</code>；</li>
+      <li>Client Secret をコピー → <code>.env</code> の <code>KEYCLOAK_CLIENT_SECRET</code> に記入 → <code>docker compose up -d admin-portal</code>；</li>
+      <li>Realm Role <code>ai-platform-admin</code> を作成し、<code>ai_all_in_one_admin</code> に割り当て。</li>
+    </ol>
+
+    <div class="warn">⚠️ デプロイ/トラブルシュートの要点：
+      <ul>
+        <li>admin-portal のセッションはメモリ保存で、<code>up -d</code> でコンテナを再構築すると<b>ログインセッションが消えます</b>（再ログイン必要）；</li>
+        <li>ホーム <code>/</code> は必ず Keycloak 保護にする（<code>express.static(..., {index:false})</code> + 明示的な <code>app.get('/', keycloak.protect())</code>）。しないと未ログイン時に空のダッシュボードが直接描画されます；</li>
+        <li>Dify 統計は実際の管理者メール（<code>ai_all_in_one_admin@&lt;会社ドメイン&gt;</code>）を使い、古い <code>ADMIN_EMAIL=admin@company.com</code> は使いません；</li>
+        <li><b>server.js 変更後は必ず <code>docker restart admin-portal</code></b>。<code>up -d</code> は使えません（volume ファイル内容の変化は再構築をトリガーしません）。</li>
+      </ul>
+    </div>
+
+    <h2>12.5 検証</h2>
+    <ol>
+      <li><code>http://&lt;サーバーIP&gt;:10086</code> を開く → 自動で Keycloak ログインへ遷移（未ログイン時は空ダッシュボードを表示しない）；</li>
+      <li><code>ai_all_in_one_admin</code> でログイン → 概要ダッシュボードへ；</li>
+      <li>Dashboard に 8 製品の指標 + コンテナグループが表示；</li>
+      <li>各製品で先に統計を見て、「バックエンドを開く」をクリックして遷移；</li>
+      <li>システム設定で 9 言語に切り替え可能。</li>
+    </ol>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch12';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

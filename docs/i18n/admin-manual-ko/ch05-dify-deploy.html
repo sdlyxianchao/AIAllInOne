@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제5장 Dify 독립 배포 · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제1부 · 배포편</div>
+      <h1>Dify 독립 배포</h1>
+      <div class="sub">Dify는 공식 compose(약 15개 컨테이너)로 독립 배포하여 포트 충돌을 피합니다.</div>
+    </div>
+
+    <div class="note">📌 Dify는 공식 docker-compose(~15개 컨테이너 포함)를 사용하며, 독립 배포로 포트 충돌을 피하고 자체 기본 네트워크(핵심 서비스의 <code>ai-platform</code> 네트워크와 다름)를 사용합니다.</div>
+
+    <h2>5.1 Dify 클론</h2>
+    <pre><code># 방안 A: GitHub (접근 가능해야 함)
+$tag = (Invoke-RestMethod https://api.github.com/repos/langgenius/dify/releases/latest).tag_name
+git clone --branch $tag https://github.com/langgenius/dify.git
+
+# 방안 B: Gitee 공식 미러 (국내 권장)
+git clone https://gitee.com/dify_ai/dify.git</code></pre>
+
+    <h2>5.2 호환성 수정 + 환경 변수 복사</h2>
+    <pre><code>cd dify\docker
+
+# env_file 형식 수정 (구버전 Docker Compose 호환)
+python -c "import re; c=open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml').read(); c=re.sub(r'  - path: (\./envs/[^\n]+\.env)\n\s+required: (?:true|false)', r'  - \1', c); open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml','w').write(c); print('Fixed')"
+
+# 메인 환경 변수 복사
+copy .env.example .env
+
+# 모든 서브 템플릿 복사 (sandbox.env 등)
+Get-ChildItem envs -Recurse -Filter *.example | ForEach-Object {
+    $t = $_.FullName -replace '\.example$', ''
+    if (-not (Test-Path $t)) { Copy-Item $_.FullName $t }
+}
+
+# Dify 1.16.1 업스트림 검증 문제 수정 (필수)
+(Get-Content envs\core-services\shared.env) -replace 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=0', 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=50' | Set-Content envs\core-services\shared.env
+
+# 검증
+docker compose config --quiet
+findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env</code></pre>
+    <div class="warn">⚠️ 왜 <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code>를 반드시 바꿔야 하는가: Dify 1.16.1이 해당 필드를 「0 허용」에서 「반드시 &gt; 0」으로 업그레이드했지만 <code>shared.env</code> 템플릿은 여전히 0입니다. 바꾸지 않으면 <code>docker-api-1</code> / <code>worker</code> / <code>worker_beat</code> / <code>api_websocket</code> 4개 컨테이너가 시작하자마자 크래시되고 로그에 <code>ValidationError: Input should be greater than 0</code>이 나타납니다.</div>
+
+    <h2>5.3 Dify 시작</h2>
+    <pre><code>docker compose up -d
+docker compose ps</code></pre>
+    <div class="note">✅ 모든 컨테이너 <code>Up</code> (<code>init_permissions</code>이 Exited로 표시되는 것은 정상). 브라우저에서 <code>http://127.0.0.1/install</code>을 열어 관리자 계정을 초기화하세요.</div>
+
+    <h2>5.4 WebSocket 주소 수정 (안 고치면 계속 ws://localhost에 연결)</h2>
+    <p><code>.env</code>의 <code>NEXT_PUBLIC_SOCKET_URL</code> 기본값은 <code>ws://localhost</code>인데, 내부망 배포 시 브라우저의 localhost는 사용자 본인 컴퓨터를 가리켜 프런트엔드가 계속 연결되지 않습니다 (앱 생성/워크플로 디버깅이 멈춥니다).</p>
+    <pre><code># .env에서 내부망 IP로 변경
+NEXT_PUBLIC_SOCKET_URL=ws://&lt;서버-IP&gt;
+
+# docker-compose.yaml의 web 서비스 fallback도 함께 변경
+NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-ws://&lt;서버-IP&gt;}
+
+# web 컨테이너 재빌드로 적용
+docker compose up -d web</code></pre>
+    <div class="note">📌 변경 후 브라우저를 강력 새로고침하세요 (Ctrl+F5). 이 변수는 런타임에 읽히므로 .env 변경 + web 재시작으로 충분하며 이미지 재빌드는 필요 없습니다.</div>
+
+    <h2>5.5 함정 빠른 참조</h2>
+    <div class="warn">⚠️ <b>로그인 비밀번호는 base64로 전송</b>: Dify 1.16.x 로그인 API <code>POST /console/api/login</code>의 <code>password</code>는 base64로 인코딩된 비밀번호입니다. 스크립트 로그인 시 먼저 <code>base64(비밀번호)</code>를 해야 합니다; 프런트엔드에서 「로그인 클릭 시 반응 없음」은 console의 <code>GET /account/profile 401</code>이 미로그인 상태의 정상 현상입니다.</div>
+    <div class="danger">⚠️ <b>관리자 비밀번호 분실 시 재설정</b>: Dify 비밀번호 해시는 <code>pbkdf2_hmac('sha256', password, salt, 10000)</code>(반복 10000)이므로 역산할 수 없습니다. 컨테이너 명령으로 재설정하세요 (새 비밀번호 8자 이상):</div>
+    <pre><code>docker exec docker-api-1 flask reset-password \
+  --email ai_all_in_one_admin@&lt;회사-도메인&gt; \
+  --new-password '&lt;새-비밀번호&gt;' \
+  --password-confirm '&lt;새-비밀번호&gt;'</code></pre>
+    <div class="docbox"><span class="label">📖 원문 문서:</span>Dify 공식 문서 <span class="url">https://docs.dify.ai</span> · 자체 호스팅 배포 <span class="url">https://docs.dify.ai/getting-started/install-self-hosted</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

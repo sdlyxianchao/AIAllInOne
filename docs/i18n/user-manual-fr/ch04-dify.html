@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 4 · Outil 2 : Dify · Manuel de l'utilisateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Démarrage rapide</div>
+      <h1>Outil 2 : Dify</h1>
+      <div class="sub">Plateforme d'applications IA Web : utiliser des applications existantes, créer du question-réponse sur base de connaissances.</div>
+    </div>
+
+    <h2>4.1 Se connecter à Dify</h2>
+    <ol>
+      <li>Ouvrez <code>http://IP</code> dans le navigateur (port 80, sans numéro de port ; accessible aussi depuis l'« Espace de travail IA » du portail) ;</li>
+      <li>Connectez-vous avec le compte unifié (la première fois, l'administrateur doit peut-être créer le compte au préalable).</li>
+    </ol>
+
+    <h2>4.2 Utiliser une application de chat existante</h2>
+    <p>L'administrateur prépare à l'avance des applications (comme « Questions-réponses sur le règlement de l'entreprise », « Assistant support ») ; l'utilisateur ordinaire n'a qu'à les « utiliser » :</p>
+    <ol>
+      <li>Après connexion, entrez dans la liste « <b>Studio / Applications</b> » ;</li>
+      <li>Trouvez l'application à utiliser, cliquez sur « <b>Exécuter / Aperçu</b> » (bouton de lecture en haut à droite) ;</li>
+      <li>Posez directement vos questions dans la page de conversation qui s'ouvre.</li>
+    </ol>
+
+    <h2>4.3 Question-réponse sur base de connaissances</h2>
+    <p>Pour « donner » des documents internes à l'IA afin qu'elle réponde, utilisez la <b>base de connaissances</b> de Dify (autorisation requise de l'administrateur) :</p>
+    <ol>
+      <li>« <b>Base de connaissances</b> » → « Créer une base de connaissances » ;</li>
+      <li>Téléversez des documents (Word / PDF / Markdown / lien de page Web, etc.) ;</li>
+      <li>Le système segmente et indexe automatiquement ;</li>
+      <li>« Référencez » cette base dans l'application, et l'IA pourra répondre à partir de vos documents.</li>
+    </ol>
+    <div class="note">📌 Le contenu de la base de connaissances est utilisé par l'IA pour répondre ; respectez les règles de sécurité des données du chapitre 6 — <b>ne téléversez pas de documents confidentiels</b>.</div>
+
+    <h2>4.4 Créer soi-même une application simple (avancé)</h2>
+    <ol>
+      <li>Studio → créer une application vide → choisissez « Assistant de chat » ;</li>
+      <li>Écrivez un « prompt » pour indiquer son rôle à l'IA (par exemple « Vous êtes l'assistant de réponse sur le règlement de présence de l'entreprise ») ;</li>
+      <li>Ajoutez une base de connaissances → choisissez un modèle → aperçu/test → publiez.</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>documentation officielle de Dify <span class="url">https://docs.dify.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

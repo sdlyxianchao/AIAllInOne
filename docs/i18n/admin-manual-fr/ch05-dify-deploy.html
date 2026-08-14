@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 5 · Déploiement autonome de Dify · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Première partie · Déploiement</div>
+      <h1>Déploiement autonome de Dify</h1>
+      <div class="sub">Dify se déploie de façon autonome avec le compose officiel (environ 15 conteneurs) pour éviter les conflits de ports.</div>
+    </div>
+
+    <div class="note">📌 Dify utilise le docker-compose officiel (environ 15 conteneurs), se déploie de façon autonome pour éviter les conflits de ports, et utilise son propre réseau par défaut (différent du réseau <code>ai-platform</code> des services principaux).</div>
+
+    <h2>5.1 Cloner Dify</h2>
+    <pre><code># Option A : GitHub (nécessite l'accès)
+$tag = (Invoke-RestMethod https://api.github.com/repos/langgenius/dify/releases/latest).tag_name
+git clone --branch $tag https://github.com/langgenius/dify.git
+
+# Option B : miroir officiel Gitee (recommandé en Chine)
+git clone https://gitee.com/dify_ai/dify.git</code></pre>
+
+    <h2>5.2 Corriger la compatibilité + copier les variables d'environnement</h2>
+    <pre><code>cd dify\docker
+
+# Corriger le format env_file (compatibilité avec les anciennes versions de Docker Compose)
+python -c "import re; c=open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml').read(); c=re.sub(r'  - path: (\./envs/[^\n]+\.env)\n\s+required: (?:true|false)', r'  - \1', c); open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml','w').write(c); print('Fixed')"
+
+# Copier la variable d'environnement principale
+copy .env.example .env
+
+# Copier tous les sous-modèles (sandbox.env, etc.)
+Get-ChildItem envs -Recurse -Filter *.example | ForEach-Object {
+    $t = $_.FullName -replace '\.example$', ''
+    if (-not (Test-Path $t)) { Copy-Item $_.FullName $t }
+}
+
+# Corriger le problème de validation en amont de Dify 1.16.1 (obligatoire)
+(Get-Content envs\core-services\shared.env) -replace 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=0', 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=50' | Set-Content envs\core-services\shared.env
+
+# Vérification
+docker compose config --quiet
+findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env</code></pre>
+    <div class="warn">⚠️ Pourquoi il faut impérativement modifier <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> : Dify 1.16.1 a fait passer ce champ de « 0 autorisé » à « doit être > 0 », mais le modèle <code>shared.env</code> contient encore 0. Sans correction, les 4 conteneurs <code>docker-api-1</code> / <code>worker</code> / <code>worker_beat</code> / <code>api_websocket</code> crashent au démarrage avec le journal <code>ValidationError: Input should be greater than 0</code>.</div>
+
+    <h2>5.3 Démarrer Dify</h2>
+    <pre><code>docker compose up -d
+docker compose ps</code></pre>
+    <div class="note">✅ Tous les conteneurs sont <code>Up</code> (il est normal que <code>init_permissions</code> affiche Exited). Ouvrez <code>http://127.0.0.1/install</code> dans le navigateur pour initialiser le compte administrateur.</div>
+
+    <h2>5.4 Corriger l'adresse WebSocket (sans quoi le client se reconnecte sans cesse à ws://localhost)</h2>
+    <p>Dans <code>.env</code>, <code>NEXT_PUBLIC_SOCKET_URL</code> vaut par défaut <code>ws://localhost</code> ; en déploiement intranet, localhost dans le navigateur pointe vers l'ordinateur de l'utilisateur, d'où des échecs répétés de connexion du frontend (création d'application / débogage de workflow bloqués).</p>
+    <pre><code># Dans .env, remplacez par l'IP intranet
+NEXT_PUBLIC_SOCKET_URL=ws://&lt;IP-du-serveur&gt;
+
+# Dans docker-compose.yaml, modifiez également le fallback du service web
+NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-ws://&lt;IP-du-serveur&gt;}
+
+# Reconstruisez le conteneur web pour appliquer
+docker compose up -d web</code></pre>
+    <div class="note">📌 Après modification, forcez l'actualisation du navigateur (Ctrl+F5). Cette variable est lue à l'exécution : modifier .env + redémarrer web suffit, pas besoin de reconstruire l'image.</div>
+
+    <h2>5.5 Récapitulatif des pièges</h2>
+    <div class="warn">⚠️ <b>Le mot de passe de connexion est transmis en base64</b> : dans Dify 1.16.x, le champ <code>password</code> de l'API de connexion <code>POST /console/api/login</code> est le mot de passe encodé en base64. Un script doit d'abord faire <code>base64(mot_de_passe)</code> ; côté frontend, si « cliquer sur Connexion ne fait rien », un <code>GET /account/profile 401</code> dans la console est normal tant que l'on n'est pas connecté.</div>
+    <div class="danger">⚠️ <b>Réinitialisation du mot de passe administrateur oublié</b> : le hachage du mot de passe Dify est <code>pbkdf2_hmac('sha256', password, salt, 10000)</code> (10 000 itérations), irréversible ; réinitialisez via une commande de conteneur (nouveau mot de passe ≥ 8 caractères) :</div>
+    <pre><code>docker exec docker-api-1 flask reset-password \
+  --email ai_all_in_one_admin@&lt;domaine-entreprise&gt; \
+  --new-password '&lt;nouveau-mot-de-passe&gt;' \
+  --password-confirm '&lt;nouveau-mot-de-passe&gt;'</code></pre>
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>documentation officielle de Dify <span class="url">https://docs.dify.ai</span> · déploiement auto-hébergé <span class="url">https://docs.dify.ai/getting-started/install-self-hosted</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

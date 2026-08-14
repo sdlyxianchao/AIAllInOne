@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第7章 NewAPI：初期化・チャネル・OIDC · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部 · デプロイ編</div>
+      <h1>NewAPI：初期化・チャネル・OIDC</h1>
+      <div class="sub">初期インストールウィザードの完了、LiteLLM を指すチャネルの設定、API Key の発行、Keycloak OIDC への接続。</div>
+    </div>
+
+    <h2>7.1 初期インストールウィザード（初回アクセス）</h2>
+    <p>NewAPI は初回起動時に 4 ステップのシステム設定ウィザードを表示します：</p>
+    <ol>
+      <li><b>データベースチェック</b>：「データベース接続を検証」をクリックし、緑のチェックを確認。</li>
+      <li><b>管理者アカウント</b>：ユーザー名 <code>ai_all_in_one_admin</code>、メール <code>ai_all_in_one_admin@&lt;会社ドメイン&gt;</code>、パスワードは統一管理者パスワード。
+        <div class="note">📌 なぜ先にローカル管理者を作るか：この時点では OIDC が未設定で、NewAPI は Keycloak を認識しません。まずローカルアカウントで「入門」して設定を完了し、それからシステム設定で OIDC を有効にします。</div>
+      </li>
+      <li><b>利用モード</b>：「個人利用」を選択（社内：従業員が登録でき、利用量を分けて表示、チャージ/課金モジュールなし）。</li>
+      <li><b>初期化確認</b>：データベーステーブル作成 → 管理者でログイン。</li>
+    </ol>
+
+    <h2>7.2 LLM チャネルの設定（LiteLLM を指す）</h2>
+    <ol>
+      <li><b>チャネル</b> → 新規チャネル追加 → タイプ <code>OpenAI</code>；</li>
+      <li>Base URL に <code>http://litellm:4000</code> を入力（コンテナ名。Docker ネットワーク経由。<b>localhost ではない</b>）；</li>
+      <li>キーに <code>.env</code> の <code>LITELLM_MASTER_KEY</code> の実際の値を入力（サンプル値だと <code>No connected db</code> エラー）；</li>
+      <li>モデルに <code>deepseek-chat</code> を入力（サンプル。実際の設定に合わせる）；</li>
+      <li>保存 → 「テスト」をクリックして接続を確認。</li>
+    </ol>
+    <p>複数の provider を設定する場合は同様に追加します：Claude タイプ <code>Anthropic Claude</code>、DeepSeek タイプ <code>OpenAI</code>、Base URL はいずれも <code>http://litellm:4000</code>。</p>
+
+    <h2>7.3 API キーの作成</h2>
+    <p>Dify と DeepChat 用に 1 つずつ作成し、利用量を分けて集計します：</p>
+    <ol>
+      <li>左側 <b>API キー</b> → 新規作成；</li>
+      <li>名前 <code>dify-key</code> → 保存 → <code>sk-xxx</code> をコピー（Dify モデルプロバイダーに記入）；</li>
+      <li>さらに <code>deepchat-key</code> を作成 → <code>sk-xxx</code> をコピー（DeepChat ユーザーに配布）。</li>
+    </ol>
+
+    <h2>7.4 一般ユーザーの自己申告 Key 申請を許可</h2>
+    <p>従業員はログイン後、デフォルトで「API キー」ページで自分で Key を作成できます。モデルを実際に呼び出すには次の 2 点が必要です（<code>.env</code> にプリセット済み）：</p>
+    <ol>
+      <li><b>クォータあり</b>：<code>DEFAULT_QUOTA=100</code>（新規ユーザーに 100 ドルのクォータ付与）；</li>
+      <li><b>トークンあり</b>：<code>GENERATE_DEFAULT_TOKEN=true</code>（登録時に初期トークンを生成）。</li>
+    </ol>
+    <div class="warn">⚠️ 「新規登録」ユーザーのみに有効：既にログインしたユーザー（例：<code>aitest1</code>）には自動で追加されません。管理者が「ユーザー」ページで手動でクォータを設定する必要があります。</div>
+
+    <h2>7.5 Keycloak OIDC への接続（AD ユーザーの直接ログインを可能に）</h2>
+    <h3>① Keycloak で NewAPI OIDC Client を作成</h3>
+    <ol>
+      <li>enterprise-ai Realm → <b>Clients</b> → Create client；</li>
+      <li>Client ID <code>newapi</code>、タイプ OpenID Connect；</li>
+      <li><b>Client authentication：On</b>（必須。オフだと Credentials タブが出ない）、Standard flow / Direct access grants：On；</li>
+      <li>Valid redirect URIs：<code>http://&lt;サーバーIP&gt;:3000/*</code> と <code>http://127.0.0.1:3000/*</code>；</li>
+      <li>保存 → Credentials タブ → Client secret をコピー。</li>
+    </ol>
+
+    <h3>② NewAPI で OIDC を有効化</h3>
+    <p>NewAPI 管理画面 → <b>システム設定 → 認証 → カスタム OAuth → OAuth プロバイダー追加</b>で、以下を入力：</p>
+    <table>
+      <tr><th>グループ</th><th>設定項目</th><th>値</th></tr>
+      <tr><td>クイック設定</td><td>プリセットテンプレート / API アドレス</td><td><code>Keycloak</code> / <code>http://127.0.0.1:9090</code></td></tr>
+      <tr><td>基本情報</td><td>プロバイダー名 / 識別子</td><td><code>Keycloak</code> / <code>keycloak</code></td></tr>
+      <tr><td>認証情報</td><td>Client ID / Secret</td><td><code>newapi</code> / Keycloak からコピーした値</td></tr>
+      <tr><td>エンドポイント</td><td>Well-Known URL</td><td><code>http://host.docker.internal:9090/realms/enterprise-ai/.well-known/openid-configuration</code></td></tr>
+      <tr><td>フィールドマッピング</td><td>ユーザー ID / ユーザー名 / メール</td><td><code>sub</code> / <code>preferred_username</code> / <code>email</code></td></tr>
+    </table>
+    <p>「自動検出」でエンドポイントを入力後、<b>トークンエンドポイントとユーザー情報エンドポイントを <code>host.docker.internal:9090</code> に変更</b>します（NewAPI コンテナ内部が Keycloak を呼び出すため）。認可エンドポイントは <code>&lt;サーバーIP&gt;:9090</code> のまま（ブラウザ遷移用）。スコープは <code>openid profile email</code>。</p>
+
+    <div class="danger">⚠️ 変更必須の 2 点。怠るとログイン失敗：
+      <ul>
+        <li><b>保存後に Keycloak に戻ってコールバック URL を追加</b>：<code>http://&lt;サーバーIP&gt;:3000/oauth/keycloak</code> と <code>http://127.0.0.1:3000/oauth/keycloak</code> を Valid redirect URIs に追加；</li>
+        <li><b>NewAPI「サーバーアドレス」をイントラネットアドレスに設定</b>：システム設定 → 一般設定 → サーバーアドレスを <code>http://&lt;サーバーIP&gt;:3000</code> に変更（デフォルト localhost だとトークン交換時に <code>invalid_grant - Incorrect redirect_uri</code> エラー）。変更後はローカルでもイントラネット IP で NewAPI にアクセスします。</li>
+      </ul>
+    </div>
+    <p>データベースを変更する方法：</p>
+    <pre><code>docker exec new-api-db mysql -uroot -p... new-api -e "INSERT INTO options (\`key\`, value) VALUES ('ServerAddress','http://&lt;サーバーIP&gt;:3000') ON DUPLICATE KEY UPDATE value='http://&lt;サーバーIP&gt;:3000';"
+docker compose restart new-api</code></pre>
+
+    <div class="warn">⚠️ トラブルシュート：ログインが <b>429 Too Many Requests</b> を返す——NewAPI の重要インターフェースのレート制限（デフォルト 20 回/20 分）が発動。一時解除：<code>docker exec new-api-redis redis-cli --scan --pattern "rateLimit:*" | xargs -r docker exec new-api-redis redis-cli DEL</code>；恒久対策は <code>.env</code> に <code>CRITICAL_RATE_LIMIT_ENABLE=false</code> など 4 組の変数をプリセット済み。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>NewAPI 公式ドキュメント <span class="url">https://docs.newapi.pro</span> · 公式サイト <span class="url">https://www.newapi.ai</span> · オープンソースリポジトリ <span class="url">https://github.com/QuantumNous/new-api</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch07';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

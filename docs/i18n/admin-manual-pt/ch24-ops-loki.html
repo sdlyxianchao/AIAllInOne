@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 24 — Logs unificados (Loki) · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 2 · Gestão</div>
+      <h1>Logs unificados (Loki)</h1>
+      <div class="sub">Agregar logs de todos os contêineres, com busca por contêiner + palavra-chave + tempo.</div>
+    </div>
+
+    <p><b>Entrada</b>: página «📜 Logs unificados» da Central de Administração de IA (mais conveniente), ou Loki <span class="entry">http://&lt;IP-do-servidor&gt;:3110</span>.</p>
+
+    <h2>24.1 Componentes</h2>
+    <table>
+      <tr><th>Componente</th><th>Porta</th><th>Uso</th></tr>
+      <tr><td>Loki</td><td>3110</td><td>Armazenamento e consulta de logs (standalone, sistema de arquivos local)</td></tr>
+      <tr><td>Promtail</td><td>— (interno)</td><td>Descobre contêineres via docker.sock, coleta logs json e envia ao Loki</td></tr>
+    </table>
+
+    <h2>24.2 Consultar logs</h2>
+    <ol>
+      <li>Central de Administração de IA → Logs unificados;</li>
+      <li>Selecione o contêiner (dropdown) → digite a palavra-chave → selecione o intervalo de tempo → consultar;</li>
+      <li>O backend <code>/api/logs/query</code> consulta o Loki com LogQL.</li>
+    </ol>
+
+    <h2>24.3 Consulta rápida de LogQL</h2>
+    <pre><code>{container="new-api"} |= "error"              # linhas com "error" em um contêiner
+{container=~".+"} |~ "(?i)error|exception"      # corresponde a todos os contêineres
+{service="litellm"} |= "EMAIL"                  # consulta por serviço</code></pre>
+    <div class="note">📌 Os labels do Loki são <code>container / project / service</code>, <b>sem <code>job</code></b>. Use <code>{container=~".+"}</code> em vez de <code>{job="docker"}</code>.</div>
+
+    <div class="warn">⚠️ Armadilha crítica (montagem no Docker Desktop): o Promtail precisa montar <code>/var/run/docker.sock</code> e <code>/var/lib/docker/containers</code> (no WSL2, apontam para dentro da VM do Docker Desktop, que é exatamente onde ficam os logs); não use o caminho <code>C:\...\containers</code> do Windows do host. O Loki standalone usa <code>store: tsdb</code> + filesystem.</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>documentação oficial do Loki <span class="url">https://grafana.com/docs/loki/latest/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch24';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

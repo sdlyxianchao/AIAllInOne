@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 7 章 常見問題 FAQ · AI AllInOne 使用者手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">快速開始</div>
+      <h1>常見問題 FAQ</h1>
+      <div class="sub">遇到問題先查這裡。</div>
+    </div>
+
+    <h2>7.1 登入 / 訪問類</h2>
+    <table>
+      <tr><th>問題</th><th>解決</th></tr>
+      <tr><td>登入不上某個產品？</td><td>確認用內網 IP（不是 localhost）且用統一帳號；仍不行聯絡管理員</td></tr>
+      <tr><td>登入頁面打不開 / 一直轉圈？</td><td>確認連的是公司內網（WiFi/有線），地址用 <code>http://IP</code> 而非 localhost</td></tr>
+      <tr><td>忘記統一帳號密碼？</td><td>聯絡管理員重置（或走網域帳號找回）</td></tr>
+    </table>
+
+    <h2>7.2 使用類</h2>
+    <table>
+      <tr><th>問題</th><th>解決</th></tr>
+      <tr><td>提示額度不足？</td><td>NewAPI 後臺查餘額；用完聯絡管理員充值/提額</td></tr>
+      <tr><td>傳送內容被攔截？</td><td>命中了敏感詞或含敏感資訊，按第 6 章規範調整後重試</td></tr>
+      <tr><td>DeepChat 報連線超時？</td><td>設定 → 網路/代理 → 改為「不使用代理/直連」</td></tr>
+      <tr><td>模型回覆質量差？</td><td>換不同模型，或最佳化提問（提供上下文、明確要求、給示例）</td></tr>
+      <tr><td>忘了在哪下 DeepChat？</td><td>門戶下載中心 <code>http://IP:8090/downloads/</code></td></tr>
+      <tr><td>Dify 建立應用一直轉圈？</td><td>通常是網路/WebSocket 問題，聯絡管理員；瀏覽器 Ctrl+F5 強刷</td></tr>
+    </table>
+
+    <h2>7.3 認知類</h2>
+    <table>
+      <tr><th>問題</th><th>解決</th></tr>
+      <tr><td>AI 的回答能信嗎？</td><td>不能全信。AI 可能出錯（幻覺），重要事實、數字、程式碼務必人工核實</td></tr>
+      <tr><td>AI 會記住我說的話嗎？</td><td>當前對話上下文會被保留用於多輪迴答，請勿輸入機密資訊（見第 6 章）</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch07';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

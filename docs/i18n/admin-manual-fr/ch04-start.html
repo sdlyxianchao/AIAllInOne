@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 4 · Démarrage des services principaux · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Première partie · Déploiement</div>
+      <h1>Démarrage des services principaux</h1>
+      <div class="sub">Copier .env, démarrer les conteneurs, vérifier l'accessibilité service par service, traiter le problème SQLite connu de Ghost.</div>
+    </div>
+
+    <h2>4.1 Copier .env</h2>
+    <pre><code># PowerShell
+copy .env.windows .env</code></pre>
+    <p>Docker Compose lit <code>.env</code> par défaut.</p>
+
+    <h2>4.2 Démarrer tous les services principaux</h2>
+    <pre><code>docker compose -f docker-compose.yml up -d</code></pre>
+    <p>Le premier démarrage télécharge toutes les images (environ 5 à 10 minutes selon la connexion).</p>
+    <table>
+      <tr><th>Image</th><th>Conteneur</th><th>Taille</th></tr>
+      <tr><td><code>quay.io/keycloak/keycloak:25.0</code></td><td>keycloak</td><td>~600 Mo</td></tr>
+      <tr><td><code>calciumion/new-api</code></td><td>new-api</td><td>~200 Mo</td></tr>
+      <tr><td><code>mysql:8.0</code></td><td>new-api-db</td><td>~600 Mo</td></tr>
+      <tr><td><code>redis:7-alpine</code></td><td>new-api-redis</td><td>~40 Mo</td></tr>
+      <tr><td><code>ghcr.io/berriai/litellm:v1.95.1</code></td><td>litellm</td><td>~1 Go</td></tr>
+      <tr><td><code>ghost:5-alpine</code></td><td>ghost</td><td>~150 Mo</td></tr>
+      <tr><td><code>gitea/gitea</code> + <code>gitea/act_runner</code></td><td>gitea / runner</td><td>~400 Mo</td></tr>
+      <tr><td><code>nginx:alpine</code></td><td>update-server</td><td>~50 Mo</td></tr>
+      <tr><td><code>node:20-alpine</code></td><td>admin-portal</td><td>~50 Mo</td></tr>
+    </table>
+
+    <h2>4.3 Vérifier l'état des conteneurs</h2>
+    <pre><code>docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"</code></pre>
+    <p>Attendu : les 10 conteneurs principaux sont tous <code>Up</code>. Si un conteneur reste en <code>Restarting</code>, faites <code>docker logs nom_du_conteneur</code> pour voir la raison.</p>
+
+    <h2>4.4 Correction d'un problème connu : Ghost forcé en SQLite</h2>
+    <p>Si <code>ghost</code> reste en Restarting et que les journaux indiquent <code>Error: connect ECONNREFUSED &lt;IP-du-serveur&gt;:3306</code> — cela signifie qu'un ancien <code>config.production.json</code> pointant vers MySQL est resté dans le volume de données. Correction : déclarez explicitement SQLite dans <code>environment</code> du service ghost du compose :</p>
+    <pre><code>ghost:
+  image: ghost:5-alpine
+  environment:
+    url: http://127.0.0.1:8090
+    database__client: sqlite3
+    database__connection__filename: /var/lib/ghost/content/data/ghost.db
+    database__use_null_pool: "true"
+  volumes:
+    - ghost-data:/var/lib/ghost/content</code></pre>
+    <pre><code>docker compose up -d ghost
+docker logs ghost --tail 20</code></pre>
+    <div class="warn">⚠️ Sous Windows + Docker Desktop WSL2, les données de volume sont enfermées dans le disque virtuel WSL2 et invisibles depuis le git bash de l'hôte ; impossible de supprimer directement <code>config.production.json</code> dans le volume — la seule voie est « la surcharge par variables d'environnement ». Ne faites pas non plus <code>docker volume rm windows_ghost-data</code> (vous perdriez les articles déjà publiés).</div>
+    <div class="note">✅ Vérification : les journaux affichent <code>Ghost database ready</code> + <code>Ghost booted</code>, et <code>curl.exe -I http://127.0.0.1:8090</code> renvoie 200.</div>
+
+    <h2>4.5 Vérifier l'accessibilité service par service</h2>
+    <pre><code># Keycloak — 302 signifie OK
+curl.exe -I http://127.0.0.1:9090/admin/
+# NewAPI — 200
+curl.exe -I http://127.0.0.1:3000
+# Ghost — 302 (redirection vers la page d'initialisation /ghost/)
+curl.exe -I http://127.0.0.1:8090
+# Gitea — 200
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:3002
+# Serveur de mise à jour — 403 (répertoire vide, nginx tourne)
+curl.exe -I http://127.0.0.1:8091
+# Centre d'administration IA — 200
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:10086</code></pre>
+    <p>LiteLLM est une pure API sans interface Web ; vérifiez depuis l'intérieur du conteneur :</p>
+    <pre><code>$K = docker exec litellm printenv LITELLM_MASTER_KEY
+docker exec gitea wget -qO- --header="Authorization: Bearer $K" http://litellm:4000/v1/models
+# Réponse attendue {"data":[{"id":"deepseek-chat",...}]}</code></pre>
+    <div class="note">📌 Le proxy HTTP de Docker Desktop WSL2 peut rendre LiteLLM inaccessible depuis l'hôte (HEART / réponse vide) : c'est un bug connu, qui n'empêche pas NewAPI de l'appeler via le nom de conteneur.</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

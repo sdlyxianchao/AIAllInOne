@@ -1,0 +1,327 @@
+<h1>Keycloak AD Integration — Local Active Directory Account Import</h1>
+<p>This document is a supplement to <code>windows-deploy-guide.html</code>. It covers connecting a local Active Directory domain controller to Keycloak so employees can log in to all AI platform apps with their domain accounts. It applies to the Hyper-V local DC test environment.</p>
+
+<h2>1. Prerequisites</h2>
+<ul>
+  <li>The Keycloak container can reach the AD domain controller's LDAP port (default 389, or 636 for LDAPS)</li>
+  <li>An AD service account exists (format: <code>CN=svc_keycloak,OU=ServiceAccounts,DC=company,DC=com</code>)</li>
+  <li>Keycloak deployment and realm creation are already completed per the main document</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>2. Building the Hyper-V Local DC Test Environment</h2>
+<h3>2.1 Scenario</h3>
+<div class="warn"><strong>Network isolation:</strong> Docker Desktop (WSL2) and the Hyper-V Default Switch are on different virtual networks, so containers cannot reach the DC VM directly. Traffic must be forwarded through the Windows host. The following applies to Windows 11 + Docker Desktop + Hyper-V local testing.</div>
+
+<h3>2.2 Enable Hyper-V and Create the DC VM</h3>
+<pre><code># Admin PowerShell — enable Hyper-V (requires reboot)
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All
+
+# Download the Windows Server evaluation ISO (180-day free trial)
+# https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server</code></pre>
+<ol>
+  <li>Hyper-V Manager → New Virtual Machine → name it <code>test-dc</code>, Generation 2</li>
+  <li>Memory: <b>2048 MB</b>, dynamic memory disabled</li>
+  <li>Network: temporarily select the <b>Default Switch</b> (finish the OS install first, switch to the Internal Switch later)</li>
+  <li>Disk: 40 GB, attach the Windows Server ISO</li>
+</ol>
+
+<h3>2.3 Install AD DS and Promote to Domain Controller</h3>
+<p>Use the Default Switch to finish the Windows Server install and AD DS deployment first; the fixed IP is configured in the <a href="#internal-switch">next section</a>.</p>
+<pre><code># Inside the VM — after install, set a temporary static IP first (Default Switch NAT subnet, check with ipconfig)
+netsh interface ip set address "Ethernet" static 172.25.80.100 255.255.240.0 172.25.80.1
+netsh interface ip set dns "Ethernet" static 127.0.0.1
+
+# Install the AD DS role and promote to domain controller
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+Install-ADDSForest -DomainName "testcompany.local"   -SafeModeAdministratorPassword (ConvertTo-SecureString "Passw0rd!" -AsPlainText -Force)   -InstallDNS -Force
+# The VM reboots automatically</code></pre>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h3 id="internal-switch">2.4 Configure Docker ↔ Hyper-V DC Network Connectivity</h3>
+<p>Under the current network structure, Docker Desktop (WSL2) and the Hyper-V DC sit on two isolated virtual networks. To let the Keycloak container reach the DC, you need a stable forwarding path on the Windows host.</p>
+
+<h4>One-click Detect + Fix Script</h4>
+<div class="callout callout-success">
+  <strong>Recommended unified script:</strong><code>setup-hyperv-dc-network.ps1</code>
+  <ul>
+    <li>Usage 1: <code>.\setup-hyperv-dc-network.ps1</code> — detect + auto-fix + connectivity verification</li>
+    <li>Usage 2: <code>.\setup-hyperv-dc-network.ps1 -Detect</code> — detect only, no changes</li>
+  </ul>
+  <p>The script covers: virtual switch creation / host IP configuration / DC VM NIC attachment / NAT rules / portproxy port forwarding / firewall rules / Layer-3 connectivity verification. Run in Admin PowerShell.</p>
+</div>
+
+<h4>Approach Comparison</h4>
+<table>
+  <tr><th>Approach</th><th>Use case</th><th>Pros</th><th>Cons</th></tr>
+  <tr><td><b>Default Switch + portproxy</b></td><td>Temporary testing</td><td>No new switch needed</td><td>DC IP is DHCP-assigned and may change after reboot, requiring reconfiguration of forwarding</td></tr>
+  <tr><td><b>Internal Switch + static IP + portproxy</b></td><td>Long-term stable operation (recommended)</td><td>DC and host IPs are fixed; forwarding rules remain valid long-term</td><td>Requires creating a Hyper-V virtual switch and manually configuring the IP</td></tr>
+  <tr><td><b>External Switch bound to physical NIC</b></td><td>When a dedicated wired NIC is available</td><td>DC is on the same subnet as the host</td><td>USB WiFi is usually unsupported; may drop or destabilize the host network</td></tr>
+</table>
+
+<div class="warn"><strong>Note on your adapter situation:</strong> the screenshot shows the active NIC is <b>WLAN 8 (TP-LINK USB WiFi)</b>, with the Ethernet port unused. Binding an External Switch to USB WiFi is not recommended; use the <b>Internal Switch</b> approach below instead.</div>
+
+<h4>Manual Steps (Reference)</h4>
+<p>If you prefer not to use the script, run the following command chains manually. The script does exactly the same thing internally.</p>
+<ol>
+  <li><b>Create the Internal virtual switch + host IP + NAT</b>
+<pre><code># Admin PowerShell
+New-VMSwitch -Name "DockerDCBridge" -SwitchType Internal
+
+# Assign a fixed IP to the host-side virtual adapter
+$ifAlias = (Get-NetAdapter | Where-Object { $_.Name -like "*DockerDCBridge*" }).InterfaceAlias
+New-NetIPAddress -InterfaceAlias $ifAlias -IPAddress 192.168.99.1 -PrefixLength 24
+
+# (optional) Give the DC internet access
+New-NetNat -Name "DockerDC-NAT" -InternalIPInterfaceAddressPrefix 192.168.99.0/24</code></pre>
+  </li>
+  <li><b>Add a NIC to the DC VM and connect it to the new switch</b> (does not interrupt the DC; keeps the original Default Switch NIC)
+<pre><code>Add-VMNetworkAdapter -VMName DC -SwitchName "DockerDCBridge"</code></pre>
+  </li>
+  <li><b>Set a static IP on the new NIC inside the DC VM</b>
+    <p>Enter the DC VM console, open an admin CMD/PowerShell (use <code>ipconfig</code> first to find the newly added NIC name):</p>
+<pre><code>netsh interface ip set address "Ethernet 3" static 192.168.99.10 255.255.255.0 192.168.99.1
+netsh interface ip set dns "Ethernet 3" static 127.0.0.1</code></pre>
+    <p>If the NIC name is not <code>Ethernet 3</code>, check with <code>Get-NetAdapter</code> first.</p>
+  </li>
+</ol>
+
+<h4>Temporary: Default Switch Approach</h4>
+<p>If you don't want to create an Internal Switch, you can keep the Default Switch, but it is recommended to set the DC IP to a fixed address within that NAT subnet, or set up MAC address reservation in the Hyper-V NAT. Each time the DC IP changes, you must re-run the <code>portproxy</code> commands in the next section.</p>
+<pre><code># Check the DC's current IP (most accurate to run ipconfig inside the VM)
+ipconfig
+
+# Or check the ARP table from the host
+arp -a | findstr "DC-MAC-address"</code></pre>
+
+<h3>2.5 Create Test Users and the Service Account</h3>
+<p>At least the following accounts are needed; Keycloak uses the service account for LDAP binding during import:</p>
+<table>
+  <tr><th>Account</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>svc_keycloak</code></td><td><b>Service account (required)</b></td><td>Read-only account for Keycloak LDAP binding; password in <code>.env.windows</code></td></tr>
+  <tr><td>2 regular domain users</td><td>For testing</td><td>Any domain accounts (e.g. <code>zhangsan</code> / <code>lisi</code>), used to verify Keycloak sync and domain-account login</td></tr>
+</table>
+<div class="warn"><strong>Password policy:</strong> the service account <code>svc_keycloak</code> should be set to "password never expires" to avoid LDAP binding interruption. In production, consider a Group Managed Service Account (gMSA).</div>
+<pre><code># Inside the DC VM, logged in as Administrator@testcompany.local
+New-ADUser -Name "svc_keycloak" -SamAccountName "svc_keycloak" `
+  -AccountPassword (ConvertTo-SecureString "Service@1234" -AsPlainText -Force) -Enabled $true
+
+Get-ADUser -Filter * | Select-Object Name, SamAccountName, Enabled</code></pre>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>3. Docker Container Access to Hyper-V DC (Port Forwarding)</h2>
+<h3>3.1 Why Port Forwarding Is Needed</h3>
+<div class="callout callout-warn">
+  <strong>Network topology:</strong>
+  <ul>
+    <li>Docker Desktop container network: WSL2 virtual network (isolated from Hyper-V)</li>
+    <li>Hyper-V DC VM: on the Internal Switch private network (recommended: <code>192.168.99.0/24</code>) or the Default Switch NAT subnet</li>
+    <li>Connectivity approach: use Windows host <code>netsh portproxy</code> to forward host ports to the Hyper-V VM</li>
+    <li>Containers reach the host via <code>host.docker.internal</code>, then port forwarding reaches the DC VM</li>
+  </ul>
+</div>
+
+<h3>3.2 Configure Port Forwarding</h3>
+<p>The following commands assume the Internal Switch from <a href="#internal-switch">section 2.4</a> with the DC VM fixed IP <code>192.168.99.10</code>. If you keep the Default Switch, replace <code>connectaddress</code> with the DC's current dynamic IP.</p>
+<div class="callout callout-info"><strong>The script covers this step:</strong><code>setup-hyperv-dc-network.ps1</code> automatically completes portproxy + firewall configuration; no manual steps needed.</div>
+<h4>Manual Configuration (Reference)</h4>
+<pre><code># Admin PowerShell
+# Delete old rules first (to avoid duplicates)
+netsh interface portproxy delete v4tov4 listenport=389
+netsh interface portproxy delete v4tov4 listenport=636
+
+# Add LDAP/LDAPS port forwarding; listenaddress=0.0.0.0 ensures host.docker.internal can also match
+netsh interface portproxy add v4tov4 listenport=389 listenaddress=0.0.0.0 connectport=389 connectaddress=192.168.99.10
+netsh interface portproxy add v4tov4 listenport=636 listenaddress=0.0.0.0 connectport=636 connectaddress=192.168.99.10
+
+# Open the firewall
+netsh advfirewall firewall add rule name="DC-LDAP" dir=in protocol=tcp localport=389 action=allow
+netsh advfirewall firewall add rule name="DC-LDAPS" dir=in protocol=tcp localport=636 action=allow
+
+# Verify forwarding
+netsh interface portproxy show all
+Test-NetConnection -ComputerName 127.0.0.1 -Port 389
+Test-NetConnection -ComputerName 192.168.99.10 -Port 389</code></pre>
+
+<h3>3.3 Verify the Docker Container Can Reach the DC</h3>
+<p>The official Keycloak image is RHEL UBI 9 (not Alpine) and does not include <code>apk</code>. Verify using bash TCP redirection:</p>
+<pre><code># Quick TCP connectivity check
+docker exec keycloak bash -c 'exec 3<>/dev/tcp/host.docker.internal/389 && echo "LDAP reachable" && exec 3>&-'
+
+# For a full LDAP query, use ldapsearch (must be installed in the container first)
+docker exec keycloak sh -c "microdnf install -y openldap-clients 2>/dev/null; ldapsearch -H ldap://host.docker.internal:389 -D 'CN=svc_keycloak,CN=Users,DC=testcompany,DC=local' -w <password> -b 'CN=Users,DC=testcompany,DC=local' '(objectClass=user)'"
+# Expected: returns zhangsan, lisi, svc_keycloak, etc.</code></pre>
+<p>Phase 3 in the script also performs connectivity verification automatically.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>4. Connect Keycloak to AD and Sync Users</h2>
+<h3>4.1 Create the LDAP User Federation</h3>
+<ol>
+  <li>Keycloak admin console → select the <b>enterprise-ai</b> realm</li>
+  <li>Left sidebar <b>User Federation</b> → <b>Add provider</b> → select <b>ldap</b></li>
+  <li>Fill in the configuration:</li>
+</ol>
+<h4>General options</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>UI display name</td><td><code>Company AD</code></td><td>Display name in the Keycloak admin UI; arbitrary</td></tr>
+  <tr><td>Vendor</td><td><b>Active Directory</b></td><td>Select AD (not Other, otherwise objectGUID and other AD-specific attributes cannot be recognized)</td></tr>
+</table>
+
+<h4>Connection and authentication settings</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V test environment goes through host port forwarding. In production, fill in the DC FQDN directly, e.g. <code>ldap://dc.company.local:389</code></td></tr>
+  <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>AD uses LDAP port 389 (plaintext) or LDAPS port 636 (TLS); StartTLS is another encryption upgrade method, generally not enabled</td></tr>
+  <tr><td>Use Truststore SPI</td><td><b>Always</b></td><td>Only relevant for LDAPS; no effect with plaintext LDAP, keep as Always</td></tr>
+  <tr><td>Connection pooling</td><td><b>Off</b></td><td>Default off. Enable as needed under heavy concurrency</td></tr>
+  <tr><td>Connection timeout</td><td><i>blank</i></td><td>Use Keycloak's default timeout</td></tr>
+  <tr><td>Bind type</td><td><b>simple</b></td><td>Standard username + password authentication</td></tr>
+  <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>Must be LDAP Distinguished Name format!</b> Do not use NetBIOS format (<s>DOMAIN\user</s>). See the full path note below</td></tr>
+  <tr><td>Bind credentials</td><td><code>service account password</code></td><td>Password of svc_keycloak, in <code>.env.windows</code></td></tr>
+</table>
+
+<h4>LDAP searching and updating</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>Read-only. Keycloak will not write anything to AD</td></tr>
+  <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>The directory container where users live. To search child OUs as well, use a higher DN (e.g. <code>DC=testcompany,DC=local</code>)</td></tr>
+  <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>Critical:</b> this is AD's login-name attribute; do not use <code>cn</code>. Users log in with <code>zhangsan</code>, not <code>张三</code></td></tr>
+  <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>The naming attribute of the entry. In AD, the RDN of each object is usually <code>cn</code></td></tr>
+  <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>AD's immutable unique identifier. It stays the same even if the username changes or the object moves OUs</td></tr>
+  <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>All classes of the AD user object. Order doesn't matter much; comma-separated</td></tr>
+  <tr><td>User LDAP filter</td><td><i>blank</i></td><td>To filter (e.g. only a certain department), fill in <code>(department=IT)</code>. Blank = all users matching the object classes</td></tr>
+  <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>Critical:</b> recursively search all child OUs under Users DN. Do not select One Level, or users in child OUs won't be found</td></tr>
+  <tr><td>Read timeout</td><td><i>blank</i></td><td>Default value</td></tr>
+  <tr><td>Pagination</td><td><b>On</b></td><td>Recommended. If there are many AD users (&gt;1000), fetch in batches to avoid timeouts</td></tr>
+  <tr><td>Referral</td><td><b>ignore</b></td><td>AD sometimes returns referrals to other DCs. Select ignore to avoid Keycloak following a non-existent DC</td></tr>
+</table>
+
+<h4>Synchronization settings</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Import users</td><td><b>On</b></td><td>Import new users on manual full sync</td></tr>
+  <tr><td>Sync Registrations</td><td><b>On</b></td><td>On first login, Keycloak queries AD in real time and creates the local user record immediately</td></tr>
+  <tr><td>Batch size</td><td><i>blank</i></td><td>Users imported per batch, default 1000</td></tr>
+  <tr><td>Periodic full sync</td><td><b>Off</b></td><td>Manual sync during testing. In production, can enable (e.g. once every morning)</td></tr>
+  <tr><td>Periodic changed users sync</td><td><b>Off</b></td><td>AD incremental sync requires enabling USNChanged polling in AD; usually not needed</td></tr>
+</table>
+
+<h4>Kerberos integration</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Allow Kerberos authentication</td><td><b>Off</b></td><td>No Kerberos. Keycloak verifies the password directly via LDAP simple bind</td></tr>
+  <tr><td>Use Kerberos for password authentication</td><td><b>Off</b></td><td>Same as above</td></tr>
+</table>
+
+<h4>Cache settings</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Cache policy</td><td><b>DEFAULT</b></td><td>Keycloak's default cache policy, balancing performance and consistency</td></tr>
+</table>
+
+<h4>Advanced settings</h4>
+<table>
+  <tr><th style="width:30%;">Setting</th><th>Value</th><th>Notes</th></tr>
+  <tr><td>Enable LDAPv3 password modify</td><td><b>Off</b></td><td>No need to modify AD passwords in READ_ONLY mode</td></tr>
+  <tr><td>Validate password policy</td><td><b>Off</b></td><td>Let AD manage its own password policy</td></tr>
+  <tr><td>Trust Email</td><td><b>On</b></td><td>Imported users' emails are automatically marked as verified to avoid the "email not verified" status. If off, every user shows as unverified in Keycloak</td></tr>
+</table>
+
+<ol start="4">
+  <li>Click <b>Save</b></li>
+  <li>After saving, click <b>Synchronize all users</b> — wait for the sync to finish</li>
+  <li>Go to the <b>Users</b> page to confirm the domain users have appeared</li>
+</ol>
+
+<div class="warn" style="margin:16px 0;">
+  <strong>Common mistakes:</strong>
+  <ul>
+    <li><b>Bind DN format:</b> must use the LDAP format <code>CN=account,CN=Users,DC=xxx,DC=local</code>, not the NetBIOS format <code>DOMAIN\account</code></li>
+    <li><b>Username LDAP attribute ≠ cn:</b> use <code>sAMAccountName</code>, which is the AD login name. Using <code>cn</code> will prevent users from logging in with their short account name</li>
+    <li><b>Search scope:</b> if domain users are spread across multiple OUs (e.g. <code>OU=IT,OU=Hangzhou,...</code>), you must select <b>Subtree</b></li>
+  </ul>
+</div>
+
+<h3>4.2 Configure LDAP Group Mapping (Optional)</h3>
+<p>Map AD groups to Keycloak roles:</p>
+<ol>
+  <li>Click the LDAP Provider you just created in the User Federation list</li>
+  <li><b>Mappers</b> tab → add <code>group-ldap-mapper</code></li>
+  <li>Set Groups DN: <code>CN=Users,DC=testcompany,DC=local</code></li>
+  <li>After saving, AD groups are automatically mapped to Keycloak</li>
+</ol>
+
+<h3>4.3 Verification</h3>
+<ol>
+  <li><b>Confirm users are imported</b>: Keycloak admin console → <b>Users</b> → you should see the domain users synced from AD. On a second sync, the console shows <code>0 imported users, N updated users</code> — "0 imported" only means there are no <b>new</b> users, not a failure.</li>
+</ol>
+
+<h4>Method A: Test via the Keycloak Account Console (recommended, simplest)</h4>
+<p>Keycloak's built-in self-service account page requires no downstream app configuration and can directly test whether an AD domain account can log in.</p>
+<ol>
+  <li><b>Open a browser (a private/incognito window is recommended to avoid session cache interference)</b></li>
+  <li>Go to <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code></li>
+  <li>On the login page, enter the AD domain user's credentials:
+    <ul>
+      <li>Username: <code>aitest1</code> (sAMAccountName) or <code>aitest1@chxia.lab</code> (UPN) — both formats work</li>
+      <li>Password: the domain user's password set in AD</li>
+    </ul>
+  </li>
+  <li>Click <b>Sign In</b></li>
+  <li>Expected result: the page redirects to the <b>Account Console</b>, with the username in the top-right corner, where you can see profile and security settings</li>
+</ol>
+<div class="callout callout-info">
+  <strong>If login fails:</strong>
+  <ul>
+    <li><code>Invalid username or password</code> → wrong password or the user is outside the Users DN scope. Confirm the password on the DC and check Keycloak's Users DN</li>
+    <li><code>Account is disabled</code> → the AD user is disabled on the domain controller (Enabled = False)</li>
+    <li>No response / blank screen → press F12 to open DevTools → check the Console + Network panels for error details</li>
+  </ul>
+</div>
+
+<h4>Method B: Verify User Status via the Keycloak Admin Console</h4>
+<ol>
+  <li>Keycloak admin console → <b>Users</b></li>
+  <li>Search for the domain username (e.g. <code>aitest1</code>)</li>
+  <li>Click the user → <b>Attributes</b> tab: you should see attributes like <code>LDAP_ID</code>, <code>LDAP_ENTRY_DN</code>, indicating the user came from LDAP sync rather than being created locally</li>
+  <li><b>Sessions</b> tab: if Method A logged in successfully, there is an active session record here</li>
+</ol>
+
+<h4>Method C: Test After Connecting a Downstream App (later step)</h4>
+<p>Once the Keycloak AD login chain works, any app connected to Keycloak OIDC SSO will show the Keycloak login form, where you simply enter the domain account. For example, after Dify is configured with SSO, open <code>http://127.0.0.1/apps</code> in the browser → automatically redirects to the Keycloak login page → enter <code>aitest1</code> + domain password → log in and enter the Dify workspace.</p>
+<div class="verify">Passing any of the three verification methods means the AD → Keycloak chain is working. Method A is the most direct and is recommended first.</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>5. Production AD Configuration Quick Reference</h2>
+<p>If you already have an enterprise AD server (not the local Hyper-V test), use the following substitutions:</p>
+<table>
+  <tr><th>Setting</th><th>Hyper-V test value</th><th>Production value</th></tr>
+  <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td><code>ldap://dc.company.com:389</code></td></tr>
+  <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>Fill in per the actual AD structure</td></tr>
+  <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,...</code></td><td>Full DN of the service account</td></tr>
+  <tr><td>Bind Credential</td><td><code>Service@1234</code></td><td>Actual service account password</td></tr>
+  <tr><td>Hyper-V network</td><td>Internal Switch <code>192.168.99.0/24</code></td><td>Direct enterprise network connection</td></tr>
+  <tr><td>Remarks</td><td>Port forwarding required (Hyper-V Docker network isolation)</td><td>Docker can reach it directly (same network)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>6. Cleanup (After Testing)</h2>
+<pre><code># Stop and delete the DC VM
+Stop-VM DC -Force
+Remove-VM DC
+
+# Delete port forwarding
+netsh interface portproxy delete v4tov4 listenport=389
+netsh interface portproxy delete v4tov4 listenport=636
+
+# Delete firewall rules
+netsh advfirewall firewall delete rule name="DC-LDAP"
+netsh advfirewall firewall delete rule name="DC-LDAPS"
+
+# Delete the NAT and Internal Switch
+Remove-NetNat -Name "DockerDC-NAT" -Confirm:$false
+Remove-VMSwitch -Name "DockerDCBridge" -Force
+
+# If an old InternalSwitch (Private type, VM-to-VM only) still exists, clean it up too
+Remove-VMSwitch -Name "InternalSwitch" -Force</code></pre>

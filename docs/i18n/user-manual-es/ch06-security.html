@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 6 — Normativa de seguridad de datos · AI AllInOne Manual del usuario</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Inicio rápido</div>
+      <h1>Normativa de seguridad de datos</h1>
+      <div class="sub">Qué se puede enviar a la IA y qué está terminantemente prohibido — la línea roja que todos deben cumplir.</div>
+    </div>
+
+    <p>La plataforma ya <b>enmascara</b> automáticamente información sensible como <b>números de móvil, DNI, tarjetas bancarias y correos</b> (se ocultan automáticamente antes de enviarlos al modelo grande) e intercepta las palabras sensibles. Pero cumple por voluntad propia las líneas rojas siguientes.</p>
+
+    <h2>6.1 Qué se puede enviar y qué no</h2>
+    <h3>❌ Prohibido terminantemente enviar a la IA</h3>
+    <ul>
+      <li>Secretos internos / secretos comerciales (código de producto, precios, listas de clientes o cláusulas de contrato no publicados);</li>
+      <li>Privacidad personal (DNI, números de tarjeta bancaria, contraseñas, información de salud, privacidad de terceros);</li>
+      <li>Código fuente / soluciones técnicas no publicadas.</li>
+    </ul>
+    <h3>✅ Se puede usar con tranquilidad</h3>
+    <ul>
+      <li>Material público, conocimiento general, redacción de documentos, traducción, resúmenes;</li>
+      <li>Datos de negocio ya enmascarados (tras eliminar nombres/números/campos sensibles concretos).</li>
+    </ul>
+
+    <h2>6.2 Referencia rápida de clasificación de datos</h2>
+    <table>
+      <tr><th>Nivel de datos</th><th>¿Puede subirse al modelo externo?</th><th>Descripción</th></tr>
+      <tr><td>Datos públicos</td><td>✅ Sí</td><td>Material ya publicado, información general</td></tr>
+      <tr><td>Datos internos ordinarios</td><td>⚠️ Se pueden usar tras enmascarar</td><td>Se pueden usar tras eliminar los campos sensibles</td></tr>
+      <tr><td>Secretos internos / privacidad personal</td><td>❌ Prohibido</td><td>Prohibido enviarlos</td></tr>
+    </table>
+    <blockquote>Principio de decisión: <b>«¿Habría problema si este contenido lo viera alguien ajeno?»</b> Si lo habría → no lo envíes.</blockquote>
+
+    <h2>6.3 Tres escenarios típicos</h2>
+    <table>
+      <tr><th>Escenario</th><th>Qué hacer</th></tr>
+      <tr><td>Redactar un informe semanal que menciona clientes</td><td>Usa «cierto cliente» o «Cliente A» en lugar del nombre real</td></tr>
+      <tr><td>Pedir a la IA que analice una tabla de datos</td><td>Elimina primero las columnas de nombre, teléfono, DNI, etc. y deja solo los datos agregados</td></tr>
+      <tr><td>Traducir cláusulas de contrato</td><td>Elimina antes importes, nombre de la contraparte, etc., o sustitúyelos por «Parte A/Parte B»</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

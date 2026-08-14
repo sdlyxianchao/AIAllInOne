@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 4 章 啟動核心服務 · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>啟動核心服務</h1>
+      <div class="sub">複製 .env、拉起容器、逐服務驗證可訪問，處理 Ghost 的 SQLite 已知問題。</div>
+    </div>
+
+    <h2>4.1 複製 .env</h2>
+    <pre><code># PowerShell
+copy .env.windows .env</code></pre>
+    <p>Docker Compose 預設讀 <code>.env</code>。</p>
+
+    <h2>4.2 啟動全部核心服務</h2>
+    <pre><code>docker compose -f docker-compose.yml up -d</code></pre>
+    <p>首次會拉取所有映像（約 5–10 分鐘，取決於網速）。</p>
+    <table>
+      <tr><th>映像</th><th>容器</th><th>大小</th></tr>
+      <tr><td><code>quay.io/keycloak/keycloak:25.0</code></td><td>keycloak</td><td>~600MB</td></tr>
+      <tr><td><code>calciumion/new-api</code></td><td>new-api</td><td>~200MB</td></tr>
+      <tr><td><code>mysql:8.0</code></td><td>new-api-db</td><td>~600MB</td></tr>
+      <tr><td><code>redis:7-alpine</code></td><td>new-api-redis</td><td>~40MB</td></tr>
+      <tr><td><code>ghcr.io/berriai/litellm:v1.95.1</code></td><td>litellm</td><td>~1GB</td></tr>
+      <tr><td><code>ghost:5-alpine</code></td><td>ghost</td><td>~150MB</td></tr>
+      <tr><td><code>gitea/gitea</code> + <code>gitea/act_runner</code></td><td>gitea / runner</td><td>~400MB</td></tr>
+      <tr><td><code>nginx:alpine</code></td><td>update-server</td><td>~50MB</td></tr>
+      <tr><td><code>node:20-alpine</code></td><td>admin-portal</td><td>~50MB</td></tr>
+    </table>
+
+    <h2>4.3 檢查容器狀態</h2>
+    <pre><code>docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"</code></pre>
+    <p>預期 10 個核心容器全部 <code>Up</code>。有容器持續 <code>Restarting</code> 就 <code>docker logs 容器名</code> 看原因。</p>
+
+    <h2>4.4 已知問題修復：Ghost 強制 SQLite</h2>
+    <p>如果 <code>ghost</code> 一直 Restarting，日誌報 <code>Error: connect ECONNREFUSED &lt;伺服器IP&gt;:3306</code>——說明資料卷裡殘留了指向 MySQL 的舊 <code>config.production.json</code>。修復：在 compose 的 ghost 服務 <code>environment</code> 顯式宣告 SQLite：</p>
+    <pre><code>ghost:
+  image: ghost:5-alpine
+  environment:
+    url: http://127.0.0.1:8090
+    database__client: sqlite3
+    database__connection__filename: /var/lib/ghost/content/data/ghost.db
+    database__use_null_pool: "true"
+  volumes:
+    - ghost-data:/var/lib/ghost/content</code></pre>
+    <pre><code>docker compose up -d ghost
+docker logs ghost --tail 20</code></pre>
+    <div class="warn">⚠️ Windows + Docker Desktop WSL2 下，卷資料被封在 WSL2 虛擬磁碟內，宿主機 git bash 看不到，無法直接刪卷內 <code>config.production.json</code>，只能走「環境變數覆蓋」路線。也不要 <code>docker volume rm windows_ghost-data</code>（會丟已釋出文章）。</div>
+    <div class="note">✅ 驗證：日誌出現 <code>Ghost database ready</code> + <code>Ghost booted</code>，<code>curl.exe -I http://127.0.0.1:8090</code> 返回 200。</div>
+
+    <h2>4.5 逐服務驗證可訪問</h2>
+    <pre><code># Keycloak — 302 表示 OK
+curl.exe -I http://127.0.0.1:9090/admin/
+# NewAPI — 200
+curl.exe -I http://127.0.0.1:3000
+# Ghost — 302（重定向到 /ghost/ 初始化頁）
+curl.exe -I http://127.0.0.1:8090
+# Gitea — 200
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:3002
+# Update Server — 403（空目錄，nginx 在跑）
+curl.exe -I http://127.0.0.1:8091
+# AI 管理中心 — 200
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:10086</code></pre>
+    <p>LiteLLM 是純 API 無 Web 介面，從容器內部驗證：</p>
+    <pre><code>$K = docker exec litellm printenv LITELLM_MASTER_KEY
+docker exec gitea wget -qO- --header="Authorization: Bearer $K" http://litellm:4000/v1/models
+# 預期返回 {"data":[{"id":"deepseek-chat",...}]}</code></pre>
+    <div class="note">📌 Docker Desktop WSL2 的 HTTP 代理可能導致 LiteLLM 在宿主機無法訪問（HEART/空響應），是已知 bug，不影響 NewAPI 經容器名呼叫它。</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

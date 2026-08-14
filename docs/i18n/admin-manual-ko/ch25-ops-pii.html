@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제25장 PII 비식별화 (Presidio) · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제2부 · 관리편</div>
+      <h1>PII 비식별화 (Presidio)</h1>
+      <div class="sub">민감 정보가 내부망을 나가기 전에 자동 비식별화.</div>
+    </div>
+
+    <h2>25.1 2단계 비식별화</h2>
+    <table>
+      <tr><th>계층</th><th>기능</th></tr>
+      <tr><td>LiteLLM 내장 정규식 (<code>litellm_content_filter</code>)</td><td>휴대폰번호, 주민등록번호, 은행카드, 이메일, 통일사회신용코드, 여권, IPv4 등, 일치 시 <code>[xxx_REDACTED]</code>로 대체; 민감어 블랙리스트 일치 시 BLOCK 거부</td></tr>
+      <tr><td>Microsoft Presidio</td><td>더 세밀한 엔티티 (영문 인명, 이메일 등), <code>presidio-analyzer</code> 5002 / <code>presidio-anonymizer</code> 5001</td></tr>
+    </table>
+
+    <h2>25.2 내장 정규식 규칙</h2>
+    <table>
+      <tr><th>규칙</th><th>정규식</th><th>유형</th></tr>
+      <tr><td>중국 휴대폰번호</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+      <tr><td>주민등록번호</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+      <tr><td>은행카드 번호</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+      <tr><td>이메일</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+      <tr><td>통일사회신용코드</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+      <tr><td>여권 번호</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+      <tr><td>IPv4</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+    </table>
+    <p>민감어 블랙리스트는 <code>litellm-config.yaml</code>의 <code>blocked_words</code>에서 회사 실정에 맞게 추가/삭제 (<code>내부 기밀</code>, <code>영업 기밀</code> 등).</p>
+
+    <h2>25.3 Presidio 활성화 (현재 잠시 주석 처리)</h2>
+    <p>새 LiteLLM guardrail API 변경으로 Presidio 부분이 현재 주석 처리되어 있습니다. 활성화 핵심:</p>
+    <ul>
+      <li>guardrails에 <code>default_on: true</code>를 추가해야 전역 적용;</li>
+      <li>엔드포인트 환경 변수 <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code>에 반드시 base URL 입력 (LiteLLM이 자동으로 <code>/analyze</code>, <code>/anonymize</code>를 붙이므로, 경로를 포함하면 <code>/analyze/analyze</code>가 되어 404).</li>
+    </ul>
+
+    <div class="warn">⚠️ 이미지 약 965MB로 국내 다운로드가 매우 느립니다 (실측 약 1시간). 다운로드가 안 되면 먼저 내장 정규식을 사용하세요 (이미 중국어 핵심 PII 커버).</div>
+
+    <h2>25.4 검증</h2>
+    <p>휴대폰번호/이메일이 포함된 요청 전송 → 모델 응답에서 원본 값이 <code>[REDACTED]</code>로 대체; 「내부 기밀」 포함 요청 전송 → 바로 <code>Content blocked</code> 반환.</p>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>Microsoft Presidio <span class="url">https://microsoft.github.io/presidio/</span> · 소스 <span class="url">https://github.com/microsoft/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch25';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

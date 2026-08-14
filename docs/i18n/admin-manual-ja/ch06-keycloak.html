@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第6章 Keycloak：Realm・ユーザー・AD · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部 · デプロイ編</div>
+      <h1>Keycloak：Realm・ユーザー・AD</h1>
+      <div class="sub">Realm の作成、ローカルアカウントの作成、または Active Directory からのドメインアカウント取り込み——全製品 SSO の基盤。</div>
+    </div>
+
+    <div class="note">📌 アクセス：ホストマシン <code>http://127.0.0.1:9090</code>、イントラネット <code>http://&lt;サーバーIP&gt;:9090</code>。データは named volume <code>keycloak-data</code> に保存され、コンテナ再構築でも失われません。資格情報は <code>.env.windows</code> の <code>KEYCLOAK_ADMIN</code> / <code>KEYCLOAK_ADMIN_PASSWORD</code> 参照。</div>
+
+    <h2>6.1 Realm の作成</h2>
+    <ol>
+      <li>ブラウザで <code>http://127.0.0.1:9090</code> を開く → Administration Console → 管理者ログイン；</li>
+      <li>左上のドロップダウン → <b>Create Realm</b> → Realm name に <code>enterprise-ai</code> を入力 → Create。</li>
+    </ol>
+
+    <h2>6.2 方法A：ローカルでアカウント作成（AD なしの小規模チーム/テスト）</h2>
+    <ol>
+      <li><b>Groups</b> → Create Group → <code>ai-admin</code>；さらに <code>ai-user</code> を作成；</li>
+      <li><b>Users</b> → Add user → ユーザー名 → Create；</li>
+      <li>Credentials タブ → パスワード設定 → Temporary をオフ；</li>
+      <li>Groups タブ → <code>ai-user</code> グループに追加。</li>
+    </ol>
+
+    <h2>6.3 方法B：Active Directory からアカウントを取り込み（推奨）</h2>
+    <p>会社に既存の Windows AD ドメインコントローラがある場合、従業員はドメインアカウントでログインでき、Keycloak で手動アカウント作成は不要です。前提：Docker コンテナからドメインコントローラネットワークへの疎通が済んでいること（ネットワークトポロジ、Hyper-V Internal Switch、ポート転送は『Keycloak AD 統合ガイド』<code>windows-ad-integration.html</code> 参照）。</p>
+    <div class="note">📌 必要な AD アカウント：サービスアカウント <code>svc_keycloak</code>（パスワード無期限、LDAP バインド用）+ テスト用ドメインユーザー 2 人（同期検証用）。</div>
+
+    <h3>LDAP ユーザーフェデレーションの作成</h3>
+    <ol>
+      <li>enterprise-ai Realm → 左側 <b>User Federation</b> → Add provider → <b>ldap</b>；</li>
+      <li>下表に従って入力。</li>
+    </ol>
+    <table>
+      <tr><th>設定項目</th><th>値</th><th>説明</th></tr>
+      <tr><td>Vendor</td><td><b>Active Directory</b></td><td>AD を選択。Other を選ばない（objectGUID を認識できなくなる）</td></tr>
+      <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V 経由のポート転送。本番は <code>ldap://dc.会社ドメイン:389</code> を記入</td></tr>
+      <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>LDAP 389 または LDAPS 636</td></tr>
+      <tr><td>Bind type</td><td><b>simple</b></td><td>ユーザー名+パスワード認証</td></tr>
+      <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>必ず LDAP DN 形式</b>。<s>DOMAIN\ユーザー</s> は使わない</td></tr>
+      <tr><td>Bind credentials</td><td><code>svc_keycloak のパスワード</code></td><td><code>.env.windows</code> 参照</td></tr>
+      <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>読み取り専用。AD に書き戻さない</td></tr>
+      <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>子 OU がある場合は <code>DC=testcompany,DC=local</code> に変更</td></tr>
+      <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>cn を入力しない</b></td></tr>
+      <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>エントリ命名属性</td></tr>
+      <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>AD の不変の一意識別子</td></tr>
+      <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>カンマ区切り</td></tr>
+      <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>One Level を選ばない</b>（子 OU を検索できなくなる）</td></tr>
+      <tr><td>Pagination</td><td><b>On</b></td><td>ユーザーが多い場合の分割取得</td></tr>
+      <tr><td>Referral</td><td><b>ignore</b></td><td>存在しないドメインコントローラへの追従を回避</td></tr>
+      <tr><td>Import users</td><td><b>On</b></td><td>全量同期取り込み</td></tr>
+      <tr><td>Sync Registrations</td><td><b>On</b></td><td>初回ログイン時に即時同期</td></tr>
+    </table>
+    <p>Save → <b>Synchronize all users</b> → 同期完了を待つ。</p>
+
+    <div class="warn">⚠️ よくある入力ミス：
+      <ul>
+        <li>Bind DN は <b>LDAP 形式</b>（<code>CN=svc_keycloak,CN=Users,DC=xxx</code>）。<s>DOMAIN\ユーザー</s> ではない；</li>
+        <li>Username LDAP attribute = <code>sAMAccountName</code>。<code>cn</code> ではない；</li>
+        <li>Search scope = <b>Subtree</b>；</li>
+        <li><b>CN のスペースはそのまま保持</b>：表示名にスペースがある場合（例：<code>ai all in one admin</code> の中央がスペース）、Bind DN は <code>CN=ai all in one admin,...</code> と書く必要があり、アンダースコアにすると接続できません。</li>
+      </ul>
+    </div>
+
+    <h3>AD ログインの検証</h3>
+    <ol>
+      <li>シークレットウィンドウで <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code> を開く；</li>
+      <li>ドメインアカウントでログイン（ユーザー名 <code>aitest1</code> または <code>aitest1@chxia.lab</code> の UPN のいずれでも可）；</li>
+      <li>Account Console に遷移できれば成功。</li>
+    </ol>
+
+    <h2>6.4 その他の企業アイデンティティソース（付録 N の要約）</h2>
+    <p>Keycloak は複数のアイデンティティソースをサポートし、すべて同じ <code>enterprise-ai</code> Realm 配下に接続します：</p>
+    <table>
+      <tr><th>アイデンティティソース</th><th>接続方法</th><th>ポイント</th></tr>
+      <tr><td>Microsoft Entra ID（旧 Azure AD）</td><td>Identity Providers → OpenID Connect v1.0</td><td>Azure でアプリを登録して client id/secret を取得。redirect URI <code>/realms/enterprise-ai/broker/entra-id/endpoint</code></td></tr>
+      <tr><td>Google Workspace</td><td>Identity Providers → Google（組み込み）</td><td>Mapper で <code>hd=ドメイン</code> を追加してドメイン制限可能</td></tr>
+      <tr><td>GitHub</td><td>Identity Providers → GitHub（組み込み）</td><td>OAuth App コールバック <code>/broker/github/endpoint</code></td></tr>
+      <tr><td>汎用 LDAP（OpenLDAP/FreeIPA）</td><td>User Federation → ldap</td><td>Vendor は Other、Username attribute は <code>uid</code></td></tr>
+      <tr><td>汎用 SAML 2.0（Okta/ADFS）</td><td>Identity Providers → SAML v2.0</td><td>IdP メタデータ URL を貼り付けて自動入力</td></tr>
+    </table>
+    <div class="tip">✅ 複数アイデンティティソースの共存：Authentication → Browser flow に Identity Provider Redirector を追加し、メールドメインで自動的に IdP を選択できます（<code>@会社.com</code>→AD、<code>@会社.onmicrosoft.com</code>→Entra ID）。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>Keycloak 公式ドキュメント <span class="url">https://www.keycloak.org/documentation</span> · サーバー管理ガイド <span class="url">https://www.keycloak.org/server/</span> · LDAP フェデレーション <span class="url">https://www.keycloak.org/docs/latest/server_admin/#_ldap</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

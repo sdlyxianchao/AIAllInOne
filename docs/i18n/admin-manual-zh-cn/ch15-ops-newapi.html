@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 15 章 NewAPI 日常管理 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部分 · 管理篇</div>
+      <h1>NewAPI 日常管理</h1>
+      <div class="sub">LLM 网关：管渠道、令牌、额度、用户、日志、成本。</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/newapi-logo.png" alt="NewAPI"></span><b>入口</b>：<span class="entry">http://&lt;服务器IP&gt;:3000</span>。</p>
+
+    <h2>15.1 渠道管理（上游模型）</h2>
+    <ol>
+      <li><b>新增渠道</b>：渠道 → 添加新渠道 → 类型 OpenAI（或 Claude 等）→ Base URL <code>http://litellm:4000</code> → 密钥 <code>LITELLM_MASTER_KEY</code> → 填模型名 → 保存；</li>
+      <li><b>测试</b>：渠道列表点「测试」，选模型验证连通；</li>
+      <li><b>禁用/启用</b>：渠道列表开关，禁用后该渠道不再承接请求；</li>
+      <li><b>优先级/权重</b>：多渠道同模型时按优先级/权重分流。</li>
+    </ol>
+
+    <h2>15.2 令牌（API Key）管理</h2>
+    <ol>
+      <li><b>新建</b>：API 密钥 → 新建令牌 → 起名（如 <code>deepchat-key</code>）→ 可设额度/过期时间/模型限制 → 保存；</li>
+      <li><b>复制 Key</b>：<code>sk-</code> 开头，<b>只显示一次，立即保存</b>；</li>
+      <li><b>禁用/删除</b>：令牌列表操作（禁用后该 Key 立即失效）；</li>
+      <li><b>查用量</b>：令牌详情看已消耗额度。</li>
+    </ol>
+
+    <h2>15.3 额度与用户</h2>
+    <ul>
+      <li><b>新用户默认额度</b>：<code>DEFAULT_QUOTA</code>（建议 100 美元）；</li>
+      <li><b>给单个用户提额</b>：用户页 → 编辑该用户 → 设额度；</li>
+      <li><b>充值/封禁</b>：用户页操作；</li>
+      <li><b>分组管理</b>：按部门建分组，设模型倍率/配额，用户归组即按部门管控。</li>
+    </ul>
+
+    <h2>15.4 日志与成本</h2>
+    <ul>
+      <li><b>日志页</b>：查每次调用的用户/模型/token/额度/成本/来源 IP；</li>
+      <li><b>成本报表</b>：AI 管理中心「NewAPI 管理」页有按用户/模型/日期聚合的成本报表 + 最近 100 条审计日志。</li>
+    </ul>
+    <div class="note">📌 客户端 IP 记录依赖用户「记录 IP 日志」设置（<code>record_ip_log</code>，默认关），需要 IP 审计时给对应用户开启。</div>
+
+    <h2>15.5 系统设置要点</h2>
+    <ul>
+      <li><b>服务器地址</b>：必须设为内网 <code>http://&lt;服务器IP&gt;:3000</code>（否则 OIDC 报 <code>invalid_grant - Incorrect redirect_uri</code>）；</li>
+      <li><b>身份验证 → 自定义 OAuth</b>：Keycloak OIDC 接入（见第 7 章）；</li>
+      <li><b>使用模式</b>：个人使用 ↔ 对外运营可切换。</li>
+    </ul>
+
+    <div class="warn">⚠️ 关键坑回顾：① 渠道 Base URL 都填容器名 <code>http://litellm:4000</code>；② 限流 429 用 <code>CRITICAL_RATE_LIMIT_ENABLE=false</code> 等变量控制；③ 改数据库直接用 <code>MYSQL_PWD</code> 环境变量，避免 stderr 密码警告被误判错误。</div>
+
+    <div class="docbox"><span class="label">📖 原厂文档：</span>NewAPI 官方文档 <span class="url">https://docs.newapi.pro</span> · 官网 <span class="url">https://www.newapi.ai</span> · 开源仓库 <span class="url">https://github.com/QuantumNous/new-api</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch15';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

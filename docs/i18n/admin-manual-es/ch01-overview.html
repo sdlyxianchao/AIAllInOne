@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 1 — Descripción general y arquitectura de la plataforma · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte I · Implementación</div>
+      <h1>Descripción general y arquitectura de la plataforma</h1>
+      <div class="sub">Entender la composición, los puertos y el flujo de datos de esta plataforma es la base de todas las operaciones posteriores de implementación y administración.</div>
+    </div>
+
+    <h2>1.1 Qué es esta plataforma</h2>
+    <p>«AI AllInOne» es una <b>plataforma de IA para la intranet corporativa</b> que orquesta con Docker más de una docena de productos de código abierto en un todo unificado: autenticación unificada, enrutamiento de LLM, enmascaramiento de PII, aplicaciones de IA, portal corporativo, CI de código fuente, distribución de clientes, administración unificada, monitoreo y alertas, observabilidad, registro, copia de seguridad y restauración — todo funcionando, y con <b>una única cuenta de Keycloak para iniciar sesión (SSO) en todos los productos</b>.</p>
+    <table>
+      <tr><th>Capa</th><th>Componente</th><th>Función</th></tr>
+      <tr><td>Autenticación unificada</td><td>Keycloak</td><td>SSO / OIDC; puede integrarse con AD/LDAP o cuentas locales</td></tr>
+      <tr><td>Enrutamiento de LLM</td><td>NewAPI</td><td>Canales, claves, cuotas, auditoría, costos</td></tr>
+      <tr><td>Enmascaramiento de PII</td><td>LiteLLM + Presidio</td><td>Enmascara automáticamente números de teléfono / DNI / correos antes de llamar al modelo</td></tr>
+      <tr><td>Aplicaciones de IA</td><td>Dify</td><td>Plataforma visual de aplicaciones de IA / Agentes / bases de conocimiento</td></tr>
+      <tr><td>Portal corporativo</td><td>Ghost</td><td>Anuncios, noticias, centro de descargas, Hub de empleados</td></tr>
+      <tr><td>Código fuente / CI</td><td>Gitea + Runner</td><td>Repositorio Git interno + automatización con Actions</td></tr>
+      <tr><td>Cliente</td><td>DeepChat</td><td>Cliente de escritorio local de IA (Win/macOS/Linux)</td></tr>
+      <tr><td>Distribución de clientes</td><td>Servidor de actualización</td><td>Alojamiento del instalador de DeepChat y actualización automática</td></tr>
+      <tr><td>Administración unificada</td><td>Centro de administración de IA</td><td>Punto de entrada único de administración: Dashboard + productos integrados + auditoría/costos/informes</td></tr>
+      <tr><td>Gateway</td><td>MCP Gateway</td><td>Gestión del mercado de Skills / MCP</td></tr>
+      <tr><td>Monitoreo y alertas</td><td>Prometheus + Grafana + Alertmanager</td><td>Monitoreo de recursos de contenedores + notificaciones de alerta</td></tr>
+      <tr><td>Observabilidad de LLM</td><td>Langfuse</td><td>Trace / latencia / tokens / costos de cada llamada al modelo</td></tr>
+      <tr><td>Registro unificado</td><td>Loki + Promtail</td><td>Agregación y búsqueda de registros de todos los contenedores</td></tr>
+      <tr><td>Copia de seguridad y restauración</td><td>Scripts backup / restore + página de administración</td><td>Copia de seguridad diaria de todos los datos + restauración con un clic</td></tr>
+    </table>
+
+    <h2>1.2 Requisitos de software y hardware</h2>
+    <table>
+      <tr><th>Elemento</th><th>Requisito mínimo</th><th>Configuración recomendada</th></tr>
+      <tr><td>Sistema operativo</td><td>Windows 11 (Docker Desktop + backend WSL2)</td><td>Windows 11 Pro / Enterprise (con soporte adicional de Hyper-V para ejecutar el controlador de dominio AD)</td></tr>
+      <tr><td>CPU</td><td>4 núcleos / 8 hilos</td><td>8 núcleos / 16 hilos</td></tr>
+      <tr><td>Memoria</td><td>16 GB</td><td>32 GB</td></tr>
+      <tr><td>Disco</td><td>60 GB de SSD disponible</td><td>150 GB+ de SSD disponible</td></tr>
+      <tr><td>GPU</td><td>No se requiere tarjeta gráfica dedicada</td><td>No se requiere tarjeta gráfica dedicada</td></tr>
+    </table>
+    <div class="note">📌 Según mediciones reales: unos 30 contenedores inactivos suman alrededor de 5 GB de memoria; los picos de procesamiento/indexado de Dify, la JVM de Keycloak y la caché de bases de datos añaden otros 3–5 GB, más la memoria virtual de WSL2. 16 GB es el mínimo y 32 GB el valor cómodo. Todos los modelos grandes pasan por API externa (deepseek-chat, etc.), no se hace inferencia local, por lo que <b>no se requiere GPU</b>.</div>
+
+    <h2>1.3 Tabla de asignación de puertos</h2>
+    <p>En adelante se usa <code>&lt;IP-del-servidor&gt;</code> para representar la dirección externa del host (en el entorno actual es <code>192.168.31.117</code>; al implementar, sustitúyela por tu propia IP de intranet o dominio).</p>
+    <table>
+      <tr><th>#</th><th>Producto</th><th>Uso</th><th>Acceso local</th><th>Acceso intranet (empleados)</th></tr>
+      <tr><td>1</td><td>Centro de administración de IA</td><td>Portal unificado de administración</td><td><code>127.0.0.1:10086</code></td><td><code>&lt;IP-del-servidor&gt;:10086</code></td></tr>
+      <tr><td>2</td><td>Keycloak</td><td>Autenticación / SSO</td><td><code>127.0.0.1:9090</code></td><td><code>&lt;IP-del-servidor&gt;:9090</code></td></tr>
+      <tr><td>3</td><td>NewAPI</td><td>Gateway de enrutamiento de LLM</td><td><code>127.0.0.1:3000</code></td><td><code>&lt;IP-del-servidor&gt;:3000</code></td></tr>
+      <tr><td>4</td><td>LiteLLM</td><td>Proxy de enmascaramiento de PII</td><td><code>&lt;IP-del-servidor&gt;:4001</code></td><td>— (solo lo llama NewAPI)</td></tr>
+      <tr><td>5</td><td>Dify</td><td>Plataforma de aplicaciones de IA</td><td><code>127.0.0.1</code></td><td><code>&lt;IP-del-servidor&gt;</code> (puerto 80)</td></tr>
+      <tr><td>6</td><td>Ghost</td><td>Portal corporativo</td><td><code>127.0.0.1:8090</code></td><td><code>&lt;IP-del-servidor&gt;:8090</code></td></tr>
+      <tr><td>7</td><td>Gitea</td><td>Código fuente + CI/CD</td><td><code>127.0.0.1:3002</code></td><td><code>&lt;IP-del-servidor&gt;:3002</code></td></tr>
+      <tr><td>8</td><td>Servidor de actualización</td><td>Instalador de DeepChat</td><td><code>127.0.0.1:8091</code></td><td><code>&lt;IP-del-servidor&gt;:8091</code></td></tr>
+      <tr><td>9</td><td>MCP Gateway</td><td>Gateway de Skill / MCP</td><td><code>127.0.0.1:3100</code></td><td><code>&lt;IP-del-servidor&gt;:3100</code></td></tr>
+      <tr><td>10</td><td>Grafana</td><td>Panel de monitoreo</td><td><code>127.0.0.1:3030</code></td><td><code>&lt;IP-del-servidor&gt;:3030</code></td></tr>
+      <tr><td>11</td><td>Prometheus</td><td>Recolección de métricas / alertas</td><td><code>127.0.0.1:9091</code></td><td><code>&lt;IP-del-servidor&gt;:9091</code></td></tr>
+      <tr><td>12</td><td>Langfuse</td><td>Observabilidad de LLM</td><td><code>127.0.0.1:3010</code></td><td><code>&lt;IP-del-servidor&gt;:3010</code></td></tr>
+      <tr><td>13</td><td>Loki</td><td>Agregación de registros (interno)</td><td><code>127.0.0.1:3110</code></td><td>— (se consulta desde la página de administración)</td></tr>
+      <tr><td>14</td><td>MailHog</td><td>Recepción local de correo</td><td><code>127.0.0.1:8025</code></td><td><code>&lt;IP-del-servidor&gt;:8025</code></td></tr>
+    </table>
+    <div class="warn">⚠️ Accede siempre por <b>IP de intranet</b>, no uses <code>localhost</code> (Docker Desktop WSL2 no soporta bien la IPv6 <code>::1</code>, lo que provoca fallos en el reenvío de puertos). Las bases de datos (MySQL/Redis/PostgreSQL) no se exponen a los usuarios; solo se comunican dentro de la red de Docker.</div>
+
+    <h2>1.4 Flujo de datos principal</h2>
+    <h3>Flujo de peticiones LLM (la cadena más crítica)</h3>
+    <div class="svgbox">
+      <svg viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:720px;">
+        <defs>
+          <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#58a6ff"/></marker>
+        </defs>
+        <g><rect x="8" y="38" width="120" height="44" rx="8" fill="#1a1030" stroke="#d2a8ff"/></g>
+        <text x="68" y="65" text-anchor="middle" fill="#d2a8ff" font-size="12" font-weight="700">DeepChat / Dify</text>
+        <path d="M 128 60 L 154 60" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="156" y="38" width="120" height="44" rx="8" fill="#0a1e3a" stroke="#58a6ff"/></g>
+        <text x="216" y="65" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">NewAPI (enrutamiento)</text>
+        <path d="M 276 60 L 302 60" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="304" y="38" width="130" height="44" rx="8" fill="#0a2a20" stroke="#56d364"/></g>
+        <text x="369" y="65" text-anchor="middle" fill="#56d364" font-size="12" font-weight="700">LiteLLM (enmascarado)</text>
+        <path d="M 434 60 L 460 60" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+        <g><rect x="462" y="38" width="120" height="44" rx="8" fill="#0f1a26" stroke="#484f58" stroke-dasharray="4"/></g>
+        <text x="522" y="65" text-anchor="middle" fill="#8b949e" font-size="12" font-weight="700">Modelo externo</text>
+        <text x="360" y="110" text-anchor="middle" fill="#8b949e" font-size="11">Dirección de la petición →; dirección de la respuesta ← (LiteLLM restaura la PII antes de devolverla); LiteLLM informa a Langfuse por un canal lateral</text>
+      </svg>
+      <div class="cap">Figura 1-1: Cadena LLM principal</div>
+    </div>
+    <ol>
+      <li><b>① Reenvío</b>: DeepChat / Dify envía la petición a NewAPI (<code>:3000/v1</code>);</li>
+      <li><b>② Enmascarado</b>: NewAPI la reenvía a LiteLLM, que con expresiones regulares + Presidio sustituye números de teléfono / DNI / correos por <code>[xxx_REDACTED]</code>;</li>
+      <li><b>③ Llamada al modelo externo</b>: la petición ya enmascarada se envía a DeepSeek / GPT / Claude;</li>
+      <li><b>④ Restauración de PII</b>: al volver la respuesta, LiteLLM restaura la información sensible;</li>
+      <li><b>⑤ Devolución</b>: el resultado final regresa al cliente.</li>
+    </ol>
+    <h3>Otros flujos</h3>
+    <ul>
+      <li><b>Flujo de autenticación</b>: SSO OIDC de Keycloak para iniciar sesión unificada en todos los productos web (realm compartido <code>ai_all_in_one_admin</code>);</li>
+      <li><b>Flujo de observabilidad</b>: <code>success_callback</code> de LiteLLM → Langfuse rastrea cada llamada;</li>
+      <li><b>Flujo de actualización automática</b>: Gitea Actions compila → servidor de actualización (:8091) → DeepChat comprueba <code>version.txt</code> y descarga e instala automáticamente;</li>
+      <li><b>Flujo de registro unificado</b>: Promtail recolecta los registros de cada contenedor → Loki los agrega → se consultan en la página «Registro unificado» del Centro de administración de IA.</li>
+    </ul>
+
+    <h2>1.5 Estructura y navegación de este libro</h2>
+    <p>Este manual se divide en tres partes: <b>Implementación</b> (capítulos 1–13, poner la plataforma en marcha desde cero), <b>Administración</b> (capítulos 14–26, operaciones diarias de cada uno de los 13 productos) y <b>Operaciones</b> (capítulos 27–29, copia de seguridad / verificación de estado / resolución de problemas). La barra lateral permite saltar en cualquier momento, y al pie de cada página hay navegación de capítulo anterior/siguiente.</p>
+    <div class="tip">✅ Durante la implementación también puedes delegarla a una <b>herramienta de Agente de IA</b> (WorkBuddy / OpenClaw, etc.) para automatizarla: entrega este manual + <code>docker-compose.yml</code> + <code>.env.example</code> + <code>scripts/</code> al Agente y pídele que ejecute paso a paso la «Parte de implementación» (consulta el prompt de implementación del Agente al inicio del capítulo 2).</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch01';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

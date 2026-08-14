@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 6 Data Security Policy · AI AllInOne User Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Quick Start</div>
+      <h1>Data Security Policy</h1>
+      <div class="sub">What can and what must never be sent to the AI — the red lines everyone must follow.</div>
+    </div>
+
+    <p>The platform already auto-<b>redacts</b> sensitive information such as <b>phone numbers, ID card numbers, bank card numbers, and emails</b> (auto-masked before sending to the large model) and blocks sensitive words. But please consciously follow the red lines below.</p>
+
+    <h2>6.1 What Can and Cannot Be Sent</h2>
+    <h3>❌ Strictly forbidden to send to the AI</h3>
+    <ul>
+      <li>internal confidential / trade secrets (unreleased product code, pricing, customer lists, contract terms);</li>
+      <li>personal privacy (ID card numbers, bank card numbers, passwords, health information, others' privacy);</li>
+      <li>source code / unreleased technical designs.</li>
+    </ul>
+    <h3>✅ Safe to use</h3>
+    <ul>
+      <li>public materials, general knowledge, document writing, translation, summarization;</li>
+      <li>redacted business data (after removing specific names/numbers/sensitive fields).</li>
+    </ul>
+
+    <h2>6.2 Data Classification Quick Reference</h2>
+    <table>
+      <tr><th>Data level</th><th>Can it go to external LLMs</th><th>Notes</th></tr>
+      <tr><td>public data</td><td>✅ yes</td><td>published material, general information</td></tr>
+      <tr><td>internal ordinary data</td><td>⚠️ usable after redaction</td><td>usable after removing sensitive fields</td></tr>
+      <tr><td>internal confidential / personal privacy</td><td>❌ forbidden</td><td>strictly forbidden to send</td></tr>
+    </table>
+    <blockquote>Judgment principle: <b>"Would it be a problem if outsiders saw this content?"</b> If yes → don't send it.</blockquote>
+
+    <h2>6.3 Three Typical Scenarios</h2>
+    <table>
+      <tr><th>Scenario</th><th>What to do</th></tr>
+      <tr><td>writing a weekly report involving customer names</td><td>use "a customer" / "Customer A" instead of the real customer name</td></tr>
+      <tr><td>having the AI analyze a data table</td><td>first delete columns like name, phone, ID number, keeping only summarized data</td></tr>
+      <tr><td>translating contract terms</td><td>first delete sensitive info like amounts and the counterparty's name, or use "Party A / Party B" instead</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 平台部署进度清单 — Windows</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d1117; color: #c9d1d9; padding: 24px; max-width: 860px; margin: 0 auto;
+  }
+  h1 { color: #58a6ff; margin-bottom: 8px; }
+  h3 { color: #d2a8ff; margin: 24px 0 12px; border-bottom: 1px solid #21262d; padding-bottom: 6px; }
+  h4 { margin: 20px 0 8px; font-size: 14px; font-weight: 600; }
+  .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 24px; }
+  .notice { background: rgba(210,153,34,0.08); border-left: 3px solid #d29922; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; font-size: 14px; }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    padding: 10px 12px; border-radius: 6px; margin-bottom: 4px;
+    display: flex; align-items: flex-start; gap: 10px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .checklist li:hover { background: #161b22; }
+  .checklist li input[type=checkbox] { margin-top: 3px; width: 18px; height: 18px; accent-color: #56d364; cursor: pointer; }
+  .checklist li.checked { color: #56d364; text-decoration: line-through; }
+  .checklist li.checked input { accent-color: #56d364; }
+  .checklist li.warn { color: #d29922; }
+  .checklist li.warn input { accent-color: #d29922; }
+  code { background: #161b22; padding: 1px 6px; border-radius: 3px; font-size: 13px; color: #58a6ff; }
+  .summary {
+    margin-top: 32px; padding: 16px; background: #161b22; border-radius: 8px;
+    border: 1px solid #30363d;
+  }
+  .summary .bar { height: 8px; border-radius: 4px; background: #21262d; margin: 12px 0; overflow: hidden; }
+  .summary .bar .fill { height: 100%; border-radius: 4px; background: #56d364; transition: width 0.3s; }
+  .summary p { margin: 4px 0; }
+  button {
+    background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 6px;
+    cursor: pointer; font-size: 14px; margin-right: 8px;
+  }
+  button:hover { background: #2ea043; }
+  button.reset { background: #21262d; }
+  button.reset:hover { background: #30363d; }
+  .timestamp { color: #8b949e; font-size: 12px; margin-top: 24px; text-align: center; }
+  .stage-done { color: #56d364; font-weight: 600; }
+  .stage-partial { color: #d29922; font-weight: 600; }
+  .stage-todo { color: #8b949e; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>AI 平台部署进度清单 — Windows</h1>
+<p class="subtitle">状态：<span id="status">从 localStorage 加载...</span> &nbsp;| &nbsp;
+<button onclick="saveAll()">保存进度</button>
+<button class="reset" onclick="resetAll()">重置全部</button>
+<span style="color:#8b949e;font-size:13px">（进度自动保存在浏览器中）</span>
+</p>
+
+<div class="summary">
+  <p>已完成：<strong id="doneCount">-</strong> / <strong id="totalCount">-</strong></p>
+  <div class="bar"><div class="fill" id="progressBar" style="width:0%"></div></div>
+</div>
+
+<div class="notice">
+  <strong>⚠️ 访问地址约定：</strong>所有产品统一用<b>内网 IP</b>（<code>http://&lt;服务器IP&gt;:端口</code>）访问，<b>不要用 <code>127.0.0.1</code></b>。尤其 NewAPI 和 AI 管理中心——服务器地址已设为内网 IP，用 127.0.0.1 访问会导致 OIDC 登录报 <code>invalid_grant - Incorrect redirect_uri</code>。
+</div>
+
+<h3>一、基础设施 <span class="stage-done">▸▸ 已完成 ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w1_01" class="checked"><input type="checkbox" checked> Docker Desktop + WSL2 引擎运行正常</li>
+  <li data-id="w1_02" class="checked"><input type="checkbox" checked> <code>ai-platform</code> Docker 网络已创建</li>
+  <li data-id="w1_03" class="checked"><input type="checkbox" checked> <code>.env</code> 已填入全部凭据（API Key / 密码）</li>
+  <li data-id="w1_04" class="checked"><input type="checkbox" checked> 核心容器全部 Up（Keycloak / NewAPI / LiteLLM / Ghost / Gitea / Update Server / Admin Center / MCP Gateway）</li>
+  <li data-id="w1_05" class="checked"><input type="checkbox" checked> Keycloak <code>KC_HOSTNAME=内网IP</code> + keycloak-data 持久化</li>
+  <li data-id="w1_06" class="checked"><input type="checkbox" checked> Ghost 强制 SQLite + Dify 独立 compose 部署</li>
+</ul>
+
+<h3>二、Keycloak 企业身份源 <span class="stage-done">▸▸ 已完成 ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w2_01" class="checked"><input type="checkbox" checked> 创建 Realm <code>enterprise-ai</code></li>
+  <li data-id="w2_02" class="checked"><input type="checkbox" checked> AD LDAP 联合（<code>Company AD</code>，12 个域用户同步）</li>
+  <li data-id="w2_03" class="checked"><input type="checkbox" checked> OIDC Client：<code>newapi</code> + <code>AI-all-in-one-admin-portal</code></li>
+  <li data-id="w2_04" class="checked"><input type="checkbox" checked> Realm Role <code>ai-platform-admin</code> 创建并分配</li>
+  <li data-id="w2_05" class="checked"><input type="checkbox" checked> 统一管理员 <code>ai_all_in_one_admin</code>（master + enterprise-ai）</li>
+</ul>
+
+<h3>三、LLM 链路（LiteLLM + NewAPI）<span class="stage-done">▸▸ 已完成 ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w3_01" class="checked"><input type="checkbox" checked> LiteLLM 健康检查 + 模型 <code>deepseek-chat</code> 返回</li>
+  <li data-id="w3_02" class="checked"><input type="checkbox" checked> NewAPI 管理员 <code>ai_all_in_one_admin</code> 登录（用内网 IP）</li>
+  <li data-id="w3_03" class="checked"><input type="checkbox" checked> NewAPI 渠道：<code>Deepseek V4</code> → <code>http://litellm:4000</code></li>
+  <li data-id="w3_04" class="checked"><input type="checkbox" checked> NewAPI API 密钥（<code>deepchat-key</code> / <code>dify-key</code>）</li>
+  <li data-id="w3_05" class="checked"><input type="checkbox" checked> NewAPI Keycloak OIDC SSO（AD 账号登录）</li>
+  <li data-id="w3_06" class="checked"><input type="checkbox" checked> NewAPI 限流 / ServerAddress / 默认额度配置</li>
+</ul>
+
+<h3>四、AI Admin Center 统一管理 <span class="stage-partial">▸▸ 部分完成</span></h3>
+<ul class="checklist">
+  <li data-id="w4_01"><input type="checkbox"> 登录正常（用内网 IP <code>http://&lt;服务器IP&gt;:10086</code>，⚠️ 待验证）</li>
+  <li data-id="w4_02" class="checked"><input type="checkbox" checked> 「🔐 集中认证」页（统一账号体系）</li>
+  <li data-id="w4_03" class="checked"><input type="checkbox" checked> 「🔀 NewAPI 管理」页（渠道/用户/密钥）</li>
+  <li data-id="w4_04" class="checked"><input type="checkbox" checked> 总览仪表板「产品业务指标」聚合</li>
+  <li data-id="w4_05" class="checked"><input type="checkbox" checked> 「👥 管理员管理」页（Keycloak Admin API）</li>
+</ul>
+
+<h3>五、MCP Gateway 工具网关 <span class="stage-done">▸▸ 已完成 ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w5_01" class="checked"><input type="checkbox" checked> MCP Gateway 实现（Streamable HTTP <code>/mcp</code> + 3 内置工具）</li>
+  <li data-id="w5_02" class="checked"><input type="checkbox" checked> MCP 协议验证（initialize / tools/list / tools/call 全通）</li>
+  <li data-id="w5_03"><input type="checkbox"> DeepChat 客户端接入 MCP Gateway（<code>http://&lt;服务器IP&gt;:3100/mcp</code>）</li>
+  <li data-id="w5_04"><input type="checkbox"> 聚合业务 MCP Server（按需配置 <code>mcp-servers.json</code>）</li>
+</ul>
+
+<h3>六、业务应用与研发协作 <span class="stage-todo">▸▸ 待配置</span></h3>
+<ul class="checklist">
+  <li data-id="w6_01"><input type="checkbox"> Dify (80) 初始化，管理员 <code>ai_all_in_one_admin</code> 可登录</li>
+  <li data-id="w6_02"><input type="checkbox"> Dify 模型供应商指向 NewAPI + 聊天应用正常</li>
+  <li data-id="w6_03"><input type="checkbox"> Dify Keycloak OIDC SSO 配置</li>
+  <li data-id="w6_04"><input type="checkbox"> Ghost (8090) 初始化 + 导航菜单 + 下载中心</li>
+  <li data-id="w6_05"><input type="checkbox"> Gitea (3002) 安装 + Actions + Runner 注册</li>
+  <li data-id="w6_06"><input type="checkbox"> Update Server 托管 DeepChat 安装包</li>
+  <li data-id="w6_07"><input type="checkbox"> DeepChat 安装 + Provider 指向 NewAPI + AI 回复</li>
+</ul>
+
+<h3>七、全链路验证 <span class="stage-todo">▸▸ 待验证</span></h3>
+<ul class="checklist">
+  <li data-id="w7_01"><input type="checkbox"> DeepChat → NewAPI → LiteLLM → 外部模型 往返</li>
+  <li data-id="w7_02"><input type="checkbox"> Dify → NewAPI → LiteLLM → 外部模型 往返</li>
+  <li data-id="w7_03" class="warn"><input type="checkbox"> PII 脱敏 + 还原（待 guardrail 兼容后启用）</li>
+  <li data-id="w7_04"><input type="checkbox"> Ghost → Dify 门户跳转</li>
+  <li data-id="w7_05"><input type="checkbox"> AI 管理中心 Dashboard 全部正常</li>
+  <li data-id="w7_06"><input type="checkbox"> 开机自检脚本计划任务已配置</li>
+</ul>
+
+<h3>八、扩展验证清单（含预估工时）</h3>
+<p class="subtitle" style="margin-top:-6px">按 5 个阶段逐步推进，标题括号内为预估工时。与上方「一~七」视角互补：上面是功能模块维度，这里是时间阶段维度。</p>
+
+<h4 style="color:#58a6ff">第一阶段 · 基础设施（约 1 天）</h4>
+<ul class="checklist">
+  <li data-id="w8_01"><input type="checkbox"> OS 运行正常，nvidia-smi / docker version 正常</li>
+  <li data-id="w8_02"><input type="checkbox"> Docker 网络 <code>ai-platform</code> 已创建</li>
+  <li data-id="w8_03"><input type="checkbox"> AI 管理中心（<code>&lt;服务器IP&gt;:10086</code>）可访问，Keycloak 登录成功</li>
+  <li data-id="w8_04"><input type="checkbox"> 所有核心容器 <code>docker compose ps</code> 状态为 Up</li>
+</ul>
+
+<h4 style="color:#d2a8ff">第二阶段 · LLM 链路（约 1 天）</h4>
+<ul class="checklist">
+  <li data-id="w8_05"><input type="checkbox"> LiteLLM 健康检查 <code>/health</code> 返回 OK</li>
+  <li data-id="w8_06"><input type="checkbox"> NewAPI 渠道配置 → LiteLLM 测试通过</li>
+  <li data-id="w8_07" class="warn"><input type="checkbox"> PII 脱敏验证：发送含手机号/身份证的消息，回复正常</li>
+  <li data-id="w8_08"><input type="checkbox"> NewAPI 令牌生成 → DeepChat 和 Dify 使用</li>
+</ul>
+
+<h4 style="color:#56d364">第三阶段 · AI 应用 + 门户（约 1-2 天）</h4>
+<ul class="checklist">
+  <li data-id="w8_09"><input type="checkbox"> Dify 管理员注册，模型供应商指向 NewAPI 测试通过</li>
+  <li data-id="w8_10"><input type="checkbox"> Dify Playground 中创建对话 → 正常返回（验证 NewAPI → LiteLLM → 外部模型链路）</li>
+  <li data-id="w8_11"><input type="checkbox"> Keycloak Realm 和 Client 创建完毕，OIDC 端点可访问</li>
+  <li data-id="w8_12"><input type="checkbox"> Keycloak SSO → Dify 登录测试（可选）</li>
+  <li data-id="w8_13"><input type="checkbox"> Ghost 门户首页可访问，AI 工作台链接指向 Dify</li>
+</ul>
+
+<h4 style="color:#d29922">第四阶段 · CI/CD + 客户端（约 1-2 天）</h4>
+<ul class="checklist">
+  <li data-id="w8_14"><input type="checkbox"> Gitea 已初始化，Runner 注册成功（Idle 状态）</li>
+  <li data-id="w8_15"><input type="checkbox"> DeepChat 源码已 Fork 到 Gitea 内部仓库</li>
+  <li data-id="w8_16"><input type="checkbox"> CI/CD 工作流 <code>.gitea/workflows/release.yml</code> 已创建</li>
+  <li data-id="w8_17"><input type="checkbox"> 更新服务器 (8091) 可访问</li>
+  <li data-id="w8_18"><input type="checkbox"> DeepChat 客户端安装完毕，Provider 指向 NewAPI</li>
+  <li data-id="w8_19"><input type="checkbox"> MCP Gateway 运行正常，DeepChat 可获取 MCP 工具列表</li>
+</ul>
+
+<h4 style="color:#f85149">第五阶段 · 端到端全链路（约 0.5 天）</h4>
+<ul class="checklist">
+  <li data-id="w8_20"><input type="checkbox"> <b>全链路 LLM：</b>DeepChat → NewAPI → LiteLLM(PII脱敏) → 外部大模型 → 响应还原 → OK</li>
+  <li data-id="w8_21"><input type="checkbox"> <b>全链路 Dify：</b>浏览器 → Dify → NewAPI → LiteLLM → 外部大模型 → RAG/Agent 回复正常</li>
+  <li data-id="w8_22"><input type="checkbox"> <b>SSO 认证：</b>Keycloak → Dify/NewAPI OIDC 登录正常</li>
+  <li data-id="w8_23"><input type="checkbox"> <b>MCP 工具：</b>DeepChat → MCP Gateway → 工具调用返回正常</li>
+  <li data-id="w8_24"><input type="checkbox"> <b>门户导航：</b>浏览器 → Ghost → 点击"AI工作台" → 跳转 Dify → OK</li>
+</ul>
+
+<p class="timestamp">导出: 2026-08-13 · Windows Docker Desktop 单机部署</p>
+
+<script>
+const STORAGE_KEY = 'ai-platform-checklist-windows';
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveAll() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => {
+    const cb = li.querySelector('input[type=checkbox]');
+    if (cb && !cb.disabled) state[li.dataset.id] = cb.checked;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  updateSummary();
+  document.getElementById('status').textContent = '已保存 (' + new Date().toLocaleTimeString() + ')';
+}
+function resetAll() {
+  if (!confirm('确定要重置所有勾选进度？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.checklist li input[type=checkbox]').forEach(cb => {
+    if (!cb.disabled) { cb.checked = false; cb.parentElement.classList.remove('checked'); }
+  });
+  updateSummary();
+  document.getElementById('status').textContent = '已重置';
+}
+function updateSummary() {
+  const all = document.querySelectorAll('.checklist li input[type=checkbox]:not([disabled])');
+  let done = 0;
+  all.forEach(cb => { if (cb.checked) done++; });
+  document.getElementById('doneCount').textContent = done;
+  document.getElementById('totalCount').textContent = all.length;
+  const pct = Math.round(done / all.length * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('status').textContent = done + '/' + all.length + ' 已完成 (' + pct + '%)';
+}
+
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function(e) {
+    if (e.target.tagName === 'CODE') return;
+    const cb = this.querySelector('input[type=checkbox]');
+    if (cb && !cb.disabled) {
+      cb.checked = !cb.checked;
+      this.classList.toggle('checked', cb.checked);
+      saveAll();
+    }
+  });
+});
+
+// Load initial state（localStorage 未覆盖的项保留 HTML 里的默认 checked）
+const saved = loadAll();
+document.querySelectorAll('.checklist li').forEach(li => {
+  const cb = li.querySelector('input[type=checkbox]');
+  if (!cb) return;
+  if (saved[li.dataset.id] !== undefined) {
+    cb.checked = saved[li.dataset.id];
+  }
+  li.classList.toggle('checked', cb.checked);
+});
+updateSummary();
+</script>
+</body>
+</html>

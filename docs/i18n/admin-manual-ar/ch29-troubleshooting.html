@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل التاسع والعشرون دليل استكشاف الأعطال وإصلاحها · دليل مدير AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">الجزء الثالث · قسم التشغيل والصيانة</div>
+      <h1>دليل استكشاف الأعطال وإصلاحها</h1>
+      <div class="sub">مرجع سريع حسب الأعراض لتحديد السبب الجذري بسرعة.</div>
+    </div>
+
+    <h2>29.1 ثلاث خطوات عامة لاستكشاف الأخطاء</h2>
+    <ol>
+      <li><b>افحص حالة الحاويات</b>: <code>docker ps -a</code> للبحث عن Exited/Restarting؛</li>
+      <li><b>افحص السجلات</b>: <code>docker logs &lt;اسم-الحاوية&gt; --tail 30</code>؛</li>
+      <li><b>افحص الصحة</b>: شغّل <code>health-check.ps1</code> لتحديد المرحلة الفاشلة.</li>
+    </ol>
+
+    <h2>29.2 جدول مرجعي سريع للأعراض</h2>
+    <table>
+      <tr><th>العَرَض</th><th>السبب الجذري</th><th>الحل</th></tr>
+      <tr><td>لا يفتح أي منتج عبر localhost</td><td>مشكلة توافق WSL2 IPv6 <code>::1</code></td><td>استخدم عنوان IP الداخلي أو 127.0.0.1</td></tr>
+      <tr><td>يستمر Ghost في Restarting ويظهر ECONNREFUSED :3306</td><td>إعداد MySQL متبقٍ في الحجم</td><td>إجبار SQLite عبر متغيرات البيئة (الفصل 4)</td></tr>
+      <tr><td>تنهار حاويات Dify الأربع فور الإقلاع بخطأ ValidationError</td><td>GRAPH_ENGINE_SCALE_UP_THRESHOLD=0</td><td>غيّرها إلى 50 (الفصل 5)</td></tr>
+      <tr><td>يعيد اختبار قناة NewAPI No connected db</td><td>كُتبت قيمة نموذجية في مفتاح القناة</td><td>اكتب القيمة الفعلية لـ <code>LITELLM_MASTER_KEY</code></td></tr>
+      <tr><td>يظهر خطأ OIDC في NewAPI: invalid_grant / Incorrect redirect_uri</td><td>عنوان الخادم هو localhost</td><td>عيّن العنوان الداخلي (الفصل 7)</td></tr>
+      <tr><td>429 عند تسجيل الدخول إلى NewAPI</td><td>تحديد معدل للواجهات الحرجة</td><td>امسح rateLimit:* من redis أو عدّل .env</td></tr>
+      <tr><td>يتصل Dify مرارًا بـ ws://localhost عند إنشاء التطبيقات</td><td>لم يُغيَّر عنوان WebSocket</td><td>عيّن NEXT_PUBLIC_SOCKET_URL إلى عنوان IP الداخلي</td></tr>
+      <tr><td>لا يحدث شيء عند النقر على تسجيل الدخول في Dify</td><td>كلمة المرور تحتاج base64 / ظهور 401 دون تسجيل دخول أمر طبيعي</td><td>نفّذ base64 أولًا في السكربتات؛ وأعد المحاولة في المتصفح</td></tr>
+      <tr><td>يظهر خطأ readonly database في Gitea</td><td>مالك gitea.db هو root</td><td>احذف قاعدة البيانات التي يملكها root وأعد إنشاءها</td></tr>
+      <tr><td>روابط المستودعات في Gitea بصيغة localhost</td><td>لم يُغيَّر ROOT_URL</td><td>عيّن العنوان الداخلي</td></tr>
+      <tr><td>يظهر unknown_error عند تسجيل الدخول عبر SSO</td><td>تعطل إعادة توجيه منافذ AD (iphlpsvc)</td><td>افحص iphlpsvc + شبكة Hyper-V</td></tr>
+      <tr><td>لا يظهر مستخدمو النطاق في Keycloak</td><td>Search scope = One Level</td><td>غيّرها إلى Subtree</td></tr>
+      <tr><td>لا تظهر البيانات في Langfuse</td><td>V4_WRITE_MODE أو عدم إضافة حساب SSO إلى المنظمة</td><td>عيّن dual؛ وأضف المنظمة عبر SQL (الفصل 23)</td></tr>
+      <tr><td>انتهاء مهلة الاتصال بالنموذج في DeepChat</td><td>مرّ العميل عبر وكيل نظام معطل</td><td>اضبطه على بدون وكيل/اتصال مباشر</td></tr>
+      <tr><td>لا تظهر السجلات في Loki</td><td>استخدام تسمية job</td><td>استخدم <code>{container=~".+"}</code></td></tr>
+      <tr><td>خطأ Presidio 404 /analyze/analyze</td><td>كُتب المسار في نقطة النهاية</td><td>اكتب base URL فقط</td></tr>
+      <tr><td>خطأ 404 للواجهات الجديدة بعد تعديل server.js</td><td>لا يعيد up -d قراءة تغيير الحجم</td><td>نفّذ docker restart admin-portal</td></tr>
+    </table>
+
+    <h2>29.3 أوامر شائعة</h2>
+    <pre><code>docker ps -a                                        # حالة جميع الحاويات
+docker logs &lt;الحاوية&gt; --tail 50                         # عرض السجلات
+docker compose up -d &lt;الخدمة&gt;                          # إعادة بناء خدمة معينة
+docker compose restart &lt;الخدمة&gt;                        # إعادة تشغيل خدمة معينة (دون إعادة قراءة .env)
+docker system df                                     # استخدام مساحة Docker
+C:\AIAllInOne\windows\scripts\health-check.ps1       # فحص شامل بضغطة واحدة</code></pre>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch29';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

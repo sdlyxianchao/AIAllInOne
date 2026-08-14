@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第20章 MCP Gateway の日常管理 · AI AllInOne 管理者マニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部 · 管理編</div>
+      <h1>MCP Gateway の日常管理</h1>
+      <div class="sub">MCP Server の増減、スキルのアップロード/削除、組み込みツールの拡張。</div>
+    </div>
+
+    <p><b>入口</b>：<span class="entry">http://&lt;サーバーIP&gt;:3100</span>（マーケットページ <code>/market</code>）。管理は AI 管理センター「MCP Gateway」ページで操作（<code>ai-platform-admin</code> ロール）、または管理 API を直接呼び出します。</p>
+
+    <h2>20.1 MCP Server の管理</h2>
+    <ol>
+      <li><code>mcp-gateway/mcp-servers.json</code> を編集してサーバーを増減（stdio/http の 2 種）；</li>
+      <li><code>docker compose restart mcp-gateway</code> で再起動；</li>
+      <li>または AI 管理センター MCP Gateway ページで増減（設定に書き戻し + 自動再接続）。</li>
+    </ol>
+
+    <h2>20.2 スキル（スキルパッケージ）の管理</h2>
+    <ol>
+      <li><b>アップロード</b>：AI 管理センター MCP Gateway ページ → スキル zip アップロード（SKILL.md の存在検証、パストラバーサル防止）；</li>
+      <li><b>削除</b>：該当スキルを削除；</li>
+      <li>スキルは <code>mcp-gateway/skills/</code>（SKILL.md を含むサブディレクトリ）に置き、リクエストごとに自動スキャンされ、再起動不要。</li>
+    </ol>
+
+    <h2>20.3 組み込みツールの拡張</h2>
+    <p><code>mcp-gateway/gateway.js</code> に 2 ステップ追加します：</p>
+    <pre><code>// ① ツール定義（builtinTools 配列に 1 項目追加）
+{ name: 'platform_health', description: 'サービスヘルス状態の照会',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② 実行ロジック（callBuiltin に 1 分岐追加）
+if (name === 'platform_health') { return 'すべてのサービスは正常に稼働中'; }</code></pre>
+    <p>変更後 <code>docker compose restart mcp-gateway</code>。</p>
+
+    <h2>20.4 skill-market マーケットアドレスの保守</h2>
+    <p>「スキルマネージャー」の <code>market_url</code> は <code>mcp-gateway/skills/skill-market/config.json</code> + <code>SKILL.md</code> にあり、必ずホスト名（IP 不可）を使います。デプロイパラメータです（詳細は第 11 章）。</p>
+
+    <div class="warn">⚠️ 管理 API には <code>X-Admin-Token</code> ヘッダーが必要（<code>.env</code> の <code>MCP_ADMIN_TOKEN</code>）。未設定なら 503、トークン誤りなら 401 を返します。</div>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>MCP プロトコル公式 <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch20';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 25 · Anonymisation PII (Presidio) · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Deuxième partie · Administration</div>
+      <h1>Anonymisation PII (Presidio)</h1>
+      <div class="sub">Les informations sensibles sont anonymisées automatiquement avant de sortir de l'intranet.</div>
+    </div>
+
+    <h2>25.1 Deux couches d'anonymisation</h2>
+    <table>
+      <tr><th>Couche</th><th>Capacité</th></tr>
+      <tr><td>Expressions régulières intégrées de LiteLLM (<code>litellm_content_filter</code>)</td><td>Numéros de téléphone mobile, cartes d'identité, cartes bancaires, e-mails, codes de crédit social unifiés, passeports, IPv4, etc. ; en cas de correspondance, remplacement par <code>[xxx_REDACTED]</code> ; en cas de correspondance à la liste noire de mots sensibles, rejet BLOCK</td></tr>
+      <tr><td>Microsoft Presidio</td><td>Entités plus fines (noms de personnes anglaises, e-mails, etc.), <code>presidio-analyzer</code> 5002 / <code>presidio-anonymizer</code> 5001</td></tr>
+    </table>
+
+    <h2>25.2 Règles d'expressions régulières intégrées</h2>
+    <table>
+      <tr><th>Règle</th><th>Expression régulière</th><th>Type</th></tr>
+      <tr><td>Numéro de téléphone mobile chinois</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+      <tr><td>Numéro de carte d'identité</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+      <tr><td>Numéro de carte bancaire</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+      <tr><td>E-mail</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+      <tr><td>Code de crédit social unifié</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+      <tr><td>Numéro de passeport</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+      <tr><td>IPv4</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+    </table>
+    <p>La liste noire de mots sensibles se gère dans <code>blocked_words</code> de <code>litellm-config.yaml</code> selon la réalité de l'entreprise (<code>confidentiel interne</code>, <code>secret commercial</code>, etc.).</p>
+
+    <h2>25.3 Activer Presidio (actuellement commenté)</h2>
+    <p>L'API guardrail de la nouvelle version de LiteLLM a changé, la section Presidio est actuellement commentée. Points d'activation :</p>
+    <ul>
+      <li>Les guardrails nécessitent <code>default_on: true</code> pour s'appliquer globalement ;</li>
+      <li>Les variables d'environnement de point de terminaison <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code> doivent contenir la base URL (LiteLLM ajoute automatiquement <code>/analyze</code>, <code>/anonymize</code> ; avec un chemin, cela donne <code>/analyze/analyze</code> → 404).</li>
+    </ul>
+
+    <div class="warn">⚠️ L'image pèse environ 965 Mo, très lente à télécharger en Chine (environ 1 heure en pratique) ; si le téléchargement bloque, utilisez d'abord les expressions régulières intégrées (qui couvrent déjà les PII chinois de base).</div>
+
+    <h2>25.4 Vérification</h2>
+    <p>Envoyez une requête contenant un numéro de téléphone/e-mail → dans la réponse du modèle, la valeur d'origine est remplacée par <code>[REDACTED]</code> ; envoyez une requête contenant « confidentiel interne » → réponse directe <code>Content blocked</code>.</p>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>Microsoft Presidio <span class="url">https://microsoft.github.io/presidio/</span> · code source <span class="url">https://github.com/microsoft/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch25';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

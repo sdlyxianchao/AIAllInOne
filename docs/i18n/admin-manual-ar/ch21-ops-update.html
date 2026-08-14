@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل الحادي والعشرون إدارة خادم التحديثات · دليل مدير AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">الجزء الثاني · قسم الإدارة</div>
+      <h1>إدارة خادم التحديثات</h1>
+      <div class="sub">استضافة حزم تثبيت DeepChat والتحديث التلقائي.</div>
+    </div>
+
+    <p><b>المدخل</b>: <span class="entry">http://&lt;عنوان-IP-الخادم&gt;:8091</span> والبيانات في <code>deepchat-updates/</code>.</p>
+
+    <h2>21.1 وضع إصدار جديد يدويًا</h2>
+    <ol>
+      <li>نزّل حزمة تثبيت DeepChat الرسمية إلى <code>deepchat-updates/deepchat/</code>؛</li>
+      <li>حدّث <code>version.txt</code> (اكتب رقم الإصدار الجديد)؛</li>
+      <li>عند التحديث التلقائي في DeepChat لدى الموظف يتحقق من <code>version.txt</code>، وعند اكتشاف إصدار جديد ينزّله ويثبّته.</li>
+    </ol>
+
+    <h2>21.2 المزامنة التلقائية (موصى بها)</h2>
+    <p>تعتمد على Gitea Actions في مستودع <code>deepchat-sync</code> للتحقق يوميًا من إصدارات GitHub الجديدة ومزامنتها (انظر الفصل 10). التشغيل اليدوي:</p>
+    <pre><code>curl -X POST "http://&lt;عنوان-IP-الخادم&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+  -u "ai_all_in_one_admin:&lt;كلمة-المرور&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'</code></pre>
+
+    <h2>21.3 إعداد المزامنة (sync-config.json)</h2>
+    <table>
+      <tr><th>الحقل</th><th>الوظيفة</th></tr>
+      <tr><td><code>version_source</code></td><td><code>github</code> / <code>official</code></td></tr>
+      <tr><td><code>download_prefix</code></td><td>بادئة تسريع التنزيل (مثل ghproxy.com)</td></tr>
+      <tr><td><code>keep_releases</code></td><td>عدد الإصدارات التاريخية المحفوظة</td></tr>
+      <tr><td><code>market_url</code></td><td>عنوان سوق «مدير المهارات» في صفحة التنزيل</td></tr>
+    </table>
+
+    <div class="note">📌 عند ظهور «انتهاء مهلة الاتصال بالنموذج» في عميل DeepChat فغالبًا يرجع السبب إلى مرور العميل عبر وكيل نظام معطل (<code>ECONNREFUSED 127.0.0.1:33210</code>). اطلب من المستخدم تغيير الخيار إلى «بدون وكيل/اتصال مباشر» في DeepChat من «الإعدادات ← الشبكة/الوكيل».</div>
+
+    <div class="docbox"><span class="label">📖 الوثائق الرسمية:</span>البداية السريعة لـ DeepChat <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · المستودع مفتوح المصدر <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch21';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

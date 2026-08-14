@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第4章 ツール2：Dify · AI AllInOne ユーザーマニュアル</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">クイックスタート</div>
+      <h1>ツール2：Dify</h1>
+      <div class="sub">Web AI アプリケーションプラットフォーム：既存アプリの利用、ナレッジベースQ&Aの構築。</div>
+    </div>
+
+    <h2>4.1 Dify へのログイン</h2>
+    <ol>
+      <li>ブラウザで <code>http://IP</code> を開く（80 ポート、ポート番号なし。ポータルの「AI ワークベンチ」からも入れます）；</li>
+      <li>統合アカウントでログイン（初回は管理者によるアカウント開設が必要な場合があります）。</li>
+    </ol>
+
+    <h2>4.2 既存のチャットアプリを利用</h2>
+    <p>管理者があらかじめいくつかのアプリを用意しています（例：「会社制度Q&A」「カスタマーサポートアシスタント」）。一般ユーザーは直接「使う」だけで済みます：</p>
+    <ol>
+      <li>ログイン後「<b>スタジオ / アプリ</b>」リストへ；</li>
+      <li>使いたいアプリを見つけ、「<b>実行 / プレビュー</b>」（右上の再生ボタン）をクリック；</li>
+      <li>開いた対話ページで直接質問。</li>
+    </ol>
+
+    <h2>4.3 ナレッジベースQ&A</h2>
+    <p>社内ドキュメントを AI に「与えて」回答させたい場合、Dify の<b>ナレッジベース</b>を使います（管理者の権限付与が必要）：</p>
+    <ol>
+      <li>「<b>ナレッジベース</b>」→「ナレッジベース作成」；</li>
+      <li>ドキュメントをアップロード（Word / PDF / Markdown / ウェブリンクなど対応）；</li>
+      <li>システムが自動でセグメント化・インデックス作成；</li>
+      <li>アプリでこのナレッジベースを「参照」すると、AI があなたのドキュメントに基づいて回答できます。</li>
+    </ol>
+    <div class="note">📌 ナレッジベースの内容は AI が回答に使用します。第 6 章のデータセキュリティ規程を遵守し、<b>機密資料はアップロードしないでください</b>。</div>
+
+    <h2>4.4 自分で簡単なアプリを作る（応用）</h2>
+    <ol>
+      <li>スタジオ → 空のアプリ作成 → 「チャットアシスタント」を選択；</li>
+      <li>「プロンプト」を書いて AI に役割を伝える（例：「あなたは会社の勤怠制度のQ&Aアシスタントです」）；</li>
+      <li>ナレッジベース追加 → モデル選択 → プレビューテスト → 公開。</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 公式ドキュメント：</span>Dify 公式ドキュメント <span class="url">https://docs.dify.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

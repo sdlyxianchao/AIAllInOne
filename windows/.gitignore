@@ -1,0 +1,28 @@
+# 环境变量（含密钥，禁止提交）
+.env
+.env.windows
+**/.env
+
+# 依赖
+node_modules/
+**/node_modules/
+
+# 备份
+backups/
+*.sql
+*.db
+
+# 运行时产物
+*.log
+health_check_*.log
+deepchat-updates/deepchat/
+deepchat-updates/assets/
+
+# bootstrap / keycloak 运行时产物
+scripts/keycloak-secrets.json
+dify/volumes/
+dify/nginx/ssl/
+
+# 系统
+.DS_Store
+Thumbs.db

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제4장 도구 2: Dify · AI AllInOne 사용자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">빠른 시작</div>
+      <h1>도구 2: Dify</h1>
+      <div class="sub">웹 AI 앱 플랫폼: 기존 앱 사용, 지식베이스 Q&amp;A 구축.</div>
+    </div>
+
+    <h2>4.1 Dify 로그인</h2>
+    <ol>
+      <li>브라우저에서 <code>http://IP</code> 열기 (80 포트, 포트 번호 없음; 포털 「AI 워크벤치」에서 들어갈 수도 있음);</li>
+      <li>통합 계정으로 로그인 (최초에는 관리자가 먼저 계정을 개설해야 할 수 있음).</li>
+    </ol>
+
+    <h2>4.2 기존 채팅 앱 사용</h2>
+    <p>관리자가 미리 몇 가지 앱 (예: 「회사 제도 Q&amp;A」「고객 서비스 어시스턴트」)을 만들어 두므로, 일반 사용자는 바로 「사용」하면 됩니다:</p>
+    <ol>
+      <li>로그인 후 「<b>스튜디오 / 앱</b>」 목록 진입;</li>
+      <li>사용할 앱 찾기, 「<b>실행 / 미리보기</b>」 클릭 (우측 상단 재생 버튼);</li>
+      <li>열린 대화 페이지에서 바로 질문.</li>
+    </ol>
+
+    <h2>4.3 지식베이스 Q&amp;A</h2>
+    <p>내부 문서를 AI에 「먹여」 답변하게 하려면 Dify의 <b>지식베이스</b> 사용 (관리자 권한 필요):</p>
+    <ol>
+      <li>「<b>지식베이스</b>」 → 「지식베이스 생성」;</li>
+      <li>문서 업로드 (Word / PDF / Markdown / 웹 링크 등 지원);</li>
+      <li>시스템이 자동 분할, 인덱스 구축;</li>
+      <li>앱에서 이 지식베이스를 「참조」하면 AI가 문서 기반으로 답변.</li>
+    </ol>
+    <div class="note">📌 지식베이스 내용은 AI 답변에 사용되므로 제6장 데이터 보안 규정을 준수하세요——<b>기밀 자료를 업로드하지 마세요</b>.</div>
+
+    <h2>4.4 직접 간단한 앱 만들기 (고급)</h2>
+    <ol>
+      <li>스튜디오 → 빈 앱 생성 → 「채팅 어시스턴트」 선택;</li>
+      <li>「프롬프트」를 작성해 AI에 역할 부여 (예: 「당신은 회사 근태 제도 Q&amp;A 어시스턴트입니다」);</li>
+      <li>지식베이스 추가 → 모델 선택 → 미리보기 테스트 → 게시.</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>Dify 공식 문서 <span class="url">https://docs.dify.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

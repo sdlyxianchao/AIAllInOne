@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 16 章 LiteLLM 日常管理 · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部分 · 管理篇</div>
+      <h1>LiteLLM 日常管理</h1>
+      <div class="sub">PII 遮蔽代理：模型列表、遮蔽規則、快取、Langfuse 上報。</div>
+    </div>
+
+    <p><b>入口</b>：<span class="entry">http://&lt;伺服器IP&gt;:4001</span>（純 API，無 Web 介面，除錯用 <code>/v1/models</code>）。配置在 <code>litellm-config.yaml</code>。</p>
+
+    <h2>16.1 模型列表維護</h2>
+    <p>編輯 <code>litellm-config.yaml</code> 的 <code>model_list</code>，增刪模型與對應 API Key。加新 provider 的步驟：</p>
+    <ol>
+      <li><code>.env</code> 取消 <code># OPENAI_API_KEY=</code> 註釋填 Key；</li>
+      <li><code>litellm-config.yaml</code> 取消對應 model 塊註釋；</li>
+      <li><code>docker compose up -d litellm</code>。</li>
+    </ol>
+
+    <h2>16.2 響應快取</h2>
+    <p>Redis exact match 快取，完全相同請求跨使用者共享。調 <code>cache_params.ttl</code>（預設 3600 秒）。關閉：<code>cache: false</code> 後重啟。</p>
+
+    <h2>16.3 Langfuse 上報</h2>
+    <p>透過 <code>success_callback: ["langfuse"]</code> + <code>.env</code> 的 <code>LANGFUSE_PUBLIC_KEY/SECRET_KEY/HOST</code> 自動上報每次呼叫。</p>
+
+    <h2>16.4 重啟與疑難排解</h2>
+    <pre><code>docker compose restart litellm          # 改配置後重啟
+docker logs litellm --tail 50           # 看日誌</code></pre>
+    <div class="warn">⚠️ 關鍵坑：① guardrails 要加 <code>default_on: true</code> 才全域生效；② PII 遮蔽（Presidio）當前因上游 API 變更暫註釋，僅做純代理；③ 用穩定版 <code>v1.95.1</code>（<code>main-latest</code> 有 bug）。</div>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>LiteLLM 官方文件 <span class="url">https://docs.litellm.ai</span> · Presidio guardrail <span class="url">https://docs.litellm.ai/docs/proxy/guardrails/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch16';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

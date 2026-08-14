@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 20 章 MCP Gateway 日常管理 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第二部分 · 管理篇</div>
+      <h1>MCP Gateway 日常管理</h1>
+      <div class="sub">增删 MCP Server、上传/删除 Skill、扩展内置工具。</div>
+    </div>
+
+    <p><b>入口</b>：<span class="entry">http://&lt;服务器IP&gt;:3100</span>（市场页 <code>/market</code>）。管理经 AI 管理中心「MCP Gateway」页操作（<code>ai-platform-admin</code> 角色），也可直接调管理 API。</p>
+
+    <h2>20.1 管理 MCP Server</h2>
+    <ol>
+      <li>编辑 <code>mcp-gateway/mcp-servers.json</code> 增删服务器（stdio/http 两种）；</li>
+      <li>重启 <code>docker compose restart mcp-gateway</code>；</li>
+      <li>或在 AI 管理中心 MCP Gateway 页增删（写回配置 + 自动重连）。</li>
+    </ol>
+
+    <h2>20.2 管理 Skill（技能包）</h2>
+    <ol>
+      <li><b>上传</b>：AI 管理中心 MCP Gateway 页 → 上传技能 zip（校验含 SKILL.md、防路径穿越）；</li>
+      <li><b>删除</b>：对应技能删除；</li>
+      <li>技能放 <code>mcp-gateway/skills/</code>（含 SKILL.md 的子目录），每次请求自动扫描，无需重启。</li>
+    </ol>
+
+    <h2>20.3 扩展内置工具</h2>
+    <p>在 <code>mcp-gateway/gateway.js</code> 加两步：</p>
+    <pre><code>// ① 工具定义（builtinTools 数组加一项）
+{ name: 'platform_health', description: '查询服务健康状态',
+  inputSchema: { type: 'object', properties: {} } }
+
+// ② 执行逻辑（callBuiltin 加一个分支）
+if (name === 'platform_health') { return '所有服务运行正常'; }</code></pre>
+    <p>改完 <code>docker compose restart mcp-gateway</code>。</p>
+
+    <h2>20.4 维护 skill-market 市场地址</h2>
+    <p>「技能管家」的 <code>market_url</code> 在 <code>mcp-gateway/skills/skill-market/config.json</code> + <code>SKILL.md</code>，必须用主机名（不能用 IP），是部署参数（详见第 11 章）。</p>
+
+    <div class="warn">⚠️ 管理 API 需 <code>X-Admin-Token</code> 头（<code>.env</code> 的 <code>MCP_ADMIN_TOKEN</code>）；未配返回 503、错 token 返回 401。</div>
+
+    <div class="docbox"><span class="label">📖 原厂文档：</span>MCP 协议官方 <span class="url">https://modelcontextprotocol.io</span> · SDK <span class="url">https://github.com/modelcontextprotocol</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch20';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

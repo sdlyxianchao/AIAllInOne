@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제5장 API Key 신청 · AI AllInOne 사용자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">빠른 시작</div>
+      <h1>API Key 신청</h1>
+      <div class="sub">회사 AI 능력을 서드파티 도구에 연결하려면 API Key가 필요합니다.</div>
+    </div>
+
+    <p>회사의 AI 능력을 <b>서드파티 도구</b> (본인 스크립트, 기타 OpenAI 인터페이스 지원 소프트웨어)에 연결하려면 API Key (<code>sk-</code>로 시작하는 키)가 필요합니다.</p>
+
+    <h2>5.1 NewAPI 로그인</h2>
+    <ol>
+      <li>브라우저에서 <code>http://IP:3000</code> 열기;</li>
+      <li>통합 계정으로 로그인 (또는 「원클릭 로그인 / OIDC」로 도메인 계정 사용).</li>
+    </ol>
+
+    <h2>5.2 토큰 생성</h2>
+    <ol>
+      <li>좌측 메뉴 「<b>API 키 / 토큰</b>」;</li>
+      <li>「<b>새 토큰 생성</b>」 클릭, 이름 지정 (예: <code>내-스크립트</code>), 할당량, 만료 시간 설정 가능;</li>
+      <li>저장 후 생성된 <code>sk-xxxx</code> 문자열 복사. <b>한 번만 표시되므로 반드시 즉시 저장</b>.</li>
+    </ol>
+
+    <h2>5.3 클라이언트에 입력</h2>
+    <ul>
+      <li><b>API Base URL</b>: <code>http://IP:3000/v1</code></li>
+      <li><b>API Key</b>: 방금 복사한 <code>sk-xxxx</code></li>
+    </ul>
+
+    <h2>5.4 자주 쓰는 사용 예시</h2>
+    <div class="example">💡 curl로 테스트:<br>
+    <code>curl http://IP:3000/v1/chat/completions -H "Authorization: Bearer sk-xxxx" -H "Content-Type: application/json" -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"안녕하세요"}]}'</code></div>
+
+    <div class="warn">⚠️ 할당량 소진 시 「잔액 부족」 오류, 관리자에게 증액 요청. Key는 본인 계정 비밀번호와 같으므로 <b>다른 사람에게 주지 말고, 코드 저장소에 커밋하지 마세요</b>.</div>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>NewAPI 공식 문서 <span class="url">https://docs.newapi.pro</span> · 공식 웹사이트 <span class="url">https://www.newapi.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

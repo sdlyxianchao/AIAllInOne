@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 27 章 备份与恢复 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第三部分 · 运维篇</div>
+      <h1>备份与恢复</h1>
+      <div class="sub">全量数据每日备份、一键恢复。</div>
+    </div>
+
+    <p><b>入口</b>：AI 管理中心「💾 备份与恢复」页，或命令行 <code>scripts/backup.ps1</code> / <code>restore.ps1</code>。每日 02:00 计划任务自动备份，保留 7 天。</p>
+
+    <h2>27.1 备份项</h2>
+    <table>
+      <tr><th>备份项</th><th>方式</th></tr>
+      <tr><td>NewAPI MySQL</td><td><code>mysqldump</code></td></tr>
+      <tr><td>Dify PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Langfuse PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Ghost / Gitea / Grafana SQLite</td><td>文件复制</td></tr>
+      <tr><td>Keycloak</td><td><b>realm export（JSON）</b></td></tr>
+      <tr><td>配置文件</td><td>文件复制</td></tr>
+    </table>
+
+    <h2>27.2 手动备份</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+
+    <h2>27.3 定时备份（计划任务）</h2>
+    <p>已注册计划任务 <code>AI-Platform-Backup</code>（每天 02:00）。未自动注册可手动建：任务计划程序 → 新建 → 程序 <code>powershell.exe</code>，参数 <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>，触发器每天 02:00。</p>
+    <div class="note">📌 备份默认在 C 盘，建议定期把 <code>C:\AIAllInOne\backups\</code> 同步到另一块盘或对象存储做异地容灾。</div>
+
+    <h2>27.4 恢复</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+    <p>脚本要求输入 <code>yes</code> 确认（加 <code>-Force</code> 跳过，仅脚本/CI 用）。也可在 AI 管理中心「备份与恢复」页点某次备份的「恢复」一键恢复。</p>
+
+    <h2>27.5 关键坑（演练已验证）</h2>
+    <div class="warn">⚠️
+      <ul>
+        <li>Keycloak 必须用 <b>realm export/import（JSON）</b>，pg_dump 还原会丢 default role 关联导致起不来；</li>
+        <li>SQLite 还原后属主是 root，需 chown 到对应 uid（grafana=472、gitea=1000），否则报 readonly；</li>
+        <li>pg_dump 带 <code>--clean --if-exists</code> 避免还原冲突；</li>
+        <li>旧版 backup.ps1 用 <code>Copy-Item</code> 批量复制时点号文件 <code>.env</code> 导致整批静默失败，已改逐文件 <code>-LiteralPath</code>；</li>
+        <li>AI 管理中心备份用 base64 中转 + tar-fs 保证二进制安全（docker exec 的 stdout 走 utf8 会损坏 SQLite .db）。</li>
+      </ul>
+    </div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch27';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

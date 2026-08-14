@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제4장 핵심 서비스 시작 · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제1부 · 배포편</div>
+      <h1>핵심 서비스 시작</h1>
+      <div class="sub">.env 복사, 컨테이너 기동, 서비스별 접근 가능 여부 검증, Ghost의 SQLite 알려진 문제 처리.</div>
+    </div>
+
+    <h2>4.1 .env 복사</h2>
+    <pre><code># PowerShell
+copy .env.windows .env</code></pre>
+    <p>Docker Compose는 기본적으로 <code>.env</code>를 읽습니다.</p>
+
+    <h2>4.2 전체 핵심 서비스 시작</h2>
+    <pre><code>docker compose -f docker-compose.yml up -d</code></pre>
+    <p>최초 실행 시 모든 이미지를 풀링합니다 (약 5–10분, 네트워크 속도에 따라 다름).</p>
+    <table>
+      <tr><th>이미지</th><th>컨테이너</th><th>크기</th></tr>
+      <tr><td><code>quay.io/keycloak/keycloak:25.0</code></td><td>keycloak</td><td>~600MB</td></tr>
+      <tr><td><code>calciumion/new-api</code></td><td>new-api</td><td>~200MB</td></tr>
+      <tr><td><code>mysql:8.0</code></td><td>new-api-db</td><td>~600MB</td></tr>
+      <tr><td><code>redis:7-alpine</code></td><td>new-api-redis</td><td>~40MB</td></tr>
+      <tr><td><code>ghcr.io/berriai/litellm:v1.95.1</code></td><td>litellm</td><td>~1GB</td></tr>
+      <tr><td><code>ghost:5-alpine</code></td><td>ghost</td><td>~150MB</td></tr>
+      <tr><td><code>gitea/gitea</code> + <code>gitea/act_runner</code></td><td>gitea / runner</td><td>~400MB</td></tr>
+      <tr><td><code>nginx:alpine</code></td><td>update-server</td><td>~50MB</td></tr>
+      <tr><td><code>node:20-alpine</code></td><td>admin-portal</td><td>~50MB</td></tr>
+    </table>
+
+    <h2>4.3 컨테이너 상태 확인</h2>
+    <pre><code>docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"</code></pre>
+    <p>예상되는 10개 핵심 컨테이너 모두 <code>Up</code>. 컨테이너가 계속 <code>Restarting</code>이면 <code>docker logs 컨테이너명</code>으로 원인을 확인하세요.</p>
+
+    <h2>4.4 알려진 문제 수정: Ghost의 SQLite 강제</h2>
+    <p><code>ghost</code>가 계속 Restarting이고 로그에 <code>Error: connect ECONNREFUSED &lt;서버-IP&gt;:3306</code>이 나타나면——데이터 볼륨에 MySQL을 가리키는 이전 <code>config.production.json</code>이 남아 있다는 뜻입니다. 수정: compose의 ghost 서비스 <code>environment</code>에 SQLite를 명시적으로 선언하세요:</p>
+    <pre><code>ghost:
+  image: ghost:5-alpine
+  environment:
+    url: http://127.0.0.1:8090
+    database__client: sqlite3
+    database__connection__filename: /var/lib/ghost/content/data/ghost.db
+    database__use_null_pool: "true"
+  volumes:
+    - ghost-data:/var/lib/ghost/content</code></pre>
+    <pre><code>docker compose up -d ghost
+docker logs ghost --tail 20</code></pre>
+    <div class="warn">⚠️ Windows + Docker Desktop WSL2 환경에서는 볼륨 데이터가 WSL2 가상 디스크 안에 있어 호스트 git bash에서 보이지 않으므로 볼륨 내 <code>config.production.json</code>을 직접 삭제할 수 없고, 「환경 변수 덮어쓰기」 방식으로만 해결할 수 있습니다. <code>docker volume rm windows_ghost-data</code>도 실행하지 마세요 (이미 게시된 글이 손실됩니다).</div>
+    <div class="note">✅ 검증: 로그에 <code>Ghost database ready</code> + <code>Ghost booted</code>가 나타나고, <code>curl.exe -I http://127.0.0.1:8090</code>이 200을 반환.</div>
+
+    <h2>4.5 서비스별 접근 가능 여부 검증</h2>
+    <pre><code># Keycloak — 302이면 OK
+curl.exe -I http://127.0.0.1:9090/admin/
+# NewAPI — 200
+curl.exe -I http://127.0.0.1:3000
+# Ghost — 302 (/ghost/ 초기화 페이지로 리다이렉트)
+curl.exe -I http://127.0.0.1:8090
+# Gitea — 200
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:3002
+# Update Server — 403 (빈 디렉터리, nginx 실행 중)
+curl.exe -I http://127.0.0.1:8091
+# AI 관리 센터 — 200
+curl.exe -s -o NUL -w "%{http_code}" http://127.0.0.1:10086</code></pre>
+    <p>LiteLLM은 순수 API로 웹 인터페이스가 없어 컨테이너 내부에서 검증합니다:</p>
+    <pre><code>$K = docker exec litellm printenv LITELLM_MASTER_KEY
+docker exec gitea wget -qO- --header="Authorization: Bearer $K" http://litellm:4000/v1/models
+# 예상 반환 {"data":[{"id":"deepseek-chat",...}]}</code></pre>
+    <div class="note">📌 Docker Desktop WSL2의 HTTP 프록시 때문에 LiteLLM이 호스트에서 접근 불가할 수 있습니다 (HEART/빈 응답). 이는 알려진 버그이며 NewAPI가 컨테이너 이름으로 호출하는 데는 영향을 주지 않습니다.</div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

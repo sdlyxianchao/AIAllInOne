@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 3 Tool 1: DeepChat · AI AllInOne User Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Quick Start</div>
+      <h1>Tool 1: DeepChat</h1>
+      <div class="sub">Desktop AI chat client: download, configuration, chat, and advanced tips.</div>
+    </div>
+
+    <h2>3.1 Download and Install</h2>
+    <ol>
+      <li>Open the portal download center <code>http://IP:8090/downloads/</code>;</li>
+      <li>Download the installer for your system and install it;</li>
+      <li>Launch DeepChat.</li>
+    </ol>
+
+    <h2>3.2 Configure the Model (connect to the company gateway)</h2>
+    <p>On first use you need to tell DeepChat where the model is. The company has unified the models into the <b>NewAPI</b> gateway; you only need to fill in three values:</p>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;margin:12px 0;">
+      <p><span class="step-num">1</span>Open DeepChat → bottom-left <b>Settings (⚙️)</b> → <b>Model Service / Model Provider</b>.</p>
+      <p><span class="step-num">2</span>Add a "<b>custom Provider</b>" or "<b>OpenAI-compatible</b>".</p>
+      <p><span class="step-num">3</span>Fill in the following three items:</p>
+      <table>
+        <tr><th>Field</th><th>What to fill</th></tr>
+        <tr><td>API Base URL</td><td><code>http://IP:3000/v1</code></td></tr>
+        <tr><td>API Key</td><td>the <code>sk-</code> key requested from NewAPI (see Chapter 5)</td></tr>
+        <tr><td>Model</td><td><code>deepseek-chat</code> (company default; other open models are optional)</td></tr>
+      </table>
+      <p><span class="step-num">4</span>Save.</p>
+    </div>
+    <div class="warn">⚠️ <b>Key</b>: the API Base URL must use the <b>intranet IP</b> (<code>http://IP:3000/v1</code>), not <code>localhost</code>, otherwise it can't reach the company server.</div>
+
+    <h2>3.3 Start Chatting</h2>
+    <ol>
+      <li>Click "<b>+ New chat</b>";</li>
+      <li>Type in the input box and press Enter to send;</li>
+      <li>Receiving a reply means the chain is working.</li>
+    </ol>
+    <div class="example">💡 <b>Try it</b>: send "Help me write a polite payment-reminder email to a customer" and see how the AI responds. Then try "Translate the following paragraph into English: ...". DeepChat supports multi-turn conversations; you can keep asking follow-ups and have the AI revise.</div>
+
+    <h2>3.4 Common Features and Tips</h2>
+    <table>
+      <tr><th>Feature</th><th>How to use</th></tr>
+      <tr><td>multi-model switching</td><td>select different models at the top of the chat (if the company has opened several)</td></tr>
+      <tr><td>file read/write / MCP tools</td><td>Settings → MCP enable company tools (e.g. filesystem) to let the AI read local files</td></tr>
+      <tr><td>dark/light theme</td><td>Settings → Appearance</td></tr>
+      <tr><td>network proxy issues</td><td>reports "connection timeout" → Settings → Network/Proxy → change to "No proxy / direct"</td></tr>
+    </table>
+
+    <h2>3.5 Question-Asking Tips</h2>
+    <div class="tip">✅ <b>The more specific the better</b> — provide context, state requirements clearly, and give examples; the AI's answers will be higher quality.</div>
+    <div class="example">💡 Good example: "You are a senior copywriter; write a 200-word product introduction for CTO readers in a professional, restrained style" — much better than "write an introduction".</div>
+    <ul>
+      <li><b>Give a role</b>: "You are a financial expert, help me...";</li>
+      <li><b>Give constraints</b>: "Keep it under 100 words / use a table / do it in three steps";</li>
+      <li><b>Give examples</b>: "Rewrite following this format...";</li>
+      <li><b>Follow up step by step</b>: if not satisfied, say "revise it again" or "use a different tone".</li>
+    </ul>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>DeepChat quick start <span class="url">https://deepchatai.cn/docs/guide/getting-started/</span> · open-source repo <span class="url">https://github.com/ThinkInAIXYZ/deepchat</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

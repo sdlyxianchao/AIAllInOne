@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 9 — Configuração do Dify / Ghost / Gitea · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 1 · Implantação</div>
+      <h1>Configuração do Dify / Ghost / Gitea</h1>
+      <div class="sub">Inicialização e configuração de interconexão de cada um dos três produtos.</div>
+    </div>
+
+    <h2>9.1 Dify: configurar o provedor de modelos</h2>
+    <ol>
+      <li>Abra <code>http://&lt;IP-do-servidor&gt;</code> → defina o e-mail/senha do administrador na primeira vez (e-mail <code>ai_all_in_one_admin@&lt;domínio-empresa&gt;</code>);</li>
+      <li><b>Configurações → Provedores de modelos</b> → OpenAI-API-compatible → adicionar modelo:
+        <ul>
+          <li>Nome do modelo <code>deepseek-chat</code> (conforme o real);</li>
+          <li>API Key: <code>sk-xxx</code> da <code>dify-key</code>;</li>
+          <li>API endpoint: <code>http://host.docker.internal:3000/v1</code>.</li>
+        </ul>
+      </li>
+      <li>Studio → criar assistente de chat → selecionar modelo → enviar mensagem para validar.</li>
+    </ol>
+    <div class="warn">⚠️ O Dify usa <code>host.docker.internal</code> em vez do nome do contêiner, porque o Dify está em sua própria rede, diferente da rede do NewAPI.</div>
+
+    <h2>9.2 Ghost: configurar o portal</h2>
+    <ol>
+      <li>Entrada do painel <code>http://&lt;IP-do-servidor&gt;:8090/ghost/</code> (<b>atenção ao sufixo /ghost/</b>). Na primeira vez, use o assistente setup para criar o administrador (e-mail <code>ai_all_in_one_admin@&lt;domínio-empresa&gt;</code>, senha ≥ 10 caracteres);</li>
+      <li>Automação: execute <code>scripts\ghost-setup.ps1</code> para criar o administrador de uma vez via setup API (equivalente ao assistente; se já inicializado, é pulado automaticamente);</li>
+      <li><b>Tema</b>: Design → temas, ative diretamente os temas Casper/Source embutidos;</li>
+      <li><b>Menu de navegação</b>: Design → menus → crie o «menu principal».</li>
+    </ol>
+    <table>
+      <tr><th>Item de menu</th><th>Tipo</th><th>URL</th></tr>
+      <tr><td>Início</td><td>Página</td><td><code>/</code></td></tr>
+      <tr><td>Notícias</td><td>Categoria</td><td><code>/category/news</code></td></tr>
+      <tr><td>Central de downloads</td><td>Página</td><td><code>/downloads</code></td></tr>
+      <tr><td>Workbench de IA</td><td>Link personalizado</td><td><code>http://&lt;IP-do-servidor&gt;</code></td></tr>
+      <tr><td>Documentação de ajuda</td><td>Categoria</td><td><code>/category/docs</code></td></tr>
+    </table>
+    <ol start="5">
+      <li><b>Página da central de downloads</b>: páginas → criar «Central de downloads» (slug <code>downloads</code>), com o link de intranet do instalador do DeepChat no conteúdo.</li>
+    </ol>
+    <pre><code>## DeepChat Enterprise
+### Windows
+- [DeepChat v1.1.0 (Windows x64)](http://&lt;IP-do-servidor&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+### macOS
+- [DeepChat v1.1.0 (macOS x64)](http://&lt;IP-do-servidor&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)</code></pre>
+    <div class="warn">⚠️ Não clique em «Registrar» na página inicial <code>/</code> — é o registro de visitantes/assinantes (dá 500 sem SMTP configurado); a entrada do administrador é <code>/ghost/</code>. Não instale temas da versão mais recente pelo GitHub (podem ser compatíveis com Ghost 6.x, e no 5.x dão incompatible).</div>
+
+    <h2>9.3 Gitea: inicialização e registro do Runner</h2>
+    <ol>
+      <li>Abra <code>http://&lt;IP-do-servidor&gt;:3002</code> → assistente de instalação (banco SQLite já pré-configurado) → crie o administrador (nome de usuário <code>ai_all_in_one_admin</code>);</li>
+      <li>Avatar no canto superior direito → <b>Site Administration → Actions</b> → confirme que Enabled Actions está ativado;</li>
+      <li><b>Runners → Create new Runner</b> → copie o Registration Token;</li>
+      <li>Preencha o Token em <code>GITEA_RUNNER_TOKEN</code> no <code>.env</code> e reconstrua o Runner:</li>
+    </ol>
+    <pre><code># ⚠️ Deve usar up -d, não restart (restart não relê o token do .env)
+docker compose -f docker-compose.yml up -d gitea-runner
+docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
+    <div class="danger">⚠️ Armadilha 1: o erro <code>readonly database</code> geralmente é porque o <code>gitea.db</code> está com dono root; apague o db com dono root para que ele seja recriado com o usuário git.<br>
+    ⚠️ Armadilha 2: <code>ROOT_URL</code> deve ser <code>http://&lt;IP-do-servidor&gt;:3002/</code>, senão os links de repositório gerados ficam localhost e os funcionários não conseguem abrir.</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>Dify <span class="url">https://docs.dify.ai</span> · Ghost <span class="url">https://ghost.org/docs/</span> · Gitea (em chinês) <span class="url">https://docs.gitea.com/zh-cn</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch09';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

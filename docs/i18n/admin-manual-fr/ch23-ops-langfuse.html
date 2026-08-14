@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 23 · Observabilité LLM (Langfuse) · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Deuxième partie · Administration</div>
+      <h1>Observabilité LLM (Langfuse)</h1>
+      <div class="sub">Tracer le prompt, la réponse, la latence, les tokens et le coût de chaque appel au modèle.</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/langfuse-favicon.ico" alt="Langfuse"></span><b>Accès</b> : <span class="entry">http://&lt;IP-du-serveur&gt;:3010</span> (connexion SSO automatique, l'entrée du Centre d'administration IA pointe vers <code>/auth/sso-initiate?provider=KEYCLOAK</code>).</p>
+
+    <h2>23.1 Composants</h2>
+    <table>
+      <tr><th>Composant</th><th>Usage</th></tr>
+      <tr><td>langfuse</td><td>UI Web + affichage des traces (3010)</td></tr>
+      <tr><td>langfuse-worker</td><td>Traitement asynchrone des événements</td></tr>
+      <tr><td>langfuse-postgres</td><td>Stockage des métadonnées</td></tr>
+      <tr><td>langfuse-clickhouse</td><td>Stockage des événements / traces</td></tr>
+      <tr><td>langfuse-minio</td><td>Stockage des pièces jointes / médias S3</td></tr>
+      <tr><td>langfuse-redis</td><td>File d'attente</td></tr>
+    </table>
+    <p>LiteLLM remonte automatiquement via <code>success_callback: ["langfuse"]</code> (<code>LANGFUSE_*</code> de <code>.env</code>).</p>
+
+    <h2>23.2 Consulter les traces</h2>
+    <ol>
+      <li>Connectez-vous à Langfuse → choisissez l'organisation <code>AI All In One</code> / le projet <code>AI Platform</code> ;</li>
+      <li>La liste Traces montre chaque appel ; cliquez pour voir le prompt/réponse/modèle/latence/tokens/coût ;</li>
+      <li>Utilisez Session pour associer les conversations multi-tours.</li>
+    </ol>
+
+    <h2>23.3 Dépannage</h2>
+    <div class="warn">⚠️ Pièges clés :
+      <ul>
+        <li>Il faut définir <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code> (sur web et worker), sinon l'ancien SDK échoue à remonter <code>trace-create</code> et les données ne sont pas visibles ;</li>
+        <li>Connexion SSO sans données visibles : le compte SSO (e-mail AD) diffère du compte d'initialisation ; Langfuse crée alors automatiquement un compte n'appartenant à aucune organisation. Correction (ajouter l'utilisateur SSO à l'organisation) :</li>
+      </ul>
+    </div>
+    <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
+"INSERT INTO organization_memberships (id, org_id, user_id, role) \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>documentation officielle de Langfuse <span class="url">https://langfuse.com/docs</span> · auto-hébergement <span class="url">https://langfuse.com/self-hosting</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch23';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

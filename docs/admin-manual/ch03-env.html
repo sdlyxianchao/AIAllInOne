@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 3 Configuration Files and Environment Variables · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 1 · Deployment</div>
+      <h1>Configuration Files and Environment Variables</h1>
+      <div class="sub">The three core configuration files + the full set of environment variables — which to configure now and which to configure later.</div>
+    </div>
+
+    <h2>3.1 The Three Core Configuration Files</h2>
+    <table>
+      <tr><th>File</th><th>Purpose</th><th>Needs modification?</th></tr>
+      <tr><td><code>.env.windows</code></td><td>All passwords and external API Keys</td><td><b>Must modify</b>: fill in the DeepSeek API Key; other providers as needed</td></tr>
+      <tr><td><code>litellm-config.yaml</code></td><td>LiteLLM model list + PII redaction rules</td><td>Usually unchanged (if only using DeepSeek, the OpenAI/Claude entries can be removed)</td></tr>
+      <tr><td><code>docker-compose.yml</code></td><td>Core service orchestration</td><td>Already preconfigured (includes Keycloak <code>KC_HOSTNAME</code> + persistent volumes)</td></tr>
+    </table>
+
+    <h2>3.2 Environment Variable Classification Overview</h2>
+    <p>Open <code>.env</code> (copied from <code>.env.windows</code>) and configure by priority.</p>
+    <table>
+      <tr><th>Variable</th><th>Priority</th><th>Description</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>🔴 immediate</td><td>External LLM API Key; without it the chain won't work</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>🔴 immediate</td><td>LiteLLM internal auth key, needed by NewAPI</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>🔴 immediate</td><td>MySQL root password; should not change after initial creation</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>🔴 immediate</td><td>Keycloak admin password</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>🔴 immediate</td><td>NewAPI session encryption, random string</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>🔴 immediate</td><td>NewAPI data encryption, random string</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>🔴 immediate</td><td>AI Admin Center Global Admin password</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>🔴 immediate</td><td>AI Admin Center session encryption, random string</td></tr>
+      <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td>🟡 can configure later</td><td>First create an OIDC Client in Keycloak to get the Secret (see Chapter 12)</td></tr>
+      <tr><td><code>GITEA_RUNNER_TOKEN</code></td><td>🟡 can configure later</td><td>First start Gitea and get the Token from the admin (see Chapter 9)</td></tr>
+      <tr><td><code>OPENAI_API_KEY</code> / <code>ANTHROPIC_API_KEY</code></td><td>🟢 as needed</td><td>Uncomment when needed, and update <code>litellm-config.yaml</code> accordingly</td></tr>
+      <tr><td><code>GLOBAL_WEB_RATE_LIMIT</code> and other rate-limit items</td><td>⚪ default</td><td>Set 999999 during testing; lower appropriately in production</td></tr>
+      <tr><td><code>DEFAULT_QUOTA</code></td><td>⚪ default</td><td>Default quota for new users (USD); setting 100 gives new users $100</td></tr>
+      <tr><td><code>GENERATE_DEFAULT_TOKEN</code></td><td>⚪ default</td><td>Auto-generate an initial Key on new user registration; set true so users can use it right after login</td></tr>
+      <tr><td><code>TZ</code> / <code>KEYCLOAK_ADMIN</code> / <code>ADMIN_USERNAME</code> / <code>ADMIN_EMAIL</code></td><td>⚪ default</td><td>Defaults are fine</td></tr>
+    </table>
+
+    <h2>3.3 🔴 Immediate Configuration (must complete before first startup)</h2>
+    <table>
+      <tr><th>Variable</th><th>Description</th><th>How to obtain</th><th>Format</th></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code></td><td>DeepSeek cloud LLM Key</td><td>Register at <span class="url">https://platform.deepseek.com</span> → API Keys</td><td><code>sk-xxxx</code></td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>LiteLLM internal admin key (not an external LLM Key)</td><td>Randomly generate (see below)</td><td><code>sk-litellm-xxxx</code></td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td>MySQL password</td><td>Choose your own; <b>should not change</b> after initial creation</td><td>any</td></tr>
+      <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td>Keycloak admin password</td><td>Choose your own, ≥ 8 characters</td><td>any</td></tr>
+      <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td>NewAPI session encryption</td><td>Randomly generate</td><td>32 characters</td></tr>
+      <tr><td><code>NEWAPI_CRYPTO_SECRET</code></td><td>NewAPI data encryption</td><td>Randomly generate</td><td>32 characters</td></tr>
+      <tr><td><code>ADMIN_PASSWORD</code></td><td>AI Admin Center admin password</td><td>Choose your own, ≥ 8 characters</td><td>any</td></tr>
+      <tr><td><code>SESSION_SECRET</code></td><td>AI Admin Center session encryption</td><td>Randomly generate</td><td>64 characters</td></tr>
+    </table>
+    <p>Generate a random string (PowerShell):</p>
+    <pre><code>-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | % {[char]$_})</code></pre>
+
+    <h3>Example of Filling In the API Key</h3>
+    <pre><code># DeepSeek is configured by default (uncomment and fill in the Key)
+DEEPSEEK_API_KEY=sk-your-real-DeepSeek-key
+
+# Uncomment when OpenAI / Claude are needed, and also uncomment the corresponding model block in litellm-config.yaml
+# OPENAI_API_KEY=sk-...
+# ANTHROPIC_API_KEY=sk-ant-...</code></pre>
+
+    <h2>3.4 Password Change Policy</h2>
+    <div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> is tied to the already-created database; changing it requires deleting the corresponding volume and recreating it (data will be lost), so it is best to decide it once on the first setup.<br>
+    Management passwords such as <code>KEYCLOAK_ADMIN_PASSWORD</code> and <code>ADMIN_PASSWORD</code> can be changed in each product's admin console; after changing, update <code>.env</code> accordingly (just a reminder; does not affect operation).</div>
+
+    <h2>3.5 litellm-config.yaml Notes</h2>
+    <ul>
+      <li><code>model_list</code> — defines the available external models; NewAPI calls them via LiteLLM. By default only <code>deepseek-chat</code> is enabled;</li>
+      <li><code>general_settings.master_key</code> — LiteLLM admin key; reads <code>LITELLM_MASTER_KEY</code> from <code>.env</code>;</li>
+      <li>PII redaction (Presidio) is currently <b>temporarily commented out</b> (the new LiteLLM guardrail API change is incompatible); see Chapter 25 for enabling it later;</li>
+      <li>Use the stable version <code>v1.95.1</code> (<code>main-latest</code> has known bugs).</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch03';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

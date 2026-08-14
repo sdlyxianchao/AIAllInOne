@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل الخامس والعشرون إخفاء بيانات PII (Presidio) · دليل مدير AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">الجزء الثاني · قسم الإدارة</div>
+      <h1>إخفاء بيانات PII (Presidio)</h1>
+      <div class="sub">إخفاء المعلومات الحساسة تلقائيًا قبل خروجها من الشبكة الداخلية.</div>
+    </div>
+
+    <h2>25.1 طبقتا الإخفاء</h2>
+    <table>
+      <tr><th>الطبقة</th><th>القدرة</th></tr>
+      <tr><td>التعبيرات النمطية المدمجة في LiteLLM (<code>litellm_content_filter</code>)</td><td>أرقام الهاتف وبطاقات الهوية والبطاقات المصرفية والبريد الإلكتروني ورمز الائتمان الاجتماعي الموحد وجوازات السفر وIPv4 وغيرها؛ عند التطابق تُستبدل بـ <code>[xxx_REDACTED]</code>؛ وعند مطابقة قائمة الكلمات الحساسة السوداء يُرفض الطلب بـ BLOCK</td></tr>
+      <tr><td>Microsoft Presidio</td><td>كيانات أدق تفصيلًا (أسماء الأشخاص الإنجليزية والبريد الإلكتروني وغيرها)، <code>presidio-analyzer</code> 5002 / <code>presidio-anonymizer</code> 5001</td></tr>
+    </table>
+
+    <h2>25.2 قواعد التعبيرات النمطية المدمجة</h2>
+    <table>
+      <tr><th>القاعدة</th><th>التعبير النمطي</th><th>النوع</th></tr>
+      <tr><td>رقم الهاتف الصيني</td><td><code>\b1[3-9]\d{9}\b</code></td><td>cn_mobile</td></tr>
+      <tr><td>رقم بطاقة الهوية</td><td><code>\b\d{17}[\dXx]\b</code></td><td>cn_id</td></tr>
+      <tr><td>رقم البطاقة المصرفية</td><td><code>\b\d{16,19}\b</code></td><td>bank_card</td></tr>
+      <tr><td>البريد الإلكتروني</td><td>prebuilt <code>email</code></td><td>email</td></tr>
+      <tr><td>رمز الائتمان الاجتماعي الموحد</td><td><code>\b[0-9A-HJ-NPQRTUWXY]{18}\b</code></td><td>cn_credit_code</td></tr>
+      <tr><td>رقم جواز السفر</td><td><code>\b[EG]\d{8}\b</code></td><td>cn_passport</td></tr>
+      <tr><td>IPv4</td><td><code>\b\d{1,3}(\.\d{1,3}){3}\b</code></td><td>ip_address</td></tr>
+    </table>
+    <p>تُضاف وتُحذف القائمة السوداء للكلمات الحساسة في <code>blocked_words</code> داخل <code>litellm-config.yaml</code> حسب حاجة الشركة الفعلية (<code>أسرار داخلية</code> و<code>أسرار تجارية</code> وغيرها).</p>
+
+    <h2>25.3 تفعيل Presidio (معلّق حاليًا)</h2>
+    <p>بسبب تغيير guardrail API في الإصدار الأحدث من LiteLLM، أصبح مقطع Presidio معلّقًا حاليًا. نقاط مهمة للتفعيل:</p>
+    <ul>
+      <li>أضف <code>default_on: true</code> إلى guardrails لتفعيلها عالميًا؛</li>
+      <li>يجب أن يُكتب في متغيري البيئة الخاصين بنقاط النهاية <code>PRESIDIO_ANALYZER_API_BASE</code> / <code>PRESIDIO_ANONYMIZER_API_BASE</code> عنوان base URL فقط (يضيف LiteLLM <code>/analyze</code> و<code>/anonymize</code> تلقائيًا؛ أما كتابة المسار فستؤدي إلى <code>/analyze/analyze</code> وخطأ 404).</li>
+    </ul>
+
+    <div class="warn">⚠️ حجم الصورة نحو 965MB وسحبها داخل الصين بطيء جدًا (نحو ساعة بحسب القياس الفعلي)؛ وإن تعذر السحب فيمكن الاكتفاء مؤقتًا بالتعبيرات النمطية المدمجة (التي تغطي بالفعل بيانات PII الأساسية الصينية).</div>
+
+    <h2>25.4 التحقق</h2>
+    <p>أرسل طلبًا يتضمن رقم هاتف/بريدًا إلكترونيًا ← تُستبدل القيمة الأصلية في رد النموذج بـ <code>[REDACTED]</code>؛ وأرسل طلبًا يتضمن «أسرار داخلية» ← يعود مباشرة <code>Content blocked</code>.</p>
+
+    <div class="docbox"><span class="label">📖 الوثائق الرسمية:</span>Microsoft Presidio <span class="url">https://microsoft.github.io/presidio/</span> · المصدر <span class="url">https://github.com/microsoft/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch25';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

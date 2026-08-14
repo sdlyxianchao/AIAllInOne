@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 17 · Administration quotidienne de Dify · Manuel de l'administrateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Deuxième partie · Administration</div>
+      <h1>Administration quotidienne de Dify</h1>
+      <div class="sub">Plateforme d'applications IA : applications, bases de connaissances, fournisseurs de modèles, autorisations des membres, publication.</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/dify-logo.svg" alt="Dify"></span><b>Accès</b> : <span class="entry">http://&lt;IP-du-serveur&gt;</span> (port 80, compose officiel autonome ; la montée de version et la maintenance s'effectuent séparément dans <code>dify/docker/</code>).</p>
+
+    <h2>17.1 Gestion des applications (Studio)</h2>
+    <ol>
+      <li><b>Créer une application</b> : Studio → créer une application vide → choisir le type (assistant de chat / Agent / workflow / génération de texte) ;</li>
+      <li><b>Orchestration</b> : glisser-déposer des nœuds pour composer les prompts, outils, bases de connaissances, variables ;</li>
+      <li><b>Débogage</b> : « Aperçu » en haut à droite pour lancer le débogage ;</li>
+      <li><b>Publication</b> : après validation du débogage, « Publier » → générer un lien de partage ou intégrer l'application Web.</li>
+    </ol>
+
+    <h2>17.2 Gestion des bases de connaissances</h2>
+    <ol>
+      <li>Bases de connaissances → créer une base ;</li>
+      <li>Téléverser des documents (Word / PDF / Markdown / lien de page Web), choisir la règle de segmentation + le mode d'indexation (haute qualité / économique) ;</li>
+      <li>« Ajouter » cette base dans l'application pour que l'IA réponde à partir des documents.</li>
+    </ol>
+    <div class="note">📌 Le contenu de la base de connaissances est utilisé par l'IA pour répondre ; ne téléversez pas de documents confidentiels (respectez la politique de classification des données).</div>
+
+    <h2>17.3 Fournisseurs de modèles</h2>
+    <ul>
+      <li><b>Ajouter un modèle</b> : Paramètres → Fournisseurs de modèles → OpenAI-API-compatible → API endpoint <code>http://host.docker.internal:3000/v1</code> (via NewAPI) + <code>dify-key</code> ;</li>
+      <li><b>Réglage des modèles système</b> : définir les modèles de chat / raisonnement / embedding par défaut.</li>
+    </ul>
+
+    <h2>17.4 Membres et autorisations</h2>
+    <ul>
+      <li><b>Membres</b> : inviter des membres dans l'espace de travail, définir les rôles Owner/Admin/Editor/Normal ;</li>
+      <li><b>Méthode de connexion</b> : Paramètres → Méthode de connexion → possibilité d'intégrer OIDC (Keycloak) pour le SSO.</li>
+    </ul>
+
+    <h2>17.5 Mise à niveau et maintenance</h2>
+    <pre><code>cd dify\docker
+git pull                          # Récupérer la dernière version
+docker compose pull               # Récupérer les nouvelles images
+docker compose up -d              # Reconstruire</code></pre>
+    <div class="warn">⚠️ Pièges clés : ① la WebSocket <code>NEXT_PUBLIC_SOCKET_URL</code> doit être réglée sur l'IP intranet ; ② le mot de passe de connexion est encodé en base64 ; ③ en cas de mot de passe oublié, utilisez <code>docker exec docker-api-1 flask reset-password</code> (≥ 8 caractères).</div>
+
+    <div class="docbox"><span class="label">📖 Documentation officielle :</span>documentation officielle de Dify <span class="url">https://docs.dify.ai</span> · auto-hébergé <span class="url">https://docs.dify.ai/getting-started/install-self-hosted</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch17';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

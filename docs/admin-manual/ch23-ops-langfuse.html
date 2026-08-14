@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 23 LLM Observability (Langfuse) · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 2 · Administration</div>
+      <h1>LLM Observability (Langfuse)</h1>
+      <div class="sub">Trace the prompt, response, latency, tokens, and cost of every model call.</div>
+    </div>
+
+    <p><span class="logo"><img src="../images/langfuse-favicon.ico" alt="Langfuse"></span><b>Entry</b>: <span class="entry">http://&lt;server-IP&gt;:3010</span> (SSO auto-login; the AI Admin Center entry points to <code>/auth/sso-initiate?provider=KEYCLOAK</code>).</p>
+
+    <h2>23.1 Components</h2>
+    <table>
+      <tr><th>Component</th><th>Purpose</th></tr>
+      <tr><td>langfuse</td><td>Web UI + trace display (3010)</td></tr>
+      <tr><td>langfuse-worker</td><td>asynchronous event processing</td></tr>
+      <tr><td>langfuse-postgres</td><td>metadata storage</td></tr>
+      <tr><td>langfuse-clickhouse</td><td>event/trace data storage</td></tr>
+      <tr><td>langfuse-minio</td><td>S3 attachment/media storage</td></tr>
+      <tr><td>langfuse-redis</td><td>queue</td></tr>
+    </table>
+    <p>LiteLLM auto-reports via <code>success_callback: ["langfuse"]</code> (<code>LANGFUSE_*</code> in <code>.env</code>).</p>
+
+    <h2>23.2 View Traces</h2>
+    <ol>
+      <li>Log in to Langfuse → select organization <code>AI All In One</code> / project <code>AI Platform</code>;</li>
+      <li>In the Traces list view each call; click in to see prompt/response/model/latency/token/cost;</li>
+      <li>Use Session to correlate multi-turn conversations.</li>
+    </ol>
+
+    <h2>23.3 Troubleshooting</h2>
+    <div class="warn">⚠️ Key pitfalls:
+      <ul>
+        <li>Must set <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code> (on both web and worker), otherwise the old SDK's <code>trace-create</code> reporting fails and no data shows;</li>
+        <li>SSO login shows no data: the SSO account (AD email) differs from the initialization account, so Langfuse auto-creates a new account that belongs to no organization. Fix (add the SSO user to the organization):</li>
+      </ul>
+    </div>
+    <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
+"INSERT INTO organization_memberships (id, org_id, user_id, role) \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>Langfuse official docs <span class="url">https://langfuse.com/docs</span> · self-hosting <span class="url">https://langfuse.com/self-hosting</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch23';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

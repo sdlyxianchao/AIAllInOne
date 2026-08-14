@@ -1,0 +1,22 @@
+# act_runner 配置 — 让 job 容器能访问宿主机 Docker（操作 update-server / ghost）
+runner:
+  file: .runner
+  capacity: 1
+  timeout: 3h
+  insecure: false
+  fetch_timeout: 5s
+  fetch_interval: 2s
+
+container:
+  # 让 job 容器加入 ai-platform 网络，才能解析 gitea/ghost/update-server 等容器名
+  network: "ai-platform"
+  # docker.sock 由 act_runner 自动挂载（无需手动加，否则报 Duplicate mount point）
+  options: ""
+  workdir_parent: ""
+  valid_volumes: []
+  docker_host: ""
+  force_pull: true
+  force_rebuild: false
+
+host:
+  workdir_parent: ""

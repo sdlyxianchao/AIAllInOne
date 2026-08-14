@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 17 Dify Day-to-Day Administration · AI AllInOne Admin Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Part 2 · Administration</div>
+      <h1>Dify Day-to-Day Administration</h1>
+      <div class="sub">AI application platform: apps, knowledge bases, model providers, member permissions, publishing.</div>
+    </div>
+
+    <p><span class="logo"><img src="../images/dify-logo.svg" alt="Dify"></span><b>Entry</b>: <span class="entry">http://&lt;server-IP&gt;</span> (port 80, independent official compose; upgrade/maintenance is done separately in <code>dify/docker/</code>).</p>
+
+    <h2>17.1 App Management (Studio)</h2>
+    <ol>
+      <li><b>Create app</b>: Studio → create blank app → choose type (chat assistant / Agent / workflow / text generation);</li>
+      <li><b>Orchestrate</b>: drag nodes to orchestrate prompts, tools, knowledge bases, and variables;</li>
+      <li><b>Debug</b>: click "Preview" in the top-right to run and debug;</li>
+      <li><b>Publish</b>: after debugging passes, "Publish" → generate a share link or embed a web app.</li>
+    </ol>
+
+    <h2>17.2 Knowledge Base Management</h2>
+    <ol>
+      <li>Knowledge Base → create knowledge base;</li>
+      <li>Upload documents (Word / PDF / Markdown / web links), choose segmentation rules + indexing mode (high quality / economical);</li>
+      <li>"Add" the knowledge base in an app and the AI can answer based on the documents.</li>
+    </ol>
+    <div class="note">📌 Knowledge base content will be used by the AI to answer; do not upload confidential material (follow the data classification rules).</div>
+
+    <h2>17.3 Model Providers</h2>
+    <ul>
+      <li><b>Add model</b>: Settings → Model Providers → OpenAI-API-compatible → API endpoint <code>http://host.docker.internal:3000/v1</code> (via NewAPI) + <code>dify-key</code>;</li>
+      <li><b>System model settings</b>: set the default chat / reasoning / embedding models.</li>
+    </ul>
+
+    <h2>17.4 Members and Permissions</h2>
+    <ul>
+      <li><b>Members</b>: invite members into the workspace and set Owner/Admin/Editor/Normal roles;</li>
+      <li><b>Login method</b>: Settings → Login method → can integrate OIDC (Keycloak) for SSO.</li>
+    </ul>
+
+    <h2>17.5 Upgrade and Maintenance</h2>
+    <pre><code>cd dify\docker
+git pull                          # pull the latest version
+docker compose pull               # pull new images
+docker compose up -d              # rebuild</code></pre>
+    <div class="warn">⚠️ Key pitfalls: ① WebSocket <code>NEXT_PUBLIC_SOCKET_URL</code> must be set to the intranet IP; ② the login password is base64-encoded; ③ if you forget the password, use <code>docker exec docker-api-1 flask reset-password</code> (≥ 8 characters).</div>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>Dify official docs <span class="url">https://docs.dify.ai</span> · self-hosted <span class="url">https://docs.dify.ai/getting-started/install-self-hosted</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch17';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 5 — Solicitar API Key · Manual do Usuário do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Início rápido</div>
+      <h1>Solicitar API Key</h1>
+      <div class="sub">Para integrar a capacidade de IA da empresa a ferramentas de terceiros, é preciso uma API Key.</div>
+    </div>
+
+    <p>Se você quer integrar a capacidade de IA da empresa a <b>ferramentas de terceiros</b> (seus próprios scripts, outros softwares compatíveis com a interface OpenAI), precisa de uma API Key (chave que começa com <code>sk-</code>).</p>
+
+    <h2>5.1 Entrar no NewAPI</h2>
+    <ol>
+      <li>Abra <code>http://IP:3000</code> no navegador;</li>
+      <li>Entre com a conta unificada (ou clique em «login com um clique / OIDC» para usar a conta de domínio).</li>
+    </ol>
+
+    <h2>5.2 Criar um token</h2>
+    <ol>
+      <li>Menu à esquerda «<b>API Keys / tokens</b>»;</li>
+      <li>Clique em «<b>criar token</b>», dê um nome (como <code>meu script</code>), podendo definir cota e expiração;</li>
+      <li>Após salvar, copie a string <code>sk-xxxx</code> gerada. <b>É exibida só uma vez, salve imediatamente</b>.</li>
+    </ol>
+
+    <h2>5.3 Preencher no cliente</h2>
+    <ul>
+      <li><b>API Base URL</b>: <code>http://IP:3000/v1</code></li>
+      <li><b>API Key</b>: a <code>sk-xxxx</code> copiada há pouco</li>
+    </ul>
+
+    <h2>5.4 Exemplos de uso comum</h2>
+    <div class="example">💡 Testar com curl:<br>
+    <code>curl http://IP:3000/v1/chat/completions -H "Authorization: Bearer sk-xxxx" -H "Content-Type: application/json" -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"olá"}]}'</code></div>
+
+    <div class="warn">⚠️ Quando a cota acabar, aparecerá «saldo insuficiente»; fale com o administrador para aumentar a cota. A Key equivale à sua senha de conta: <b>não envie a ninguém e não a envie para repositórios de código</b>.</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>documentação oficial do NewAPI <span class="url">https://docs.newapi.pro</span> · site oficial <span class="url">https://www.newapi.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

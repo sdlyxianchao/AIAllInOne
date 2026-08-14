@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 6 章 Keycloak：Realm、用户与 AD · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>Keycloak：Realm、用户与 AD</h1>
+      <div class="sub">创建 Realm、建本地账号、或从 Active Directory 导入域账号——所有产品 SSO 的基础。</div>
+    </div>
+
+    <div class="note">📌 访问：宿主机 <code>http://127.0.0.1:9090</code>，内网 <code>http://&lt;服务器IP&gt;:9090</code>。数据存命名卷 <code>keycloak-data</code>，容器重建不丢。凭据见 <code>.env.windows</code> 的 <code>KEYCLOAK_ADMIN</code> / <code>KEYCLOAK_ADMIN_PASSWORD</code>。</div>
+
+    <h2>6.1 创建 Realm</h2>
+    <ol>
+      <li>浏览器打开 <code>http://127.0.0.1:9090</code> → Administration Console → 管理员登录；</li>
+      <li>左上角下拉 → <b>Create Realm</b> → Realm name 填 <code>enterprise-ai</code> → Create。</li>
+    </ol>
+
+    <h2>6.2 方式 A：本地创建账号（无 AD 的小团队/测试）</h2>
+    <ol>
+      <li><b>Groups</b> → Create Group → <code>ai-admin</code>；再建 <code>ai-user</code>；</li>
+      <li><b>Users</b> → Add user → 用户名 → Create；</li>
+      <li>Credentials 标签 → 设密码 → Temporary 关闭；</li>
+      <li>Groups 标签 → 加入 <code>ai-user</code> 组。</li>
+    </ol>
+
+    <h2>6.3 方式 B：从 Active Directory 导入账号（推荐）</h2>
+    <p>公司已有 Windows AD 域控时，员工用域账号登录，无需在 Keycloak 手动建号。前置：Docker 容器到域控网络已互通（网络拓扑、Hyper-V Internal Switch、端口转发见《Keycloak AD 集成指南》 <code>windows-ad-integration.html</code>）。</p>
+    <div class="note">📌 需要的 AD 账号：服务账号 <code>svc_keycloak</code>（密码永不过期，用于 LDAP 绑定）+ 2 个测试域用户（验证同步）。</div>
+
+    <h3>创建 LDAP 用户联合</h3>
+    <ol>
+      <li>enterprise-ai Realm → 左侧 <b>User Federation</b> → Add provider → <b>ldap</b>；</li>
+      <li>按下表填写。</li>
+    </ol>
+    <table>
+      <tr><th>配置项</th><th>值</th><th>说明</th></tr>
+      <tr><td>Vendor</td><td><b>Active Directory</b></td><td>选 AD，不要选 Other（否则 objectGUID 不识别）</td></tr>
+      <tr><td>Connection URL</td><td><code>ldap://host.docker.internal:389</code></td><td>Hyper-V 经端口转发；生产填 <code>ldap://dc.公司域:389</code></td></tr>
+      <tr><td>Enable StartTLS</td><td><b>Off</b></td><td>LDAP 389 或 LDAPS 636</td></tr>
+      <tr><td>Bind type</td><td><b>simple</b></td><td>用户名+密码认证</td></tr>
+      <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>必须 LDAP DN 格式</b>，不用 <s>DOMAIN\用户</s></td></tr>
+      <tr><td>Bind credentials</td><td><code>svc_keycloak 密码</code></td><td>见 <code>.env.windows</code></td></tr>
+      <tr><td>Edit mode</td><td><b>READ_ONLY</b></td><td>只读，不写回 AD</td></tr>
+      <tr><td>Users DN</td><td><code>CN=Users,DC=testcompany,DC=local</code></td><td>有子 OU 时改 <code>DC=testcompany,DC=local</code></td></tr>
+      <tr><td>Username LDAP attribute</td><td><code>sAMAccountName</code></td><td><b>不要填 cn</b></td></tr>
+      <tr><td>RDN LDAP attribute</td><td><code>cn</code></td><td>条目命名属性</td></tr>
+      <tr><td>UUID LDAP attribute</td><td><code>objectGUID</code></td><td>AD 不可变唯一标识</td></tr>
+      <tr><td>User object classes</td><td><code>person, organizationalPerson, user</code></td><td>逗号分隔</td></tr>
+      <tr><td>Search scope</td><td><b>Subtree</b></td><td><b>不要选 One Level</b>（否则子 OU 搜不到）</td></tr>
+      <tr><td>Pagination</td><td><b>On</b></td><td>用户多时分批拉取</td></tr>
+      <tr><td>Referral</td><td><b>ignore</b></td><td>避免跟到不存在的域控</td></tr>
+      <tr><td>Import users</td><td><b>On</b></td><td>全量同步导入</td></tr>
+      <tr><td>Sync Registrations</td><td><b>On</b></td><td>首登即时同步</td></tr>
+    </table>
+    <p>Save → <b>Synchronize all users</b> → 等待同步完成。</p>
+
+    <div class="warn">⚠️ 常见填错：
+      <ul>
+        <li>Bind DN 用 <b>LDAP 格式</b>（<code>CN=svc_keycloak,CN=Users,DC=xxx</code>），不是 <s>DOMAIN\用户</s>；</li>
+        <li>Username LDAP attribute = <code>sAMAccountName</code>，不是 <code>cn</code>；</li>
+        <li>Search scope = <b>Subtree</b>；</li>
+        <li><b>CN 带空格原样保留</b>：若显示名带空格（如 <code>ai all in one admin</code> 中间是空格），Bind DN 必须写 <code>CN=ai all in one admin,...</code>，写成下划线会连不上。</li>
+      </ul>
+    </div>
+
+    <h3>验证 AD 登录</h3>
+    <ol>
+      <li>无痕窗口打开 <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code>；</li>
+      <li>用域账号登录（用户名 <code>aitest1</code> 或 <code>aitest1@chxia.lab</code> UPN 均可）；</li>
+      <li>成功跳转 Account Console 即通过。</li>
+    </ol>
+
+    <h2>6.4 其它企业身份源（附录 N 摘要）</h2>
+    <p>Keycloak 还支持多种身份源，全部接在同一个 <code>enterprise-ai</code> Realm 下：</p>
+    <table>
+      <tr><th>身份源</th><th>接入方式</th><th>要点</th></tr>
+      <tr><td>Microsoft Entra ID（原 Azure AD）</td><td>Identity Providers → OpenID Connect v1.0</td><td>Azure 注册应用拿 client id/secret，redirect URI <code>/realms/enterprise-ai/broker/entra-id/endpoint</code></td></tr>
+      <tr><td>Google Workspace</td><td>Identity Providers → Google（内置）</td><td>可用 Mapper 加 <code>hd=域名</code> 限制域</td></tr>
+      <tr><td>GitHub</td><td>Identity Providers → GitHub（内置）</td><td>OAuth App 回调 <code>/broker/github/endpoint</code></td></tr>
+      <tr><td>通用 LDAP（OpenLDAP/FreeIPA）</td><td>User Federation → ldap</td><td>Vendor 选 Other，Username attribute 用 <code>uid</code></td></tr>
+      <tr><td>通用 SAML 2.0（Okta/ADFS）</td><td>Identity Providers → SAML v2.0</td><td>贴 IdP 元数据 URL 自动填充</td></tr>
+    </table>
+    <div class="tip">✅ 多身份源共存：可在 Authentication → Browser flow 加 Identity Provider Redirector，按邮箱域名自动选 IdP（<code>@公司.com</code>→AD，<code>@公司.onmicrosoft.com</code>→Entra ID）。</div>
+
+    <div class="docbox"><span class="label">📖 原厂文档：</span>Keycloak 官方文档 <span class="url">https://www.keycloak.org/documentation</span> · 服务器管理指南 <span class="url">https://www.keycloak.org/server/</span> · LDAP 联合 <span class="url">https://www.keycloak.org/docs/latest/server_admin/#_ldap</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

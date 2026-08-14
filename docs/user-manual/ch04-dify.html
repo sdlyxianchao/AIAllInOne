@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 4 Tool 2: Dify · AI AllInOne User Manual</title>
+<link rel="stylesheet" href="../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Quick Start</div>
+      <h1>Tool 2: Dify</h1>
+      <div class="sub">Web AI app platform: use ready-made apps and build knowledge base Q&amp;A.</div>
+    </div>
+
+    <h2>4.1 Log In to Dify</h2>
+    <ol>
+      <li>Open <code>http://IP</code> in a browser (port 80, no port number; you can also click in via the portal's "AI Workbench");</li>
+      <li>Log in with the unified account (first time may require the admin to create the account first).</li>
+    </ol>
+
+    <h2>4.2 Use Ready-Made Chat Apps</h2>
+    <p>Admins pre-build some apps (e.g. "company policy Q&amp;A", "customer service assistant"); regular users just "use" them:</p>
+    <ol>
+      <li>After login, enter the "<b>Studio / Apps</b>" list;</li>
+      <li>Find the app you want, click "<b>Run / Preview</b>" (the play button in the top-right);</li>
+      <li>Ask questions directly on the opened chat page.</li>
+    </ol>
+
+    <h2>4.3 Knowledge Base Q&amp;A</h2>
+    <p>To "feed" internal documents to the AI so it can answer, use Dify's <b>knowledge base</b> (requires admin permission):</p>
+    <ol>
+      <li>"<b>Knowledge Base</b>" → "Create knowledge base";</li>
+      <li>Upload documents (supports Word / PDF / Markdown / web links, etc.);</li>
+      <li>The system automatically segments and indexes;</li>
+      <li>"Reference" this knowledge base in an app and the AI can answer based on your documents.</li>
+    </ol>
+    <div class="note">📌 Knowledge base content will be used by the AI to answer; follow the Chapter 6 data security policy — <b>do not upload confidential material</b>.</div>
+
+    <h2>4.4 Build a Simple App Yourself (advanced)</h2>
+    <ol>
+      <li>Studio → create blank app → select "chat assistant";</li>
+      <li>Write a "prompt" telling the AI its role (e.g. "you are the company attendance-policy Q&amp;A assistant");</li>
+      <li>add a knowledge base → select the model → preview/test → publish.</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 Vendor docs:</span>Dify official docs <span class="url">https://docs.dify.ai</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch04';</script>
+<script src="nav.js"></script>
+<script src="../manual-assets/book.js"></script>
+</body>
+</html>

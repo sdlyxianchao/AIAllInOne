@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 2 章 前置准备 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>前置准备</h1>
+      <div class="sub">安装 Docker Desktop、准备目录、打通网络、固定 IP——部署前必须完成的事。</div>
+    </div>
+
+    <h2>2.0 两种部署方式</h2>
+    <p>本手册可<b>人工逐章执行</b>，也可<b>交给 AI Agent 工具自动执行</b>。用 Agent 时，把本目录（含本手册、<code>docker-compose.yml</code>、<code>.env.example</code>、<code>scripts/</code>）提供给 Agent，粘贴下面的提示词即可。</p>
+    <div class="note">
+      <p><b>复制给 Agent 的部署提示词：</b></p>
+      <pre><code>你是企业内网 AI 平台的部署工程师。请根据本目录的《管理员手册》部署篇、docker-compose.yml 与 .env.example，在当前这台机器上完整部署并验证「AI AllInOne」平台。全程用中文沟通。
+
+第一步 收集参数（逐项问我，不跳过、不猜测）：
+1) 对外服务的内网 IP；2) Skill 市场主机名（域名，替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 &lt;市场主机名&gt;，并在 hosts/DNS 解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName）；4) 统一管理员账号密码；5) 大模型 API Key；6) 按需问告警 webhook、HTTPS、备份保留策略。
+
+第二步 生成进度文件，每完成一项、每解决一个问题就更新并汇报。
+
+第三步 严格按本手册第 1~13 章顺序执行，注意各章「⚠️ 关键坑」，优先用 scripts/ 下的脚本自动化。
+
+第四步 出错先查日志（docker logs、健康端点、配置）定位根因再修，不盲目重试。
+
+第五步 全流程验证：容器全 Up、Keycloak SSO、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复，逐项汇总 ✅/❌。</code></pre>
+    </div>
+    <div class="tip">💡 不用 Agent 的话，上面这段也能当「部署前信息核对清单」：部署前先想清楚内网 IP、身份源、管理员密码、模型 Key 这四件事。</div>
+
+    <h2>2.1 安装并配置 Docker Desktop</h2>
+    <p>Docker Desktop 安装后默认用 WSL2 后端，通常无需额外配置。若需手动调整资源上限，在用户目录建 <code>.wslconfig</code>：</p>
+    <pre><code># %UserProfile%\.wslconfig（例如 C:\Users\你的用户名\.wslconfig）
+[wsl2]
+memory=24GB       # Docker 最大内存（最低 16GB，推荐 24~32GB）
+processors=8      # CPU 核心数（按物理核数）
+swap=4GB</code></pre>
+    <p>保存后 PowerShell 执行 <code>wsl --shutdown</code>，重启 Docker Desktop 生效。</p>
+    <div class="note">✅ 验证：Docker Desktop 状态栏显示 "Engine running"（绿色）。</div>
+
+    <h2>2.2 准备目录结构</h2>
+    <pre><code># PowerShell
+mkdir deepchat-updates</code></pre>
+    <div class="svgbox">
+      <pre><code>C:\ai-platform\windows\          # 假设的部署根目录
+├─ docker-compose.yml           # 核心服务编排
+├─ .env.windows                 # 环境变量（需填入 API Key）
+├─ litellm-config.yaml          # LiteLLM PII 脱敏配置
+├─ deepchat-updates\            # DeepChat 安装包托管目录
+├─ admin-portal\                # AI 管理中心实现
+├─ mcp-gateway\                 # Skill / MCP 网关
+├─ monitoring\                  # Prometheus / Loki 配置
+└─ scripts\                     # 备份 / 恢复 / 健康检查 / 初始化脚本</code></pre>
+    </div>
+
+    <h2>2.3 创建 Docker 共享网络</h2>
+    <pre><code>docker network create ai-platform
+docker network ls | findstr ai-platform   # 验证</code></pre>
+    <div class="note">所有核心容器通过 <code>ai-platform</code> 网络用容器名互访（如 NewAPI 访问 LiteLLM 用 <code>http://litellm:4000</code>，不经过 localhost）。</div>
+
+    <h2>2.4 固定宿主机内网 IP（重要）</h2>
+    <p>宿主机走 WiFi 时 IP 由 DHCP 动态分配，重启或租约到期会变；变了员工访问各产品的地址就全失效。建议在路由器做 <b>DHCP 保留（MAC 绑定）</b>：</p>
+    <ol>
+      <li>查 WiFi 网卡 MAC：<code>ipconfig /all</code>，找「无线局域网适配器 WLAN」的物理地址（如 <code>60-A3-E3-41-8F-61</code>）；</li>
+      <li>登录路由器后台（如 <code>http://192.168.31.1</code>）→ 局域网设置 / DHCP 静态 IP 分配；</li>
+      <li>添加规则：MAC → IP（如 <code>192.168.31.117</code>），保存；</li>
+      <li>重连 WiFi 确认 IP 固定。</li>
+    </ol>
+    <div class="tip">✅ DHCP 保留比在 Windows 里设静态 IP 更稳（路由器统一管理、不冲突）。</div>
+
+    <h2>2.5 打通网络（最容易卡住的一步）</h2>
+    <ul>
+      <li><b>能连 Docker 镜像仓库</b>：Docker Hub / quay.io / ghcr.io。不通则先配镜像加速器（如 DaoCloud）。</li>
+      <li><b>能连 GitHub</b>：克隆仓库、拉取公开依赖。不通则用代理或提前下载源码包。</li>
+      <li><b>目标机器可被内网访问</b>：确认要暴露的网段可达。</li>
+    </ul>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch02';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

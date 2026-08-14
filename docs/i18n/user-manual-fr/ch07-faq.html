@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapitre 7 · FAQ - questions fréquentes · Manuel de l'utilisateur AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Démarrage rapide</div>
+      <h1>FAQ - questions fréquentes</h1>
+      <div class="sub">Consultez d'abord ici en cas de problème.</div>
+    </div>
+
+    <h2>7.1 Connexion / accès</h2>
+    <table>
+      <tr><th>Problème</th><th>Solution</th></tr>
+      <tr><td>Impossible de se connecter à un produit ?</td><td>Vérifiez que vous utilisez l'IP intranet (pas localhost) et le compte unifié ; sinon contactez l'administrateur</td></tr>
+      <tr><td>La page de connexion ne s'ouvre pas / tourne en boucle ?</td><td>Vérifiez que vous êtes connecté à l'intranet de l'entreprise (WiFi/filaire), adresse en <code>http://IP</code> et non localhost</td></tr>
+      <tr><td>Mot de passe du compte unifié oublié ?</td><td>Contactez l'administrateur pour la réinitialisation (ou récupération via le compte de domaine)</td></tr>
+    </table>
+
+    <h2>7.2 Utilisation</h2>
+    <table>
+      <tr><th>Problème</th><th>Solution</th></tr>
+      <tr><td>Quota insuffisant ?</td><td>Consultez le solde dans l'interface NewAPI ; une fois épuisé, contactez l'administrateur pour recharger/augmenter le quota</td></tr>
+      <tr><td>Contenu envoyé bloqué ?</td><td>Il a touché un mot sensible ou contient des informations sensibles ; ajustez selon les règles du chapitre 6 puis réessayez</td></tr>
+      <tr><td>DeepChat signale un délai de connexion ?</td><td>Paramètres → Réseau / proxy → choisir « Pas de proxy / connexion directe »</td></tr>
+      <tr><td>Qualité de réponse du modèle médiocre ?</td><td>Changez de modèle, ou améliorez la question (fournir le contexte, préciser les exigences, donner des exemples)</td></tr>
+      <tr><td>Oublié où télécharger DeepChat ?</td><td>Centre de téléchargement du portail <code>http://IP:8090/downloads/</code></td></tr>
+      <tr><td>La création d'application Dify tourne en boucle ?</td><td>Généralement un problème réseau/WebSocket, contactez l'administrateur ; forcez l'actualisation avec Ctrl+F5</td></tr>
+    </table>
+
+    <h2>7.3 Compréhension</h2>
+    <table>
+      <tr><th>Problème</th><th>Solution</th></tr>
+      <tr><td>Peut-on faire confiance aux réponses de l'IA ?</td><td>Pas entièrement. L'IA peut se tromper (hallucination) ; les faits, chiffres et codes importants doivent être vérifiés humainement</td></tr>
+      <tr><td>L'IA retient-elle ce que je dis ?</td><td>Le contexte de la conversation courante est conservé pour les réponses multi-tours ; n'entrez pas d'informations confidentielles (voir chapitre 6)</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch07';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

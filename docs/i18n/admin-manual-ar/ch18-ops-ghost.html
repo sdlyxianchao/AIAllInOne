@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الفصل الثامن عشر الإدارة اليومية لـ Ghost · دليل مدير AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">الجزء الثاني · قسم الإدارة</div>
+      <h1>الإدارة اليومية لـ Ghost</h1>
+      <div class="sub">بوابة المؤسسة / Hub: المقالات والصفحات والتنقل والقوالب والأعضاء.</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/ghost-favicon.ico" alt="Ghost"></span><b>المدخل</b>: الواجهة الأمامية <span class="entry">http://&lt;عنوان-IP-الخادم&gt;:8090</span>؛ واللوحة <span class="entry">http://&lt;عنوان-IP-الخادم&gt;:8090/ghost/</span> (انتبه للاحقة /ghost/).</p>
+
+    <h2>18.1 تسجيل الدخول إلى اللوحة</h2>
+    <p>تستخدم لوحة Ghost 5 <b>تسجيل دخول بدون كلمة مرور</b>: أدخل البريد الإلكتروني ← يرسل Ghost رمز تحقق من 6 أرقام إلى MailHog (<code>:8025</code>). والطريقة الأسرع: انقر زر «فتح» في «لوحة Ghost» بمركز إدارة الذكاء الاصطناعي ليتم تسجيل الدخول تلقائيًا (بحساب رمز TOTP محليًا دون البحث في البريد).</p>
+
+    <h2>18.2 نشر المحتوى</h2>
+    <ol>
+      <li><b>المقالات</b>: Posts ← New post ← اكتب المحتوى (محرر Markdown) ← Publish؛</li>
+      <li><b>الصفحات</b>: Pages ← New page (مثل «مركز التنزيلات» وslug <code>downloads</code>)؛</li>
+      <li><b>الوسوم/التصنيفات</b>: Tags ← أنشئ تصنيفًا (مثل <code>news</code> / <code>docs</code>) وصنّف المقالات تحته.</li>
+    </ol>
+
+    <h2>18.3 قائمة التنقل</h2>
+    <ol>
+      <li>اللوحة ← المظهر (Design) ← القوائم (Navigation)؛</li>
+      <li>عدّل قائمة «Primary» الرئيسية وأضف الرئيسية/الأخبار/مركز التنزيلات/منضدة عمل AI/مستندات المساعدة (انظر جدول القوائم في الفصل 9).</li>
+    </ol>
+
+    <h2>18.4 القوالب</h2>
+    <ul>
+      <li><b>التبديل</b>: المظهر ← القوالب، فعّل القوالب المدمجة Casper / Source مباشرة؛</li>
+      <li><b>التثبيت</b>: سوق القوالب (Design ← Change theme) أو رفع ملف zip.</li>
+    </ul>
+    <div class="warn">⚠️ لا تثبّت أحدث إصدار من القوالب من GitHub (قد يكون متوافقًا مع Ghost 6.x وستظهر رسالة incompatible مع 5.x)، بل ثبّت إصدارًا أقدم بصيغة zip.</div>
+
+    <h2>18.5 الأعضاء والاشتراكات (عند الحاجة)</h2>
+    <ul>
+      <li>Members: إدارة المشتركين؛</li>
+      <li>إن لم تكن بحاجة إلى الاشتراكات فيمكن تجاهل هذه الوحدة (فالبوابة الداخلية لا تحتاجها عادة).</li>
+    </ul>
+
+    <h2>18.6 التكامل (رموز API)</h2>
+    <ol>
+      <li>اللوحة ← Settings ← Integrations ← إضافة تكامل مخصص؛</li>
+      <li>ولّد Admin API Key (بصيغة <code>id:secret</code>) لاستخدامه في أتمتة نشر الإعلانات عبر Gitea Actions وغيرها.</li>
+    </ol>
+
+    <div class="warn">⚠️ نقاط حرجة: ① لا تنقر «التسجيل» في الصفحة الرئيسية <code>/</code> (فهي لتسجيل الزوار المشتركين)؛ ② رمز التحقق من 6 أرقام هو في جوهره TOTP ويمكن لمركز إدارة الذكاء الاصطناعي حسابه محليًا؛ ③ حتى مع الحساب المحلي للرمز سيظل Ghost يرسل البريد فعليًا، لذا يجب الإبقاء على MailHog (وإلا سيظهر <code>Failed to send email</code>).</div>
+
+    <div class="docbox"><span class="label">📖 الوثائق الرسمية:</span>وثائق Ghost الرسمية <span class="url">https://ghost.org/docs/</span> · لوحة الإدارة <span class="url">https://ghost.org/docs/admin/</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch18';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

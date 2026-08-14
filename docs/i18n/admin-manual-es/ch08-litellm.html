@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 8 — LiteLLM: verificación y caché · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte I · Implementación</div>
+      <h1>LiteLLM: verificación y caché</h1>
+      <div class="sub">Verificar que el proxy de LiteLLM funciona y activar la caché de respuestas para ahorrar tokens.</div>
+    </div>
+
+    <div class="warn">⚠️ El enmascaramiento de PII (guardrail de Presidio) está <b>desactivado temporalmente</b>: el formato de configuración del guardrail cambió en la nueva versión de LiteLLM, por lo que ese bloque de <code>litellm-config.yaml</code> está comentado y, por ahora, LiteLLM solo reenvía como proxy (sin enmascarar). El método de activación se describe en el capítulo 25.</div>
+
+    <h2>8.1 Verificar que LiteLLM funciona básicamente</h2>
+    <pre><code>curl -X POST http://&lt;IP-del-servidor&gt;:4001/v1/chat/completions ^
+  -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"model\":\"deepseek-chat\",\"messages\":[{\"role\":\"user\",\"content\":\"say hi\"}]}"</code></pre>
+    <div class="warn">⚠️ <code>&lt;LITELLM_MASTER_KEY&gt;</code> es la clave de administrador de LiteLLM; toma el valor real de <code>.env</code> (no el propio marcador, de lo contrario da 401). Y debe usarse la IP de intranet <code>&lt;IP-del-servidor&gt;:4001</code>, no <code>127.0.0.1:4001</code> (problema de reenvío de puertos de WSL2).</div>
+
+    <h2>8.2 Caché de respuestas (ya integrada, ahorra tokens)</h2>
+    <p>LiteLLM ya tiene activada la caché de coincidencia exacta de Redis: las peticiones idénticas (modelo + mensajes + parámetros) devuelven directamente la caché, compartida entre usuarios y ahorrando tokens.</p>
+    <pre><code># Al final de litellm-config.yaml
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis   # Redis de caché independiente
+    port: 6379
+    ttl: 3600            # caché de 1 hora</code></pre>
+    <div class="note">Verificación: <code>curl http://&lt;IP-del-servidor&gt;:4001/cache/ping -H "Authorization: Bearer &lt;KEY&gt;"</code> devuelve <code>ping_response: true</code>; con dos peticiones idénticas consecutivas, la segunda baja a milisegundos. Para desactivar la caché: pon <code>cache: false</code> y reinicia litellm.</div>
+
+    <h2>8.3 Añadir más proveedores de LLM</h2>
+    <ol>
+      <li>En <code>.env</code> descomenta <code># OPENAI_API_KEY=</code> y rellena la Key;</li>
+      <li>En <code>litellm-config.yaml</code> descomenta el bloque del modelo correspondiente;</li>
+      <li><code>docker compose up -d litellm</code>.</li>
+    </ol>
+
+    <div class="docbox"><span class="label">📖 Documentación oficial:</span>Documentación oficial de LiteLLM <span class="url">https://docs.litellm.ai</span> · Guardrail de Presidio <span class="url">https://docs.litellm.ai/docs/proxy/guardrails/presidio</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch08';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

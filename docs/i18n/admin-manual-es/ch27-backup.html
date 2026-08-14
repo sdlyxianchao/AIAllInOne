@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 27 — Copia de seguridad y restauración · AI AllInOne Manual del administrador</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte III · Operaciones</div>
+      <h1>Copia de seguridad y restauración</h1>
+      <div class="sub">Copia de seguridad diaria de todos los datos y restauración con un clic.</div>
+    </div>
+
+    <p><b>Entrada</b>: página «💾 Copia de seguridad y restauración» del Centro de administración de IA, o por línea de comandos <code>scripts/backup.ps1</code> / <code>restore.ps1</code>. La tarea programada hace una copia automática todos los días a las 02:00 y conserva 7 días.</p>
+
+    <h2>27.1 Elementos de la copia</h2>
+    <table>
+      <tr><th>Elemento</th><th>Método</th></tr>
+      <tr><td>NewAPI MySQL</td><td><code>mysqldump</code></td></tr>
+      <tr><td>Dify PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Langfuse PostgreSQL</td><td><code>pg_dump</code></td></tr>
+      <tr><td>Ghost / Gitea / Grafana SQLite</td><td>Copia de archivos</td></tr>
+      <tr><td>Keycloak</td><td><b>realm export (JSON)</b></td></tr>
+      <tr><td>Archivos de configuración</td><td>Copia de archivos</td></tr>
+    </table>
+
+    <h2>27.2 Copia manual</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+
+    <h2>27.3 Copia programada (tarea programada)</h2>
+    <p>Ya está registrada la tarea programada <code>AI-Platform-Backup</code> (todos los días a las 02:00). Si no se registró automáticamente, créala manualmente: Programador de tareas → Nueva → programa <code>powershell.exe</code>, argumentos <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>, desencadenador todos los días a las 02:00.</p>
+    <div class="note">📌 Las copias están por defecto en el disco C; se recomienda sincronizar periódicamente <code>C:\AIAllInOne\backups\</code> a otro disco o a almacenamiento de objetos para recuperación ante desastres en otra ubicación.</div>
+
+    <h2>27.4 Restauración</h2>
+    <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+    <p>El script pide confirmar escribiendo <code>yes</code> (añade <code>-Force</code> para saltarlo; solo para scripts/CI). También puedes hacer clic en «Restaurar» de una copia en la página «Copia de seguridad y restauración» del Centro de administración de IA para restaurar con un clic.</p>
+
+    <h2>27.5 Puntos críticos (verificados en simulacros)</h2>
+    <div class="warn">⚠️
+      <ul>
+        <li>Keycloak debe usar <b>realm export/import (JSON)</b>; restaurar con pg_dump pierde la asociación del default role y no arranca;</li>
+        <li>Tras restaurar SQLite, el propietario es root; hay que hacer chown al uid correspondiente (grafana=472, gitea=1000); de lo contrario da readonly;</li>
+        <li>pg_dump con <code>--clean --if-exists</code> evita conflictos de restauración;</li>
+        <li>El backup.ps1 antiguo, al copiar por lotes con <code>Copy-Item</code>, fallaba silenciosamente en toda la tanda por el archivo de punto <code>.env</code>; ya se cambió a copia archivo a archivo con <code>-LiteralPath</code>;</li>
+        <li>La copia del Centro de administración de IA usa base64 como transporte + tar-fs para garantizar la seguridad binaria (la stdout de docker exec pasa por utf8 y corrompería los .db de SQLite).</li>
+      </ul>
+    </div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch27';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

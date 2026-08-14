@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제23장 LLM 옵저버빌리티 (Langfuse) · AI AllInOne 관리자 매뉴얼</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">제2부 · 관리편</div>
+      <h1>LLM 옵저버빌리티 (Langfuse)</h1>
+      <div class="sub">매 모델 호출의 프롬프트, 응답, 지연시간, token, 비용 추적.</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/langfuse-favicon.ico" alt="Langfuse"></span><b>진입점</b>: <span class="entry">http://&lt;서버-IP&gt;:3010</span> (SSO 자동 로그인, AI 관리 센터 진입점은 <code>/auth/sso-initiate?provider=KEYCLOAK</code>).</p>
+
+    <h2>23.1 컴포넌트</h2>
+    <table>
+      <tr><th>컴포넌트</th><th>용도</th></tr>
+      <tr><td>langfuse</td><td>Web UI + 추적 표시 (3010)</td></tr>
+      <tr><td>langfuse-worker</td><td>비동기 이벤트 처리</td></tr>
+      <tr><td>langfuse-postgres</td><td>메타데이터 저장</td></tr>
+      <tr><td>langfuse-clickhouse</td><td>이벤트/추적 데이터 저장</td></tr>
+      <tr><td>langfuse-minio</td><td>S3 첨부파일/미디어 저장</td></tr>
+      <tr><td>langfuse-redis</td><td>큐</td></tr>
+    </table>
+    <p>LiteLLM이 <code>success_callback: ["langfuse"]</code>로 자동 보고 (<code>.env</code>의 <code>LANGFUSE_*</code>).</p>
+
+    <h2>23.2 추적 조회</h2>
+    <ol>
+      <li>Langfuse 로그인 → 조직 <code>AI All In One</code> / 프로젝트 <code>AI Platform</code> 선택;</li>
+      <li>Traces 목록에서 매 호출 확인, 클릭해 프롬프트/응답/모델/지연시간/token/비용 확인;</li>
+      <li>Session으로 다중 턴 대화 연결.</li>
+    </ol>
+
+    <h2>23.3 문제 해결</h2>
+    <div class="warn">⚠️ 핵심 함정:
+      <ul>
+        <li><code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code>을 반드시 설정해야 합니다 (web과 worker 모두), 아니면 구 SDK가 <code>trace-create</code> 보고에 실패해 데이터가 보이지 않습니다;</li>
+        <li>SSO 로그인 시 데이터가 안 보임: SSO 계정 (AD 이메일)이 초기화 계정과 달라 Langfuse가 자동으로 어떤 조직에도 속하지 않는 새 계정을 만듭니다. 수정 (SSO 사용자를 조직에 추가):</li>
+      </ul>
+    </div>
+    <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
+"INSERT INTO organization_memberships (id, org_id, user_id, role) \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
+
+    <div class="docbox"><span class="label">📖 원문 문서:</span>Langfuse 공식 문서 <span class="url">https://langfuse.com/docs</span> · 자체 호스팅 <span class="url">https://langfuse.com/self-hosting</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch23';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

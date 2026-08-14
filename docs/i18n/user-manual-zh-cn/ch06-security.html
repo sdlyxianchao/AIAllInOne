@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 6 章 数据安全规范 · AI AllInOne 用户手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">快速开始</div>
+      <h1>数据安全规范</h1>
+      <div class="sub">什么能发给 AI、什么绝不能发——人人都要遵守的红线。</div>
+    </div>
+
+    <p>平台已自动对<b>手机号、身份证号、银行卡号、邮箱</b>等敏感信息做<b>脱敏</b>（发给大模型前自动打码），并对敏感词做拦截。但请自觉遵守下面的红线。</p>
+
+    <h2>6.1 什么能发什么不能发</h2>
+    <h3>❌ 严禁发送给 AI</h3>
+    <ul>
+      <li>内部机密 / 商业机密（未公开的产品代码、定价、客户名单、合同条款）；</li>
+      <li>个人隐私（身份证号、银行卡号、密码、健康信息、他人隐私）；</li>
+      <li>源代码 / 未公开技术方案。</li>
+    </ul>
+    <h3>✅ 可以放心使用</h3>
+    <ul>
+      <li>公开资料、通用知识、文档撰写、翻译、总结；</li>
+      <li>脱敏后的业务数据（去掉具体人名/号码/敏感字段后）。</li>
+    </ul>
+
+    <h2>6.2 数据分级速查</h2>
+    <table>
+      <tr><th>数据等级</th><th>能否上外部大模型</th><th>说明</th></tr>
+      <tr><td>公开数据</td><td>✅ 可以</td><td>已公开的资料、通用信息</td></tr>
+      <tr><td>内部普通数据</td><td>⚠️ 脱敏后可用</td><td>去掉敏感字段后可使用</td></tr>
+      <tr><td>内部机密 / 个人隐私</td><td>❌ 禁止</td><td>严禁发送</td></tr>
+    </table>
+    <blockquote>判断原则：<b>「这段内容如果被外人看到会不会有问题？」</b>会 → 别发。</blockquote>
+
+    <h2>6.3 三个典型场景</h2>
+    <table>
+      <tr><th>场景</th><th>怎么做</th></tr>
+      <tr><td>写周报，涉及客户名</td><td>用「某客户」「A 客户」代替真实客户名</td></tr>
+      <tr><td>让 AI 分析数据表</td><td>先删掉姓名、电话、身份证号等列，只留汇总数据</td></tr>
+      <tr><td>翻译合同条款</td><td>先删掉金额、对方名称等敏感信息，或用「甲方/乙方」代替</td></tr>
+    </table>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch06';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capítulo 15 — Gestão diária do NewAPI · Manual do Administrador do AI AllInOne</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">Parte 2 · Gestão</div>
+      <h1>Gestão diária do NewAPI</h1>
+      <div class="sub">Gateway de LLM: gerenciar canais, tokens, cotas, usuários, logs e custos.</div>
+    </div>
+
+    <p><span class="logo"><img src="../../images/newapi-logo.png" alt="NewAPI"></span><b>Entrada</b>: <span class="entry">http://&lt;IP-do-servidor&gt;:3000</span>.</p>
+
+    <h2>15.1 Gerenciamento de canais (modelos upstream)</h2>
+    <ol>
+      <li><b>Adicionar canal</b>: canais → adicionar novo canal → tipo OpenAI (ou Claude etc.) → Base URL <code>http://litellm:4000</code> → chave <code>LITELLM_MASTER_KEY</code> → preencher nome do modelo → salvar;</li>
+      <li><b>Testar</b>: na lista de canais, clique em «Testar» e selecione o modelo para validar a conexão;</li>
+      <li><b>Desativar/ativar</b>: botão na lista de canais; desativado, o canal deixa de receber requisições;</li>
+      <li><b>Prioridade/peso</b>: com vários canais do mesmo modelo, divida o fluxo por prioridade/peso.</li>
+    </ol>
+
+    <h2>15.2 Gerenciamento de tokens (API Keys)</h2>
+    <ol>
+      <li><b>Criar</b>: API Keys → criar token → nomear (como <code>deepchat-key</code>) → pode definir cota/expiração/limite de modelo → salvar;</li>
+      <li><b>Copiar a Key</b>: começa com <code>sk-</code>, <b>é exibida só uma vez, salve imediatamente</b>;</li>
+      <li><b>Desativar/excluir</b>: operações na lista de tokens (desativada, a Key perde efeito na hora);</li>
+      <li><b>Consultar consumo</b>: detalhes do token mostram a cota já consumida.</li>
+    </ol>
+
+    <h2>15.3 Cotas e usuários</h2>
+    <ul>
+      <li><b>Cota padrão de novo usuário</b>: <code>DEFAULT_QUOTA</code> (sugere-se 100 dólares);</li>
+      <li><b>Aumentar cota de um usuário</b>: página de usuários → editar o usuário → definir cota;</li>
+      <li><b>Recarga/banimento</b>: operações na página de usuários;</li>
+      <li><b>Gestão por grupos</b>: crie grupos por departamento, defina multiplicador de modelo/cota; usuários no grupo passam a ser controlados por departamento.</li>
+    </ul>
+
+    <h2>15.4 Logs e custos</h2>
+    <ul>
+      <li><b>Página de logs</b>: consultar usuário/modelo/token/cota/custo/IP de origem de cada chamada;</li>
+      <li><b>Relatório de custos</b>: a página «Gestão do NewAPI» da Central de Administração de IA tem relatório de custos agregado por usuário/modelo/data + os últimos 100 logs de auditoria.</li>
+    </ul>
+    <div class="note">📌 O registro do IP do cliente depende da configuração do usuário «registrar log de IP» (<code>record_ip_log</code>, desligada por padrão); quando precisar de auditoria de IP, ative para o usuário correspondente.</div>
+
+    <h2>15.5 Pontos-chave das configurações do sistema</h2>
+    <ul>
+      <li><b>Endereço do servidor</b>: deve ser o endereço de intranet <code>http://&lt;IP-do-servidor&gt;:3000</code> (senão o OIDC dá <code>invalid_grant - Incorrect redirect_uri</code>);</li>
+      <li><b>Autenticação → OAuth personalizado</b>: integração OIDC do Keycloak (veja o capítulo 7);</li>
+      <li><b>Modo de uso</b>: alterna entre uso pessoal ↔ operação externa.</li>
+    </ul>
+
+    <div class="warn">⚠️ Revisão de armadilhas críticas: ① a Base URL do canal deve ser sempre o nome do contêiner <code>http://litellm:4000</code>; ② a limitação de taxa 429 é controlada por variáveis como <code>CRITICAL_RATE_LIMIT_ENABLE=false</code>; ③ para alterar o banco, use diretamente a variável de ambiente <code>MYSQL_PWD</code>, evitando que o aviso de senha no stderr seja interpretado como erro.</div>
+
+    <div class="docbox"><span class="label">📖 Documentação oficial:</span>documentação oficial do NewAPI <span class="url">https://docs.newapi.pro</span> · site oficial <span class="url">https://www.newapi.ai</span> · repositório open source <span class="url">https://github.com/QuantumNous/new-api</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch15';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

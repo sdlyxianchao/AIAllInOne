@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 5 章 Dify 独立部署 · AI AllInOne 管理员手册</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>Dify 独立部署</h1>
+      <div class="sub">Dify 用官方 compose（约 15 个容器）独立部署，避免端口冲突。</div>
+    </div>
+
+    <div class="note">📌 Dify 使用官方 docker-compose（含 ~15 个容器），独立部署避免端口冲突，使用自己的默认网络（与核心服务的 <code>ai-platform</code> 网络不同）。</div>
+
+    <h2>5.1 克隆 Dify</h2>
+    <pre><code># 方案 A：GitHub（需能访问）
+$tag = (Invoke-RestMethod https://api.github.com/repos/langgenius/dify/releases/latest).tag_name
+git clone --branch $tag https://github.com/langgenius/dify.git
+
+# 方案 B：Gitee 官方镜像（国内推荐）
+git clone https://gitee.com/dify_ai/dify.git</code></pre>
+
+    <h2>5.2 修复兼容性 + 复制环境变量</h2>
+    <pre><code>cd dify\docker
+
+# 修复 env_file 格式（兼容旧版 Docker Compose）
+python -c "import re; c=open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml').read(); c=re.sub(r'  - path: (\./envs/[^\n]+\.env)\n\s+required: (?:true|false)', r'  - \1', c); open(r'C:\AIAllInOne\windows\dify\docker\docker-compose.yaml','w').write(c); print('Fixed')"
+
+# 复制主环境变量
+copy .env.example .env
+
+# 复制所有子模板（sandbox.env 等）
+Get-ChildItem envs -Recurse -Filter *.example | ForEach-Object {
+    $t = $_.FullName -replace '\.example$', ''
+    if (-not (Test-Path $t)) { Copy-Item $_.FullName $t }
+}
+
+# 修复 Dify 1.16.1 上游校验问题（必需）
+(Get-Content envs\core-services\shared.env) -replace 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=0', 'GRAPH_ENGINE_SCALE_UP_THRESHOLD=50' | Set-Content envs\core-services\shared.env
+
+# 验证
+docker compose config --quiet
+findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env</code></pre>
+    <div class="warn">⚠️ 为什么必须改 <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code>：Dify 1.16.1 把该字段从「允许 0」升级为「必须 > 0」，但 <code>shared.env</code> 模板还是 0。不改的话 <code>docker-api-1</code> / <code>worker</code> / <code>worker_beat</code> / <code>api_websocket</code> 4 个容器启动即崩，日志报 <code>ValidationError: Input should be greater than 0</code>。</div>
+
+    <h2>5.3 启动 Dify</h2>
+    <pre><code>docker compose up -d
+docker compose ps</code></pre>
+    <div class="note">✅ 所有容器 <code>Up</code>（<code>init_permissions</code> 显示 Exited 是正常的）。浏览器打开 <code>http://127.0.0.1/install</code> 初始化管理员账号。</div>
+
+    <h2>5.4 修复 WebSocket 地址（不改会反复连 ws://localhost）</h2>
+    <p><code>.env</code> 里 <code>NEXT_PUBLIC_SOCKET_URL</code> 默认是 <code>ws://localhost</code>，内网部署时浏览器里的 localhost 指向用户自己电脑，导致前端反复连不上（创建应用/工作流调试会卡住）。</p>
+    <pre><code># .env 里改成内网 IP
+NEXT_PUBLIC_SOCKET_URL=ws://&lt;服务器IP&gt;
+
+# docker-compose.yaml 里 web 服务的 fallback 同步改
+NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-ws://&lt;服务器IP&gt;}
+
+# 重建 web 容器生效
+docker compose up -d web</code></pre>
+    <div class="note">📌 改完强刷浏览器（Ctrl+F5）。该变量是运行时读取，改 .env + 重启 web 即可，无需重建镜像。</div>
+
+    <h2>5.5 踩坑速查</h2>
+    <div class="warn">⚠️ <b>登录密码是 base64 传输</b>：Dify 1.16.x 登录接口 <code>POST /console/api/login</code> 的 <code>password</code> 是 base64 编码后的密码。脚本登录要先 <code>base64(密码)</code>；前端「点登录没反应」时 console 里 <code>GET /account/profile 401</code> 是未登录的正常现象。</div>
+    <div class="danger">⚠️ <b>忘记管理员密码重置</b>：Dify 密码哈希是 <code>pbkdf2_hmac('sha256', password, salt, 10000)</code>（迭代 10000），无法反解，用容器命令重置（新密码 ≥ 8 位）：</div>
+    <pre><code>docker exec docker-api-1 flask reset-password \
+  --email ai_all_in_one_admin@&lt;公司域名&gt; \
+  --new-password '&lt;新密码&gt;' \
+  --password-confirm '&lt;新密码&gt;'</code></pre>
+    <div class="docbox"><span class="label">📖 原厂文档：</span>Dify 官方文档 <span class="url">https://docs.dify.ai</span> · 自托管部署 <span class="url">https://docs.dify.ai/getting-started/install-self-hosted</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch05';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

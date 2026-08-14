@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第 9 章 Dify / Ghost / Gitea 配置 · AI AllInOne 管理員手冊</title>
+<link rel="stylesheet" href="../../manual-assets/book.css">
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="content">
+    <div class="chapter-head">
+      <div class="part-label">第一部分 · 部署篇</div>
+      <h1>Dify / Ghost / Gitea 配置</h1>
+      <div class="sub">三個產品各自的初始化與互連配置。</div>
+    </div>
+
+    <h2>9.1 Dify：配置模型供應商</h2>
+    <ol>
+      <li>開啟 <code>http://&lt;伺服器IP&gt;</code> → 首次設管理員郵箱/密碼（郵箱 <code>ai_all_in_one_admin@&lt;公司網域&gt;</code>）；</li>
+      <li><b>設定 → 模型供應商</b> → OpenAI-API-compatible → 新增模型：
+        <ul>
+          <li>模型名 <code>deepseek-chat</code>（按實際）；</li>
+          <li>API Key：<code>dify-key</code> 的 <code>sk-xxx</code>；</li>
+          <li>API endpoint：<code>http://host.docker.internal:3000/v1</code>。</li>
+        </ul>
+      </li>
+      <li>工作室 → 建立聊天助手 → 選模型 → 發訊息驗證。</li>
+    </ol>
+    <div class="warn">⚠️ Dify 用 <code>host.docker.internal</code> 而不是容器名，因為 Dify 在自己網路裡、與 NewAPI 不同網路。</div>
+
+    <h2>9.2 Ghost：配置門戶</h2>
+    <ol>
+      <li>後臺入口 <code>http://&lt;伺服器IP&gt;:8090/ghost/</code>（<b>注意 /ghost/ 字尾</b>）。首次走 setup 嚮導建管理員（郵箱 <code>ai_all_in_one_admin@&lt;公司網域&gt;</code>，密碼 ≥10 位）；</li>
+      <li>自動化：直接跑 <code>scripts\ghost-setup.ps1</code> 用 setup API 一次建管理員，等效嚮導（已初始化自動跳過）；</li>
+      <li><b>主題</b>：外觀 → 主題，自帶的 Casper/Source 直接啟用即可；</li>
+      <li><b>導航選單</b>：外觀 → 選單 → 建「主導航」。</li>
+    </ol>
+    <table>
+      <tr><th>選單項</th><th>型別</th><th>URL</th></tr>
+      <tr><td>首頁</td><td>頁面</td><td><code>/</code></td></tr>
+      <tr><td>新聞動態</td><td>分類</td><td><code>/category/news</code></td></tr>
+      <tr><td>下載中心</td><td>頁面</td><td><code>/downloads</code></td></tr>
+      <tr><td>AI 工作臺</td><td>自定義連結</td><td><code>http://&lt;伺服器IP&gt;</code></td></tr>
+      <tr><td>幫助文件</td><td>分類</td><td><code>/category/docs</code></td></tr>
+    </table>
+    <ol start="5">
+      <li><b>下載中心頁面</b>：頁面 → 新建「下載中心」（slug <code>downloads</code>），內容放 DeepChat 安裝包內網連結。</li>
+    </ol>
+    <pre><code>## DeepChat 企業版
+### Windows
+- [DeepChat v1.1.0（Windows x64）](http://&lt;伺服器IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+### macOS
+- [DeepChat v1.1.0（macOS x64）](http://&lt;伺服器IP&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)</code></pre>
+    <div class="warn">⚠️ 別在門戶首頁 <code>/</code> 點「註冊」——那是訪客訂閱者註冊（未配 SMTP 會 500）；管理員入口是 <code>/ghost/</code>。別從 GitHub 裝最新版主題（可能適配 Ghost 6.x，5.x 報 incompatible）。</div>
+
+    <h2>9.3 Gitea：初始化和 Runner 註冊</h2>
+    <ol>
+      <li>開啟 <code>http://&lt;伺服器IP&gt;:3002</code> → 安裝嚮導（資料庫 SQLite 已預配）→ 建管理員（使用者名稱 <code>ai_all_in_one_admin</code>）；</li>
+      <li>右上角頭像 → <b>Site Administration → Actions</b> → 確認 Enabled Actions 開啟；</li>
+      <li><b>Runners → Create new Runner</b> → 複製 Registration Token；</li>
+      <li>把 Token 填進 <code>.env</code> 的 <code>GITEA_RUNNER_TOKEN</code>，重建 Runner：</li>
+    </ol>
+    <pre><code># ⚠️ 必須用 up -d，不能用 restart（restart 不重讀 .env 的 token）
+docker compose -f docker-compose.yml up -d gitea-runner
+docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
+    <div class="danger">⚠️ 踩坑 1：報 <code>readonly database</code> 多為 <code>gitea.db</code> 被 root 屬主，刪掉那個 root 屬主的 db 讓它以 git 使用者重建。<br>
+    ⚠️ 踩坑 2：<code>ROOT_URL</code> 要設成 <code>http://&lt;伺服器IP&gt;:3002/</code>，否則生成的倉庫連結是 localhost，員工點開失效。</div>
+
+    <div class="docbox"><span class="label">📖 原廠文件：</span>Dify <span class="url">https://docs.dify.ai</span> · Ghost <span class="url">https://ghost.org/docs/</span> · Gitea（中文） <span class="url">https://docs.gitea.com/zh-cn</span></div>
+
+    <nav class="pager" id="pager"></nav>
+  </main>
+</div>
+<script>window.CURRENT_ID='ch09';</script>
+<script src="nav.js"></script>
+<script src="../../manual-assets/book.js"></script>
+</body>
+</html>

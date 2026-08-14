@@ -1,0 +1,20 @@
+{
+  "name": "ai-admin-portal",
+  "version": "1.0.0",
+  "description": "AI Platform Admin Center — unified admin portal with Keycloak auth",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@keycloak/keycloak-admin-client": "^24.0.0",
+    "connect-redis": "^7.1.1",
+    "dockerode": "^4.0.0",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "keycloak-connect": "^24.0.0",
+    "redis": "^4.7.1"
+  }
+}

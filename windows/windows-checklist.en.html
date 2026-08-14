@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Platform Deployment Checklist — Windows</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d1117; color: #c9d1d9; padding: 24px; max-width: 860px; margin: 0 auto;
+  }
+  h1 { color: #58a6ff; margin-bottom: 8px; }
+  h3 { color: #d2a8ff; margin: 24px 0 12px; border-bottom: 1px solid #21262d; padding-bottom: 6px; }
+  h4 { margin: 20px 0 8px; font-size: 14px; font-weight: 600; }
+  .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 24px; }
+  .notice { background: rgba(210,153,34,0.08); border-left: 3px solid #d29922; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; font-size: 14px; }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    padding: 10px 12px; border-radius: 6px; margin-bottom: 4px;
+    display: flex; align-items: flex-start; gap: 10px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .checklist li:hover { background: #161b22; }
+  .checklist li input[type=checkbox] { margin-top: 3px; width: 18px; height: 18px; accent-color: #56d364; cursor: pointer; }
+  .checklist li.checked { color: #56d364; text-decoration: line-through; }
+  .checklist li.checked input { accent-color: #56d364; }
+  .checklist li.warn { color: #d29922; }
+  .checklist li.warn input { accent-color: #d29922; }
+  code { background: #161b22; padding: 1px 6px; border-radius: 3px; font-size: 13px; color: #58a6ff; }
+  .summary {
+    margin-top: 32px; padding: 16px; background: #161b22; border-radius: 8px;
+    border: 1px solid #30363d;
+  }
+  .summary .bar { height: 8px; border-radius: 4px; background: #21262d; margin: 12px 0; overflow: hidden; }
+  .summary .bar .fill { height: 100%; border-radius: 4px; background: #56d364; transition: width 0.3s; }
+  .summary p { margin: 4px 0; }
+  button {
+    background: #238636; color: white; border: none; padding: 8px 16px; border-radius: 6px;
+    cursor: pointer; font-size: 14px; margin-right: 8px;
+  }
+  button:hover { background: #2ea043; }
+  button.reset { background: #21262d; }
+  button.reset:hover { background: #30363d; }
+  .timestamp { color: #8b949e; font-size: 12px; margin-top: 24px; text-align: center; }
+  .stage-done { color: #56d364; font-weight: 600; }
+  .stage-partial { color: #d29922; font-weight: 600; }
+  .stage-todo { color: #8b949e; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>AI Platform Deployment Checklist — Windows</h1>
+<p class="subtitle">Status: <span id="status">Loading from localStorage...</span> &nbsp;| &nbsp;
+<button onclick="saveAll()">Save Progress</button>
+<button class="reset" onclick="resetAll()">Reset All</button>
+<span style="color:#8b949e;font-size:13px">(progress is saved automatically in the browser)</span>
+</p>
+
+<div class="summary">
+  <p>Completed: <strong id="doneCount">-</strong> / <strong id="totalCount">-</strong></p>
+  <div class="bar"><div class="fill" id="progressBar" style="width:0%"></div></div>
+</div>
+
+<div class="notice">
+  <strong>⚠️ Access address convention:</strong> All products must be accessed via the <b>LAN IP</b> (<code>http://&lt;server-IP&gt;:port</code>), <b>not <code>127.0.0.1</code></b>. This is especially true for NewAPI and the AI Admin Center — their server address is already set to the LAN IP, so accessing via 127.0.0.1 will cause OIDC login to fail with <code>invalid_grant - Incorrect redirect_uri</code>.
+</div>
+
+<h3>1. Infrastructure <span class="stage-done">▸▸ Completed ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w1_01" class="checked"><input type="checkbox" checked> Docker Desktop + WSL2 engine running normally</li>
+  <li data-id="w1_02" class="checked"><input type="checkbox" checked> <code>ai-platform</code> Docker network created</li>
+  <li data-id="w1_03" class="checked"><input type="checkbox" checked> <code>.env</code> populated with all credentials (API keys / passwords)</li>
+  <li data-id="w1_04" class="checked"><input type="checkbox" checked> All core containers Up (Keycloak / NewAPI / LiteLLM / Ghost / Gitea / Update Server / Admin Center / MCP Gateway)</li>
+  <li data-id="w1_05" class="checked"><input type="checkbox" checked> Keycloak <code>KC_HOSTNAME=LAN-IP</code> + keycloak-data persistence</li>
+  <li data-id="w1_06" class="checked"><input type="checkbox" checked> Ghost forced to SQLite + Dify deployed via separate compose</li>
+</ul>
+
+<h3>2. Keycloak Enterprise Identity Source <span class="stage-done">▸▸ Completed ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w2_01" class="checked"><input type="checkbox" checked> Realm <code>enterprise-ai</code> created</li>
+  <li data-id="w2_02" class="checked"><input type="checkbox" checked> AD LDAP federation (<code>Company AD</code>, 12 domain users synced)</li>
+  <li data-id="w2_03" class="checked"><input type="checkbox" checked> OIDC clients: <code>newapi</code> + <code>AI-all-in-one-admin-portal</code></li>
+  <li data-id="w2_04" class="checked"><input type="checkbox" checked> Realm role <code>ai-platform-admin</code> created and assigned</li>
+  <li data-id="w2_05" class="checked"><input type="checkbox" checked> Unified admin <code>ai_all_in_one_admin</code> (master + enterprise-ai)</li>
+</ul>
+
+<h3>3. LLM Pipeline (LiteLLM + NewAPI) <span class="stage-done">▸▸ Completed ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w3_01" class="checked"><input type="checkbox" checked> LiteLLM health check + model <code>deepseek-chat</code> returns</li>
+  <li data-id="w3_02" class="checked"><input type="checkbox" checked> NewAPI admin <code>ai_all_in_one_admin</code> login (via LAN IP)</li>
+  <li data-id="w3_03" class="checked"><input type="checkbox" checked> NewAPI channel: <code>Deepseek V4</code> → <code>http://litellm:4000</code></li>
+  <li data-id="w3_04" class="checked"><input type="checkbox" checked> NewAPI API keys (<code>deepchat-key</code> / <code>dify-key</code>)</li>
+  <li data-id="w3_05" class="checked"><input type="checkbox" checked> NewAPI Keycloak OIDC SSO (AD account login)</li>
+  <li data-id="w3_06" class="checked"><input type="checkbox" checked> NewAPI rate limit / ServerAddress / default quota configured</li>
+</ul>
+
+<h3>4. AI Admin Center Unified Management <span class="stage-partial">▸▸ Partially done</span></h3>
+<ul class="checklist">
+  <li data-id="w4_01"><input type="checkbox"> Login working (via LAN IP <code>http://&lt;server-IP&gt;:10086</code>, ⚠️ to be verified)</li>
+  <li data-id="w4_02" class="checked"><input type="checkbox" checked> "🔐 Central Auth" page (unified account system)</li>
+  <li data-id="w4_03" class="checked"><input type="checkbox" checked> "🔀 NewAPI Management" page (channels/users/keys)</li>
+  <li data-id="w4_04" class="checked"><input type="checkbox" checked> Overview dashboard "Product Business Metrics" aggregation</li>
+  <li data-id="w4_05" class="checked"><input type="checkbox" checked> "👥 Admin Management" page (Keycloak Admin API)</li>
+</ul>
+
+<h3>5. MCP Gateway — Tool Gateway <span class="stage-done">▸▸ Completed ✓</span></h3>
+<ul class="checklist">
+  <li data-id="w5_01" class="checked"><input type="checkbox" checked> MCP Gateway implemented (Streamable HTTP <code>/mcp</code> + 3 built-in tools)</li>
+  <li data-id="w5_02" class="checked"><input type="checkbox" checked> MCP protocol verified (initialize / tools/list / tools/call all pass)</li>
+  <li data-id="w5_03"><input type="checkbox"> DeepChat client connected to MCP Gateway (<code>http://&lt;server-IP&gt;:3100/mcp</code>)</li>
+  <li data-id="w5_04"><input type="checkbox"> Aggregated business MCP servers (configure <code>mcp-servers.json</code> as needed)</li>
+</ul>
+
+<h3>6. Business Apps &amp; Dev Collaboration <span class="stage-todo">▸▸ To be configured</span></h3>
+<ul class="checklist">
+  <li data-id="w6_01"><input type="checkbox"> Dify (80) initialized, admin <code>ai_all_in_one_admin</code> can log in</li>
+  <li data-id="w6_02"><input type="checkbox"> Dify model provider points to NewAPI + chat app works</li>
+  <li data-id="w6_03"><input type="checkbox"> Dify Keycloak OIDC SSO configured</li>
+  <li data-id="w6_04"><input type="checkbox"> Ghost (8090) initialized + navigation menu + download center</li>
+  <li data-id="w6_05"><input type="checkbox"> Gitea (3002) installed + Actions + Runner registered</li>
+  <li data-id="w6_06"><input type="checkbox"> Update Server hosting DeepChat installer packages</li>
+  <li data-id="w6_07"><input type="checkbox"> DeepChat installed + Provider points to NewAPI + AI responds</li>
+</ul>
+
+<h3>7. End-to-End Verification <span class="stage-todo">▸▸ To be verified</span></h3>
+<ul class="checklist">
+  <li data-id="w7_01"><input type="checkbox"> DeepChat → NewAPI → LiteLLM → external model round-trip</li>
+  <li data-id="w7_02"><input type="checkbox"> Dify → NewAPI → LiteLLM → external model round-trip</li>
+  <li data-id="w7_03" class="warn"><input type="checkbox"> PII masking + restoration (enable after guardrail compatibility)</li>
+  <li data-id="w7_04"><input type="checkbox"> Ghost → Dify portal redirect</li>
+  <li data-id="w7_05"><input type="checkbox"> AI Admin Center dashboard fully functional</li>
+  <li data-id="w7_06"><input type="checkbox"> Startup self-check script scheduled task configured</li>
+</ul>
+
+<h3>8. Extended Verification Checklist (with estimated effort)</h3>
+<p class="subtitle" style="margin-top:-6px">Proceed through 5 phases; estimated effort in parentheses. Complements sections 1–7 above: those are organized by functional module, this one by time phase.</p>
+
+<h4 style="color:#58a6ff">Phase 1 · Infrastructure (~1 day)</h4>
+<ul class="checklist">
+  <li data-id="w8_01"><input type="checkbox"> OS running normally, nvidia-smi / docker version work</li>
+  <li data-id="w8_02"><input type="checkbox"> Docker network <code>ai-platform</code> created</li>
+  <li data-id="w8_03"><input type="checkbox"> AI Admin Center (<code>&lt;server-IP&gt;:10086</code>) accessible, Keycloak login succeeds</li>
+  <li data-id="w8_04"><input type="checkbox"> All core containers show Up in <code>docker compose ps</code></li>
+</ul>
+
+<h4 style="color:#d2a8ff">Phase 2 · LLM Pipeline (~1 day)</h4>
+<ul class="checklist">
+  <li data-id="w8_05"><input type="checkbox"> LiteLLM health check <code>/health</code> returns OK</li>
+  <li data-id="w8_06"><input type="checkbox"> NewAPI channel configured → LiteLLM test passes</li>
+  <li data-id="w8_07" class="warn"><input type="checkbox"> PII masking verified: send a message containing a phone number / ID card, reply is normal</li>
+  <li data-id="w8_08"><input type="checkbox"> NewAPI token generated → used by DeepChat and Dify</li>
+</ul>
+
+<h4 style="color:#56d364">Phase 3 · AI Apps + Portal (~1-2 days)</h4>
+<ul class="checklist">
+  <li data-id="w8_09"><input type="checkbox"> Dify admin registered, model provider points to NewAPI, test passes</li>
+  <li data-id="w8_10"><input type="checkbox"> Conversation created in Dify Playground → returns normally (verifies NewAPI → LiteLLM → external model chain)</li>
+  <li data-id="w8_11"><input type="checkbox"> Keycloak realm and clients created, OIDC endpoints accessible</li>
+  <li data-id="w8_12"><input type="checkbox"> Keycloak SSO → Dify login test (optional)</li>
+  <li data-id="w8_13"><input type="checkbox"> Ghost portal homepage accessible, AI workbench link points to Dify</li>
+</ul>
+
+<h4 style="color:#d29922">Phase 4 · CI/CD + Client (~1-2 days)</h4>
+<ul class="checklist">
+  <li data-id="w8_14"><input type="checkbox"> Gitea initialized, Runner registered successfully (Idle state)</li>
+  <li data-id="w8_15"><input type="checkbox"> DeepChat source forked to internal Gitea repo</li>
+  <li data-id="w8_16"><input type="checkbox"> CI/CD workflow <code>.gitea/workflows/release.yml</code> created</li>
+  <li data-id="w8_17"><input type="checkbox"> Update server (8091) accessible</li>
+  <li data-id="w8_18"><input type="checkbox"> DeepChat client installed, Provider points to NewAPI</li>
+  <li data-id="w8_19"><input type="checkbox"> MCP Gateway running, DeepChat can fetch MCP tool list</li>
+</ul>
+
+<h4 style="color:#f85149">Phase 5 · End-to-End Full Chain (~0.5 day)</h4>
+<ul class="checklist">
+  <li data-id="w8_20"><input type="checkbox"> <b>Full LLM chain:</b> DeepChat → NewAPI → LiteLLM (PII masking) → external model → response restoration → OK</li>
+  <li data-id="w8_21"><input type="checkbox"> <b>Full Dify chain:</b> browser → Dify → NewAPI → LiteLLM → external model → RAG/Agent replies normally</li>
+  <li data-id="w8_22"><input type="checkbox"> <b>SSO auth:</b> Keycloak → Dify/NewAPI OIDC login works</li>
+  <li data-id="w8_23"><input type="checkbox"> <b>MCP tools:</b> DeepChat → MCP Gateway → tool call returns normally</li>
+  <li data-id="w8_24"><input type="checkbox"> <b>Portal navigation:</b> browser → Ghost → click "AI Workbench" → redirect to Dify → OK</li>
+</ul>
+
+<p class="timestamp">Exported: 2026-08-13 · Windows Docker Desktop single-machine deployment</p>
+
+<script>
+const STORAGE_KEY = 'ai-platform-checklist-windows';
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveAll() {
+  const state = {};
+  document.querySelectorAll('.checklist li').forEach(li => {
+    const cb = li.querySelector('input[type=checkbox]');
+    if (cb && !cb.disabled) state[li.dataset.id] = cb.checked;
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  updateSummary();
+  document.getElementById('status').textContent = 'Saved (' + new Date().toLocaleTimeString() + ')';
+}
+function resetAll() {
+  if (!confirm('Reset all checkbox progress?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.checklist li input[type=checkbox]').forEach(cb => {
+    if (!cb.disabled) { cb.checked = false; cb.parentElement.classList.remove('checked'); }
+  });
+  updateSummary();
+  document.getElementById('status').textContent = 'Reset';
+}
+function updateSummary() {
+  const all = document.querySelectorAll('.checklist li input[type=checkbox]:not([disabled])');
+  let done = 0;
+  all.forEach(cb => { if (cb.checked) done++; });
+  document.getElementById('doneCount').textContent = done;
+  document.getElementById('totalCount').textContent = all.length;
+  const pct = Math.round(done / all.length * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('status').textContent = done + '/' + all.length + ' done (' + pct + '%)';
+}
+
+document.querySelectorAll('.checklist li').forEach(li => {
+  li.addEventListener('click', function(e) {
+    if (e.target.tagName === 'CODE') return;
+    const cb = this.querySelector('input[type=checkbox]');
+    if (cb && !cb.disabled) {
+      cb.checked = !cb.checked;
+      this.classList.toggle('checked', cb.checked);
+      saveAll();
+    }
+  });
+});
+
+// Load initial state (items not overridden by localStorage keep their default checked state in HTML)
+const saved = loadAll();
+document.querySelectorAll('.checklist li').forEach(li => {
+  const cb = li.querySelector('input[type=checkbox]');
+  if (!cb) return;
+  if (saved[li.dataset.id] !== undefined) {
+    cb.checked = saved[li.dataset.id];
+  }
+  li.classList.toggle('checked', cb.checked);
+});
+updateSummary();
+</script>
+</body>
+</html>

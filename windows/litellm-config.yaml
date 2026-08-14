@@ -1,0 +1,151 @@
+# ============================================================
+# LiteLLM Configuration — LLM Proxy + Presidio PII Redaction
+# Mounted as: /app/config.yaml (inside LiteLLM container)
+#
+# Key concept: api_key: os.environ/VARIABLE_NAME
+# The "os.environ/" prefix tells LiteLLM to read the value
+# from the environment variable of the same name in your .env file.
+# If the .env var is empty, LiteLLM will fail for that model.
+#
+# ADDING A MODEL:
+#   1. Add API key to .env (e.g. OPENAI_API_KEY=sk-xxx)
+#   2. Uncomment the model block below
+#   3. Restart: docker compose restart litellm
+#
+# REMOVING A MODEL:
+#   1. Comment out the model block below
+#   2. (Optional) Comment out or empty the key in .env
+#   3. Restart: docker compose restart litellm
+# ============================================================
+
+model_list:
+  # --- OpenAI GPT-4o models ---
+  # HOW: requires OPENAI_API_KEY in .env
+  # UNCOMMENT: remove the '#' before each line in this block
+  # - model_name: gpt-4o
+  #   litellm_params:
+  #     model: openai/gpt-4o                # LiteLLM model identifier
+  #     api_key: os.environ/OPENAI_API_KEY   # reads from .env
+  #
+  # - model_name: gpt-4o-mini
+  #   litellm_params:
+  #     model: openai/gpt-4o-mini
+  #     api_key: os.environ/OPENAI_API_KEY
+
+  # --- Anthropic Claude Sonnet 3.5 ---
+  # HOW: requires ANTHROPIC_API_KEY in .env (starts with sk-ant-)
+  # UNCOMMENT: remove the '#' before each line in this block
+  # - model_name: claude-3-5-sonnet-20241022
+  #   litellm_params:
+  #     model: anthropic/claude-3-5-sonnet-20241022
+  #     api_key: os.environ/ANTHROPIC_API_KEY
+
+  # --- DeepSeek Chat (DEFAULT, active) ---
+  # HOW: fill in DEEPSEEK_API_KEY in .env (starts with sk-)
+  # GET KEY: https://platform.deepseek.com → API Keys
+  - model_name: deepseek-chat                # Model name shown in NewAPI
+    litellm_params:
+      model: openai/deepseek-chat            # Underlying provider/model
+      api_key: os.environ/DEEPSEEK_API_KEY   # Key from .env
+      api_base: https://api.deepseek.com/v1  # DeepSeek API endpoint
+
+# ============================================================
+# Guardrails（内容安全 + PII 脱敏）
+# guardrails 是「顶层键」（不是 litellm_settings 的子键），较新 LiteLLM 版本格式。
+# ============================================================
+guardrails:
+  # --- ① 内置内容过滤器（无需外部服务，立即生效）---
+  # 支持 prebuilt 预设模式 + 自定义正则 + 关键字；action = MASK(脱敏) / BLOCK(拒绝)
+  - guardrail_name: "content-safety-filter"
+    litellm_params:
+      guardrail: litellm_content_filter
+      mode: "pre_call"
+      default_on: true          # 对所有请求生效，无需客户端显式指定
+      patterns:
+        # 中国手机号（11 位，1 开头）
+        - pattern_type: "regex"
+          pattern: '\b1[3-9]\d{9}\b'
+          name: "cn_mobile"
+          action: "MASK"
+        # 中国身份证号（18 位）
+        - pattern_type: "regex"
+          pattern: '\b\d{17}[\dXx]\b'
+          name: "cn_id"
+          action: "MASK"
+        # 银行卡号（16~19 位数字）
+        - pattern_type: "regex"
+          pattern: '\b\d{16,19}\b'
+          name: "bank_card"
+          action: "MASK"
+        # 邮箱（预设模式）
+        - pattern_type: "prebuilt"
+          pattern_name: "email"
+          action: "MASK"
+        # 统一社会信用代码（18 位，含大写字母与数字，企业标识）
+        - pattern_type: "regex"
+          pattern: '\b[0-9A-HJ-NPQRTUWXY]{18}\b'
+          name: "cn_credit_code"
+          action: "MASK"
+        # 中国护照号（E/G 开头 + 8 位数字）
+        - pattern_type: "regex"
+          pattern: '\b[EG]\d{8}\b'
+          name: "cn_passport"
+          action: "MASK"
+        # IPv4 地址
+        - pattern_type: "regex"
+          pattern: '\b\d{1,3}(\.\d{1,3}){3}\b'
+          name: "ip_address"
+          action: "MASK"
+      # 敏感词黑名单（命中即拒绝请求）——按公司实际敏感词自行增删
+      blocked_words:
+        - keyword: "内部机密"
+          action: "BLOCK"
+          description: "公司内部机密信息"
+        - keyword: "商业机密"
+          action: "BLOCK"
+          description: "商业机密信息"
+
+  # --- ② Presidio PII 脱敏（需 presidio 服务）---
+  # 识别英文人名/地址/日期等更细粒度实体，与上方内置正则互补。
+  # 依赖 presidio-analyzer / presidio-anonymizer，端点由
+  # 环境变量 PRESIDIO_ANALYZER_API_BASE / PRESIDIO_ANONYMIZER_API_BASE 指定。
+  - guardrail_name: "presidio-pii-mask"
+    litellm_params:
+      guardrail: presidio
+      mode: "pre_call"
+      default_on: true          # 对所有请求生效
+      output_parse_pii: true
+      pii_entities_config:
+        EMAIL_ADDRESS: "MASK"
+        PHONE_NUMBER: "MASK"
+        CREDIT_CARD: "MASK"
+        PERSON: "MASK"
+
+# ============================================================
+# General Settings
+# ============================================================
+general_settings:
+  # [LiteLLM internal] — Master admin API key for LiteLLM itself
+  # NOT an external LLM key. NewAPI uses this to authenticate to LiteLLM.
+  # Value comes from .env (LITELLM_MASTER_KEY), read at runtime.
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+# ============================================================
+# Response Caching — Redis exact-match (vanilla Redis)
+# Caches identical requests (hash of model + messages + params)
+# across ALL users. Any change = cache miss, so no stale replays.
+# Saves tokens on FAQ / template / repeated queries.
+# To disable: set cache: false or comment out this block.
+# ============================================================
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis
+    port: 6379
+    ttl: 3600
+  # --- LLM 可观测（Langfuse）---
+  # 每次调用（提示词/响应/模型/延迟/成本/token）上报到 Langfuse 做追踪分析。
+  # 端点由环境变量 LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY / LANGFUSE_HOST 指定。
+  success_callback: ["langfuse"]
+
