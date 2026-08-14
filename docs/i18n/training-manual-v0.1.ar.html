@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل تدريب AI AllInOne v0.1</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; line-height: 1.9; font-size: 15px; }
+  a { color: #58a6ff; text-decoration: none; } a:hover { text-decoration: underline; }
+  code { background: #161b22; border: 1px solid #30363d; border-radius: 4px; padding: 1px 6px; font-family: "Consolas", "Monaco", monospace; color: #79c0ff; font-size: 13px; direction: ltr; unicode-bidi: embed; display: inline-block; }
+  .layout { display: flex; }
+  .sidebar { width: 300px; min-width: 300px; height: 100vh; position: sticky; top: 0; background: #010409; border-left: 1px solid #21262d; overflow-y: auto; padding: 20px 0 40px; }
+  .content { flex: 1; min-width: 0; padding: 32px 40px 80px; max-width: 980px; }
+  .brand { padding: 0 20px 16px; border-bottom: 1px solid #21262d; margin-bottom: 12px; }
+  .brand h1 { font-size: 16px; margin: 0 0 4px; color: #e6edf3; }
+  .brand .ver { font-size: 12px; color: #8b949e; }
+  .langbar { padding: 8px 20px; border-bottom: 1px solid #21262d; margin-bottom: 12px; font-size: 12px; line-height: 2.2; }
+  .langbar a { margin-left: 6px; white-space: nowrap; } .langbar .cur { color: #e6edf3; font-weight: 600; }
+  .toc-group { margin: 2px 0; }
+  .toc-head { display: flex; align-items: center; gap: 6px; width: 100%; background: none; border: none; color: #c9d1d9; cursor: pointer; padding: 8px 16px; font-size: 14px; font-weight: 600; text-align: right; font-family: inherit; }
+  .toc-head:hover { background: #161b22; }
+  .toc-head .arrow { transition: transform .15s; font-size: 10px; color: #8b949e; display: inline-block; }
+  .toc-group.collapsed .arrow { transform: rotate(90deg); }
+  .toc-items { display: flex; flex-direction: column; } .toc-group.collapsed .toc-items { display: none; }
+  .toc-items a { padding: 5px 16px 5px 34px; font-size: 13px; color: #8b949e; border-right: 2px solid transparent; text-align: right; }
+  .toc-items a:hover { color: #c9d1d9; background: #161b22; text-decoration: none; }
+  .toc-items a.active { color: #58a6ff; border-right-color: #58a6ff; background: #0d1117; }
+  h1 { font-size: 28px; color: #e6edf3; border-bottom: 1px solid #21262d; padding-bottom: 12px; margin-top: 8px; }
+  h2 { font-size: 22px; color: #58a6ff; margin-top: 44px; padding-bottom: 8px; border-bottom: 1px solid #21262d; scroll-margin-top: 20px; }
+  h3 { font-size: 17px; color: #e6edf3; margin-top: 30px; scroll-margin-top: 20px; }
+  h4 { font-size: 15px; color: #d2a8ff; margin-top: 22px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #30363d; padding: 8px 12px; text-align: right; vertical-align: top; }
+  th { background: #161b22; color: #e6edf3; font-weight: 600; white-space: nowrap; } td { background: #0d1117; }
+  .note, .warn, .tip { padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-size: 14px; }
+  .note { background: rgba(56,139,253,0.1); border: 1px solid rgba(56,139,253,0.4); color: #79c0ff; }
+  .warn { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.4); color: #ff7b72; }
+  .tip  { background: rgba(46,160,67,0.1); border: 1px solid rgba(46,160,67,0.4); color: #7ee787; }
+  .chapter-tag { display: inline-block; background: #1f6feb; color: #fff; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-left: 8px; vertical-align: middle; }
+  .muted { color: #8b949e; font-size: 13px; }
+  ul, ol { padding-right: 24px; padding-left: 0; } li { margin: 4px 0; }
+  blockquote { border-right: 3px solid #30363d; border-left: none; margin: 12px 0; padding: 4px 16px; color: #8b949e; }
+  @media (max-width: 820px) { .layout { flex-direction: column; } .sidebar { width: 100%; min-width: 0; height: auto; position: static; } .content { padding: 20px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="brand">
+      <h1>📘 دليل تدريب AI AllInOne</h1>
+      <div class="ver">v0.1 · 2026-08-14 · داخلي</div>
+    </div>
+    <div class="langbar">
+      🌐 <a href="../training-manual-v0.1.html">English</a>
+      <a href="training-manual-v0.1.zh.html">简体中文</a>
+      <a href="training-manual-v0.1.zh-TW.html">繁體中文</a>
+      <a href="training-manual-v0.1.fr.html">Français</a>
+      <a href="training-manual-v0.1.es.html">Español</a>
+      <a href="training-manual-v0.1.pt.html">Português</a>
+      <a href="training-manual-v0.1.ja.html">日本語</a>
+      <a href="training-manual-v0.1.ko.html">한국어</a>
+      <a class="cur" href="training-manual-v0.1.ar.html">العربية</a>
+    </div>
+    <div class="toc" id="toc">
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> الفصل الأول · مقدمة</button>
+        <div class="toc-items">
+          <a href="#1-1">1.1 ما هي المنصة</a>
+          <a href="#1-2">1.2 البنية</a>
+          <a href="#1-3">1.3 نظرة عامة على نقاط الدخول</a>
+          <a href="#1-4">1.4 الحساب الموحّد والدخول الموحّد</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> الفصل الثاني · الإعداد</button>
+        <div class="toc-items">
+          <a href="#2-1">2.1 ما قبل النشر</a>
+          <a href="#2-2">2.2 المتغيرات والأسرار</a>
+          <a href="#2-3">2.3 Keycloak</a>
+          <a href="#2-4">2.4 قنوات LLM</a>
+          <a href="#2-5">2.5 الدخول الموحّد SSO</a>
+          <a href="#2-6">2.6 إخفاء PII</a>
+          <a href="#2-7">2.7 المراقبة / السجلات / التنبيهات</a>
+          <a href="#2-8">2.8 النسخ الاحتياطي والاستعادة</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> الفصل الثالث · الإدارة</button>
+        <div class="toc-items">
+          <a href="#3-1">3.1 Keycloak</a>
+          <a href="#3-2">3.2 NewAPI</a>
+          <a href="#3-3">3.3 LiteLLM</a>
+          <a href="#3-4">3.4 Dify</a>
+          <a href="#3-5">3.5 Ghost</a>
+          <a href="#3-6">3.6 Gitea</a>
+          <a href="#3-7">3.7 MCP Gateway</a>
+          <a href="#3-8">3.8 خادم تحديث DeepChat</a>
+          <a href="#3-9">3.9 مركز إدارة AI</a>
+          <a href="#3-10">3.10 المراقبة (Prometheus/Grafana)</a>
+          <a href="#3-11">3.11 ملاحظة LLM (Langfuse)</a>
+          <a href="#3-12">3.12 السجلات الموحّدة (Loki)</a>
+          <a href="#3-13">3.13 النسخ الاحتياطي والاستعادة</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> الفصل الرابع · دليل المستخدم</button>
+        <div class="toc-items">
+          <a href="#4-1">4.1 البدء</a>
+          <a href="#4-2">4.2 طلب مفتاح API</a>
+          <a href="#4-3">4.3 قواعد أمان البيانات</a>
+          <a href="#4-4">4.4 الأسئلة الشائعة</a>
+          <a href="#4-5">4.5 مدونة السلوك</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="content">
+    <h1>دليل تدريب AI AllInOne</h1>
+    <p class="muted">v0.1 · للمسؤولين والمستخدمين · يغطي «المقدمة ← الإعداد ← إدارة كل أداة ← دليل المستخدم».</p>
+
+    <div class="note">📌 هذه هي <b>النسخة v0.1</b>. المنافذ والحسابات تعكس النشر الحالي (مثال IP <code>192.168.31.117</code> — استبدله بعنوان IP الخاص بشبكتك الداخلية). الأسرار موجودة في ملف <code>credentials.html</code> المحلي لدى المسؤول.</div>
+
+    <h2 id="ch1"><span class="chapter-tag">الفصل الأول</span>مقدمة</h2>
+
+    <h3 id="1-1">1.1 ما هي المنصة</h3>
+    <p>«AI AllInOne» هي منصة ذكاء اصطناعي مؤسسية منشورة على الشبكة الداخلية. تركّز قدرات النماذج اللغوية الكبيرة بحيث يستخدم الموظفون كل شيء <b>بحساب واحد</b>. تنسّق أكثر من اثني عشر منتجاً مفتوح المصدر عبر Docker، مع Keycloak لتوفير الهوية الموحّدة.</p>
+    <ul>
+      <li><b>دخول موحّد</b>: حساب واحد (يمكن ربطه بـ AD) لجميع المنتجات؛</li>
+      <li><b>بوابة نماذج موحّدة</b>: كل الاستدعاءات تمر عبر NewAPI + LiteLLM مع تدقيق وفوترة وإخفاء تلقائي؛</li>
+      <li><b>إخفاء PII</b>: إخفاء الهواتف/الهويات/البريد قبل الوصول للنموذج؛</li>
+      <li><b>تطبيقات ذكاء اصطناعي</b>: Dify لبناء الوكلاء والأسئلة والأجوبة وسير العمل؛</li>
+      <li><b>الملاحظة والعمليات</b>: مراقبة وتنبيهات وتتبع LLM وسجلات موحّدة ونسخ احتياطي واستعادة واختبارات توفر وتقارير.</li>
+    </ul>
+
+    <h3 id="1-2">1.2 البنية</h3>
+    <table>
+      <tr><th>الطبقة</th><th>المكوّن</th><th>الدور</th></tr>
+      <tr><td>المصادقة</td><td>Keycloak</td><td>SSO / OIDC، تكامل AD/LDAP أو حسابات محلية</td></tr>
+      <tr><td>توجيه LLM</td><td>NewAPI</td><td>القنوات والمفاتيح والحصص والتدقيق والتكلفة</td></tr>
+      <tr><td>إخفاء PII</td><td>LiteLLM + Presidio</td><td>إخفاء تلقائي للبيانات الحساسة</td></tr>
+      <tr><td>تطبيقات الذكاء الاصطناعي</td><td>Dify</td><td>منصة تطبيقات مرئية / وكلاء</td></tr>
+      <tr><td>بوابة المؤسسة</td><td>Ghost</td><td>الإعلانات والأخبار والوثائق والتنزيلات</td></tr>
+      <tr><td>المصدر / CI</td><td>Gitea + Runner</td><td>Git داخلي + أتمتة Actions</td></tr>
+      <tr><td>توزيع العميل</td><td>خادم التحديث</td><td>استضافة مثبّت DeepChat والتحديث التلقائي</td></tr>
+      <tr><td>الإدارة الموحّدة</td><td>مركز إدارة AI</td><td>مدخل واحد: لوحة تحكم + المنتجات + التدقيق/التكلفة/التقارير</td></tr>
+      <tr><td>البوابة</td><td>MCP Gateway</td><td>إدارة سوق المهارات / MCP</td></tr>
+      <tr><td>المراقبة</td><td>Prometheus + Grafana + Alertmanager</td><td>مراقبة الموارد + التنبيهات</td></tr>
+      <tr><td>ملاحظة LLM</td><td>Langfuse</td><td>تتبّع / زمن الاستجابة / الرموز / التكلفة لكل استدعاء</td></tr>
+      <tr><td>السجلات الموحّدة</td><td>Loki + Promtail</td><td>سجلات مجمّعة وقابلة للبحث</td></tr>
+      <tr><td>النسخ الاحتياطي/الاستعادة</td><td>سكربتات backup/restore + صفحة إدارة</td><td>نسخ كامل يومي + استعادة بنقرة واحدة</td></tr>
+    </table>
+
+    <h3 id="1-3">1.3 نظرة عامة على نقاط الدخول</h3>
+    <p>كل مدخل بصيغة <code>http://&lt;IP-الخادم&gt;:&lt;المنفذ&gt;</code>؛ مثال IP <code>192.168.31.117</code>:</p>
+    <table>
+      <tr><th>المنتج</th><th>المنفذ</th><th>المدخل</th><th>الجمهور</th></tr>
+      <tr><td>Dify</td><td>80</td><td><code>http://IP</code></td><td>المستخدمون / المسؤولون</td></tr>
+      <tr><td>بوابة Ghost</td><td>8090</td><td><code>http://IP:8090</code></td><td>الجميع</td></tr>
+      <tr><td>تنزيل DeepChat</td><td>8090</td><td><code>http://IP:8090/downloads/</code></td><td>الجميع</td></tr>
+      <tr><td>NewAPI</td><td>3000</td><td><code>http://IP:3000</code></td><td>المسؤولون / طلب المفاتيح</td></tr>
+      <tr><td>Gitea</td><td>3002</td><td><code>http://IP:3002</code></td><td>المطوّرون / المسؤولون</td></tr>
+      <tr><td>وحدة تحكم Keycloak</td><td>9090</td><td><code>http://IP:9090</code></td><td>المسؤولون</td></tr>
+      <tr><td>مركز إدارة AI</td><td>10086</td><td><code>http://IP:10086</code></td><td>المسؤولون</td></tr>
+      <tr><td>MCP Gateway</td><td>3100</td><td><code>http://IP:3100</code></td><td>المسؤولون</td></tr>
+      <tr><td>LiteLLM</td><td>4001</td><td><code>http://IP:4001</code></td><td>وكيل داخلي</td></tr>
+      <tr><td>خادم التحديث</td><td>8091</td><td><code>http://IP:8091</code></td><td>تحديث DeepChat</td></tr>
+      <tr><td>Grafana</td><td>3030</td><td><code>http://IP:3030</code></td><td>المسؤولون</td></tr>
+      <tr><td>Langfuse</td><td>3010</td><td><code>http://IP:3010</code></td><td>المسؤولون</td></tr>
+      <tr><td>Prometheus</td><td>9091</td><td><code>http://IP:9091</code></td><td>المسؤولون</td></tr>
+      <tr><td>Alertmanager</td><td>9093</td><td><code>http://IP:9093</code></td><td>المسؤولون</td></tr>
+      <tr><td>Loki</td><td>3110</td><td><code>http://IP:3110</code></td><td>المسؤولون</td></tr>
+      <tr><td>Presidio</td><td>5001/5002</td><td>داخلي</td><td>مكوّنات PII</td></tr>
+    </table>
+    <div class="warn">⚠️ منفذ Dify الخارجي هو <b>80</b> (<code>http://IP</code>). علامة <code>:8088</code> في الوثائق القديمة كانت خطأ — استخدم 80.</div>
+
+    <h3 id="1-4">1.4 الحساب الموحّد والدخول الموحّد</h3>
+    <ul>
+      <li>حساب المسؤول الموحّد: <code>ai_all_in_one_admin</code> (كلمة المرور في <code>credentials.html</code>)؛</li>
+      <li>مرتبط بـ <b>AD</b> (LDAP) عبر Keycloak، مع حساب محلي كاحتياط؛</li>
+      <li>Grafana وLangfuse وNewAPI ومركز إدارة AI تستخدم SSO الخاص بـ Keycloak — بعضها <b>بتسجيل دخول تلقائي</b>؛</li>
+      <li>يستخدم الموظفون الحساب الموحّد (أو AD) لـ DeepChat / Dify.</li>
+    </ul>
+    <div class="note">📌 إذا فشل SSO بخطأ <code>unknown_error</code>، فغالباً السبب هو <b>توقف خدمة IP Helper (iphlpsvc)</b> مما يكسر إعادة توجيه منفذ AD (389). كمسؤول: <code>Start-Service iphlpsvc</code> + أعد إضافة قواعد <code>netsh interface portproxy</code>.</div>
+
+    <h2 id="ch2"><span class="chapter-tag">الفصل الثاني</span>الإعداد</h2>
+
+    <h3 id="2-1">2.1 ما قبل النشر</h3>
+    <ol>
+      <li><b>تثبيت Docker Desktop</b> (Windows) أو Docker Engine (Linux/عبر الإنترنت) وتشغيله.</li>
+      <li><b>تجهيز الشبكة</b>: الوصول إلى سجلات الصور (Docker Hub / quay.io — وإلا فاضبط مرآة مثل DaoCloud) وإلى GitHub؛ حدّد عنوان IP المطلوب كشفه.</li>
+      <li><b>(اختياري) تجهيز AD</b>: وحدة تحكم نطاق قابلة للوصول، مع bind DN وكلمة مرور bind وbase DN الخاص بـ LDAP.</li>
+      <li><b>تجهيز مفاتيح API للنماذج</b>: DeepSeek / OpenAI / Claude، مفتاح واحد على الأقل.</li>
+    </ol>
+
+    <h3 id="2-2">2.2 المتغيرات والأسرار</h3>
+    <p>الإعداد في <code>.env</code> (القالب: <code>.env.example</code>). المتغيرات الرئيسية:</p>
+    <table>
+      <tr><th>المتغير</th><th>الدور</th></tr>
+      <tr><td><code>KEYCLOAK_ADMIN / KEYCLOAK_ADMIN_PASSWORD</code></td><td>حساب مسؤول Keycloak</td></tr>
+      <tr><td><code>KEYCLOAK_DB_PASSWORD</code></td><td>كلمة مرور PostgreSQL الخاصة بـ Keycloak</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD / NEWAPI_SESSION_SECRET / NEWAPI_CRYPTO_SECRET</code></td><td>قاعدة NewAPI ومفاتيح الجلسة</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>مفتاح رئيسي NewAPI → LiteLLM</td></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code> إلخ</td><td>مفاتيح النماذج الخارجية</td></tr>
+      <tr><td><code>GRAFANA_OAUTH_CLIENT_SECRET</code></td><td>سرّ عميل SSO الخاص بـ Grafana</td></tr>
+      <tr><td><code>LANGFUSE_KEYCLOAK_CLIENT_SECRET</code></td><td>سرّ عميل SSO الخاص بـ Langfuse</td></tr>
+      <tr><td><code>LANGFUSE_PUBLIC_KEY / SECRET_KEY</code></td><td>مفاتيح مشروع Langfuse</td></tr>
+      <tr><td><code>ALERT_WEBHOOK_URL</code></td><td>Webhook التنبيه (DingTalk/WeCom/Feishu أو مركز إدارة AI)</td></tr>
+    </table>
+    <div class="tip">✅ سكربت <code>bootstrap.ps1</code> يستبدل IP ويولّد الأسرار ويشغّل الحاويات ويهيّئ Keycloak ويضبط قنوات NewAPI ويسجّل مهمة النسخ. فضّله للنشر الجديد.</div>
+
+    <h3 id="2-3">2.3 Keycloak</h3>
+    <p>Keycloak هو مركز المصادقة، حالياً في <b>وضع الإنتاج (start + PostgreSQL)</b>:</p>
+    <ul>
+      <li><b>Realm</b>: <code>enterprise-ai</code>؛</li>
+      <li><b>الدور</b>: <code>ai-platform-admin</code>؛</li>
+      <li><b>عملاء OIDC</b>: <code>AI-all-in-one-admin-portal</code>, <code>grafana</code>, <code>langfuse</code>, <code>newapi</code> (كلها confidential)؛</li>
+      <li><b>الارتباط بـ LDAP</b>: vendor=AD، bind DN بالاسم الشائع الذي يحتوي مسافات (<code>CN=ai all in one admin,CN=Users,DC=chxia,DC=lab</code>).</li>
+    </ul>
+    <div class="note">📌 استخدم <code>scripts/keycloak-realm-init.ps1</code> لإنشاء realm + العملاء + الدور + ارتباط LDAP دفعة واحدة. المعرّف الداخلي للـ realm هو UUID.</div>
+
+    <h3 id="2-4">2.4 قنوات LLM</h3>
+    <p>السلسلة: <b>العميل → NewAPI (3000) → LiteLLM (4001) → النموذج الخارجي</b>.</p>
+    <ol>
+      <li>في NewAPI «القنوات»، أنشئ قناة تشير إلى LiteLLM: Base URL <code>http://IP:4001/v1</code>، مع <code>LITELLM_MASTER_KEY</code>؛</li>
+      <li>اضبط قائمة النماذج في <code>litellm-config.yaml</code>؛</li>
+      <li>أصدر مفاتيح API (<code>sk-</code>) في NewAPI «الرموز».</li>
+    </ol>
+
+    <h3 id="2-5">2.5 الدخول الموحّد SSO</h3>
+    <table>
+      <tr><th>المنتج</th><th>الطريقة</th><th>ملاحظات</th></tr>
+      <tr><td>مركز إدارة AI</td><td>OIDC (keycloak-connect)</td><td>إعادة توجيه تلقائية إلى Keycloak</td></tr>
+      <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td><code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code></td></tr>
+      <tr><td>Langfuse</td><td>موفّر Keycloak</td><td><code>/auth/sso-initiate?provider=KEYCLOAK</code></td></tr>
+      <tr><td>NewAPI</td><td>OIDC</td><td>«تسجيل الدخول بنقرة واحدة»</td></tr>
+    </table>
+
+    <h3 id="2-6">2.6 إخفاء PII</h3>
+    <p>طبقتان على وكيل LiteLLM، مع <code>default_on</code>:</p>
+    <ul>
+      <li><b>تعبيرات LiteLLM النمطية</b>: إخفاء الهواتف والهويات والبطاقات والبريد ورموز الائتمان وجوازات السفر وIP + حجب الكلمات الحساسة؛</li>
+      <li><b>Presidio</b>: كشف الأسماء/البريد/البطاقات (analyzer: 5002, anonymizer: 5001).</li>
+    </ul>
+    <div class="warn">⚠️ النطاق: الاستدعاءات المارة عبر LiteLLM فقط؛ لا يخفي البيانات المخزنة مسبقاً في قواعد أخرى.</div>
+
+    <h3 id="2-7">2.7 المراقبة / السجلات / التنبيهات</h3>
+    <ul>
+      <li><b>المراقبة</b>: Prometheus (9091) + Grafana (3030)؛</li>
+      <li><b>التنبيهات</b>: Alertmanager (9093) → webhook (افتراضياً إلى مركز إدارة AI)؛</li>
+      <li><b>السجلات</b>: Promtail يجمع → Loki (3110)، صفحة «السجلات الموحّدة»؛</li>
+      <li><b>التدوير</b>: <code>x-logging</code> عام (10MB × 3).</li>
+    </ul>
+
+    <h3 id="2-8">2.8 النسخ الاحتياطي والاستعادة</h3>
+    <p><code>scripts/backup.ps1</code> يعمل يومياً عند 02:00: NewAPI MySQL، Dify PG، SQLite لـ Ghost/Gitea/Grafana، Keycloak (تصدير realm بصيغة JSON)، Langfuse PG، ملفات الإعداد. الاستعادة عبر <code>restore.ps1</code> أو صفحة «النسخ الاحتياطي والاستعادة».</p>
+    <div class="note">📌 يجب نسخ Keycloak عبر <b>realm export/import (JSON)</b>، وليس pg_dump وحده. انظر 3.13.</div>
+
+    <h2 id="ch3"><span class="chapter-tag">الفصل الثالث</span>الإدارة (دليل لكل أداة)</h2>
+    <p class="muted">يغطي كل قسم «كيفية الدخول وماذا تفعل والمهام اليومية». المدخل الموصى به: <b>مركز إدارة AI (:10086)</b>.</p>
+
+    <h3 id="3-1">3.1 Keycloak</h3>
+    <p><b>المدخل</b>: <code>http://IP:9090</code> → وحدة التحكم، المستخدم <code>ai_all_in_one_admin</code>.</p>
+    <ul>
+      <li>إدارة المستخدمين وإعادة تعيين كلمات المرور ومنح دور <code>ai-platform-admin</code>؛</li>
+      <li>إدارة عملاء OIDC؛</li>
+      <li>عرض/ضبط ارتباط LDAP؛</li>
+      <li>عرض الجلسات وتسجيل الخروج القسري.</li>
+    </ul>
+
+    <h3 id="3-2">3.2 NewAPI</h3>
+    <p><b>المدخل</b>: <code>http://IP:3000</code>، الحساب الموحّد.</p>
+    <ul>
+      <li><b>القنوات</b>: إدارة القنوات الصاعدة (نحو LiteLLM)؛</li>
+      <li><b>الرموز</b>: إصدار/تعطيل المفاتيح والحصص والانتهاء؛</li>
+      <li><b>السجلات</b>: المستخدم/النموذج/الرموز/الحصة/التكلفة/IP لكل استدعاء؛</li>
+      <li><b>المستخدمون</b>: الشحن ورفع الحدود والحظر.</li>
+    </ul>
+    <div class="note">📌 تسجيل عنوان IP للعميل يعتمد على إعداد «تسجيل سجل IP» (معطّل افتراضياً). فعّله من الإعدادات الشخصية.</div>
+
+    <h3 id="3-3">3.3 LiteLLM</h3>
+    <p><b>المدخل</b>: <code>http://IP:4001</code>. الإعداد في <code>litellm-config.yaml</code>.</p>
+    <ul>
+      <li>إضافة/إزالة النماذج والمفاتيح؛</li>
+      <li>ضبط حراس PII (التعبيرات النمطية + Presidio)؛</li>
+      <li>إعداد الإبلاغ إلى Langfuse (success_callback).</li>
+    </ul>
+
+    <h3 id="3-4">3.4 Dify</h3>
+    <p><b>المدخل</b>: <code>http://IP</code> (المنفذ 80)، الحساب الموحّد (البريد <code>admin@company.com</code>).</p>
+    <ul>
+      <li>«الاستوديو» — إنشاء التطبيقات (مساعد / وكيل / سير عمل)؛</li>
+      <li>«المعرفة» — رفع المستندات والأسئلة والأجوبة؛</li>
+      <li>إعداد موفّري النماذج (يمكن الإشارة إلى NewAPI/LiteLLM الداخلي)؛</li>
+      <li>إدارة الأعضاء والأذونات والنشر.</li>
+    </ul>
+    <div class="note">📌 Dify هو compose رسمي منفصل (<code>dify/docker/</code>)؛ صِنه من ذلك الدليل.</div>
+
+    <h3 id="3-5">3.5 Ghost</h3>
+    <p><b>المدخل</b>: المحتوى <code>http://IP:8090</code>؛ الإدارة <code>http://IP:8090/ghost/</code>.</p>
+    <ul>
+      <li>نشر الإعلانات والأخبار؛</li>
+      <li>صيانة الصفحة الرئيسية والتنقل والقالب؛</li>
+      <li>رفع مثبّتات DeepChat وغيرها؛</li>
+      <li>الأعضاء والاشتراكات.</li>
+    </ul>
+
+    <h3 id="3-6">3.6 Gitea</h3>
+    <p><b>المدخل</b>: <code>http://IP:3002</code>، SSH 2222.</p>
+    <ul>
+      <li>إنشاء المستودعات والمنظمات والفرق؛</li>
+      <li>إدارة مشغّلات Actions (<code>deepchat-sync</code>)؛</li>
+      <li>مراجعة الكود والمشكلات والإصدارات.</li>
+    </ul>
+
+    <h3 id="3-7">3.7 MCP Gateway</h3>
+    <p><b>المدخل</b>: <code>http://IP:3100</code>. الإعداد <code>mcp-gateway/mcp-servers.json</code>.</p>
+    <ul>
+      <li>إدارة خوادم MCP / سوق المهارات (<code>skills/</code>)؛</li>
+      <li>إضافة/إزالة اتصالات MCP لـ DeepChat / Dify.</li>
+    </ul>
+
+    <h3 id="3-8">3.8 خادم تحديث DeepChat</h3>
+    <p><b>المدخل</b>: <code>http://IP:8091</code>؛ البيانات في <code>deepchat-updates/</code>.</p>
+    <ul>
+      <li>وضع المثبّتات الجديدة وتحديث <code>version.txt</code>؛</li>
+      <li>سحب تلقائي للإصدارات الرسمية عبر Gitea Actions (<code>deepchat-sync</code>)؛</li>
+      <li>صيانة <code>sync-config.json</code>.</li>
+    </ul>
+    <div class="note">📌 «انتهاء مهلة الاتصال بالنموذج» في DeepChat = غالباً وكيل نظام متوقف (<code>ECONNREFUSED 127.0.0.1:33210</code>). اضبط «بدون وكيل / مباشر» في الإعدادات → الشبكة/الوكيل.</div>
+
+    <h3 id="3-9">3.9 مركز إدارة AI</h3>
+    <p><b>المدخل</b>: <code>http://IP:10086</code>، SSO عبر Keycloak. هو <b>بوابة الإدارة الموحّدة</b>:</p>
+    <table>
+      <tr><th>المجموعة</th><th>الوظائف</th></tr>
+      <tr><td>لوحة التحكم</td><td>صحة المنتجات والمقاييس (الاستدعاءات/التكلفة) والتوفر</td></tr>
+      <tr><td>تطبيقات المنتج</td><td>Ghost / Dify / Gitea / NewAPI / Keycloak مدمجة</td></tr>
+      <tr><td>بوابة AI والتكامل</td><td>MCP Gateway / LiteLLM / خادم التحديث</td></tr>
+      <tr><td>عمليات النظام</td><td>اختبار التوفر والمراقبة والملاحظة وPII والسجلات والنسخ والتقارير</td></tr>
+      <tr><td>إدارة النظام</td><td>المصادقة المركزية وإدارة المسؤولين والإعدادات (9 لغات، الاحتفاظ بالتقارير)</td></tr>
+    </table>
+
+    <h3 id="3-10">3.10 المراقبة (Prometheus / Grafana)</h3>
+    <p><b>المدخل</b>: Grafana <code>http://IP:3030</code>؛ Prometheus <code>http://IP:9091</code>.</p>
+    <ul>
+      <li>متابعة CPU/الذاكرة/الشبكة في Grafana؛</li>
+      <li>التحقق من الأهداف والقواعد في Prometheus؛</li>
+      <li>التنبيهات عبر Alertmanager (9093) webhook.</li>
+    </ul>
+
+    <h3 id="3-11">3.11 ملاحظة LLM (Langfuse)</h3>
+    <p><b>المدخل</b>: <code>http://IP:3010</code>، SSO تلقائي.</p>
+    <div class="warn">⚠️ إذا «لم ترَ بيانات» بعد SSO، فحساب SSO ليس في المنظمة <code>ai-all-in-one</code>. أضف مستخدم SSO إلى المنظمة (دور ADMIN) عبر SQL.</div>
+
+    <h3 id="3-12">3.12 السجلات الموحّدة (Loki)</h3>
+    <p><b>المدخل</b>: صفحة «السجلات الموحّدة»، أو Loki <code>http://IP:3110</code>.</p>
+    <div class="note">📌 تسميات Loki هي <code>container / project / service</code> — لا يوجد <code>job</code>. الاستعلام <code>{container=~".+"}</code>.</div>
+
+    <h3 id="3-13">3.13 النسخ الاحتياطي والاستعادة</h3>
+    <p><b>المدخل</b>: صفحة «النسخ الاحتياطي والاستعادة»، أو <code>backup.ps1</code> / <code>restore.ps1</code>.</p>
+    <div class="warn">⚠️ مآزق حرجة (تم التحقق منها):</div>
+    <ul>
+      <li>Keycloak: استخدم <b>realm export/import (JSON)</b>؛ pg_dump يفقد ارتباط الدور الافتراضي؛</li>
+      <li>SQLite المستعاد ملكه root → chown إلى uid الصحيح (grafana=472, gitea=1000)؛</li>
+      <li>pg_dump: أضف <code>--clean --if-exists</code>.</li>
+    </ul>
+
+    <h2 id="ch4"><span class="chapter-tag">الفصل الرابع</span>دليل المستخدم</h2>
+
+    <h3 id="4-1">4.1 البدء</h3>
+    <h4>الخيار أ: DeepChat (للمحادثة اليومية)</h4>
+    <ol>
+      <li>افتح <code>http://IP:8090/downloads/</code> وثبّت العميل؛</li>
+      <li>DeepChat → الإعدادات → خدمة النموذج → «موفّر مخصص / متوافق مع OpenAI»:<br>
+        <b>API Base URL</b>: <code>http://IP:3000/v1</code><br>
+        <b>API Key</b>: خدمة ذاتية من NewAPI (انظر 4.2)<br>
+        <b>النموذج</b>: <code>deepseek-chat</code></li>
+      <li>احفظ وابدأ المحادثة.</li>
+    </ol>
+    <h4>الخيار ب: Dify (بناء التطبيقات / قاعدة المعرفة)</h4>
+    <ol>
+      <li>افتح <code>http://IP</code>، الحساب الموحّد؛</li>
+      <li>«الاستوديو» → إنشاء تطبيق؛</li>
+      <li>اكتب الموجهات وأرفق قاعدة المعرفة وانشر.</li>
+    </ol>
+
+    <h3 id="4-2">4.2 طلب مفتاح API</h3>
+    <ol>
+      <li>افتح NewAPI <code>http://IP:3000</code>؛</li>
+      <li>«مفاتيح API» → إنشاء رمز؛</li>
+      <li>انسخ المفتاح <code>sk-</code> إلى DeepChat / Dify.</li>
+    </ol>
+    <div class="note">📌 الحصة محدودة افتراضياً؛ تواصل مع مسؤول لرفعها.</div>
+
+    <h3 id="4-3">4.3 قواعد أمان البيانات</h3>
+    <p>المنصة تخفي <b>الهواتف والهويات والبطاقات والبريد</b> تلقائياً، لكن التزم:</p>
+    <h4>❌ لا تُرسل أبداً</h4>
+    <ul>
+      <li>الأسرار الداخلية/السرية (كود غير منشور، أسعار، قوائم عملاء، عقود)؛</li>
+      <li>الخصوصية الشخصية (هويات، بطاقات، كلمات مرور، صحة)؛</li>
+      <li>كود المصدر / التصاميم غير المنشورة.</li>
+    </ul>
+    <h4>✅ استخدام آمن</h4>
+    <ul>
+      <li>مواد عامة ومعرفة عامة وكتابة وترجمة وتلخيص؛</li>
+      <li>بيانات عمل مُخفاة (بعد إزالة الحقول الحساسة).</li>
+    </ul>
+    <table>
+      <tr><th>المستوى</th><th>نموذج خارجي؟</th><th>ملاحظات</th></tr>
+      <tr><td>عام</td><td>✅ مسموح</td><td>منشور بالفعل</td></tr>
+      <tr><td>داخلي عادي</td><td>⚠️ بعد الإخفاء</td><td>مسموح بعد إزالة الحقول الحساسة</td></tr>
+      <tr><td>داخلي سرّي / شخصي</td><td>❌ ممنوع</td><td>لا تُرسل أبداً</td></tr>
+    </table>
+    <blockquote>القاعدة: «هل ستكون مشكلة لو رآها طرف خارجي؟» إن نعم → لا تُرسلها.</blockquote>
+
+    <h3 id="4-4">4.4 الأسئلة الشائعة</h3>
+    <table>
+      <tr><th>المشكلة</th><th>الحل</th></tr>
+      <tr><td>تعذّر تسجيل الدخول</td><td>استخدم IP الشبكة الداخلية (وليس localhost) والحساب الموحّد</td></tr>
+      <tr><td>«حصة غير كافية»</td><td>راجع الرصيد في NewAPI؛ تواصل مع مسؤول</td></tr>
+      <tr><td>المحتوى محجوب</td><td>كلمة حساسة أو بيانات حساسة؛ عدّل (4.3)</td></tr>
+      <tr><td>DeepChat تنتهي مهلته</td><td>الإعدادات → الشبكة/الوكيل → «بدون وكيل / مباشر»</td></tr>
+      <tr><td>جودة رديئة</td><td>غيّر النموذج أو حسّن الموجه</td></tr>
+      <tr><td>هل أثق بالذكاء الاصطناعي؟</td><td>ليس كلياً — تحقق من الحقائق/الأرقام/الكود المهمة يدوياً</td></tr>
+    </table>
+
+    <h3 id="4-5">4.5 مدونة السلوك</h3>
+    <ul>
+      <li>لا استخدام غير قانوني أو ضار؛ لا محتوى غير قانوني أو ضار أو منتهك؛</li>
+      <li>لا تتجاوز القيود الأمنية ولا تستنزف الحصة جماعياً؛</li>
+      <li>تحقق من الحقائق قبل مشاركة المحتوى المُنشأ خارجياً.</li>
+    </ul>
+    <p>تواصل مع مسؤول المنصة لأي استفسار.</p>
+
+    <hr style="border: none; border-top: 1px solid #21262d; margin: 48px 0 16px;">
+    <p class="muted">دليل تدريب AI AllInOne · v0.1 · 2026-08-14 · داخلي — لا يُوزَّع</p>
+  </main>
+</div>
+
+<script>
+  function toggleGroup(btn) { btn.parentElement.classList.toggle('collapsed'); }
+  const links = document.querySelectorAll('.toc-items a');
+  const headings = [...document.querySelectorAll('h2[id], h3[id]')];
+  function onScroll() {
+    let current = headings[0] && headings[0].id;
+    for (const h of headings) { if (h.getBoundingClientRect().top <= 80) current = h.id; }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>

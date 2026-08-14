@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI AllInOne 培训手册 v0.1</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
+  body {
+    background: #0d1117; color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    line-height: 1.7; font-size: 15px;
+  }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: #161b22; border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 6px; font-family: "Consolas", "Monaco", "SFMono-Regular", monospace;
+    color: #79c0ff; font-size: 13px;
+  }
+  .layout { display: flex; }
+  .sidebar {
+    width: 300px; min-width: 300px; height: 100vh; position: sticky; top: 0;
+    background: #010409; border-right: 1px solid #21262d; overflow-y: auto;
+    padding: 20px 0 40px;
+  }
+  .content { flex: 1; min-width: 0; padding: 32px 40px 80px; max-width: 980px; }
+  .brand { padding: 0 20px 16px; border-bottom: 1px solid #21262d; margin-bottom: 12px; }
+  .brand h1 { font-size: 16px; margin: 0 0 4px; color: #e6edf3; }
+  .brand .ver { font-size: 12px; color: #8b949e; }
+  .langbar { padding: 8px 20px; border-bottom: 1px solid #21262d; margin-bottom: 12px; font-size: 12px; line-height: 2; }
+  .langbar a { margin-right: 6px; white-space: nowrap; }
+  .langbar .cur { color: #e6edf3; font-weight: 600; }
+  .toc-group { margin: 2px 0; }
+  .toc-head {
+    display: flex; align-items: center; gap: 6px; width: 100%;
+    background: none; border: none; color: #c9d1d9; cursor: pointer;
+    padding: 8px 16px; font-size: 14px; font-weight: 600; text-align: left; font-family: inherit;
+  }
+  .toc-head:hover { background: #161b22; }
+  .toc-head .arrow { transition: transform .15s; font-size: 10px; color: #8b949e; display: inline-block; }
+  .toc-group.collapsed .arrow { transform: rotate(-90deg); }
+  .toc-items { display: flex; flex-direction: column; }
+  .toc-group.collapsed .toc-items { display: none; }
+  .toc-items a { padding: 5px 16px 5px 34px; font-size: 13px; color: #8b949e; border-left: 2px solid transparent; }
+  .toc-items a:hover { color: #c9d1d9; background: #161b22; text-decoration: none; }
+  .toc-items a.active { color: #58a6ff; border-left-color: #58a6ff; background: #0d1117; }
+  h1 { font-size: 28px; color: #e6edf3; border-bottom: 1px solid #21262d; padding-bottom: 12px; margin-top: 8px; }
+  h2 { font-size: 22px; color: #58a6ff; margin-top: 44px; padding-bottom: 8px; border-bottom: 1px solid #21262d; scroll-margin-top: 20px; }
+  h3 { font-size: 17px; color: #e6edf3; margin-top: 30px; scroll-margin-top: 20px; }
+  h4 { font-size: 15px; color: #d2a8ff; margin-top: 22px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #30363d; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #161b22; color: #e6edf3; font-weight: 600; white-space: nowrap; }
+  td { background: #0d1117; }
+  .note, .warn, .tip { padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-size: 14px; }
+  .note { background: rgba(56,139,253,0.1); border: 1px solid rgba(56,139,253,0.4); color: #79c0ff; }
+  .warn { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.4); color: #ff7b72; }
+  .tip  { background: rgba(46,160,67,0.1); border: 1px solid rgba(46,160,67,0.4); color: #7ee787; }
+  .chapter-tag { display: inline-block; background: #1f6feb; color: #fff; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-right: 8px; vertical-align: middle; }
+  .muted { color: #8b949e; font-size: 13px; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  blockquote { border-left: 3px solid #30363d; margin: 12px 0; padding: 4px 16px; color: #8b949e; }
+  @media (max-width: 820px) {
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 0; height: auto; position: static; }
+    .content { padding: 20px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="brand">
+      <h1>📘 AI AllInOne 培训手册</h1>
+      <div class="ver">v0.1 · 2026-08-14 · 内部资料</div>
+    </div>
+    <div class="langbar">
+      🌐 <a href="../training-manual-v0.1.html">English</a>
+      <a class="cur" href="training-manual-v0.1.zh.html">简体中文</a>
+      <a href="training-manual-v0.1.zh-TW.html">繁體中文</a>
+      <a href="training-manual-v0.1.fr.html">Français</a>
+      <a href="training-manual-v0.1.es.html">Español</a>
+      <a href="training-manual-v0.1.pt.html">Português</a>
+      <a href="training-manual-v0.1.ja.html">日本語</a>
+      <a href="training-manual-v0.1.ko.html">한국어</a>
+      <a href="training-manual-v0.1.ar.html">العربية</a>
+    </div>
+    <div class="toc" id="toc">
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> 第一章 · 简介</button>
+        <div class="toc-items">
+          <a href="#1-1">1.1 平台是什么</a>
+          <a href="#1-2">1.2 组件架构</a>
+          <a href="#1-3">1.3 访问入口总览</a>
+          <a href="#1-4">1.4 统一账号与 SSO</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> 第二章 · 配置</button>
+        <div class="toc-items">
+          <a href="#2-1">2.1 部署前准备</a>
+          <a href="#2-2">2.2 环境变量与密钥</a>
+          <a href="#2-3">2.3 Keycloak 认证配置</a>
+          <a href="#2-4">2.4 LLM 渠道配置</a>
+          <a href="#2-5">2.5 SSO 单点登录</a>
+          <a href="#2-6">2.6 PII 脱敏配置</a>
+          <a href="#2-7">2.7 监控 / 日志 / 告警</a>
+          <a href="#2-8">2.8 备份与恢复</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> 第三章 · 管理（各工具说明）</button>
+        <div class="toc-items">
+          <a href="#3-1">3.1 Keycloak 管理</a>
+          <a href="#3-2">3.2 NewAPI 管理</a>
+          <a href="#3-3">3.3 LiteLLM 管理</a>
+          <a href="#3-4">3.4 Dify 管理</a>
+          <a href="#3-5">3.5 Ghost 管理</a>
+          <a href="#3-6">3.6 Gitea 管理</a>
+          <a href="#3-7">3.7 MCP Gateway 管理</a>
+          <a href="#3-8">3.8 DeepChat 更新服务器</a>
+          <a href="#3-9">3.9 AI 管理中心</a>
+          <a href="#3-10">3.10 监控告警（Prometheus/Grafana）</a>
+          <a href="#3-11">3.11 LLM 可观测（Langfuse）</a>
+          <a href="#3-12">3.12 统一日志（Loki）</a>
+          <a href="#3-13">3.13 备份与恢复</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> 第四章 · 普通用户使用</button>
+        <div class="toc-items">
+          <a href="#4-1">4.1 快速上手</a>
+          <a href="#4-2">4.2 API Key 申请</a>
+          <a href="#4-3">4.3 数据安全规范</a>
+          <a href="#4-4">4.4 常见问题</a>
+          <a href="#4-5">4.5 行为准则</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="content">
+    <h1>AI AllInOne 培训手册</h1>
+    <p class="muted">版本 v0.1 · 面向管理员与普通用户 · 覆盖「简介 → 配置 → 各工具管理 → 用户使用」四个部分。</p>
+
+    <div class="note">📌 本手册为 <b>v0.1 初版</b>，端口与账号以当前部署环境为准（示例 IP <code>192.168.31.117</code>，实际请替换为你的内网 IP）。密码等机密见管理员本地 <code>credentials.html</code>，不写入本手册。</div>
+
+    <h2 id="ch1"><span class="chapter-tag">第一章</span>简介</h2>
+
+    <h3 id="1-1">1.1 平台是什么</h3>
+    <p>「AI AllInOne」是一套部署在公司内网的企业 AI 平台，把大模型能力统一收口，员工<b>一个账号</b>即可使用。它把十几个开源产品用 Docker 编排成一个整体，由 Keycloak 提供统一身份认证。</p>
+    <p>核心能力：</p>
+    <ul>
+      <li><b>统一登录</b>：一个账号（可对接公司 AD 域账号）登录所有产品；</li>
+      <li><b>统一模型网关</b>：所有模型调用经 NewAPI + LiteLLM 收口，自动审计、计费、脱敏；</li>
+      <li><b>PII 脱敏</b>：手机号/身份证/邮箱等敏感信息在发给大模型前自动打码；</li>
+      <li><b>AI 应用</b>：Dify 可视化搭建智能体、知识库问答、工作流；</li>
+      <li><b>可观测与运维</b>：监控告警、LLM 调用追踪、统一日志、备份恢复、可用性测试、报告生成。</li>
+    </ul>
+
+    <h3 id="1-2">1.2 组件架构</h3>
+    <table>
+      <tr><th>层</th><th>组件</th><th>作用</th></tr>
+      <tr><td>统一认证</td><td>Keycloak</td><td>SSO / OIDC，可对接 AD/LDAP 或本地账号</td></tr>
+      <tr><td>LLM 路由</td><td>NewAPI</td><td>渠道、密钥、额度、审计、成本</td></tr>
+      <tr><td>PII 脱敏</td><td>LiteLLM + Presidio</td><td>模型调用前自动脱敏敏感信息</td></tr>
+      <tr><td>AI 应用</td><td>Dify</td><td>可视化 AI 应用 / Agent 平台</td></tr>
+      <tr><td>企业门户</td><td>Ghost</td><td>公告、新闻、文档、下载</td></tr>
+      <tr><td>源码 / CI</td><td>Gitea + Runner</td><td>内部 Git 仓库 + Actions 自动化</td></tr>
+      <tr><td>客户端分发</td><td>更新服务器</td><td>DeepChat 安装包托管与自动更新</td></tr>
+      <tr><td>统一管理</td><td>AI 管理中心</td><td>唯一管理入口：Dashboard + 各产品内嵌 + 审计/成本/报告</td></tr>
+      <tr><td>网关</td><td>MCP Gateway</td><td>Skill / MCP 市场管理</td></tr>
+      <tr><td>监控告警</td><td>Prometheus + Grafana + Alertmanager</td><td>容器资源监控 + 告警通知</td></tr>
+      <tr><td>LLM 可观测</td><td>Langfuse</td><td>每次模型调用的 trace / 延迟 / token / 成本</td></tr>
+      <tr><td>统一日志</td><td>Loki + Promtail</td><td>所有容器日志聚合检索</td></tr>
+      <tr><td>备份恢复</td><td>backup / restore 脚本 + 管理页</td><td>全量数据每日备份 + 一键恢复</td></tr>
+    </table>
+
+    <h3 id="1-3">1.3 访问入口总览</h3>
+    <p>所有入口都是 <code>http://&lt;服务器IP&gt;:&lt;端口&gt;</code>，示例 IP <code>192.168.31.117</code>：</p>
+    <table>
+      <tr><th>产品</th><th>端口</th><th>入口</th><th>面向</th></tr>
+      <tr><td>Dify</td><td>80</td><td><code>http://IP</code></td><td>用户 / 管理员</td></tr>
+      <tr><td>Ghost 门户</td><td>8090</td><td><code>http://IP:8090</code></td><td>全体</td></tr>
+      <tr><td>DeepChat 下载</td><td>8090</td><td><code>http://IP:8090/downloads/</code></td><td>全体</td></tr>
+      <tr><td>NewAPI</td><td>3000</td><td><code>http://IP:3000</code></td><td>管理员 / 申请 Key</td></tr>
+      <tr><td>Gitea</td><td>3002</td><td><code>http://IP:3002</code></td><td>研发 / 管理员</td></tr>
+      <tr><td>Keycloak 管理台</td><td>9090</td><td><code>http://IP:9090</code></td><td>管理员</td></tr>
+      <tr><td>AI 管理中心</td><td>10086</td><td><code>http://IP:10086</code></td><td>管理员</td></tr>
+      <tr><td>MCP Gateway</td><td>3100</td><td><code>http://IP:3100</code></td><td>管理员</td></tr>
+      <tr><td>LiteLLM</td><td>4001</td><td><code>http://IP:4001</code></td><td>内部代理</td></tr>
+      <tr><td>更新服务器</td><td>8091</td><td><code>http://IP:8091</code></td><td>DeepChat 更新</td></tr>
+      <tr><td>Grafana</td><td>3030</td><td><code>http://IP:3030</code></td><td>管理员</td></tr>
+      <tr><td>Langfuse</td><td>3010</td><td><code>http://IP:3010</code></td><td>管理员</td></tr>
+      <tr><td>Prometheus</td><td>9091</td><td><code>http://IP:9091</code></td><td>管理员</td></tr>
+      <tr><td>Alertmanager</td><td>9093</td><td><code>http://IP:9093</code></td><td>管理员</td></tr>
+      <tr><td>Loki</td><td>3110</td><td><code>http://IP:3110</code></td><td>管理员</td></tr>
+      <tr><td>Presidio</td><td>5001/5002</td><td>内部</td><td>PII 脱敏组件</td></tr>
+    </table>
+    <div class="warn">⚠️ 注意：Dify 的对外端口是 <b>80</b>（<code>http://IP</code>）。早期文档里出现过 <code>:8088</code> 的标注是历史遗留错误，以 80 为准。</div>
+
+    <h3 id="1-4">1.4 统一账号与 SSO</h3>
+    <p>平台采用「<b>一个账号登录所有产品</b>」策略：</p>
+    <ul>
+      <li>统一管理员账号：<code>ai_all_in_one_admin</code>（密码见 <code>credentials.html</code>，不在此列出）；</li>
+      <li>该账号通过 Keycloak 联合到公司 <b>AD 域控</b>（LDAP），也可用本地账号兜底；</li>
+      <li>Grafana、Langfuse、NewAPI、AI 管理中心等均已接入 Keycloak SSO，部分支持<b>自动登录</b>（点链接直进，无需再点「用 Keycloak 登录」按钮）；</li>
+      <li>员工日常使用 DeepChat / Dify 时，用统一账号（或 AD 域账号）登录。</li>
+    </ul>
+    <div class="note">📌 若 SSO 登录报 <code>unknown_error</code>，通常是宿主机 <b>IP Helper 服务（iphlpsvc）未运行</b>导致 AD 端口转发（389）失效，而非 Keycloak 配置问题。以管理员身份运行：<code>Start-Service iphlpsvc</code> + 重挂 <code>netsh interface portproxy</code> 规则。</div>
+
+    <h2 id="ch2"><span class="chapter-tag">第二章</span>配置</h2>
+
+    <h3 id="2-1">2.1 部署前准备</h3>
+    <ol>
+      <li><b>安装 Docker Desktop</b>（Windows）或 Docker Engine（Linux/线上），并启动。</li>
+      <li><b>准备网络</b>：确保能访问 Docker 镜像仓库（Docker Hub / quay.io，不通则配 DaoCloud 等镜像加速）和 GitHub；确定对外服务的内网 IP。</li>
+      <li><b>（可选）准备 AD 域控</b>：如需对接公司域账号，需域控可达，并准备 bind DN、bind 密码、LDAP base DN 等。</li>
+      <li><b>准备模型 API Key</b>：DeepSeek / OpenAI / Claude 等，至少一个。</li>
+    </ol>
+
+    <h3 id="2-2">2.2 环境变量与密钥</h3>
+    <p>核心配置集中在 <code>.env</code>（模板为 <code>.env.example</code>）。关键变量：</p>
+    <table>
+      <tr><th>变量</th><th>作用</th></tr>
+      <tr><td><code>KEYCLOAK_ADMIN / KEYCLOAK_ADMIN_PASSWORD</code></td><td>Keycloak 管理员账号</td></tr>
+      <tr><td><code>KEYCLOAK_DB_PASSWORD</code></td><td>Keycloak PostgreSQL 密码</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD / NEWAPI_SESSION_SECRET / NEWAPI_CRYPTO_SECRET</code></td><td>NewAPI 数据库与会话密钥</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>NewAPI 连 LiteLLM 的主密钥</td></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code> 等</td><td>外部模型密钥</td></tr>
+      <tr><td><code>GRAFANA_OAUTH_CLIENT_SECRET</code></td><td>Grafana SSO 客户端密钥</td></tr>
+      <tr><td><code>LANGFUSE_KEYCLOAK_CLIENT_SECRET</code></td><td>Langfuse SSO 客户端密钥</td></tr>
+      <tr><td><code>LANGFUSE_PUBLIC_KEY / SECRET_KEY</code></td><td>Langfuse 项目密钥（LiteLLM 上报用）</td></tr>
+      <tr><td><code>ALERT_WEBHOOK_URL</code></td><td>告警通知 webhook（钉钉/企微/飞书或 AI 管理中心）</td></tr>
+    </table>
+    <div class="tip">✅ 一键部署脚本 <code>bootstrap.ps1</code> 会自动替换 IP、生成随机密钥、起容器、初始化 Keycloak、配 NewAPI 渠道、注册备份任务。推荐新机部署优先用它。</div>
+
+    <h3 id="2-3">2.3 Keycloak 认证配置</h3>
+    <p>Keycloak 是整个平台的认证中枢。当前为<b>生产模式（start + PostgreSQL）</b>。需要配置：</p>
+    <ul>
+      <li><b>Realm</b>：<code>enterprise-ai</code>；</li>
+      <li><b>角色</b>：<code>ai-platform-admin</code>（管理员角色）；</li>
+      <li><b>OIDC Client</b>：<code>AI-all-in-one-admin-portal</code>、<code>grafana</code>、<code>langfuse</code>、<code>newapi</code>（均为 confidential）；</li>
+      <li><b>LDAP 联邦</b>：vendor=AD，指向域控，bind DN 用带空格的 CN（<code>CN=ai all in one admin,CN=Users,DC=chxia,DC=lab</code>）。</li>
+    </ul>
+    <div class="note">📌 可用 <code>scripts/keycloak-realm-init.ps1</code> 一键建 realm + 客户端 + 角色 + LDAP 联邦（替代手工点 UI）。注意：Keycloak realm 的内部 id 是 UUID，脚本里 LDAP 组件的 parentId 要用真实 id。</div>
+
+    <h3 id="2-4">2.4 LLM 渠道配置</h3>
+    <p>链路：<b>客户端 → NewAPI（3000）→ LiteLLM（4001）→ 外部模型</b>。</p>
+    <ol>
+      <li>在 NewAPI 后台「渠道」页新建渠道，指向 LiteLLM：Base URL <code>http://IP:4001/v1</code>，填入 <code>LITELLM_MASTER_KEY</code>；</li>
+      <li>在 <code>litellm-config.yaml</code> 中配置模型列表（<code>deepseek-chat</code> 等）与对应 API Key；</li>
+      <li>NewAPI「令牌」页为员工/应用发放 API Key（<code>sk-</code> 开头）。</li>
+    </ol>
+
+    <h3 id="2-5">2.5 SSO 单点登录</h3>
+    <table>
+      <tr><th>产品</th><th>方式</th><th>说明</th></tr>
+      <tr><td>AI 管理中心</td><td>OIDC (keycloak-connect)</td><td>登录自动跳 Keycloak</td></tr>
+      <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td><code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code> 自动登录</td></tr>
+      <tr><td>Langfuse</td><td>Keycloak provider</td><td>入口 <code>/auth/sso-initiate?provider=KEYCLOAK</code></td></tr>
+      <tr><td>NewAPI</td><td>OIDC</td><td>登录页「一键登录」</td></tr>
+    </table>
+
+    <h3 id="2-6">2.6 PII 脱敏配置</h3>
+    <p>双保险，均挂在 LiteLLM 代理上，<code>default_on</code> 全量生效：</p>
+    <ul>
+      <li><b>LiteLLM 内置正则</b>：脱敏中文手机号、身份证、银行卡、邮箱、统一信用代码、护照、IP + 敏感词拦截；</li>
+      <li><b>Presidio</b>：识别英文人名/邮箱/信用卡等（analyzer: 5002，anonymizer: 5001）。</li>
+    </ul>
+    <div class="warn">⚠️ 边界：只对「经 LiteLLM 的模型调用」生效，不脱敏其他产品数据库里已存的数据。</div>
+
+    <h3 id="2-7">2.7 监控 / 日志 / 告警</h3>
+    <ul>
+      <li><b>监控</b>：Prometheus（9091）抓 cadvisor + 各 exporter；Grafana（3030）展示大盘；</li>
+      <li><b>告警</b>：Alertmanager（9093）→ webhook（默认发到 AI 管理中心的告警接收端点，可改钉钉/企微/飞书）；</li>
+      <li><b>日志</b>：Promtail 采集所有容器日志 → Loki（3110），AI 管理中心「统一日志」页查询；</li>
+      <li><b>日志轮转</b>：compose 全局 <code>x-logging</code>（单容器 10MB × 3 份），防止日志无限增长。</li>
+    </ul>
+
+    <h3 id="2-8">2.8 备份与恢复</h3>
+    <p>备份脚本 <code>scripts/backup.ps1</code> 每日 02:00 计划任务运行，覆盖：NewAPI MySQL、Dify PG、Ghost/Gitea/Grafana SQLite、Keycloak（realm export JSON）、Langfuse PG、配置文件。恢复用 <code>scripts/restore.ps1</code> 或 AI 管理中心「备份与恢复」页。</p>
+    <div class="note">📌 Keycloak 必须用 <b>realm export/import（JSON）</b> 备份，不能只用 pg_dump（会丢 default role 关联）。详见第三章 3.13。</div>
+
+    <h2 id="ch3"><span class="chapter-tag">第三章</span>管理（各工具使用说明）</h2>
+    <p class="muted">本章逐节介绍每个管理工具「怎么进、能干什么、日常做什么」。统一入口建议用 <b>AI 管理中心（:10086）</b>，左侧菜单已内嵌大部分产品。</p>
+
+    <h3 id="3-1">3.1 Keycloak 管理</h3>
+    <p><b>入口</b>：<code>http://IP:9090</code> → Administration Console → 用 <code>ai_all_in_one_admin</code> 登录。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>管理用户、重置密码、分配 <code>ai-platform-admin</code> 角色；</li>
+      <li>管理 OIDC 客户端（新增产品接 SSO 时在此建 client）；</li>
+      <li>查看/调整 LDAP 联邦（对接 AD 域账号）；</li>
+      <li>查看登录会话、强制下线。</li>
+    </ul>
+
+    <h3 id="3-2">3.2 NewAPI 管理</h3>
+    <p><b>入口</b>：<code>http://IP:3000</code>，用统一账号登录。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li><b>渠道</b>：管理上游模型渠道（指向 LiteLLM），增删模型；</li>
+      <li><b>令牌</b>：为员工/应用发放、禁用、设额度、设过期时间的 API Key；</li>
+      <li><b>日志</b>：查每次调用的用户/模型/token/额度/成本/来源 IP；</li>
+      <li><b>用户</b>：充值额度、提额、封禁。</li>
+    </ul>
+    <div class="note">📌 客户端 IP 记录依赖用户的「记录 IP 日志」设置（默认关闭）。如需按 IP 统计，请在「个人设置」开启，或由管理员统一开启。</div>
+
+    <h3 id="3-3">3.3 LiteLLM 管理</h3>
+    <p><b>入口</b>：<code>http://IP:4001</code>（调试用 <code>/v1/models</code>）。配置在 <code>litellm-config.yaml</code>。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>增删模型与对应 API Key；</li>
+      <li>调整 PII 脱敏 guardrail（正则 + Presidio）；</li>
+      <li>配置 Langfuse 上报（success_callback）。</li>
+    </ul>
+
+    <h3 id="3-4">3.4 Dify 管理</h3>
+    <p><b>入口</b>：<code>http://IP</code>（80 端口），用统一账号（邮箱 <code>admin@company.com</code>）登录。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>「工作室」创建应用（聊天助手 / Agent / 工作流）；</li>
+      <li>「知识库」上传文档、建知识库问答；</li>
+      <li>模型供应商接入（可指向内部 NewAPI/LiteLLM）；</li>
+      <li>成员与权限管理、应用发布。</li>
+    </ul>
+    <div class="note">📌 Dify 是独立的官方 compose（<code>dify/docker/</code>），升级/维护时需在 <code>dify/docker</code> 目录单独操作，不在主 compose 里。</div>
+
+    <h3 id="3-5">3.5 Ghost 管理</h3>
+    <p><b>入口</b>：内容页 <code>http://IP:8090</code>；后台 <code>http://IP:8090/ghost/</code>。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>发布公告、新闻（Posts）；</li>
+      <li>维护首页、导航、主题（Attila）；</li>
+      <li>上传 DeepChat 安装包等下载资源；</li>
+      <li>成员与订阅（如需）。</li>
+    </ul>
+
+    <h3 id="3-6">3.6 Gitea 管理</h3>
+    <p><b>入口</b>：<code>http://IP:3002</code>，SSH 端口 2222。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>创建内部代码仓库、组织、团队；</li>
+      <li>管理 Actions Runner（<code>deepchat-sync</code> 等自动化工作流）；</li>
+      <li>代码审查、Issue、发布（Release）管理。</li>
+    </ul>
+
+    <h3 id="3-7">3.7 MCP Gateway 管理</h3>
+    <p><b>入口</b>：<code>http://IP:3100</code>。配置在 <code>mcp-gateway/mcp-servers.json</code>。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>管理 MCP 服务器 / Skill 市场（<code>skills/</code> 目录）；</li>
+      <li>增删 MCP 服务连接，供 DeepChat / Dify 调用。</li>
+    </ul>
+
+    <h3 id="3-8">3.8 DeepChat 更新服务器</h3>
+    <p><b>入口</b>：<code>http://IP:8091</code>（下载页）；数据在 <code>deepchat-updates/</code>。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>放置新版本 DeepChat 安装包（.exe/.dmg），更新 <code>version.txt</code>；</li>
+      <li>通过 Gitea Actions（<code>deepchat-sync</code>）自动拉取 DeepChat 官方版本；</li>
+      <li>维护 <code>sync-config.json</code>（版本源、保留份数、市场 URL）。</li>
+    </ul>
+    <div class="note">📌 DeepChat 客户端报「模型连接超时」，通常是客户端走了挂掉的系统代理（<code>ECONNREFUSED 127.0.0.1:33210</code>）。让用户在 DeepChat「设置 → 网络/代理」改为「不使用代理/直连」。</div>
+
+    <h3 id="3-9">3.9 AI 管理中心</h3>
+    <p><b>入口</b>：<code>http://IP:10086</code>，用统一账号（Keycloak SSO）登录。</p>
+    <p>这是<b>统一管理门户</b>，左侧菜单已分组：</p>
+    <table>
+      <tr><th>分组</th><th>功能</th></tr>
+      <tr><td>总览仪表板</td><td>产品健康、业务指标（调用/成本）、可用性测试汇总</td></tr>
+      <tr><td>产品应用</td><td>Ghost / Dify / Gitea / NewAPI / Keycloak 内嵌页</td></tr>
+      <tr><td>AI 网关与集成</td><td>MCP Gateway / LiteLLM / 更新服务器</td></tr>
+      <tr><td>系统运维</td><td>可用性测试、监控告警、LLM 可观测、PII 脱敏、统一日志、备份与恢复、报告生成</td></tr>
+      <tr><td>系统管理</td><td>集中认证、管理员管理、系统设置（含界面语言 9 种、报告保留策略）</td></tr>
+    </table>
+    <p>亮点功能：<b>可用性测试</b>（定时 + 手动测全链路）、<b>报告生成</b>（自定义周期导出 md）、<b>备份恢复</b>、<b>统一日志</b>。</p>
+
+    <h3 id="3-10">3.10 监控告警（Prometheus / Grafana）</h3>
+    <p><b>入口</b>：Grafana <code>http://IP:3030</code>（SSO 自动登录）；Prometheus <code>http://IP:9091</code>。</p>
+    <p><b>日常做什么</b>：</p>
+    <ul>
+      <li>Grafana 大盘看容器 CPU/内存/网络；</li>
+      <li>Prometheus 查 targets 状态、告警规则；</li>
+      <li>告警经 Alertmanager（9093）发 webhook（默认发 AI 管理中心，可改钉钉/企微/飞书）。</li>
+    </ul>
+
+    <h3 id="3-11">3.11 LLM 可观测（Langfuse）</h3>
+    <p><b>入口</b>：<code>http://IP:3010</code>，SSO 自动登录。</p>
+    <p><b>日常做什么</b>：查看每次模型调用的 prompt、响应、延迟、token、成本，用于质量分析与故障定位。</p>
+    <div class="warn">⚠️ 若用 Keycloak SSO 登录后「看不到数据」，是 SSO 账号未加入组织 <code>ai-all-in-one</code>。需执行 SQL 把 SSO 用户加入组织（ADMIN 角色），详见部署文档踩坑记录。</div>
+
+    <h3 id="3-12">3.12 统一日志（Loki）</h3>
+    <p><b>入口</b>：AI 管理中心「统一日志」页（更便捷），或 Loki <code>http://IP:3110</code>。</p>
+    <p><b>日常做什么</b>：按容器 + 关键字 + 时间范围检索所有容器日志，排查问题。</p>
+    <div class="note">📌 Loki 的 label 是 <code>container / project / service</code>，没有 <code>job</code>。查询用 <code>{container=~".+"}</code> 而非 <code>{job="docker"}</code>。</div>
+
+    <h3 id="3-13">3.13 备份与恢复</h3>
+    <p><b>入口</b>：AI 管理中心「备份与恢复」页（一键备份/恢复/看状态），或命令行 <code>scripts/backup.ps1</code> / <code>restore.ps1</code>。</p>
+    <p><b>覆盖范围</b>：NewAPI MySQL、Dify PG、Ghost/Gitea/Grafana SQLite、Keycloak（realm JSON）、Langfuse PG、配置文件。</p>
+    <div class="warn">⚠️ 关键坑（演练已验证）：</div>
+    <ul>
+      <li>Keycloak 必须用 <b>realm export/import（JSON）</b>，pg_dump 还原会丢 default role 关联导致起不来；</li>
+      <li>SQLite 文件还原后属主是 root，需 chown 到对应 uid（grafana=472、gitea=1000）否则报 readonly；</li>
+      <li>pg_dump 需带 <code>--clean --if-exists</code>，否则还原冲突。</li>
+    </ul>
+
+    <h2 id="ch4"><span class="chapter-tag">第四章</span>普通用户使用说明</h2>
+
+    <h3 id="4-1">4.1 快速上手</h3>
+    <h4>方式 A：用 DeepChat（推荐，日常对话）</h4>
+    <ol>
+      <li>打开下载中心 <code>http://IP:8090/downloads/</code>，下载对应系统安装包并安装；</li>
+      <li>DeepChat → 设置 → 模型服务 → 添加「自定义 Provider / OpenAI 兼容」：<br>
+        <b>API Base URL</b>：<code>http://IP:3000/v1</code><br>
+        <b>API Key</b>：NewAPI 后台「API 密钥」页自助申请（见 4.2）<br>
+        <b>模型</b>：<code>deepseek-chat</code></li>
+      <li>保存后即可对话。</li>
+    </ol>
+    <h4>方式 B：用 Dify（搭建应用 / 知识库）</h4>
+    <ol>
+      <li>浏览器打开 <code>http://IP</code>，用统一账号登录；</li>
+      <li>「工作室」→ 创建应用（聊天助手 / Agent / 工作流）；</li>
+      <li>编排页面写提示词、接知识库，发布使用。</li>
+    </ol>
+
+    <h3 id="4-2">4.2 API Key 申请</h3>
+    <ol>
+      <li>打开 NewAPI <code>http://IP:3000</code>，用统一账号登录（或 OIDC 一键登录）；</li>
+      <li>「API 密钥」→ 新建令牌；</li>
+      <li>复制 <code>sk-</code> 开头的 Key，填入 DeepChat / Dify 等客户端。</li>
+    </ol>
+    <div class="note">📌 默认额度有限，不足请联系管理员申请提额。</div>
+
+    <h3 id="4-3">4.3 数据安全规范</h3>
+    <p>平台已自动对<b>手机号、身份证、银行卡、邮箱</b>等敏感信息脱敏，并对敏感词拦截，但请自觉遵守：</p>
+    <h4>❌ 严禁发送到 AI 的数据</h4>
+    <ul>
+      <li>内部机密 / 商业机密（未公开的产品代码、定价、客户名单、合同条款等）；</li>
+      <li>个人隐私（身份证、银行卡、密码、健康信息、他人隐私）；</li>
+      <li>源代码 / 未公开技术方案。</li>
+    </ul>
+    <h4>✅ 可以放心使用</h4>
+    <ul>
+      <li>公开资料、通用知识、文档撰写、翻译、总结；</li>
+      <li>脱敏后的业务数据（去掉具体人名/号码/敏感字段后）。</li>
+    </ul>
+    <table>
+      <tr><th>数据等级</th><th>能否上外部大模型</th><th>说明</th></tr>
+      <tr><td>公开数据</td><td>✅ 可以</td><td>已公开的资料、通用信息</td></tr>
+      <tr><td>内部普通数据</td><td>⚠️ 脱敏后可用</td><td>去掉敏感字段后可使用</td></tr>
+      <tr><td>内部机密 / 个人隐私</td><td>❌ 禁止</td><td>严禁发送</td></tr>
+    </table>
+    <blockquote>判断原则：「这段内容如果被外人看到会不会有问题？」会 → 别发。</blockquote>
+
+    <h3 id="4-4">4.4 常见问题</h3>
+    <table>
+      <tr><th>问题</th><th>解决</th></tr>
+      <tr><td>登录不上某个产品</td><td>确认用内网 IP（非 localhost）且用统一账号，仍不行联系管理员</td></tr>
+      <tr><td>提示额度不足</td><td>NewAPI 后台查余额；额度用完联系管理员充值/提额</td></tr>
+      <tr><td>发送内容被拦截</td><td>命中了敏感词或含敏感信息，按 4.3 规范调整后重试</td></tr>
+      <tr><td>DeepChat 报连接超时</td><td>设置 → 网络/代理 → 改为「不使用代理/直连」</td></tr>
+      <tr><td>模型回复质量差</td><td>换用不同模型，或优化提问（提供上下文、明确要求）</td></tr>
+      <tr><td>AI 的回答能信吗</td><td>不能全信，重要结论务必人工核实（AI 可能幻觉）</td></tr>
+    </table>
+
+    <h3 id="4-5">4.5 行为准则</h3>
+    <ul>
+      <li>不用于违法违规用途，不生成违法、有害、侵权内容；</li>
+      <li>不绕过平台安全限制，不批量刷额度；</li>
+      <li>对外发送 AI 生成内容时，核实事实并遵守公司信息发布规范。</li>
+    </ul>
+    <p>有问题联系平台管理员。</p>
+
+    <hr style="border: none; border-top: 1px solid #21262d; margin: 48px 0 16px;">
+    <p class="muted">AI AllInOne 培训手册 · v0.1 · 2026-08-14 · 内部资料，请勿外传</p>
+  </main>
+</div>
+
+<script>
+  function toggleGroup(btn) {
+    btn.parentElement.classList.toggle('collapsed');
+  }
+  const links = document.querySelectorAll('.toc-items a');
+  const headings = [...document.querySelectorAll('h2[id], h3[id]')];
+  function onScroll() {
+    let current = headings[0] && headings[0].id;
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 80) current = h.id;
+    }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>

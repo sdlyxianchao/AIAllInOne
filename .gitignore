@@ -1,0 +1,27 @@
+# 本地运行目录（含真实密钥 .env、credentials.html，禁止上传）
+/windows/
+/linux/
+/docker/
+
+# 备份与迁移数据（含密码 hash）
+/backups/
+/kc-migrate/
+/github-backup/
+
+# 环境变量（含密钥）
+.env
+.env.windows
+**/.env
+
+# 依赖
+node_modules/
+**/node_modules/
+
+# 运行时产物
+*.log
+*.sql
+*.db
+
+# 系统
+.DS_Store
+Thumbs.db

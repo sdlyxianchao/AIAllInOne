@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuel de formation AI AllInOne v0.1</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
+  body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; line-height: 1.7; font-size: 15px; }
+  a { color: #58a6ff; text-decoration: none; } a:hover { text-decoration: underline; }
+  code { background: #161b22; border: 1px solid #30363d; border-radius: 4px; padding: 1px 6px; font-family: "Consolas", "Monaco", monospace; color: #79c0ff; font-size: 13px; }
+  .layout { display: flex; }
+  .sidebar { width: 300px; min-width: 300px; height: 100vh; position: sticky; top: 0; background: #010409; border-right: 1px solid #21262d; overflow-y: auto; padding: 20px 0 40px; }
+  .content { flex: 1; min-width: 0; padding: 32px 40px 80px; max-width: 980px; }
+  .brand { padding: 0 20px 16px; border-bottom: 1px solid #21262d; margin-bottom: 12px; }
+  .brand h1 { font-size: 16px; margin: 0 0 4px; color: #e6edf3; }
+  .brand .ver { font-size: 12px; color: #8b949e; }
+  .langbar { padding: 8px 20px; border-bottom: 1px solid #21262d; margin-bottom: 12px; font-size: 12px; line-height: 2; }
+  .langbar a { margin-right: 6px; white-space: nowrap; } .langbar .cur { color: #e6edf3; font-weight: 600; }
+  .toc-group { margin: 2px 0; }
+  .toc-head { display: flex; align-items: center; gap: 6px; width: 100%; background: none; border: none; color: #c9d1d9; cursor: pointer; padding: 8px 16px; font-size: 14px; font-weight: 600; text-align: left; font-family: inherit; }
+  .toc-head:hover { background: #161b22; }
+  .toc-head .arrow { transition: transform .15s; font-size: 10px; color: #8b949e; display: inline-block; }
+  .toc-group.collapsed .arrow { transform: rotate(-90deg); }
+  .toc-items { display: flex; flex-direction: column; } .toc-group.collapsed .toc-items { display: none; }
+  .toc-items a { padding: 5px 16px 5px 34px; font-size: 13px; color: #8b949e; border-left: 2px solid transparent; }
+  .toc-items a:hover { color: #c9d1d9; background: #161b22; text-decoration: none; }
+  .toc-items a.active { color: #58a6ff; border-left-color: #58a6ff; background: #0d1117; }
+  h1 { font-size: 28px; color: #e6edf3; border-bottom: 1px solid #21262d; padding-bottom: 12px; margin-top: 8px; }
+  h2 { font-size: 22px; color: #58a6ff; margin-top: 44px; padding-bottom: 8px; border-bottom: 1px solid #21262d; scroll-margin-top: 20px; }
+  h3 { font-size: 17px; color: #e6edf3; margin-top: 30px; scroll-margin-top: 20px; }
+  h4 { font-size: 15px; color: #d2a8ff; margin-top: 22px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid #30363d; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #161b22; color: #e6edf3; font-weight: 600; white-space: nowrap; } td { background: #0d1117; }
+  .note, .warn, .tip { padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-size: 14px; }
+  .note { background: rgba(56,139,253,0.1); border: 1px solid rgba(56,139,253,0.4); color: #79c0ff; }
+  .warn { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.4); color: #ff7b72; }
+  .tip  { background: rgba(46,160,67,0.1); border: 1px solid rgba(46,160,67,0.4); color: #7ee787; }
+  .chapter-tag { display: inline-block; background: #1f6feb; color: #fff; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-right: 8px; vertical-align: middle; }
+  .muted { color: #8b949e; font-size: 13px; }
+  ul, ol { padding-left: 24px; } li { margin: 4px 0; }
+  blockquote { border-left: 3px solid #30363d; margin: 12px 0; padding: 4px 16px; color: #8b949e; }
+  @media (max-width: 820px) { .layout { flex-direction: column; } .sidebar { width: 100%; min-width: 0; height: auto; position: static; } .content { padding: 20px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="brand">
+      <h1>📘 Manuel de formation AI AllInOne</h1>
+      <div class="ver">v0.1 · 2026-08-14 · Interne</div>
+    </div>
+    <div class="langbar">
+      🌐 <a href="../training-manual-v0.1.html">English</a>
+      <a href="training-manual-v0.1.zh.html">简体中文</a>
+      <a href="training-manual-v0.1.zh-TW.html">繁體中文</a>
+      <a class="cur" href="training-manual-v0.1.fr.html">Français</a>
+      <a href="training-manual-v0.1.es.html">Español</a>
+      <a href="training-manual-v0.1.pt.html">Português</a>
+      <a href="training-manual-v0.1.ja.html">日本語</a>
+      <a href="training-manual-v0.1.ko.html">한국어</a>
+      <a href="training-manual-v0.1.ar.html">العربية</a>
+    </div>
+    <div class="toc" id="toc">
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> Chapitre 1 · Introduction</button>
+        <div class="toc-items">
+          <a href="#1-1">1.1 Qu'est-ce que la plateforme</a>
+          <a href="#1-2">1.2 Architecture</a>
+          <a href="#1-3">1.3 Vue d'ensemble des points d'entrée</a>
+          <a href="#1-4">1.4 Compte unifié &amp; SSO</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> Chapitre 2 · Configuration</button>
+        <div class="toc-items">
+          <a href="#2-1">2.1 Pré-déploiement</a>
+          <a href="#2-2">2.2 Variables d'env &amp; secrets</a>
+          <a href="#2-3">2.3 Keycloak</a>
+          <a href="#2-4">2.4 Canaux LLM</a>
+          <a href="#2-5">2.5 SSO</a>
+          <a href="#2-6">2.6 Masquage PII</a>
+          <a href="#2-7">2.7 Supervision / logs / alertes</a>
+          <a href="#2-8">2.8 Sauvegarde &amp; restauration</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> Chapitre 3 · Administration</button>
+        <div class="toc-items">
+          <a href="#3-1">3.1 Keycloak</a>
+          <a href="#3-2">3.2 NewAPI</a>
+          <a href="#3-3">3.3 LiteLLM</a>
+          <a href="#3-4">3.4 Dify</a>
+          <a href="#3-5">3.5 Ghost</a>
+          <a href="#3-6">3.6 Gitea</a>
+          <a href="#3-7">3.7 MCP Gateway</a>
+          <a href="#3-8">3.8 Serveur de mise à jour DeepChat</a>
+          <a href="#3-9">3.9 AI Admin Center</a>
+          <a href="#3-10">3.10 Supervision (Prometheus/Grafana)</a>
+          <a href="#3-11">3.11 Observabilité LLM (Langfuse)</a>
+          <a href="#3-12">3.12 Logs unifiés (Loki)</a>
+          <a href="#3-13">3.13 Sauvegarde &amp; restauration</a>
+        </div>
+      </div>
+      <div class="toc-group">
+        <button class="toc-head" onclick="toggleGroup(this)"><span class="arrow">▾</span> Chapitre 4 · Guide utilisateur</button>
+        <div class="toc-items">
+          <a href="#4-1">4.1 Démarrage</a>
+          <a href="#4-2">4.2 Demande de clé API</a>
+          <a href="#4-3">4.3 Règles de sécurité des données</a>
+          <a href="#4-4">4.4 FAQ</a>
+          <a href="#4-5">4.5 Code de conduite</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="content">
+    <h1>Manuel de formation AI AllInOne</h1>
+    <p class="muted">v0.1 · Pour administrateurs et utilisateurs · Couvre « Introduction → Configuration → administration par outil → guide utilisateur ».</p>
+
+    <div class="note">📌 Ceci est la <b>version v0.1</b>. Ports et comptes reflètent le déploiement actuel (IP d'exemple <code>192.168.31.117</code> — remplacez par votre IP intranet). Les secrets sont dans le <code>credentials.html</code> local de l'administrateur.</div>
+
+    <h2 id="ch1"><span class="chapter-tag">Chapitre 1</span>Introduction</h2>
+
+    <h3 id="1-1">1.1 Qu'est-ce que la plateforme</h3>
+    <p>« AI AllInOne » est une plateforme d'IA d'entreprise déployée sur l'intranet. Elle centralise les capacités LLM pour que les employés puissent tout utiliser avec <b>un seul compte</b>. Elle orchestre plus d'une douzaine de produits open source avec Docker, Keycloak fournissant l'identité unifiée.</p>
+    <p>Capacités principales :</p>
+    <ul>
+      <li><b>Connexion unifiée</b> : un compte (optionnellement fédéré à l'AD) pour tous les produits ;</li>
+      <li><b>Passerelle modèle unifiée</b> : tous les appels passent par NewAPI + LiteLLM, avec audit, facturation et masquage automatiques ;</li>
+      <li><b>Masquage PII</b> : téléphones/identifiants/e-mails masqués avant d'atteindre le modèle ;</li>
+      <li><b>Apps IA</b> : Dify pour créer agents, Q&amp;A sur base de connaissances et workflows ;</li>
+      <li><b>Observabilité &amp; ops</b> : supervision/alertes, traçage LLM, logs unifiés, sauvegarde/restauration, tests de disponibilité, génération de rapports.</li>
+    </ul>
+
+    <h3 id="1-2">1.2 Architecture</h3>
+    <table>
+      <tr><th>Couche</th><th>Composant</th><th>Rôle</th></tr>
+      <tr><td>Auth</td><td>Keycloak</td><td>SSO / OIDC, intégration AD/LDAP ou comptes locaux</td></tr>
+      <tr><td>Routage LLM</td><td>NewAPI</td><td>Canaux, clés, quotas, audit, coût</td></tr>
+      <tr><td>Masquage PII</td><td>LiteLLM + Presidio</td><td>Masquage automatique des données sensibles</td></tr>
+      <tr><td>Apps IA</td><td>Dify</td><td>Plateforme d'apps IA visuelles / agents</td></tr>
+      <tr><td>Portail d'entreprise</td><td>Ghost</td><td>Annonces, actualités, docs, téléchargements</td></tr>
+      <tr><td>Source / CI</td><td>Gitea + Runner</td><td>Git interne + automatisation Actions</td></tr>
+      <tr><td>Distribution client</td><td>Serveur de mise à jour</td><td>Hébergement de l'installeur DeepChat + mise à jour auto</td></tr>
+      <tr><td>Admin unifié</td><td>AI Admin Center</td><td>Point d'entrée unique : tableau de bord + produits + audit/coût/rapports</td></tr>
+      <tr><td>Passerelle</td><td>MCP Gateway</td><td>Gestion du marché Skill / MCP</td></tr>
+      <tr><td>Supervision</td><td>Prometheus + Grafana + Alertmanager</td><td>Supervision des ressources + alertes</td></tr>
+      <tr><td>Observabilité LLM</td><td>Langfuse</td><td>Trace / latence / tokens / coût de chaque appel</td></tr>
+      <tr><td>Logs unifiés</td><td>Loki + Promtail</td><td>Logs agrégés et interrogeables</td></tr>
+      <tr><td>Sauvegarde/restauration</td><td>scripts backup/restore + page admin</td><td>Sauvegarde complète quotidienne + restauration en un clic</td></tr>
+    </table>
+
+    <h3 id="1-3">1.3 Vue d'ensemble des points d'entrée</h3>
+    <p>Chaque entrée est <code>http://&lt;IP-serveur&gt;:&lt;port&gt;</code> ; IP d'exemple <code>192.168.31.117</code> :</p>
+    <table>
+      <tr><th>Produit</th><th>Port</th><th>Entrée</th><th>Public</th></tr>
+      <tr><td>Dify</td><td>80</td><td><code>http://IP</code></td><td>Utilisateurs / admins</td></tr>
+      <tr><td>Portail Ghost</td><td>8090</td><td><code>http://IP:8090</code></td><td>Tous</td></tr>
+      <tr><td>Téléchargement DeepChat</td><td>8090</td><td><code>http://IP:8090/downloads/</code></td><td>Tous</td></tr>
+      <tr><td>NewAPI</td><td>3000</td><td><code>http://IP:3000</code></td><td>Admins / demandes de clé</td></tr>
+      <tr><td>Gitea</td><td>3002</td><td><code>http://IP:3002</code></td><td>Dev / admins</td></tr>
+      <tr><td>Console Keycloak</td><td>9090</td><td><code>http://IP:9090</code></td><td>Admins</td></tr>
+      <tr><td>AI Admin Center</td><td>10086</td><td><code>http://IP:10086</code></td><td>Admins</td></tr>
+      <tr><td>MCP Gateway</td><td>3100</td><td><code>http://IP:3100</code></td><td>Admins</td></tr>
+      <tr><td>LiteLLM</td><td>4001</td><td><code>http://IP:4001</code></td><td>Proxy interne</td></tr>
+      <tr><td>Serveur de mise à jour</td><td>8091</td><td><code>http://IP:8091</code></td><td>Mise à jour DeepChat</td></tr>
+      <tr><td>Grafana</td><td>3030</td><td><code>http://IP:3030</code></td><td>Admins</td></tr>
+      <tr><td>Langfuse</td><td>3010</td><td><code>http://IP:3010</code></td><td>Admins</td></tr>
+      <tr><td>Prometheus</td><td>9091</td><td><code>http://IP:9091</code></td><td>Admins</td></tr>
+      <tr><td>Alertmanager</td><td>9093</td><td><code>http://IP:9093</code></td><td>Admins</td></tr>
+      <tr><td>Loki</td><td>3110</td><td><code>http://IP:3110</code></td><td>Admins</td></tr>
+      <tr><td>Presidio</td><td>5001/5002</td><td>interne</td><td>Composants PII</td></tr>
+    </table>
+    <div class="warn">⚠️ Le port externe de Dify est <b>80</b> (<code>http://IP</code>). Le <code>:8088</code> vu dans d'anciens docs était une erreur — utilisez 80.</div>
+
+    <h3 id="1-4">1.4 Compte unifié &amp; SSO</h3>
+    <ul>
+      <li>Compte admin unifié : <code>ai_all_in_one_admin</code> (mot de passe dans <code>credentials.html</code>) ;</li>
+      <li>Fédéré à l'<b>AD</b> (LDAP) via Keycloak, avec compte local en secours ;</li>
+      <li>Grafana, Langfuse, NewAPI et l'AI Admin Center utilisent le SSO Keycloak — certains en <b>connexion auto</b> ;</li>
+      <li>Les employés utilisent le compte unifié (ou AD) pour DeepChat / Dify.</li>
+    </ul>
+    <div class="note">📌 Si le SSO échoue avec <code>unknown_error</code>, c'est souvent le <b>service IP Helper (iphlpsvc)</b> arrêté qui casse le transfert de port AD (389). En admin : <code>Start-Service iphlpsvc</code> + ré-ajoutez les règles <code>netsh interface portproxy</code>.</div>
+
+    <h2 id="ch2"><span class="chapter-tag">Chapitre 2</span>Configuration</h2>
+
+    <h3 id="2-1">2.1 Pré-déploiement</h3>
+    <ol>
+      <li><b>Installer Docker Desktop</b> (Windows) ou Docker Engine (Linux/online), et le démarrer.</li>
+      <li><b>Préparer le réseau</b> : accès aux registres d'images (Docker Hub / quay.io — sinon configurer un miroir type DaoCloud) et à GitHub ; décider de l'IP intranet à exposer.</li>
+      <li><b>(Optionnel) Préparer l'AD</b> : contrôleur de domaine joignable, bind DN, mot de passe bind, base DN LDAP.</li>
+      <li><b>Préparer les clés API de modèles</b> : DeepSeek / OpenAI / Claude, au moins une.</li>
+    </ol>
+
+    <h3 id="2-2">2.2 Variables d'env &amp; secrets</h3>
+    <p>La config vit dans <code>.env</code> (modèle : <code>.env.example</code>). Variables clés :</p>
+    <table>
+      <tr><th>Variable</th><th>Rôle</th></tr>
+      <tr><td><code>KEYCLOAK_ADMIN / KEYCLOAK_ADMIN_PASSWORD</code></td><td>Compte admin Keycloak</td></tr>
+      <tr><td><code>KEYCLOAK_DB_PASSWORD</code></td><td>Mot de passe PostgreSQL Keycloak</td></tr>
+      <tr><td><code>NEWAPI_DB_PASSWORD / NEWAPI_SESSION_SECRET / NEWAPI_CRYPTO_SECRET</code></td><td>Base &amp; clés de session NewAPI</td></tr>
+      <tr><td><code>LITELLM_MASTER_KEY</code></td><td>Clé maître NewAPI → LiteLLM</td></tr>
+      <tr><td><code>DEEPSEEK_API_KEY</code> etc.</td><td>Clés de modèles externes</td></tr>
+      <tr><td><code>GRAFANA_OAUTH_CLIENT_SECRET</code></td><td>Secret client SSO Grafana</td></tr>
+      <tr><td><code>LANGFUSE_KEYCLOAK_CLIENT_SECRET</code></td><td>Secret client SSO Langfuse</td></tr>
+      <tr><td><code>LANGFUSE_PUBLIC_KEY / SECRET_KEY</code></td><td>Clés projet Langfuse (reporting LiteLLM)</td></tr>
+      <tr><td><code>ALERT_WEBHOOK_URL</code></td><td>Webhook d'alerte (DingTalk/WeCom/Feishu ou AI Admin Center)</td></tr>
+    </table>
+    <div class="tip">✅ Le script <code>bootstrap.ps1</code> remplace l'IP, génère les secrets, démarre les conteneurs, initialise Keycloak, configure les canaux NewAPI et enregistre la tâche de sauvegarde. Préférez-le.</div>
+
+    <h3 id="2-3">2.3 Keycloak</h3>
+    <p>Keycloak est le hub d'auth, actuellement en <b>mode production (start + PostgreSQL)</b>. Configurez :</p>
+    <ul>
+      <li><b>Realm</b> : <code>enterprise-ai</code> ;</li>
+      <li><b>Rôle</b> : <code>ai-platform-admin</code> ;</li>
+      <li><b>Clients OIDC</b> : <code>AI-all-in-one-admin-portal</code>, <code>grafana</code>, <code>langfuse</code>, <code>newapi</code> (confidentiels) ;</li>
+      <li><b>Fédération LDAP</b> : vendor=AD, bind DN avec le CN à espaces (<code>CN=ai all in one admin,CN=Users,DC=chxia,DC=lab</code>).</li>
+    </ul>
+    <div class="note">📌 Utilisez <code>scripts/keycloak-realm-init.ps1</code> pour créer realm + clients + rôle + fédération LDAP en une fois. L'id interne du realm est un UUID, à utiliser comme parentId LDAP.</div>
+
+    <h3 id="2-4">2.4 Canaux LLM</h3>
+    <p>Chaîne : <b>client → NewAPI (3000) → LiteLLM (4001) → modèle externe</b>.</p>
+    <ol>
+      <li>Dans NewAPI « Canaux », pointez un canal vers LiteLLM : Base URL <code>http://IP:4001/v1</code>, avec <code>LITELLM_MASTER_KEY</code> ;</li>
+      <li>Configurez la liste des modèles (<code>deepseek-chat</code>, etc.) dans <code>litellm-config.yaml</code> ;</li>
+      <li>Émettez des clés API (<code>sk-</code>) dans NewAPI « Jetons ».</li>
+    </ol>
+
+    <h3 id="2-5">2.5 SSO</h3>
+    <table>
+      <tr><th>Produit</th><th>Méthode</th><th>Notes</th></tr>
+      <tr><td>AI Admin Center</td><td>OIDC (keycloak-connect)</td><td>Redirection auto vers Keycloak</td></tr>
+      <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td><code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code></td></tr>
+      <tr><td>Langfuse</td><td>Provider Keycloak</td><td><code>/auth/sso-initiate?provider=KEYCLOAK</code></td></tr>
+      <tr><td>NewAPI</td><td>OIDC</td><td>« Connexion en un clic »</td></tr>
+    </table>
+
+    <h3 id="2-6">2.6 Masquage PII</h3>
+    <p>Deux couches, sur le proxy LiteLLM, avec <code>default_on</code> :</p>
+    <ul>
+      <li><b>Regex LiteLLM</b> : masque téléphones, identifiants, cartes bancaires, e-mails, codes de crédit, passeports, IP + blocage de mots sensibles ;</li>
+      <li><b>Presidio</b> : détecte noms/e-mails/cartes (analyzer : 5002, anonymizer : 5001).</li>
+    </ul>
+    <div class="warn">⚠️ Portée : uniquement les appels passant par LiteLLM ; ne masque pas les données déjà stockées ailleurs.</div>
+
+    <h3 id="2-7">2.7 Supervision / logs / alertes</h3>
+    <ul>
+      <li><b>Supervision</b> : Prometheus (9091) scrape cadvisor + exporters ; Grafana (3030) ;</li>
+      <li><b>Alertes</b> : Alertmanager (9093) → webhook (par défaut vers AI Admin Center) ;</li>
+      <li><b>Logs</b> : Promtail collecte → Loki (3110), page « Logs unifiés » ;</li>
+      <li><b>Rotation</b> : <code>x-logging</code> global (10 Mo × 3).</li>
+    </ul>
+
+    <h3 id="2-8">2.8 Sauvegarde &amp; restauration</h3>
+    <p><code>scripts/backup.ps1</code> s'exécute à 02:00 : NewAPI MySQL, Dify PG, SQLite Ghost/Gitea/Grafana, Keycloak (export realm JSON), Langfuse PG, fichiers de config. Restauration via <code>restore.ps1</code> ou la page « Sauvegarde &amp; restauration ».</p>
+    <div class="note">📌 Keycloak doit être sauvegardé via <b>realm export/import (JSON)</b>, pas pg_dump seul. Voir 3.13.</div>
+
+    <h2 id="ch3"><span class="chapter-tag">Chapitre 3</span>Administration (guide par outil)</h2>
+    <p class="muted">Chaque section couvre « comment entrer, quoi faire, tâches quotidiennes ». Entrée recommandée : <b>AI Admin Center (:10086)</b>.</p>
+
+    <h3 id="3-1">3.1 Keycloak</h3>
+    <p><b>Entrée</b> : <code>http://IP:9090</code> → console, connexion <code>ai_all_in_one_admin</code>.</p>
+    <ul>
+      <li>Gérer utilisateurs, réinitialiser mots de passe, attribuer le rôle <code>ai-platform-admin</code> ;</li>
+      <li>Gérer les clients OIDC ;</li>
+      <li>Voir/ajuster la fédération LDAP ;</li>
+      <li>Voir les sessions et forcer la déconnexion.</li>
+    </ul>
+
+    <h3 id="3-2">3.2 NewAPI</h3>
+    <p><b>Entrée</b> : <code>http://IP:3000</code>, compte unifié.</p>
+    <ul>
+      <li><b>Canaux</b> : gérer les canaux amont (vers LiteLLM) ;</li>
+      <li><b>Jetons</b> : émettre/désactiver des clés, quotas, expiration ;</li>
+      <li><b>Logs</b> : utilisateur/modèle/tokens/quota/coût/IP source par appel ;</li>
+      <li><b>Utilisateurs</b> : recharger, augmenter les limites, bannir.</li>
+    </ul>
+    <div class="note">📌 L'enregistrement de l'IP client dépend du réglage « Enregistrer le journal IP » (désactivé par défaut). Activez-le dans les Paramètres personnels.</div>
+
+    <h3 id="3-3">3.3 LiteLLM</h3>
+    <p><b>Entrée</b> : <code>http://IP:4001</code>. Config dans <code>litellm-config.yaml</code>.</p>
+    <ul>
+      <li>Ajouter/supprimer modèles et clés ;</li>
+      <li>Ajuster les guardrails PII (regex + Presidio) ;</li>
+      <li>Configurer le reporting Langfuse (success_callback).</li>
+    </ul>
+
+    <h3 id="3-4">3.4 Dify</h3>
+    <p><b>Entrée</b> : <code>http://IP</code> (port 80), compte unifié (e-mail <code>admin@company.com</code>).</p>
+    <ul>
+      <li>« Studio » — créer des apps (assistant / agent / workflow) ;</li>
+      <li>« Connaissances » — importer des documents, Q&amp;A ;</li>
+      <li>Configuration des fournisseurs de modèles ;</li>
+      <li>Gestion des membres et publication.</li>
+    </ul>
+    <div class="note">📌 Dify est un compose officiel séparé (<code>dify/docker/</code>) ; maintenez-le depuis ce répertoire.</div>
+
+    <h3 id="3-5">3.5 Ghost</h3>
+    <p><b>Entrée</b> : contenu <code>http://IP:8090</code> ; admin <code>http://IP:8090/ghost/</code>.</p>
+    <ul>
+      <li>Publier annonces et actualités ;</li>
+      <li>Maintenir la page d'accueil, la navigation, le thème ;</li>
+      <li>Importer les installeurs DeepChat ;</li>
+      <li>Membres et abonnements.</li>
+    </ul>
+
+    <h3 id="3-6">3.6 Gitea</h3>
+    <p><b>Entrée</b> : <code>http://IP:3002</code>, SSH 2222.</p>
+    <ul>
+      <li>Créer dépôts, organisations, équipes ;</li>
+      <li>Gérer les runners Actions (<code>deepchat-sync</code>) ;</li>
+      <li>Revue de code, issues, releases.</li>
+    </ul>
+
+    <h3 id="3-7">3.7 MCP Gateway</h3>
+    <p><b>Entrée</b> : <code>http://IP:3100</code>. Config <code>mcp-gateway/mcp-servers.json</code>.</p>
+    <ul>
+      <li>Gérer serveurs MCP / marché Skill (<code>skills/</code>) ;</li>
+      <li>Ajouter/supprimer des connexions MCP pour DeepChat / Dify.</li>
+    </ul>
+
+    <h3 id="3-8">3.8 Serveur de mise à jour DeepChat</h3>
+    <p><b>Entrée</b> : <code>http://IP:8091</code> ; données dans <code>deepchat-updates/</code>.</p>
+    <ul>
+      <li>Déposer les nouveaux installeurs (.exe/.dmg) et mettre à jour <code>version.txt</code> ;</li>
+      <li>Récupération auto des versions officielles via Gitea Actions (<code>deepchat-sync</code>) ;</li>
+      <li>Maintenir <code>sync-config.json</code>.</li>
+    </ul>
+    <div class="note">📌 « Délai de connexion au modèle » dans DeepChat = souvent un proxy système mort (<code>ECONNREFUSED 127.0.0.1:33210</code>). Réglez « Pas de proxy / Direct » dans Paramètres → Réseau/Proxy.</div>
+
+    <h3 id="3-9">3.9 AI Admin Center</h3>
+    <p><b>Entrée</b> : <code>http://IP:10086</code>, SSO Keycloak. C'est le <b>portail admin unifié</b> :</p>
+    <table>
+      <tr><th>Groupe</th><th>Fonctions</th></tr>
+      <tr><td>Tableau de bord</td><td>Santé des produits, métriques (appels/coût), disponibilité</td></tr>
+      <tr><td>Apps produit</td><td>Ghost / Dify / Gitea / NewAPI / Keycloak intégrés</td></tr>
+      <tr><td>Passerelle IA &amp; intégration</td><td>MCP Gateway / LiteLLM / serveur de mise à jour</td></tr>
+      <tr><td>Ops système</td><td>Test de disponibilité, supervision, observabilité, PII, logs, sauvegarde, rapports</td></tr>
+      <tr><td>Admin système</td><td>Auth centrale, gestion des admins, paramètres (9 langues, rétention des rapports)</td></tr>
+    </table>
+
+    <h3 id="3-10">3.10 Supervision (Prometheus / Grafana)</h3>
+    <p><b>Entrée</b> : Grafana <code>http://IP:3030</code> ; Prometheus <code>http://IP:9091</code>.</p>
+    <ul>
+      <li>Suivre CPU/mémoire/réseau dans Grafana ;</li>
+      <li>Vérifier les cibles et règles dans Prometheus ;</li>
+      <li>Alertes via Alertmanager (9093) webhook.</li>
+    </ul>
+
+    <h3 id="3-11">3.11 Observabilité LLM (Langfuse)</h3>
+    <p><b>Entrée</b> : <code>http://IP:3010</code>, SSO auto.</p>
+    <p><b>Tâches</b> : inspecter prompt, réponse, latence, tokens, coût de chaque appel.</p>
+    <div class="warn">⚠️ Si « aucune donnée » après connexion SSO, le compte SSO n'est pas dans l'org <code>ai-all-in-one</code>. Ajoutez l'utilisateur SSO à l'org (rôle ADMIN) en SQL.</div>
+
+    <h3 id="3-12">3.12 Logs unifiés (Loki)</h3>
+    <p><b>Entrée</b> : page « Logs unifiés » (plus simple), ou Loki <code>http://IP:3110</code>.</p>
+    <div class="note">📌 Les labels Loki sont <code>container / project / service</code> — pas de <code>job</code>. Requête <code>{container=~".+"}</code>.</div>
+
+    <h3 id="3-13">3.13 Sauvegarde &amp; restauration</h3>
+    <p><b>Entrée</b> : page « Sauvegarde &amp; restauration » ou <code>backup.ps1</code> / <code>restore.ps1</code>.</p>
+    <div class="warn">⚠️ Pièges (vérifiés) :</div>
+    <ul>
+      <li>Keycloak : utiliser <b>realm export/import (JSON)</b> ; pg_dump perd l'association du rôle par défaut ;</li>
+      <li>SQLite restauré en root → chown vers le bon uid (grafana=472, gitea=1000) ;</li>
+      <li>pg_dump : ajouter <code>--clean --if-exists</code>.</li>
+    </ul>
+
+    <h2 id="ch4"><span class="chapter-tag">Chapitre 4</span>Guide utilisateur</h2>
+
+    <h3 id="4-1">4.1 Démarrage</h3>
+    <h4>Option A : DeepChat (chat quotidien)</h4>
+    <ol>
+      <li>Ouvrir <code>http://IP:8090/downloads/</code> et installer le client ;</li>
+      <li>DeepChat → Paramètres → Service modèle → « Provider personnalisé / compatible OpenAI » :<br>
+        <b>API Base URL</b> : <code>http://IP:3000/v1</code><br>
+        <b>API Key</b> : auto-service dans NewAPI (voir 4.2)<br>
+        <b>Modèle</b> : <code>deepseek-chat</code></li>
+      <li>Enregistrer et discuter.</li>
+    </ol>
+    <h4>Option B : Dify (apps / base de connaissances)</h4>
+    <ol>
+      <li>Ouvrir <code>http://IP</code>, connexion compte unifié ;</li>
+      <li>« Studio » → créer une app ;</li>
+      <li>Écrire les prompts, attacher la base de connaissances, publier.</li>
+    </ol>
+
+    <h3 id="4-2">4.2 Demande de clé API</h3>
+    <ol>
+      <li>Ouvrir NewAPI <code>http://IP:3000</code> ;</li>
+      <li>« Clés API » → créer un jeton ;</li>
+      <li>Copier la clé <code>sk-</code> dans DeepChat / Dify.</li>
+    </ol>
+    <div class="note">📌 Quota limité par défaut ; contactez un admin pour l'augmenter.</div>
+
+    <h3 id="4-3">4.3 Règles de sécurité des données</h3>
+    <p>La plateforme masque automatiquement <b>téléphones, identifiants, cartes bancaires, e-mails</b>, mais veuillez respecter :</p>
+    <h4>❌ Ne jamais envoyer</h4>
+    <ul>
+      <li>Secrets internes/confidentiels (code non publié, prix, listes clients, contrats) ;</li>
+      <li>Vie privée (identifiants, cartes, mots de passe, santé) ;</li>
+      <li>Code source / conceptions non publiées.</li>
+    </ul>
+    <h4>✅ Sans risque</h4>
+    <ul>
+      <li>Matériel public, connaissances générales, rédaction, traduction, résumé ;</li>
+      <li>Données métier masquées (après retrait des champs sensibles).</li>
+    </ul>
+    <table>
+      <tr><th>Niveau</th><th>Modèle externe ?</th><th>Notes</th></tr>
+      <tr><td>Public</td><td>✅ OK</td><td>Déjà public</td></tr>
+      <tr><td>Interne ordinaire</td><td>⚠️ après masquage</td><td>OK une fois les champs sensibles retirés</td></tr>
+      <tr><td>Interne confidentiel / personnel</td><td>❌ Interdit</td><td>Ne jamais envoyer</td></tr>
+    </table>
+    <blockquote>Règle : « Serait-ce un problème si un tiers voyait ceci ? » Si oui → ne pas envoyer.</blockquote>
+
+    <h3 id="4-4">4.4 FAQ</h3>
+    <table>
+      <tr><th>Problème</th><th>Solution</th></tr>
+      <tr><td>Impossible de se connecter</td><td>Utiliser l'IP intranet (pas localhost) et le compte unifié</td></tr>
+      <tr><td>« Quota insuffisant »</td><td>Vérifier le solde dans NewAPI ; contacter un admin</td></tr>
+      <tr><td>Contenu bloqué</td><td>Mot sensible ou données sensibles ; ajuster (4.3)</td></tr>
+      <tr><td>Délai DeepChat</td><td>Paramètres → Réseau/Proxy → « Pas de proxy / Direct »</td></tr>
+      <tr><td>Qualité médiocre</td><td>Changer de modèle ou améliorer le prompt</td></tr>
+      <tr><td>Puis-je faire confiance à l'IA ?</td><td>Pas totalement — vérifier les faits/chiffres/code importants</td></tr>
+    </table>
+
+    <h3 id="4-5">4.5 Code de conduite</h3>
+    <ul>
+      <li>Pas d'usage illégal ou nuisible ; pas de contenu illégal, nuisible ou contrefait ;</li>
+      <li>Ne pas contourner la sécurité ni épuiser le quota en masse ;</li>
+      <li>Vérifier les faits avant de partager du contenu généré en externe.</li>
+    </ul>
+    <p>Contactez l'admin de la plateforme pour toute question.</p>
+
+    <hr style="border: none; border-top: 1px solid #21262d; margin: 48px 0 16px;">
+    <p class="muted">Manuel de formation AI AllInOne · v0.1 · 2026-08-14 · Interne — ne pas distribuer</p>
+  </main>
+</div>
+
+<script>
+  function toggleGroup(btn) { btn.parentElement.classList.toggle('collapsed'); }
+  const links = document.querySelectorAll('.toc-items a');
+  const headings = [...document.querySelectorAll('h2[id], h3[id]')];
+  function onScroll() {
+    let current = headings[0] && headings[0].id;
+    for (const h of headings) { if (h.getBoundingClientRect().top <= 80) current = h.id; }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
+</body>
+</html>
