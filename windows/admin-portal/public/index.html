@@ -11,7 +11,8 @@
   .sidebar{width:240px;background:#161b22;border-right:1px solid #30363d;padding:16px 0;overflow-y:auto;display:flex;flex-direction:column}
   .sidebar h2{color:#58a6ff;font-size:1.05em;padding:8px 16px;margin-bottom:12px;border-bottom:1px solid #30363d;white-space:nowrap}
   .sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#8b949e;text-decoration:none;font-size:0.88em;transition:background 0.12s;cursor:pointer;border-right:3px solid transparent}
-  .sidebar .nav-item:hover,.sidebar .nav-item.active{background:#1f2937;color:#e6edf3;border-right:3px solid #58a6ff}
+  .sidebar .nav-item:hover{background:#1f2937;color:#e6edf3}
+  .sidebar .nav-item.active{background:#1f6feb;color:#fff;border-right:3px solid #58a6ff;font-weight:600}
   .sidebar .divider{margin:8px 16px;border-top:1px solid #21262d}
   /* ── Sidebar groups (collapsible) ── */
   .nav-group{margin-bottom:2px}
@@ -26,7 +27,7 @@
   .sidebar .user-info button{display:block;margin-top:8px;background:#21262d;color:#f85149;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.85em;width:100%}
   /* ── Main content ── */
   .main{flex:1;padding:24px;overflow-y:auto}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #30363d}
+  .topbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #30363d}
   .topbar h1{font-size:1.4em;color:#f0f6fc}
   /* ── Cards ── */
   .card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px;margin-bottom:14px}
@@ -67,16 +68,16 @@
 <!-- ═══════ Sidebar ═══════ -->
 <div class="sidebar">
   <h2><img src="/logo.png" alt="AI All In One" style="width:28px;height:28px;border-radius:6px;vertical-align:middle;margin-right:8px"><span data-i18n="brand">AI 管理中心</span></h2>
-  <a class="nav-item active" onclick="loadDashboard()">📊 <span data-i18n="dashboard">总览仪表板</span></a>
+  <a class="nav-item active" onclick="loadDashboard(this)">📊 <span data-i18n="dashboard">总览仪表板</span></a>
   <div class="divider"></div>
 
   <div class="nav-group" data-group="apps">
     <div class="nav-group-head" onclick="toggleGroup('apps')"><span class="group-arrow">▾</span><span data-i18n="group_apps">产品应用</span></div>
     <div class="nav-group-body">
       <a class="nav-item" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8090</span></a>
-      <a class="nav-item" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8088</span></a>
+      <a class="nav-item" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:80</span></a>
       <a class="nav-item" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3002</span></a>
-      <a class="nav-item" onclick="loadNewApi()">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3000</span></a>
+      <a class="nav-item" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3000</span></a>
       <a class="nav-item" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:9090</span></a>
     </div>
   </div>
@@ -84,8 +85,8 @@
   <div class="nav-group" data-group="ai">
     <div class="nav-group-head" onclick="toggleGroup('ai')"><span class="group-arrow">▾</span><span data-i18n="group_ai">AI 网关与集成</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadMcpGateway()">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3100</span></a>
-      <a class="nav-item" onclick="loadLitellm()">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:4001</span></a>
+      <a class="nav-item" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3100</span></a>
+      <a class="nav-item" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:4001</span></a>
       <a class="nav-item" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8091</span></a>
     </div>
   </div>
@@ -106,9 +107,9 @@
   <div class="nav-group" data-group="admin">
     <div class="nav-group-head" onclick="toggleGroup('admin')"><span class="group-arrow">▾</span><span data-i18n="group_admin">系统管理</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadAuthOverview()">🔐 <span data-i18n="auth">集中认证</span></a>
-      <a class="nav-item" onclick="loadAdmins()">👥 <span data-i18n="admins">管理员管理</span></a>
-      <a class="nav-item" onclick="loadSettings()">⚙️ <span data-i18n="settings">系统设置</span></a>
+      <a class="nav-item" onclick="loadAuthOverview(this)">🔐 <span data-i18n="auth">集中认证</span></a>
+      <a class="nav-item" onclick="loadAdmins(this)">👥 <span data-i18n="admins">管理员管理</span></a>
+      <a class="nav-item" onclick="loadSettings(this)">⚙️ <span data-i18n="settings">系统设置</span></a>
     </div>
   </div>
 
@@ -132,6 +133,10 @@
 
 <script>
 const API = '/api';
+// 服务器对外地址与产品入口 URL：启动时从 /api/urls 加载（后端由 SERVER_PUBLIC_URL 派生，换域名/换 IP 只需改后端一处）
+let PUBLIC_URL = '';
+let PRODUCT_URLS = {};
+function P(key) { return PRODUCT_URLS[key] || ''; }
 const LANG_KEY = 'ai-center-lang';
 let LANG = (localStorage.getItem(LANG_KEY) || 'zh');
 
@@ -159,25 +164,31 @@ const I18N = {
     upload_skill: '上传技能包（zip，含 SKILL.md 的文件夹）', upload: '上传', skills_load_fail: '加载 Skill 失败（需 ai-platform-admin 角色）：',
     upload_fail: '上传失败：', uploaded: '已上传技能：', delete_skill_confirm: '删除技能「',
     name_cmd_required: '名称和命令/URL 必填', select_zip: '请先选择 zip 文件',
-    litellm_title: 'LiteLLM — PII 脱敏代理', litellm_open: '访问 LiteLLM 管理中心', litellm_desc: 'LiteLLM 是内部 PII 脱敏代理，登录用 Master Key（不走 Keycloak SSO）。',
-    open_litellm: '打开 LiteLLM 管理中心 ↗', copy_master_key: '📋 复制 Master Key', litellm_hint: '打开后把 Master Key 粘贴到登录框即可。Master Key 值见 credentials.html。',
+    litellm_title: 'LiteLLM — PII 脱敏代理', litellm_open: '访问 LiteLLM 管理中心', litellm_desc: 'LiteLLM 是内部 PII 脱敏代理，对所有对话做敏感信息脱敏。后台登录用统一账号（用户名 ai_all_in_one_admin、密码见 credentials.html）。',
+    open_litellm: '打开 LiteLLM 管理中心 ↗', copy_master_key: '📋 复制 Master Key', litellm_hint: '点上方「打开 LiteLLM 管理中心」按钮跳转，登录用统一账号（用户名 ai_all_in_one_admin、密码见 credentials.html）。Master Key 用于 API 调用。',
     litellm_fail: '无法获取 LiteLLM 信息：', no_key: '未获取到 Master Key', copied: '已复制到剪贴板',
+    litellm_admin_panel: 'LiteLLM 管理后台', litellm_model_hub: '模型中心', litellm_model_cost_map: '模型价格地图', litellm_api_docs: 'API 文档', litellm_fallback_login: '备用登录',
+    litellm_quick_links: '快捷入口', litellm_quick_links_hint: '管理后台：创建/编辑密钥（SSO 登录）；模型中心：查看代理上可用模型；价格地图：各模型单价对比；API 文档：Swagger 全量接口。',
+    litellm_models: '可用模型', litellm_models_hint: '当前 LiteLLM 代理已配置的模型（来自 /v1/models），NewAPI 渠道即聚合这些模型。', litellm_pii_on: 'PII 脱敏已启用', no_models: '暂无模型', models_list: '已接入模型',
     newapi_title: 'NewAPI — LLM 路由网关', loading_newapi: '正在加载 NewAPI 数据...', newapi_fail: '无法获取 NewAPI 数据（需 ai-platform-admin 角色）：',
     enabled: '启用', disabled: '禁用', admin_role: '管理员', user_role: '普通用户', other_role: '其他', usd: '美元', unlimited: '不限',
     channel: '渠道', model: '模型', used_quota: '已用配额', username: '用户名', role: '角色', quota: '配额', used: '已用', requests: '请求数', remain_quota: '剩余配额',
-    no_channels: '暂无渠道', no_users: '暂无用户', no_keys: '暂无密钥', open_newapi: '打开 NewAPI 后台 ↗（复杂配置）', newapi_note: '查看已聚合；增删改渠道/用户/密钥请跳转后台操作。',
+    no_channels: '暂无渠道', no_users: '暂无用户', no_keys: '暂无密钥', open_newapi: 'Open NewAPI Admin', newapi_note: '查看已聚合；增删改渠道/用户/密钥请跳转后台操作。',
     auth_title: '集中认证 — 统一账号体系', loading_auth: '正在加载认证概览...', auth_need_admin: '需要 ai-platform-admin 角色才能查看集中认证信息（含账号密码）',
     auth_need_admin2: '请确保当前登录用户已分配 ai-platform-admin Realm Role。', auth_fail: '无法获取认证信息：',
     security: '⚠️ 安全提示', security_desc: '本页面含统一管理员账号密码，仅 ai-platform-admin 角色可见，请勿外传或截图传播。',
     unified_admin: '🔑 统一管理员账号（所有 Web 平台共用）', item: '项目', value: '值', action: '操作', copy: '📋 复制',
     unified_desc: '一个账号管理所有平台。登录任意平台时跳转 Keycloak 认证，其他接入 SSO 的产品自动登录，无需重复输密码。',
-    sso_mech: '🔄 SSO 单点登录机制', sso_desc: 'Web 界面类产品都接入 Keycloak SSO，登录一次后点任何产品入口都自动进入。两个例外：Keycloak 本身是身份源；API 服务（LiteLLM、DeepSeek 等）用 API Key 调用，不走 SSO。',
+    sso_mech: '🔄 SSO 单点登录机制', sso_desc: 'Web 界面类产品都接入 Keycloak SSO，登录一次后点任何产品入口都自动进入。例外：Keycloak 本身是身份源；LiteLLM 后台默认用统一账号登录（可另行配置 Keycloak SSO）；纯 API 服务（DeepSeek 等）用 API Key 调用，不走 SSO。',
     auth_methods: '🗂️ 各平台认证方式清单', platform: '平台', login_method: '登录方式', note: '说明',
-    litellm_exception: '🛡️ LiteLLM — 例外（Master Key，不走 SSO）', litellm_exception_desc: 'LiteLLM 是内部 PII 脱敏代理，登录用 Master Key（不支持 Keycloak SSO）。日常无感，仅排查脱敏/查调用日志时进入。',
+    litellm_exception: '🛡️ LiteLLM — 统一账号登录（可配 SSO）', litellm_exception_desc: 'LiteLLM 后台用统一账号登录（ai_all_in_one_admin，密码见 credentials.html）；如需免密，可另行配置 Keycloak SSO（GENERIC_* 环境变量）。日常无感，仅排查脱敏/查调用日志时进入。',
     ad_account: '🏢 AD 域账号（LDAP 绑定）', bind_account: '绑定账号', bind_dn: '绑定 DN', password: '密码',
     ad_note: '⚠️ 注意：AD 账号的 CN 带空格（"ai all in one admin"），不是下划线。改域控显示名后需同步更新 Keycloak LDAP 组件的 bindDn。',
     admins_title: '管理员账号管理', admins_list: '平台管理员列表 (ai-platform-admin)', no_admins: '未找到管理员用户', name2: '姓名', email: '邮箱',
-    admins_desc: '管理员通过 Keycloak 管理，角色: ai-platform-admin。如需添加/移除管理员，请在 Keycloak 管理后台操作或通过 Entra ID 组映射。',
+    admins_desc: '管理员通过 Keycloak 管理，角色: ai-platform-admin。可在此直接启用/禁用、添加/移除管理员、重置密码（不能操作自己）。',
+    admins_add: '添加管理员', admins_add_ph: '输入用户名', admins_add_btn: '添加', admins_enable: '启用', admins_disable: '禁用', admins_reset_pwd: '重置密码', admins_demote: '移除管理员', admins_open_kc: 'Keycloak', admins_self_err: '不能操作自己的账号',
+    admins_cf_disable: '确定要禁用该管理员账号？', admins_cf_enable: '确定要启用该管理员账号？', admins_cf_demote: '确定要移除该用户的管理员角色（降级为普通用户）？', admins_cf_reset: '确定要重置该管理员的密码？将生成临时密码并强制首次登录改密。',
+    admins_new_pwd: '新的临时密码', admins_pwd_hint: '已强制该用户首次登录时修改密码。请立即将密码发给本人（仅显示这一次）。', admins_add_ok: '已添加', admins_add_err: '添加失败', admins_actions: '操作',
     admins_need_admin: '需要 ai-platform-admin 角色才能查看管理员列表', admins_need_admin2: '请确保当前用户已分配 ai-platform-admin Realm Role。',
     settings_title: '系统设置', language: '界面语言', language_desc: '选择管理中心界面的显示语言，保存后立即生效。',
     env_config: '环境变量配置', env_desc: '所有配置通过 .env 文件或 docker-compose.yml 的 environment 传入。修改后需重启容器生效。',
@@ -219,11 +230,32 @@ const I18N = {
     monitoring_targets: '存活目标',
     monitoring_total: '总目标',
     langfuse_version: '版本',
+    langfuse_gen_calls: '模型调用', langfuse_models: '模型', langfuse_recent_traces: '最近追踪', langfuse_model_usage: '模型用量', langfuse_sessions: '会话', langfuse_prompts: '提示词', langfuse_settings: '设置',
     alerts_firing: '告警中',
     open_monitoring: '打开监控大盘',
     open_observability: '打开可观测平台',
     traces: '追踪记录',
     obs_desc: '追踪每次模型调用的提示词、响应、延迟、token、成本，用于质量分析与故障定位。',
+    product_about: '产品说明', entry_url: '访问入口', official_docs: '官方文档',
+    ghost_about: 'Ghost 是企业门户与内容管理系统，承载公司新闻、公告、下载中心与员工 Hub 首页。', ghost_new_post: '写文章', ghost_settings: '站点设置',
+    dify_about: 'Dify 是 AI 应用编排平台，可搭建工作流、知识库与 Agent，是员工自助 AI 应用的核心。', dify_kb: '知识库',
+    kc_about: 'Keycloak 是统一身份认证中枢，提供 SSO 单点登录、AD/LDAP 联邦、用户/角色/客户端管理。',
+    monitoring_about: '监控告警由 Prometheus 采集指标、Grafana 可视化、Alertmanager 发送告警。',
+    obs_about: 'Langfuse 追踪每次 LLM 调用的提示词、响应、延迟、token 与成本，用于质量分析与故障定位。',
+    data_metrics: '数据指标', related_entries: '相关入口', key_info: '关键信息',
+    business_detail: '渠道 · 用户 · 密钥', monitoring_status: '监控状态', trace_usage: '追踪与用量', content_activity: '最近内容', apps_workspaces: '应用与工作空间', identity_resources: '用户 · 客户端 · 角色',
+    gitea_about: 'Gitea 是自托管 Git 源码管理与 CI/CD 平台，托管公司代码仓库与 DeepChat 自动同步任务。',
+    newapi_about: 'NewAPI 是 LLM 网关，聚合 LiteLLM 等上游渠道，管理渠道、用户与令牌（API Key）的配额与权限。',
+    mcp_about: 'MCP Gateway 聚合外部 MCP 服务与内网 Skill 技能包，供 DeepChat 等客户端接入。',
+    litellm_about: 'LiteLLM 是统一 LLM 网关 + PII 脱敏代理，对所有对话做敏感信息脱敏，并向上游 NewAPI 提供模型。',
+    update_about: '更新服务器用于分发 DeepChat 桌面客户端安装包（Windows/macOS），客户端自动检查更新。',
+    pii_about: 'PII 脱敏由内置正则 + Microsoft Presidio 服务组成，对手机号、身份证、银行卡、邮箱等敏感信息脱敏。',
+    sso_login_hint: '统一账号 SSO 单点登录（ai_all_in_one_admin）', ghost_auto_hint: '统一账号免登录进入（点右上角按钮自动登录）',
+    ghost_recent_posts: '最近文章', ghost_recent_pages: '最近页面', ghost_st_published: '已发布', ghost_st_draft: '草稿', ghost_st_scheduled: '定时发布',
+    dify_new_app: '新建应用', dify_new_kb: '新建知识库',
+    kc_new_user: '新建用户', kc_new_client: '新建客户端', kc_new_role: '新建角色',
+    search_ph: '搜索…', per_page: '每页', prev_page: '上一页', next_page: '下一页', no_results: '无匹配结果',
+    sync_fail_reason: '失败原因', litellm_new_model: '新建模型',
     pii: 'PII 脱敏', logs: '统一日志', backup: '备份与恢复', availability: '可用性测试',
     avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DeepChat/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
     presidio_state: '状态', pii_up: '正常', pii_down: '异常',
@@ -232,7 +264,8 @@ const I18N = {
     pii_litellm_models: 'LiteLLM 已接入模型', pii_note: '所有经 LiteLLM 的模型调用都会先经过上述脱敏规则（default_on）：中文手机号/身份证/银行卡/邮箱/信用代码/护照/IP 及英文人名/邮箱/信用卡等敏感信息会被自动打码或拦截。',
     backup_title: '备份与恢复', backup_desc: '数据备份 = NewAPI(MySQL) + Dify(PostgreSQL) + Ghost/Gitea(SQLite) + 配置文件。每日 02:00 定时备份，保留 7 天。',
     backup_run: '立即备份', backup_running: '备份执行中...', backup_list: '备份列表', backup_time: '备份', backup_files: '文件', backup_no: '暂无备份记录', backup_confirm: '确认恢复到', backup_restore: '恢复', backup_restore_warn: '⚠️ 恢复会覆盖现有数据，请谨慎操作！', backup_result: '执行结果', backup_pass: '成功', backup_fail: '失败', backup_log: '备份日志',
-    logs_title: '统一日志', logs_desc: '聚合所有容器日志（Loki + Promtail）。按容器筛选，支持关键字搜索。', logs_container: '容器', logs_keyword: '关键字', logs_search_btn: '查询', logs_results: '日志结果', logs_empty: '无匹配日志', logs_all: '全部',
+    logs_title: '统一日志', logs_desc: '聚合所有容器日志（Loki + Promtail）。按容器/级别筛选，支持关键字搜索、导出与自动刷新。', logs_container: '容器', logs_keyword: '关键字', logs_search_btn: '查询', logs_results: '日志结果', logs_empty: '无匹配日志', logs_all: '全部',
+    logs_level: '级别', logs_level_all: '全部级别', logs_level_error: '错误', logs_level_warn: '警告', logs_level_info: '信息', logs_per_page: '条数', logs_export: '导出', logs_copy: '复制', logs_copied: '已复制', logs_auto_refresh: '自动刷新', logs_total: '共 N 条',
     report: '报告生成', report_title: '报告生成 — 系统详细报告', report_desc: '按自定义条件生成系统报告：一段时间的系统状态、使用情况、客户端统计、最近问题、可用性、备份与 PII 状态。',
     report_conditions: '报告条件', report_days: '统计周期', report_days_1: '最近 1 天', report_days_7: '最近 7 天', report_days_30: '最近 30 天', report_days_90: '最近 90 天',
     report_sections: '包含内容', report_sec_system: '系统总览', report_sec_usage: '使用统计', report_sec_client: '客户端统计', report_sec_issues: '最近问题', report_sec_avail: '可用性测试', report_sec_backup: '备份状态', report_sec_pii: 'PII 脱敏',
@@ -265,25 +298,31 @@ const I18N = {
     upload_skill: 'Upload skill package (zip containing a folder with SKILL.md)', upload: 'Upload', skills_load_fail: 'Failed to load skills (requires ai-platform-admin role): ',
     upload_fail: 'Upload failed: ', uploaded: 'Uploaded skill: ', delete_skill_confirm: 'Delete skill "',
     name_cmd_required: 'Name and command/URL are required', select_zip: 'Please select a zip file first',
-    litellm_title: 'LiteLLM — PII Redaction Proxy', litellm_open: 'Access LiteLLM', litellm_desc: 'LiteLLM is the internal PII redaction proxy. Log in with the Master Key (not Keycloak SSO).',
-    open_litellm: 'Open LiteLLM ↗', copy_master_key: '📋 Copy Master Key', litellm_hint: 'Paste the Master Key into the login box. See credentials.html for the value.',
+    litellm_title: 'LiteLLM — PII Redaction Proxy', litellm_open: 'Access LiteLLM', litellm_desc: 'LiteLLM is the internal PII redaction proxy that redacts sensitive data from all conversations. Log in to the console with the unified account (username ai_all_in_one_admin, password in credentials.html).',
+    open_litellm: 'Open LiteLLM ↗', copy_master_key: '📋 Copy Master Key', litellm_hint: 'Click the "Open LiteLLM" button above to jump; log in with the unified account (username ai_all_in_one_admin, password in credentials.html). The Master Key is for API calls.',
     litellm_fail: 'Cannot get LiteLLM info: ', no_key: 'No Master Key', copied: 'copied to clipboard',
+    litellm_admin_panel: 'Admin Panel', litellm_model_hub: 'Model Hub', litellm_model_cost_map: 'Model Cost Map', litellm_api_docs: 'API Docs', litellm_fallback_login: 'Fallback Login',
+    litellm_quick_links: 'Quick Links', litellm_quick_links_hint: 'Admin Panel: create/edit keys (SSO login). Model Hub: models available on the proxy. Cost Map: per-model price comparison. API Docs: full Swagger API.',
+    litellm_models: 'Available Models', litellm_models_hint: 'Models configured on this LiteLLM proxy (from /v1/models); NewAPI channels aggregate these models.', litellm_pii_on: 'PII redaction enabled', no_models: 'No models', models_list: 'Models',
     newapi_title: 'NewAPI — LLM Router', loading_newapi: 'Loading NewAPI data...', newapi_fail: 'Cannot get NewAPI data (requires ai-platform-admin role): ',
     enabled: 'Enabled', disabled: 'Disabled', admin_role: 'Admin', user_role: 'User', other_role: 'Other', usd: 'USD', unlimited: 'Unlimited',
     channel: 'Channel', model: 'Models', used_quota: 'Used quota', username: 'Username', role: 'Role', quota: 'Quota', used: 'Used', requests: 'Requests', remain_quota: 'Remaining',
-    no_channels: 'No channels', no_users: 'No users', no_keys: 'No keys', open_newapi: 'Open NewAPI ↗ (advanced)', newapi_note: 'Read-only aggregation; edit channels/users/keys in NewAPI backend.',
+    no_channels: 'No channels', no_users: 'No users', no_keys: 'No keys', open_newapi: 'Open NewAPI Admin', newapi_note: 'Read-only aggregation; edit channels/users/keys in NewAPI backend.',
     auth_title: 'Central Auth — Unified Accounts', loading_auth: 'Loading auth overview...', auth_need_admin: 'Requires ai-platform-admin role to view auth info (contains credentials)',
     auth_need_admin2: 'Assign the ai-platform-admin Realm Role to the current user.', auth_fail: 'Cannot get auth info: ',
     security: '⚠️ Security Notice', security_desc: 'This page contains the unified admin credentials. Visible to ai-platform-admin only. Do not share or screenshot.',
     unified_admin: '🔑 Unified Admin Account (all web platforms)', item: 'Item', value: 'Value', action: 'Action', copy: '📋 Copy',
     unified_desc: 'One account manages all platforms. Logging into any platform redirects to Keycloak; other SSO-enabled products auto-login.',
-    sso_mech: '🔄 SSO Mechanism', sso_desc: 'Web products use Keycloak SSO — sign in once and every entry auto-logs in. Two exceptions: Keycloak itself is the identity source; API services (LiteLLM, DeepSeek, etc.) use API keys.',
+    sso_mech: '🔄 SSO Mechanism', sso_desc: 'Web products use Keycloak SSO — sign in once and every entry auto-logs in. Exceptions: Keycloak itself is the identity source; the LiteLLM console uses the unified account by default (optional Keycloak SSO); pure API services (DeepSeek, etc.) use API keys.',
     auth_methods: '🗂️ Auth Methods by Platform', platform: 'Platform', login_method: 'Login method', note: 'Notes',
-    litellm_exception: '🛡️ LiteLLM — Exception (Master Key, no SSO)', litellm_exception_desc: 'LiteLLM is the internal PII proxy, logged in with Master Key (no Keycloak SSO). Only used when troubleshooting redaction/logs.',
+    litellm_exception: '🛡️ LiteLLM — Unified account (SSO optional)', litellm_exception_desc: 'The LiteLLM console uses the unified account (ai_all_in_one_admin, password in credentials.html); optional Keycloak SSO via GENERIC_* env vars. Only used when troubleshooting redaction/logs.',
     ad_account: '🏢 AD Domain Account (LDAP)', bind_account: 'Bind account', bind_dn: 'Bind DN', password: 'Password',
     ad_note: '⚠️ The AD account CN has spaces ("ai all in one admin"), not underscores. Update Keycloak LDAP bindDn after renaming the DC display name.',
     admins_title: 'Admin Accounts', admins_list: 'Platform Admins (ai-platform-admin)', no_admins: 'No admin users found', name2: 'Name', email: 'Email',
-    admins_desc: 'Admins are managed via Keycloak, role: ai-platform-admin. To add/remove, use Keycloak admin console or Entra ID group mapping.',
+    admins_desc: 'Admins are managed via Keycloak, role: ai-platform-admin. Enable/disable, add/remove, and reset passwords right here (you cannot modify your own account).',
+    admins_add: 'Add Admin', admins_add_ph: 'Enter username', admins_add_btn: 'Add', admins_enable: 'Enable', admins_disable: 'Disable', admins_reset_pwd: 'Reset Password', admins_demote: 'Remove Admin', admins_open_kc: 'Keycloak', admins_self_err: 'Cannot modify your own account',
+    admins_cf_disable: 'Disable this admin account?', admins_cf_enable: 'Enable this admin account?', admins_cf_demote: 'Remove the admin role from this user (demote to regular user)?', admins_cf_reset: 'Reset this admin\u2019s password? A temporary password will be generated and they must change it at first login.',
+    admins_new_pwd: 'New temporary password', admins_pwd_hint: 'The user must change the password at first login. Send it to them immediately (shown only once).', admins_add_ok: 'Added', admins_add_err: 'Add failed', admins_actions: 'Actions',
     admins_need_admin: 'Requires ai-platform-admin role to view admins', admins_need_admin2: 'Assign the ai-platform-admin Realm Role to the current user.',
     settings_title: 'Settings', language: 'Language', language_desc: 'Choose the Admin Center interface language. Takes effect immediately.',
     env_config: 'Environment Variables', env_desc: 'All config is passed via .env or docker-compose.yml environment. Restart the container after changes.',
@@ -325,11 +364,32 @@ const I18N = {
     monitoring_targets: 'Targets up',
     monitoring_total: 'Total targets',
     langfuse_version: 'Version',
+    langfuse_gen_calls: 'Model Calls', langfuse_models: 'Models', langfuse_recent_traces: 'Recent Traces', langfuse_model_usage: 'Model Usage', langfuse_sessions: 'Sessions', langfuse_prompts: 'Prompts', langfuse_settings: 'Settings',
     alerts_firing: 'Firing alerts',
     open_monitoring: 'Open Monitoring',
     open_observability: 'Open Observability',
     traces: 'Traces',
     obs_desc: 'Traces prompts, responses, latency, tokens and cost of every model call for quality analysis and debugging.',
+    product_about: 'About', entry_url: 'Entry URL', official_docs: 'Official Docs',
+    ghost_about: 'Ghost is the enterprise portal and CMS hosting company news, announcements, download center and the employee Hub home.', ghost_new_post: 'New Post', ghost_settings: 'Settings',
+    dify_about: 'Dify is the AI app orchestration platform for building workflows, knowledge bases and agents.', dify_kb: 'Knowledge Base',
+    kc_about: 'Keycloak is the unified identity provider for SSO, AD/LDAP federation, and user/role/client management.',
+    monitoring_about: 'Monitoring uses Prometheus for metrics, Grafana for dashboards, and Alertmanager for alerts.',
+    obs_about: 'Langfuse traces prompts, responses, latency, tokens and cost of every LLM call for quality analysis and debugging.',
+    data_metrics: 'Metrics', related_entries: 'Related Entries', key_info: 'Key Info',
+    business_detail: 'Channels · Users · Keys', monitoring_status: 'Monitoring Status', trace_usage: 'Traces & Usage', content_activity: 'Recent Content', apps_workspaces: 'Apps & Workspaces', identity_resources: 'Users · Clients · Roles',
+    gitea_about: 'Gitea is a self-hosted Git source and CI/CD platform hosting company code repos and the DeepChat auto-sync jobs.',
+    newapi_about: 'NewAPI is the LLM gateway aggregating LiteLLM and other upstream channels, managing channels, users and token (API key) quotas.',
+    mcp_about: 'MCP Gateway aggregates external MCP services and internal Skill packages for clients like DeepChat.',
+    litellm_about: 'LiteLLM is the unified LLM gateway + PII redaction proxy that masks sensitive data and provides models to NewAPI.',
+    update_about: 'Update Server distributes DeepChat desktop installers (Windows/macOS); clients auto-check for updates.',
+    pii_about: 'PII redaction combines built-in regex + Microsoft Presidio to mask phone numbers, IDs, bank cards and emails.',
+    sso_login_hint: 'Unified account SSO (ai_all_in_one_admin)', ghost_auto_hint: 'Unified account auto sign-in (click the button)',
+    ghost_recent_posts: 'Recent Posts', ghost_recent_pages: 'Recent Pages', ghost_st_published: 'Published', ghost_st_draft: 'Draft', ghost_st_scheduled: 'Scheduled',
+    dify_new_app: 'New App', dify_new_kb: 'New Knowledge Base',
+    kc_new_user: 'New User', kc_new_client: 'New Client', kc_new_role: 'New Role',
+    search_ph: 'Search…', per_page: 'Per page', prev_page: 'Prev', next_page: 'Next', no_results: 'No results',
+    sync_fail_reason: 'Failure Reason', litellm_new_model: 'Add Model',
     pii: 'PII Redaction', logs: 'Unified Logs', backup: 'Backup & Restore', availability: 'Availability Test',
     avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DeepChat/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
     presidio_state: 'State', pii_up: 'Up', pii_down: 'Down',
@@ -338,7 +398,8 @@ const I18N = {
     pii_litellm_models: 'Models behind LiteLLM', pii_note: 'All LiteLLM traffic passes the guardrails (default_on): CN mobile/ID/bank card/email/credit code/passport/IP and EN name/email/credit card are masked or blocked.',
     backup_title: 'Backup & Restore', backup_desc: 'Backup = NewAPI(MySQL) + Dify(PostgreSQL) + Ghost/Gitea(SQLite) + config files. Scheduled daily 02:00, kept 7 days.',
     backup_run: 'Backup Now', backup_running: 'Running backup...', backup_list: 'Backup List', backup_time: 'Backup', backup_files: 'Files', backup_no: 'No backups yet', backup_confirm: 'Restore from', backup_restore: 'Restore', backup_restore_warn: 'Restore will overwrite current data!', backup_result: 'Result', backup_pass: 'OK', backup_fail: 'Failed', backup_log: 'Backup Log',
-    logs_title: 'Unified Logs', logs_desc: 'Aggregated container logs (Loki + Promtail). Filter by container, keyword search.', logs_container: 'Container', logs_keyword: 'Keyword', logs_search_btn: 'Search', logs_results: 'Log Results', logs_empty: 'No matching logs', logs_all: 'All',
+    logs_title: 'Unified Logs', logs_desc: 'Aggregated container logs (Loki + Promtail). Filter by container/level, keyword search, export & auto-refresh.', logs_container: 'Container', logs_keyword: 'Keyword', logs_search_btn: 'Search', logs_results: 'Log Results', logs_empty: 'No matching logs', logs_all: 'All',
+    logs_level: 'Level', logs_level_all: 'All levels', logs_level_error: 'Error', logs_level_warn: 'Warning', logs_level_info: 'Info', logs_per_page: 'Limit', logs_export: 'Export', logs_copy: 'Copy', logs_copied: 'Copied', logs_auto_refresh: 'Auto-refresh', logs_total: 'Total N',
     report: 'Report', report_title: 'Report — System Detailed Report', report_desc: 'Generate a system report by custom conditions: system status over time, usage, client statistics, recent issues, availability, backup and PII status.',
     report_conditions: 'Conditions', report_days: 'Period', report_days_1: 'Last 1 day', report_days_7: 'Last 7 days', report_days_30: 'Last 30 days', report_days_90: 'Last 90 days',
     report_sections: 'Include', report_sec_system: 'System Overview', report_sec_usage: 'Usage Stats', report_sec_client: 'Client Stats', report_sec_issues: 'Recent Issues', report_sec_avail: 'Availability', report_sec_backup: 'Backup', report_sec_pii: 'PII Redaction',
@@ -377,7 +438,7 @@ const I18N = {
     newapi_title: 'NewAPI — LLM 路由閘道', loading_newapi: '正在載入 NewAPI 資料...', newapi_fail: '無法取得 NewAPI 資料（需 ai-platform-admin 角色）：',
     enabled: '啟用', disabled: '停用', admin_role: '管理員', user_role: '一般使用者', other_role: '其他', usd: '美元', unlimited: '不限',
     channel: '管道', model: '模型', used_quota: '已用配額', username: '使用者名稱', role: '角色', quota: '配額', used: '已用', requests: '請求數', remain_quota: '剩餘配額',
-    no_channels: '暫無管道', no_users: '暫無使用者', no_keys: '暫無金鑰', open_newapi: '開啟 NewAPI 後台 ↗（複雜設定）', newapi_note: '檢視已聚合；增刪改管道/使用者/金鑰請跳轉後台操作。',
+    no_channels: '暫無管道', no_users: '暫無使用者', no_keys: '暫無金鑰', open_newapi: 'Open NewAPI Admin', newapi_note: '檢視已聚合；增刪改管道/使用者/金鑰請跳轉後台操作。',
     auth_title: '集中認證 — 統一帳號體系', loading_auth: '正在載入認證概覽...', auth_need_admin: '需要 ai-platform-admin 角色才能查看集中認證資訊（含帳號密碼）',
     auth_need_admin2: '請確保目前登入使用者已指派 ai-platform-admin Realm Role。', auth_fail: '無法取得認證資訊：',
     security: '⚠️ 安全提示', security_desc: '本頁面含統一管理員帳號密碼，僅 ai-platform-admin 角色可見，請勿外傳或截圖散佈。',
@@ -466,7 +527,7 @@ const I18N = {
     newapi_title: 'NewAPI — Routeur LLM', loading_newapi: 'Chargement des données NewAPI...', newapi_fail: 'Impossible de récupérer les données NewAPI (rôle ai-platform-admin requis) : ',
     enabled: 'Activé', disabled: 'Désactivé', admin_role: 'Admin', user_role: 'Utilisateur', other_role: 'Autre', usd: 'USD', unlimited: 'Illimité',
     channel: 'Canal', model: 'Modèles', used_quota: 'Quota utilisé', username: 'Nom d’utilisateur', role: 'Rôle', quota: 'Quota', used: 'Utilisé', requests: 'Requêtes', remain_quota: 'Restant',
-    no_channels: 'Aucun canal', no_users: 'Aucun utilisateur', no_keys: 'Aucune clé', open_newapi: 'Ouvrir NewAPI ↗ (avancé)', newapi_note: 'Agrégation en lecture seule ; modifiez canaux/utilisateurs/clés dans NewAPI.',
+    no_channels: 'Aucun canal', no_users: 'Aucun utilisateur', no_keys: 'Aucune clé', open_newapi: 'Open NewAPI Admin', newapi_note: 'Agrégation en lecture seule ; modifiez canaux/utilisateurs/clés dans NewAPI.',
     auth_title: 'Authentification centralisée — Comptes unifiés', loading_auth: 'Chargement de l’aperçu d’authentification...', auth_need_admin: 'Rôle ai-platform-admin requis pour voir les infos d’authentification (contient les identifiants)',
     auth_need_admin2: 'Attribuez le rôle ai-platform-admin à l’utilisateur actuel.', auth_fail: 'Impossible de récupérer les infos d’authentification : ',
     security: '⚠️ Avis de sécurité', security_desc: 'Cette page contient les identifiants admin unifiés. Visible uniquement par ai-platform-admin. Ne pas partager ni capturer.',
@@ -555,7 +616,7 @@ const I18N = {
     newapi_title: 'NewAPI — Enrutador LLM', loading_newapi: 'Cargando datos de NewAPI...', newapi_fail: 'No se pudieron obtener los datos de NewAPI (requiere rol ai-platform-admin): ',
     enabled: 'Habilitado', disabled: 'Deshabilitado', admin_role: 'Admin', user_role: 'Usuario', other_role: 'Otro', usd: 'USD', unlimited: 'Ilimitado',
     channel: 'Canal', model: 'Modelos', used_quota: 'Cuota usada', username: 'Usuario', role: 'Rol', quota: 'Cuota', used: 'Usado', requests: 'Solicitudes', remain_quota: 'Restante',
-    no_channels: 'Sin canales', no_users: 'Sin usuarios', no_keys: 'Sin claves', open_newapi: 'Abrir NewAPI ↗ (avanzado)', newapi_note: 'Agregación de solo lectura; edite canales/usuarios/claves en NewAPI.',
+    no_channels: 'Sin canales', no_users: 'Sin usuarios', no_keys: 'Sin claves', open_newapi: 'Open NewAPI Admin', newapi_note: 'Agregación de solo lectura; edite canales/usuarios/claves en NewAPI.',
     auth_title: 'Autenticación central — Cuentas unificadas', loading_auth: 'Cargando resumen de autenticación...', auth_need_admin: 'Se requiere rol ai-platform-admin para ver la info de autenticación (contiene credenciales)',
     auth_need_admin2: 'Asigne el rol ai-platform-admin al usuario actual.', auth_fail: 'No se pudo obtener la info de autenticación: ',
     security: '⚠️ Aviso de seguridad', security_desc: 'Esta página contiene las credenciales admin unificadas. Visible solo para ai-platform-admin. No comparta ni capture.',
@@ -644,7 +705,7 @@ const I18N = {
     newapi_title: 'NewAPI — Roteador LLM', loading_newapi: 'Carregando dados do NewAPI...', newapi_fail: 'Não foi possível obter dados do NewAPI (requer função ai-platform-admin): ',
     enabled: 'Habilitado', disabled: 'Desabilitado', admin_role: 'Admin', user_role: 'Usuário', other_role: 'Outro', usd: 'USD', unlimited: 'Ilimitado',
     channel: 'Canal', model: 'Modelos', used_quota: 'Cota usada', username: 'Usuário', role: 'Função', quota: 'Cota', used: 'Usado', requests: 'Solicitações', remain_quota: 'Restante',
-    no_channels: 'Sem canais', no_users: 'Sem usuários', no_keys: 'Sem chaves', open_newapi: 'Abrir NewAPI ↗ (avançado)', newapi_note: 'Agregação somente leitura; edite canais/usuários/chaves no NewAPI.',
+    no_channels: 'Sem canais', no_users: 'Sem usuários', no_keys: 'Sem chaves', open_newapi: 'Open NewAPI Admin', newapi_note: 'Agregação somente leitura; edite canais/usuários/chaves no NewAPI.',
     auth_title: 'Autenticação central — Contas unificadas', loading_auth: 'Carregando resumo de autenticação...', auth_need_admin: 'Requer função ai-platform-admin para ver as informações de autenticação (contém credenciais)',
     auth_need_admin2: 'Atribua a função ai-platform-admin ao usuário atual.', auth_fail: 'Não foi possível obter informações de autenticação: ',
     security: '⚠️ Aviso de segurança', security_desc: 'Esta página contém as credenciais admin unificadas. Visível apenas para ai-platform-admin. Não compartilhe nem capture.',
@@ -733,7 +794,7 @@ const I18N = {
     newapi_title: 'NewAPI — LLM ルーター', loading_newapi: 'NewAPI データを読み込み中...', newapi_fail: 'NewAPI データを取得できません（ai-platform-admin ロールが必要）：',
     enabled: '有効', disabled: '無効', admin_role: '管理者', user_role: '一般ユーザー', other_role: 'その他', usd: '米ドル', unlimited: '無制限',
     channel: 'チャネル', model: 'モデル', used_quota: '使用済みクォータ', username: 'ユーザー名', role: 'ロール', quota: 'クォータ', used: '使用済み', requests: 'リクエスト数', remain_quota: '残りクォータ',
-    no_channels: 'チャネルなし', no_users: 'ユーザーなし', no_keys: 'キーなし', open_newapi: 'NewAPI 管理を開く ↗（詳細設定）', newapi_note: '読み取り専用の集約；チャネル/ユーザー/キーの編集は管理画面へ。',
+    no_channels: 'チャネルなし', no_users: 'ユーザーなし', no_keys: 'キーなし', open_newapi: 'Open NewAPI Admin', newapi_note: '読み取り専用の集約；チャネル/ユーザー/キーの編集は管理画面へ。',
     auth_title: '集中認証 — 統一アカウント体系', loading_auth: '認証概要を読み込み中...', auth_need_admin: '認証情報（アカウント・パスワードを含む）の表示には ai-platform-admin ロールが必要です',
     auth_need_admin2: '現在のユーザーに ai-platform-admin Realm Role を割り当ててください。', auth_fail: '認証情報を取得できません：',
     security: '⚠️ セキュリティ注意', security_desc: 'このページには統一管理者のアカウント・パスワードが含まれます。ai-platform-admin ロールのみ表示可能。外部共有・スクリーンショットを禁止。',
@@ -822,7 +883,7 @@ const I18N = {
     newapi_title: 'NewAPI — LLM 라우터', loading_newapi: 'NewAPI 데이터 로딩 중...', newapi_fail: 'NewAPI 데이터를 가져올 수 없습니다(ai-platform-admin 역할 필요): ',
     enabled: '활성화', disabled: '비활성화', admin_role: '관리자', user_role: '일반 사용자', other_role: '기타', usd: 'USD', unlimited: '무제한',
     channel: '채널', model: '모델', used_quota: '사용된 할당량', username: '사용자명', role: '역할', quota: '할당량', used: '사용됨', requests: '요청 수', remain_quota: '남은 할당량',
-    no_channels: '채널 없음', no_users: '사용자 없음', no_keys: '키 없음', open_newapi: 'NewAPI 관리 열기 ↗(고급 설정)', newapi_note: '읽기 전용 집계; 채널/사용자/키 편집은 관리 화면으로 이동.',
+    no_channels: '채널 없음', no_users: '사용자 없음', no_keys: '키 없음', open_newapi: 'Open NewAPI Admin', newapi_note: '읽기 전용 집계; 채널/사용자/키 편집은 관리 화면으로 이동.',
     auth_title: '통합 인증 — 통합 계정 체계', loading_auth: '인증 개요 로딩 중...', auth_need_admin: '인증 정보(계정·비밀번호 포함)를 보려면 ai-platform-admin 역할이 필요합니다',
     auth_need_admin2: '현재 사용자에게 ai-platform-admin Realm Role을 할당하세요.', auth_fail: '인증 정보를 가져올 수 없습니다: ',
     security: '⚠️ 보안 안내', security_desc: '이 페이지에는 통합 관리자 계정·비밀번호가 포함되어 있습니다. ai-platform-admin 역할만 볼 수 있습니다. 외부 공유·캡처 금지.',
@@ -911,7 +972,7 @@ const I18N = {
     newapi_title: 'NewAPI — موجّه LLM', loading_newapi: 'جارٍ تحميل بيانات NewAPI...', newapi_fail: 'تعذر جلب بيانات NewAPI (يتطلب دور ai-platform-admin): ',
     enabled: 'مفعّل', disabled: 'معطّل', admin_role: 'مشرف', user_role: 'مستخدم', other_role: 'أخرى', usd: 'دولار', unlimited: 'غير محدود',
     channel: 'القناة', model: 'النماذج', used_quota: 'الحصة المستخدمة', username: 'اسم المستخدم', role: 'الدور', quota: 'الحصة', used: 'المستخدم', requests: 'الطلبات', remain_quota: 'المتبقي',
-    no_channels: 'لا توجد قنوات', no_users: 'لا يوجد مستخدمون', no_keys: 'لا توجد مفاتيح', open_newapi: 'فتح NewAPI ↗ (متقدم)', newapi_note: 'تجميع للقراءة فقط؛ عدّل القنوات/المستخدمين/المفاتيح في NewAPI.',
+    no_channels: 'لا توجد قنوات', no_users: 'لا يوجد مستخدمون', no_keys: 'لا توجد مفاتيح', open_newapi: 'Open NewAPI Admin', newapi_note: 'تجميع للقراءة فقط؛ عدّل القنوات/المستخدمين/المفاتيح في NewAPI.',
     auth_title: 'المصادقة المركزية — حسابات موحدة', loading_auth: 'جارٍ تحميل نظرة المصادقة...', auth_need_admin: 'يتطلب دور ai-platform-admin لعرض معلومات المصادقة (تحتوي على بيانات الاعتماد)',
     auth_need_admin2: 'قم بتعيين دور ai-platform-admin للمستخدم الحالي.', auth_fail: 'تعذر جلب معلومات المصادقة: ',
     security: '⚠️ تنبيه أمني', security_desc: 'تحتوي هذه الصفحة على بيانات اعتماد المشرف الموحد. مرئية لـ ai-platform-admin فقط. لا تشاركها أو تلتقط صورًا لها.',
@@ -995,8 +1056,8 @@ function applyDir() {
 }
 
 // ═══ Dashboard ═══
-async function loadDashboard() {
-  setActive(this);
+async function loadDashboard(el) {
+  setActive(el);
   document.querySelector('.topbar h1').textContent = '📊 ' + t('dashboard');
   document.getElementById('main').innerHTML = `
     <div class="topbar"><h1>📊 ${t('dashboard')}</h1></div>
@@ -1064,16 +1125,23 @@ function renderMetrics(m) {
     { key: 'dify', icon: '🤖', name: 'Dify', lines: [['dify_apps', 'apps'], ['dify_workspaces', 'workspaces']] },
     { key: 'keycloak', icon: '🔐', name: 'Keycloak', lines: [['kc_users', 'users'], ['kc_clients', 'clients'], ['kc_roles', 'roles']] },
     { key: 'mcp', icon: '🔌', name: 'MCP Gateway', lines: [['mcp_srv_count', 'servers'], ['skill_count', 'skills']] },
-    { key: 'litellm', icon: '🛡️', name: 'LiteLLM', lines: [['litellm_models', 'models']] },
-    { key: 'update', icon: '⬇️', name: 'Update Server', lines: [['update_version', 'version']] },
-    { key: 'presidio', icon: '🧬', name: 'PII 脱敏', lines: [['presidio_state', 'state']] },
+    { key: 'litellm', icon: '🛡️', name: 'LiteLLM', lines: [['litellm_models', 'models'], ['models_list', 'model_names']] },
+    { key: 'update', icon: '⬇️', name: 'Update Server', lines: [['update_version', 'version'], ['last_updated', 'last_updated']] },
+    { key: 'presidio', icon: '🧬', name: 'PII 脱敏', lines: [['pii_analyzer', 'analyzer'], ['pii_anonymizer', 'anonymizer']] },
     { key: 'monitoring', icon: '📈', name: '监控', lines: [['monitoring_targets', 'targets'], ['monitoring_total', 'total']] },
-    { key: 'langfuse', icon: '🔍', name: 'LLM 可观测', lines: [['langfuse_version', 'version']] },
+    { key: 'langfuse', icon: '🔍', name: 'LLM 可观测', lines: [['traces', 'traces']] },
   ];
   const items = defs.map(d => {
     const ok = m[d.key] && m[d.key].status === 'ok';
     if (ok) {
-      const lines = d.lines.map(([lk, vk]) => `${t(lk)} ${m[d.key][vk] ?? '—'}`);
+      const lines = d.lines.map(([lk, vk]) => {
+        let val = m[d.key][vk] ?? '—';
+        if (vk === 'last_updated' && val !== '—' && val) val = new Date(val * 1000).toLocaleString();
+        else if (Array.isArray(val)) val = val.join('、');
+        else if (val === 'up') val = t('pii_up');
+        else if (val === 'down') val = t('pii_down');
+        return `${t(lk)} ${val}`;
+      });
       return card(d.icon, d.name, lines, 'ok');
     }
     return card(d.icon, d.name, [t('not_connected')], 'error');
@@ -1169,24 +1237,16 @@ async function loadHealth(name, port) {
 // ═══ MCP Gateway — Skill / MCP 管理 Hub ═══
 const MCAPI = API + '/mcp-gateway';
 
-async function loadMcpGateway() {
-  setActive(this);
-  document.querySelector('.topbar h1').textContent = '🔌 MCP Gateway';
-  document.getElementById('main').innerHTML = `
-    <div class="topbar"><h1>🔌 ${t('mcp_title')}</h1></div>
-    <div class="card"><h3>${t('endpoints')}</h3>
-      <table>
-        <tr><td style="width:30%">${t('mcp_endpoint')}</td><td><code>http://192.168.31.117:3100/mcp</code></td></tr>
-        <tr><td>${t('skill_market')}</td><td><a class="ext-link" href="http://192.168.31.117:3100/market" target="_blank">http://192.168.31.117:3100/market ↗</a></td></tr>
+async function loadMcpGateway(el) {
+  setActive(el);
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔌 ${t('mcp_title')}</h1><a href="${P('mcp')}/market" target="_blank" style="background:#1f6feb;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">🧩 ${t('skill_market')} ↗</a></div>`
+    + aboutCard(t('mcp_about'))
+    + keyInfoCard(`<table>
+        <tr><td style="width:30%">${t('mcp_endpoint')}</td><td><code>${P('mcp')}/mcp</code></td></tr>
         <tr><td>${t('client_access')}</td><td>${t('client_access_desc')}</td></tr>
-      </table>
-    </div>
-    <div class="card"><h3>🔌 ${t('mcp_servers')}</h3>
-      <div id="mcpServersBox"><p class="loading">${t('loading')}</p></div>
-    </div>
-    <div class="card"><h3>🧩 ${t('skills')}</h3>
-      <div id="skillsBox"><p class="loading">${t('loading')}</p></div>
-    </div>`;
+      </table>`, t('endpoints'))
+    + `<div class="card"><h3>🔌 ${t('mcp_servers')}</h3><div id="mcpServersBox"><p class="loading">${t('loading')}</p></div></div>`
+    + `<div class="card"><h3>🧩 ${t('skills')}</h3><div id="skillsBox"><p class="loading">${t('loading')}</p></div></div>`;
   loadMcpServers();
   loadGwSkills();
 }
@@ -1299,24 +1359,28 @@ async function deleteGwSkill(name) {
 }
 
 // ═══ LiteLLM — 打开 + 复制 Master Key ═══
-async function loadLitellm() {
-  setActive(this);
-  document.querySelector('.topbar h1').textContent = '🛡️ ' + t('litellm_title');
+async function loadLitellm(el) {
+  setActive(el);
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ ${t('litellm_title')}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
-    const resp = await fetch(API + '/litellm');
-    const data = await resp.json();
-    window._litellmKey = data.masterKey || '';
-    document.getElementById('main').innerHTML = `
-      <div class="topbar"><h1>🛡️ ${t('litellm_title')}</h1></div>
-      <div class="card"><h3>${t('litellm_open')}</h3>
-        <p style="color:#8b949e">${t('litellm_desc')}</p>
-        <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
-          <a href="${data.url}" target="_blank" style="background:#1f6feb;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a>
-          <button onclick="copyMasterKey()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('copy_master_key')}</button>
-        </div>
-        <p style="color:#8b949e;font-size:0.85em">${t('litellm_hint')}</p>
-      </div>`;
-  } catch(e) {
+    const [info, models] = await Promise.all([
+      (await fetch(API + '/litellm')).json(),
+      (await fetch(API + '/litellm/models')).json(),
+    ]);
+    const base = (info.url || '').replace(/\/$/, '');
+    const modelItems = (models.models || []).map(m => `<li style="padding:6px 0;border-bottom:1px solid #21262d"><code style="color:#79c0ff">${m}</code></li>`).join('');
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ ${t('litellm_title')}</h1></div>`
+      + aboutCard(t('litellm_about'))
+      + metricsCard([
+          { value: models.count ?? '—', label: t('litellm_models') },
+          { value: '✅', label: t('litellm_pii_on') },
+        ])
+      + `<div class="card"><h3 style="display:flex;align-items:center;justify-content:space-between;gap:12px">🔎 ${t('litellm_model_hub')}（${models.count ?? 0}）<a href="${base}/ui/model_hub_table" target="_blank" style="background:#1f6feb;color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${t('litellm_new_model')} ↗</a></h3>
+          <p style="color:#8b949e;margin:0 0 8px">${t('litellm_models_hint')}</p>
+          ${modelItems ? `<ul style="list-style:none;margin:0;padding:0">${modelItems}</ul>` : `<p class="loading">${t('no_models')}</p>`}
+        </div>`
+      + `<div class="card" style="text-align:right;padding:10px 16px"><a href="${base}/fallback/login" target="_blank" style="color:#8b949e;text-decoration:none;font-size:0.85em">🔑 ${t('litellm_fallback_login')} ↗</a></div>`;
+  } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ LiteLLM</h1></div><div class="card"><p class="error">${t('litellm_fail')}${e.message}</p></div>`;
   }
 }
@@ -1340,8 +1404,8 @@ function fallbackCopy(text, cb) {
 }
 
 // ═══ NewAPI 管理 — 渠道 / 用户 / 密钥 ═══
-async function loadNewApi() {
-  setActive(this);
+async function loadNewApi(el) {
+  setActive(el);
   document.querySelector('.topbar h1').textContent = '🔀 NewAPI';
   document.getElementById('main').innerHTML = `
     <div class="topbar"><h1>🔀 ${t('newapi_title')}</h1></div>
@@ -1405,24 +1469,23 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
       <td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
   const byDayRows = (costData.by_day || []).map(r => `
     <tr><td>${r.date}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
-  document.getElementById('main').innerHTML = `
-    <div class="topbar"><h1>🔀 ${t('newapi_title')}</h1></div>
-    <div class="stats-bar">
-      <div class="stat total"><div class="value">${overview.channels}</div><div class="label">${t('channels')}</div></div>
-      <div class="stat total"><div class="value">${overview.users}</div><div class="label">${t('users')}</div></div>
-      <div class="stat total"><div class="value">${overview.tokens}</div><div class="label">${t('keys')}</div></div>
-    </div>
-    <div class="card"><h3>🔌 ${t('channels')}（${ch.length}）</h3>
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔀 ${t('newapi_title')}</h1>${openAdminBtn(P('newapi'), t('open_newapi'))}</div>`
+    + aboutCard(t('newapi_about'))
+    + metricsCard([
+        { value: overview.channels, label: t('channels') },
+        { value: overview.users, label: t('users') },
+        { value: overview.tokens, label: t('keys') },
+      ])
+    + keyInfoCard(`
+      <h4 style="color:#d2a8ff;margin:0 0 6px">🔌 ${t('channels')}（${ch.length}）</h4>
       ${ch.length === 0 ? `<p class="loading">${t('no_channels')}</p>` : `<table><tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>${chRows}</table>`}
-    </div>
-    <div class="card"><h3>👥 ${t('users')}（${us.length}）</h3>
+      <h4 style="color:#d2a8ff;margin:14px 0 6px">👥 ${t('users')}（${us.length}）</h4>
       ${us.length === 0 ? `<p class="loading">${t('no_users')}</p>` : `<table><tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>${usRows}</table>`}
       <p style="margin-top:8px;color:#8b949e;font-size:0.85em">${t('org_note')}</p>
-    </div>
-    <div class="card"><h3>🔑 ${t('keys')}（${tk.length}）</h3>
+      <h4 style="color:#d2a8ff;margin:14px 0 6px">🔑 ${t('keys')}（${tk.length}）</h4>
       ${tk.length === 0 ? `<p class="loading">${t('no_keys')}</p>` : `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>${tkRows}</table>`}
-    </div>
-    <div class="card"><h3>💰 ${t('cost_report')}（${t('recent_days')} ${costData.days || 30} ${t('days')}）</h3>
+    `, t('business_detail'))
+    + `<div class="card"><h3>💰 ${t('cost_report')}（${t('recent_days')} ${costData.days || 30} ${t('days')}）</h3>
       <div class="stats-bar">
         <div class="stat total"><div class="value">$${costData.total?.cost_usd ?? '0.00'}</div><div class="label">${t('total_cost')}</div></div>
         <div class="stat total"><div class="value">${costData.total?.calls ?? 0}</div><div class="label">${t('total_calls')}</div></div>
@@ -1434,20 +1497,17 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
       ${byModelRows ? `<table><tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byModelRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
       <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_day')}</h4>
       ${byDayRows ? `<table><tr><th>${t('date')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byDayRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-    </div>
-    <div class="card"><h3>📋 ${t('audit_log')}（${t('recent')} ${auditItems.length} ${t('records')}）</h3>
+    </div>`
+    + `<div class="card"><h3>📋 ${t('audit_log')}（${t('recent')} ${auditItems.length} ${t('records')}）</h3>
       ${auditRows ? `<table><tr><th>${t('time')}</th><th>${t('username')}</th><th>${t('model')}</th><th>${t('tokens')}</th><th>${t('quota')}</th><th>${t('cost')}</th></tr>${auditRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
       <p style="margin-top:8px;color:#8b949e;font-size:0.85em">${t('audit_note')}</p>
-    </div>
-    <div class="card">
-      <a href="http://192.168.31.117:3000" target="_blank" style="background:#1f6feb;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_newapi')}</a>
-      <span style="color:#8b949e;font-size:0.85em;margin-left:12px">${t('newapi_note')}</span>
-    </div>`;
+    </div>`
+    + `<div class="card"><span style="color:#8b949e;font-size:0.85em">${t('newapi_note')}</span></div>`;
 }
 
 // ═══ 集中认证（统一账号体系） ═══
-async function loadAuthOverview() {
-  setActive(this);
+async function loadAuthOverview(el) {
+  setActive(el);
   document.querySelector('.topbar h1').textContent = '🔐 ' + t('auth');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${t('auth')}</h1></div><div class="loading">${t('loading_auth')}</div>`;
   try {
@@ -1545,34 +1605,101 @@ function copyText(text, label) {
 }
 
 // ═══ Admin Management ═══
-async function loadAdmins() {
-  setActive(this);
+async function loadAdmins(el) {
+  setActive(el);
   document.querySelector('.topbar h1').textContent = '👥 ' + t('admins_title');
   try {
     const resp = await fetch(API + '/admins');
     const admins = await resp.json();
+    if (!Array.isArray(admins)) throw new Error(admins.error || 'error');
+    const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/realms/enterprise-ai/users';
+    const btn = (onclick, label, color) => `<button onclick="${onclick}" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;white-space:nowrap">${label}</button>`;
+    const rows = admins.map(a => `<tr>
+      <td><span class="admin-badge">${a.username}</span></td>
+      <td>${a.firstName || ''} ${a.lastName || ''}</td>
+      <td>${a.email || '—'}</td>
+      <td style="color:${a.enabled ? '#56d364' : '#f85149'}">${a.enabled ? t('enabled') : t('disabled')}</td>
+      <td style="white-space:nowrap">
+        <div style="display:flex;gap:6px;align-items:center">
+          ${btn(`adminToggle('${a.id}')`, a.enabled ? t('admins_disable') : t('admins_enable'))}
+          ${btn(`adminResetPwd('${a.id}')`, t('admins_reset_pwd'))}
+          ${btn(`adminDemote('${a.id}')`, t('admins_demote'))}
+          <a href="${kcBase}/${a.id}" target="_blank" style="color:#58a6ff;font-size:0.78em;text-decoration:none;white-space:nowrap">${t('admins_open_kc')} ↗</a>
+        </div>
+      </td>
+    </tr>`).join('');
     document.getElementById('main').innerHTML = `
       <div class="topbar"><h1>👥 ${t('admins_title')}</h1></div>
-      <div class="card"><h3>${t('admins_list')}</h3>
+      <div class="card"><h3>➕ ${t('admins_add')}</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="adminsAddUser" placeholder="${t('admins_add_ph')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px" onkeydown="if(event.key==='Enter')adminAdd()">
+          <button onclick="adminAdd()" style="background:#1f6feb;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('admins_add_btn')}</button>
+          <span id="adminsAddMsg" style="color:#8b949e;font-size:0.85em"></span>
+        </div>
+        <p style="margin-top:8px;color:#8b949e;font-size:0.82em">${t('admins_add_hint')}</p>
+      </div>
+      <div class="card"><h3>${t('admins_list')}（${admins.length}）</h3>
         ${admins.length === 0 ? `<p class="loading">${t('no_admins')}</p>` : `
-        <table><tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('status')}</th></tr>
-          ${admins.map(a => `<tr>
-            <td><span class="admin-badge">${a.username}</span></td>
-            <td>${a.firstName || ''} ${a.lastName || ''}</td>
-            <td>${a.email || '—'}</td>
-            <td style="color:${a.enabled?'#56d364':'#f85149'}">${a.enabled ? t('enabled') : t('disabled')}</td>
-          </tr>`).join('')}
-        </table>`}
+        <table><tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('status')}</th><th>${t('admins_actions')}</th></tr>${rows}</table>`}
         <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('admins_desc')}</p>
       </div>`;
-  } catch(e) {
+  } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>👥 ${t('admins_title')}</h1></div><div class="card"><p class="error">${t('admins_need_admin')}</p><p style="margin-top:8px;color:#8b949e">${t('admins_need_admin2')}</p></div>`;
   }
 }
 
+async function adminPost(path, body) {
+  const r = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
+}
+
+async function adminToggle(id) {
+  try {
+    const list = await (await fetch(API + '/admins')).json();
+    const u = (list || []).find(x => x.id === id);
+    const enabled = u && u.enabled;
+    if (!confirm(enabled ? t('admins_cf_disable') : t('admins_cf_enable'))) return;
+    await adminPost(`/admins/${id}/toggle`);
+    loadAdmins();
+  } catch (e) { alert(e.message); }
+}
+
+async function adminDemote(id) {
+  try {
+    if (!confirm(t('admins_cf_demote'))) return;
+    await adminPost(`/admins/${id}/demote`);
+    loadAdmins();
+  } catch (e) { alert(e.message); }
+}
+
+async function adminResetPwd(id) {
+  try {
+    if (!confirm(t('admins_cf_reset'))) return;
+    const d = await adminPost(`/admins/${id}/reset-password`);
+    alert(`${t('admins_new_pwd')}: ${d.tempPassword}\n\n${t('admins_pwd_hint')}`);
+  } catch (e) { alert(e.message); }
+}
+
+async function adminAdd() {
+  const input = document.getElementById('adminsAddUser');
+  const msg = document.getElementById('adminsAddMsg');
+  const uname = (input && input.value || '').trim();
+  if (!uname) return;
+  try {
+    await adminPost('/admins', { username: uname });
+    if (input) input.value = '';
+    if (msg) { msg.textContent = `${t('admins_add_ok')}: ${uname}`; msg.style.color = '#56d364'; }
+    loadAdmins();
+  } catch (e) {
+    if (msg) { msg.textContent = `${t('admins_add_err')}: ${e.message}`; msg.style.color = '#f85149'; }
+  }
+}
+
 // ═══ Settings ═══
-function loadSettings() {
-  setActive(this);
+function loadSettings(el) {
+  setActive(el);
   document.querySelector('.topbar h1').textContent = '⚙️ ' + t('settings_title');
   document.getElementById('main').innerHTML = `
     <div class="topbar"><h1>⚙️ ${t('settings_title')}</h1></div>
@@ -1621,40 +1748,53 @@ function loadSettings() {
       <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('env_desc')}</p>
     </div>
     <div class="card"><h3>${t('product_urls')}</h3>
-      <table>
-        <tr><td>📰 Ghost</td><td><a class="ext-link" href="http://192.168.31.117:8090/ghost/" target="_blank">http://192.168.31.117:8090/ghost/</a></td></tr>
-        <tr><td>🤖 Dify</td><td><a class="ext-link" href="http://192.168.31.117" target="_blank">http://192.168.31.117</a></td></tr>
-        <tr><td>📦 Gitea</td><td><a class="ext-link" href="http://192.168.31.117:3002" target="_blank">http://192.168.31.117:3002</a></td></tr>
-        <tr><td>🔀 NewAPI</td><td><a class="ext-link" href="http://192.168.31.117:3000" target="_blank">http://192.168.31.117:3000</a></td></tr>
-        <tr><td>🛡️ LiteLLM</td><td><a class="ext-link" href="http://192.168.31.117:4001" target="_blank">http://192.168.31.117:4001</a></td></tr>
-        <tr><td>🔐 Keycloak</td><td><a class="ext-link" href="http://192.168.31.117:9090" target="_blank">http://192.168.31.117:9090</a></td></tr>
-        <tr><td>🔌 MCP Gateway</td><td><a class="ext-link" href="http://192.168.31.117:3100" target="_blank">http://192.168.31.117:3100</a></td></tr>
-        <tr><td>⬇️ Update Server</td><td><a class="ext-link" href="http://192.168.31.117:8091" target="_blank">http://192.168.31.117:8091</a></td></tr>
-        <tr><td>📈 Grafana</td><td><a class="ext-link" href="http://192.168.31.117:3030" target="_blank">http://192.168.31.117:3030</a></td></tr>
-        <tr><td>📊 Prometheus</td><td><a class="ext-link" href="http://192.168.31.117:9091" target="_blank">http://192.168.31.117:9091</a></td></tr>
-        <tr><td>🔔 Alertmanager</td><td><a class="ext-link" href="http://192.168.31.117:9093" target="_blank">http://192.168.31.117:9093</a></td></tr>
-        <tr><td>🔍 Langfuse</td><td><a class="ext-link" href="http://192.168.31.117:3010" target="_blank">http://192.168.31.117:3010</a></td></tr>
-        <tr><td>📬 MailHog</td><td><a class="ext-link" href="http://192.168.31.117:8025" target="_blank">http://192.168.31.117:8025</a></td></tr>
-      </table>
+      <table id="productUrlsTable"><tr><td class="loading">${t('loading')}</td></tr></table>
       <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('prod_note')}</p>
     </div>`;
   loadReportSettingsForm();
+  renderProductUrls();
+}
+
+async function renderProductUrls() {
+  const tbl = document.getElementById('productUrlsTable');
+  if (!tbl) return;
+  // 每次进入系统设置页都实时拉取最新地址（后端由 SERVER_PUBLIC_URL 派生）
+  try {
+    const r = await fetch(API + '/urls');
+    const d = await r.json();
+    if (d && d.publicUrl) { PUBLIC_URL = d.publicUrl; PRODUCT_URLS = d.products || {}; }
+  } catch (e) {}
+  const items = [
+    ['📰 Ghost', 'ghost', '/ghost/'],
+    ['🤖 Dify', 'dify', ''],
+    ['📦 Gitea', 'gitea', ''],
+    ['🔀 NewAPI', 'newapi', ''],
+    ['🛡️ LiteLLM', 'litellm', ''],
+    ['🔐 Keycloak', 'keycloak', ''],
+    ['🔌 MCP Gateway', 'mcp', ''],
+    ['⬇️ Update Server', 'update', ''],
+    ['📈 Grafana', 'grafana', ''],
+    ['📊 Prometheus', 'prometheus', ''],
+    ['🔔 Alertmanager', 'alertmanager', ''],
+    ['🔍 Langfuse', 'langfuse', ''],
+    ['📬 MailHog', 'mailhog', ''],
+  ];
+  tbl.innerHTML = items.map(([label, key, path]) => {
+    const u = P(key) + path;
+    return `<tr><td>${label}</td><td>${u ? `<a class="ext-link" href="${u}" target="_blank">${u}</a>` : '—'}</td></tr>`;
+  }).join('');
 }
 
 // ═══ 产品概览（Ghost / Dify / Gitea / Keycloak）═══
 function openAdminBtn(url, label) {
   const txt = label || t('open_admin');
-  return `<div class="card" style="text-align:center">
-    <a href="${url}" target="_blank" style="display:inline-block;background:#1f6feb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:1em">${txt} ↗</a>
-    <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('open_hint')}</p>
-  </div>`;
+  return `<a href="${url}" target="_blank" style="background:#1f6feb;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">${txt} ↗</a>`;
 }
 
 function renderProductOverview(icon, title, url, stats, openLabel) {
   const cards = stats.map(s => `<div class="stat total"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
-  return `<div class="topbar"><h1>${icon} ${title}</h1></div>
-    <div class="stats-bar">${cards}</div>
-    ${openAdminBtn(url, openLabel)}`;
+  return `<div class="topbar"><h1>${icon} ${title}</h1>${openAdminBtn(url, openLabel)}</div>
+    <div class="stats-bar">${cards}</div>`;
 }
 
 function productError(icon, title, url, msg, openLabel) {
@@ -1663,20 +1803,51 @@ function productError(icon, title, url, msg, openLabel) {
     ${openAdminBtn(url, openLabel)}`;
 }
 
+// ── 统一产品页 5 段式：产品说明 / 数据指标 / 相关入口 / 关键信息 / 其他 ──
+function statsHtml(stats) {
+  return stats.map(s => `<div class="stat total"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
+}
+function aboutCard(desc) {
+  return `<div class="card"><h3>ℹ️ ${t('product_about')}</h3><p style="color:#8b949e;line-height:1.6;margin:0">${desc}</p></div>`;
+}
+function metricsCard(stats) {
+  return `<div class="card"><h3>📊 ${t('data_metrics')}</h3><div class="stats-bar">${statsHtml(stats)}</div></div>`;
+}
+function entriesCard(entries, docsUrl) {
+  const btns = (entries || []).map(e => `<a href="${e.url}" target="_blank" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95em">${e.label} ↗</a>`).join('');
+  const docs = docsUrl ? `<p style="color:#8b949e;font-size:0.85em;margin-top:12px">📖 ${t('official_docs')}: <code>${docsUrl}</code></p>` : '';
+  return `<div class="card"><h3>🔗 ${t('related_entries')}</h3><div style="display:flex;gap:10px;flex-wrap:wrap">${btns}</div>${docs}</div>`;
+}
+function keyInfoCard(html, title) {
+  return `<div class="card"><h3>🗂️ ${title || t('key_info')}</h3>${html}</div>`;
+}
+
 async function loadMonitoring(el) {
   setActive(el);
-  const url = 'http://192.168.31.117:3030';
+  const url = P('grafana');
   const title = t('monitoring');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>📈 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
     const d = await (await fetch(API + '/monitoring/overview')).json();
     if (d.error) throw new Error(d.error);
-    document.getElementById('main').innerHTML = renderProductOverview('📈', title, url, [
+    const stats = [
       { value: `${d.prometheus?.up ?? '—'}/${d.prometheus?.total ?? '—'}`, label: t('monitoring_targets') },
       { value: d.alerts_firing ?? '—', label: t('alerts_firing') },
       { value: d.grafana === 'up' ? t('running') : t('stopped'), label: 'Grafana' },
       { value: d.cadvisor === 'up' ? t('running') : t('stopped'), label: 'cadvisor' },
-    ], t('open_monitoring')) + `<div class="card"><h3>📈 Prometheus</h3><p style="color:#8b949e">指标采集 + 告警规则，访问 <code>http://192.168.31.117:9091</code></p></div>`;
+    ];
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📈 ${title}</h1>${openAdminBtn(url, t('open_monitoring'))}</div>`
+      + aboutCard(t('monitoring_about'))
+      + metricsCard(stats)
+      + entriesCard([
+          { url: P('grafana'), label: '🖥️ Grafana' },
+          { url: P('prometheus'), label: '📊 Prometheus' },
+          { url: P('alertmanager'), label: '🔔 Alertmanager' },
+        ], 'https://grafana.com/docs/')
+      + keyInfoCard(`<table>
+          <tr><td style="width:30%">${t('monitoring_targets')}</td><td>${d.prometheus?.up ?? '—'} / ${d.prometheus?.total ?? '—'}</td></tr>
+          <tr><td>${t('alerts_firing')}</td><td style="color:${d.alerts_firing > 0 ? '#f85149' : '#56d364'}">${d.alerts_firing ?? 0}</td></tr>
+        </table>`, t('monitoring_status'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📈', title, url, e.message, t('open_monitoring'));
   }
@@ -1684,16 +1855,39 @@ async function loadMonitoring(el) {
 
 async function loadObservability(el) {
   setActive(el);
-  const url = 'http://192.168.31.117:3010/auth/sso-initiate?provider=KEYCLOAK';
+  const url = P('langfuse') + '/auth/sso-initiate?provider=KEYCLOAK';
   const title = t('observability');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
     const d = await (await fetch(API + '/langfuse/overview')).json();
     if (d.error) throw new Error(d.error);
-    document.getElementById('main').innerHTML = renderProductOverview('🔍', title, url, [
-      { value: d.version ?? '—', label: t('langfuse_version') },
+    const base = P('langfuse');
+    const proj = (d.projects && d.projects[0]) || 'ai-platform';
+    const genCalls = (d.model_stats || []).reduce((s, m) => s + m.calls, 0);
+    const stats = [
       { value: d.traces ?? '—', label: t('traces') },
-    ], t('open_observability')) + `<div class="card"><h3>🔍 Langfuse</h3><p style="color:#8b949e">${t('obs_desc')}</p></div>`;
+      { value: genCalls, label: t('langfuse_gen_calls') },
+      { value: (d.model_stats || []).length, label: t('langfuse_models') },
+      { value: d.version ?? '—', label: t('langfuse_version') },
+    ];
+    const traceRows = (d.recent_traces || []).map(r => `<tr><td style="color:#e6edf3">${r.name || '—'}</td><td style="color:#8b949e">${r.ts ? new Date(r.ts.replace(' ', 'T') + 'Z').toLocaleString() : '—'}</td><td style="color:#8b949e">${r.userId || '—'}</td></tr>`).join('');
+    const modelRows = (d.model_stats || []).map(m => `<tr><td style="color:#e6edf3"><code>${m.model}</code></td><td>${m.calls}</td><td>${m.tokens.toLocaleString()}</td><td>$${m.cost.toFixed(4)}</td></tr>`).join('');
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${title}</h1>${openAdminBtn(url, t('open_observability'))}</div>`
+      + aboutCard(t('obs_about'))
+      + metricsCard(stats)
+      + entriesCard([
+          { url: `${base}/project/${proj}/traces`, label: '🔍 ' + t('traces') },
+          { url: `${base}/project/${proj}/sessions`, label: '💬 ' + t('langfuse_sessions') },
+          { url: `${base}/project/${proj}/models`, label: '🤖 ' + t('langfuse_models') },
+          { url: `${base}/project/${proj}/prompts`, label: '📝 ' + t('langfuse_prompts') },
+          { url: `${base}/project/${proj}/settings`, label: '⚙️ ' + t('langfuse_settings') },
+        ], 'https://langfuse.com/docs')
+      + keyInfoCard(`
+        <p style="color:#8b949e;margin:0 0 8px">🔍 ${t('langfuse_recent_traces')}（${(d.recent_traces || []).length}）</p>
+        ${traceRows ? `<table><tr><th>${t('name')}</th><th>${t('time')}</th><th>${t('username')}</th></tr>${traceRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+        <p style="color:#8b949e;margin:14px 0 8px">🤖 ${t('langfuse_model_usage')}</p>
+        ${modelRows ? `<table><tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${modelRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+      `, t('trace_usage'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🔍', title, url, e.message, t('open_observability'));
   }
@@ -1708,23 +1902,27 @@ async function loadPii(el) {
     const d = await (await fetch(API + '/pii/overview')).json();
     if (d.error) throw new Error(d.error);
     const st = up => up ? `<span style="color:#56d364;font-weight:600">${t('pii_up')}</span>` : `<span style="color:#f85149;font-weight:600">${t('pii_down')}</span>`;
-    document.getElementById('main').innerHTML = `
-      <div class="topbar"><h1>🧬 ${t('pii_title')}</h1></div>
-      <div class="card"><h3>🧬 ${t('pii_presidio')}</h3>
+    const presidioUp = d.presidio.analyzer.up && d.presidio.anonymizer.up;
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🧬 ${t('pii_title')}</h1></div>`
+      + aboutCard(t('pii_about'))
+      + metricsCard([
+          { value: presidioUp ? t('pii_up') : t('pii_down'), label: 'Presidio' },
+          { value: (d.guardrails || []).length, label: t('pii_guardrails') },
+          { value: (d.litellm.models || []).length, label: t('pii_litellm_models') },
+        ])
+      + `<div class="card"><h3>🧬 ${t('pii_presidio')}</h3>
         <table>
           <tr><th style="width:30%">${t('item')}</th><th style="width:20%">${t('status')}</th><th>${t('desc')}</th></tr>
           <tr><td>${t('pii_analyzer')}</td><td>${st(d.presidio.analyzer.up)}</td><td style="color:#8b949e">${d.presidio.analyzer.detail}</td></tr>
           <tr><td>${t('pii_anonymizer')}</td><td>${st(d.presidio.anonymizer.up)}</td><td style="color:#8b949e">${d.presidio.anonymizer.detail}</td></tr>
-        </table>
-      </div>
-      <div class="card"><h3>🛡️ ${t('pii_guardrails')}</h3>
+        </table></div>`
+      + `<div class="card"><h3>🛡️ ${t('pii_guardrails')}</h3>
         <table>
           <tr><th>${t('pii_guardrail_name')}</th><th>${t('pii_guardrail_type')}</th><th>${t('pii_guardrail_note')}</th></tr>
           ${d.guardrails.map(g => `<tr><td><code>${g.name}</code></td><td>${g.type}</td><td style="color:#8b949e">${g.note}</td></tr>`).join('')}
-        </table>
-      </div>
-      <div class="card"><h3>🤖 ${t('pii_litellm_models')}</h3><p style="font-size:0.95em">${(d.litellm.models || []).join('、') || '—'}</p></div>
-      <div class="card"><p style="color:#8b949e;font-size:0.85em">${t('pii_note')}</p></div>`;
+        </table></div>`
+      + `<div class="card"><h3>🤖 ${t('pii_litellm_models')}</h3><p style="font-size:0.95em;margin:0">${(d.litellm.models || []).join('、') || '—'}</p></div>`
+      + `<div class="card"><p style="color:#8b949e;font-size:0.85em;margin:0">${t('pii_note')}</p></div>`;
   } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🧬 ${title}</h1></div><div class="card"><p class="error">${t('overview_fail')}${e.message}</p></div>`;
   }
@@ -1738,15 +1936,29 @@ async function loadLogs(el) {
     <div class="topbar"><h1>📜 ${title}</h1></div>
     <div class="card"><h3>🔎 ${t('logs_desc')}</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
-        <select id="logContainer" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:180px"><option value="">${t('logs_all')}</option></select>
-        <input id="logKeyword" placeholder="${t('logs_keyword')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;flex:1;min-width:200px">
+        <select id="logContainer" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:170px"><option value="">${t('logs_all')}</option></select>
+        <select id="logLevel" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+          <option value="">${t('logs_level_all')}</option>
+          <option value="error">${t('logs_level_error')}</option>
+          <option value="warn">${t('logs_level_warn')}</option>
+          <option value="info">${t('logs_level_info')}</option>
+        </select>
+        <input id="logKeyword" placeholder="${t('logs_keyword')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;flex:1;min-width:180px" onkeydown="if(event.key==='Enter')runLogQuery()">
         <select id="logSince" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
           <option value="15m">15m</option><option value="1h" selected>1h</option><option value="6h">6h</option><option value="24h">24h</option><option value="7d">7d</option>
         </select>
+        <select id="logLimit" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+          <option value="50">50</option><option value="100">100</option><option value="200" selected>200</option><option value="500">500</option><option value="1000">1000</option>
+        </select>
         <button onclick="runLogQuery()" style="background:#1f6feb;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('logs_search_btn')}</button>
       </div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap">
+        <button onclick="exportLogs()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">⬇️ ${t('logs_export')}</button>
+        <button onclick="copyLogs()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">📋 ${t('logs_copy')}</button>
+        <label style="display:flex;align-items:center;gap:6px;color:#8b949e;font-size:0.85em;cursor:pointer"><input type="checkbox" id="logAuto" onchange="toggleLogAuto(this.checked)"> ${t('logs_auto_refresh')}</label>
+      </div>
     </div>
-    <div class="card"><h3>${t('logs_results')}</h3><div id="logResults"><p class="loading">${t('logs_empty')}</p></div></div>`;
+    <div class="card"><h3>${t('logs_results')} <span id="logCount" style="color:#8b949e;font-size:0.8em"></span></h3><div id="logResults"><p class="loading">${t('logs_empty')}</p></div></div>`;
   try {
     const d = await (await fetch(API + '/health')).json();
     const names = (d.services || []).map(s => s.name).sort();
@@ -1755,23 +1967,61 @@ async function loadLogs(el) {
   } catch (e) {}
 }
 
+let _logEntries = [];
+let _logAutoTimer = null;
+
 async function runLogQuery() {
   const res = document.getElementById('logResults');
   res.innerHTML = `<p class="loading">${t('loading')}</p>`;
   try {
-    const q = new URLSearchParams({ since: document.getElementById('logSince').value, limit: '300' });
+    const q = new URLSearchParams({ since: document.getElementById('logSince').value, limit: document.getElementById('logLimit').value || '200' });
     const c = document.getElementById('logContainer').value;
     const k = document.getElementById('logKeyword').value;
+    const lv = document.getElementById('logLevel').value;
     if (c) q.set('container', c);
     if (k) q.set('keyword', k);
+    if (lv) q.set('level', lv);
     const d = await (await fetch(API + '/logs/query?' + q.toString())).json();
     if (d.error) throw new Error(d.error);
-    if (!d.entries || !d.entries.length) { res.innerHTML = `<p class="loading">${t('logs_empty')}</p>`; return; }
-    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    res.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;color:#c9d1d9;font-size:0.78em;line-height:1.6;max-height:520px;overflow:auto">` +
-      d.entries.map(e => `<span style="color:#8b949e">[${new Date(e.ts).toLocaleString()}]</span> <span style="color:#58a6ff">${esc(e.container || '')}</span> ${esc(e.line)}`).join('\n') +
-      `</pre>`;
+    _logEntries = d.entries || [];
+    const cnt = document.getElementById('logCount');
+    if (cnt) cnt.textContent = `(${_logEntries.length})`;
+    renderLogEntries();
   } catch (e) { res.innerHTML = `<p class="error">${e.message}</p>`; }
+}
+
+function renderLogEntries() {
+  const res = document.getElementById('logResults');
+  if (!res) return;
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  if (!_logEntries.length) { res.innerHTML = `<p class="loading">${t('logs_empty')}</p>`; return; }
+  res.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;color:#c9d1d9;font-size:0.78em;line-height:1.6;max-height:520px;overflow:auto">` +
+    _logEntries.map(e => `<span style="color:#8b949e">[${new Date(e.ts).toLocaleString()}]</span> <span style="color:#58a6ff">${esc(e.container || '')}</span> ${esc(e.line)}`).join('\n') +
+    `</pre>`;
+}
+
+function _logText() {
+  return _logEntries.map(e => `[${new Date(e.ts).toLocaleString()}] ${e.container || ''} ${e.line}`).join('\n');
+}
+
+function exportLogs() {
+  if (!_logEntries.length) return;
+  const blob = new Blob([_logText()], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `logs-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function copyLogs() {
+  if (!_logEntries.length) return;
+  navigator.clipboard.writeText(_logText()).then(() => alert(t('logs_copied'))).catch(() => {});
+}
+
+function toggleLogAuto(on) {
+  if (_logAutoTimer) { clearInterval(_logAutoTimer); _logAutoTimer = null; }
+  if (on) _logAutoTimer = setInterval(() => runLogQuery(), 30000);
 }
 
 // ═══ 备份与恢复 ═══
@@ -2080,7 +2330,7 @@ async function runOneAvail(id) {
 
 async function loadGhost(el) {
   setActive(el);
-  const url = 'http://192.168.31.117:8090/ghost/';
+  const url = P('ghost') + '/ghost/';
   const title = t('ghost');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
@@ -2092,13 +2342,22 @@ async function loadGhost(el) {
       { value: d.members ?? '—', label: t('ghost_members') },
       { value: d.tags ?? '—', label: t('ghost_tags') },
     ];
-    const cards = stats.map(s => `<div class="stat total"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1></div>
-      <div class="stats-bar">${cards}</div>
-      <div class="card" style="text-align:center">
-        <button onclick="ghostAutoLogin(this)" style="display:inline-block;background:#1f6feb;color:#fff;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-weight:600;font-size:1em">${t('open_ghost')} ↗</button>
-        <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('open_hint')}</p>
-      </div>`;
+    const stTxt = s => ({ published: t('ghost_st_published'), draft: t('ghost_st_draft'), scheduled: t('ghost_st_scheduled') }[s] || s);
+    const fmtDate = ts => ts ? new Date(ts).toLocaleDateString() : '—';
+    const postRows = (d.recent_posts || []).map(p => `<tr><td style="color:#e6edf3">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:#8b949e">${fmtDate(p.updated_at)}</td></tr>`).join('');
+    const pageRows = (d.recent_pages || []).map(p => `<tr><td style="color:#e6edf3">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:#8b949e">${fmtDate(p.updated_at)}</td></tr>`).join('');
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1><button onclick="ghostAutoLogin(this)" style="background:#1f6feb;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;white-space:nowrap">${t('open_ghost')} ↗</button></div>`
+      + aboutCard(t('ghost_about'))
+      + metricsCard(stats)
+      + entriesCard([
+          { url: P('ghost') + '/ghost/#/editor/post/', label: '✍️ ' + t('ghost_new_post') },
+          { url: P('ghost') + '/ghost/#/members/', label: '👥 ' + t('ghost_members') },
+          { url: P('ghost') + '/ghost/#/settings/', label: '⚙️ ' + t('ghost_settings') },
+        ], 'https://ghost.org/docs/')
+      + keyInfoCard(`<p style="color:#8b949e;margin:0 0 8px">📄 ${t('ghost_recent_posts')}</p>
+        ${postRows ? `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>${postRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+        <p style="color:#8b949e;margin:14px 0 8px">📃 ${t('ghost_recent_pages')}</p>
+        ${pageRows ? `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>${pageRows}</table>` : `<p class="loading">${t('no_data')}</p>`}`, t('content_activity'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📰', title, url, e.message, t('open_ghost'));
   }
@@ -2120,17 +2379,30 @@ async function ghostAutoLogin(btn) {
 
 async function loadDify(el) {
   setActive(el);
-  const url = 'http://192.168.31.117';
+  const url = P('dify');
   const title = t('dify');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
     const d = await (await fetch(API + '/dify/overview')).json();
     if (d.error) throw new Error(d.error);
-    document.getElementById('main').innerHTML = renderProductOverview('🤖', title, url, [
+    const stats = [
       { value: d.apps ?? '—', label: t('dify_apps') },
       { value: d.workspaces ?? '—', label: t('dify_workspaces') },
       { value: d.version ?? '—', label: t('dify_version') },
-    ], t('open_dify'));
+    ];
+    const appRows = (d.app_list || []).map(a => `<tr><td style="color:#e6edf3">${a.name || '—'}</td><td style="color:#8b949e">${a.mode || '—'}</td></tr>`).join('');
+    const wsRows = (d.workspace_list || []).map(w => `<tr><td style="color:#e6edf3">${w.name || '—'}</td></tr>`).join('');
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1>${openAdminBtn(url, t('open_dify'))}</div>`
+      + aboutCard(t('dify_about'))
+      + metricsCard(stats)
+      + entriesCard([
+          { url: P('dify') + '/apps', label: '🧩 ' + t('dify_new_app') },
+          { url: P('dify') + '/datasets/create', label: '📚 ' + t('dify_new_kb') },
+        ], 'https://docs.dify.ai')
+      + keyInfoCard(`<p style="color:#8b949e;margin:0 0 8px">🧩 ${t('dify_apps')}（${(d.app_list || []).length}）</p>
+        ${appRows ? `<table><tr><th>${t('name')}</th><th>${t('type')}</th></tr>${appRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+        <p style="color:#8b949e;margin:14px 0 8px">🗂️ ${t('dify_workspaces')}（${(d.workspace_list || []).length}）</p>
+        ${wsRows ? `<table><tr><th>${t('name')}</th></tr>${wsRows}</table>` : `<p class="loading">${t('no_data')}</p>`}`, t('apps_workspaces'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🤖', title, url, e.message, t('open_dify'));
   }
@@ -2138,7 +2410,7 @@ async function loadDify(el) {
 
 async function loadGitea(el) {
   setActive(el);
-  const url = 'http://192.168.31.117:3002';
+  const url = P('gitea') + '/user/oauth2/keycloak';
   const title = t('gitea');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
@@ -2170,39 +2442,136 @@ async function loadGitea(el) {
           <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
           <tr><td>${t('last_updated')}</td><td>${done}</td></tr>
           ${s.display_title ? `<tr><td>${t('repo_desc')}</td><td style="color:#8b949e">${s.display_title}</td></tr>` : ''}
+          ${s.conclusion === 'failure' && s.failure_reason ? `<tr><td>${t('sync_fail_reason')}</td><td style="color:#f85149">${s.failure_reason}</td></tr>` : ''}
         </table>
       </div>`;
     }
-    document.getElementById('main').innerHTML = renderProductOverview('📦', title, url, [
-      { value: d.repos ?? '—', label: t('gitea_repos') },
-      { value: d.users ?? '—', label: t('gitea_users') },
-      { value: d.orgs ?? '—', label: t('gitea_orgs') },
-      { value: d.issues ?? '—', label: t('gitea_issues') },
-    ], t('open_gitea')) +
-      `<div class="card"><h3>📁 ${t('repos_list')}（${repos.length}）</h3>
-        ${repoRows ? `<table><tr><th>${t('name')}</th><th>${t('repo_desc')}</th><th>${t('repo_lang')}</th><th>${t('size')}</th><th>${t('repo_updated')}</th></tr>${repoRows}</table>` : `<p class="loading">${t('no_repos')}</p>`}
-      </div>` +
-      syncHtml +
-      `<div class="card"><h3>${t('gitea_version')}</h3><p style="color:#8b949e">Gitea <code>${d.version || '—'}</code></p></div>`;
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1>${openAdminBtn(url, t('open_gitea'))}</div>`
+      + aboutCard(t('gitea_about'))
+      + metricsCard([
+        { value: d.repos ?? '—', label: t('gitea_repos') },
+        { value: d.users ?? '—', label: t('gitea_users') },
+        { value: d.orgs ?? '—', label: t('gitea_orgs') },
+        { value: d.issues ?? '—', label: t('gitea_issues') },
+      ])
+      + keyInfoCard(`<p style="color:#8b949e;margin:0 0 8px">${t('repos_list')}（${repos.length}）</p>
+        ${repoRows ? `<table><tr><th>${t('name')}</th><th>${t('repo_desc')}</th><th>${t('repo_lang')}</th><th>${t('size')}</th><th>${t('repo_updated')}</th></tr>${repoRows}</table>` : `<p class="loading">${t('no_repos')}</p>`}`, t('repos_list'))
+      + syncHtml
+      + `<div class="card"><h3>${t('gitea_version')}</h3><p style="color:#8b949e">Gitea <code>${d.version || '—'}</code></p></div>`;
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📦', title, url, e.message, t('open_gitea'));
   }
 }
 
+// Keycloak 用户/客户端分页 + 检索辅助函数
+function kcToolbar(kind) {
+  const st = window._kcPaging[kind];
+  const sizeOpts = [10, 25, 50, 100].map(n => `<option value="${n}"${st.pageSize === n ? ' selected' : ''}>${n}</option>`).join('');
+  return `<div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;flex-wrap:wrap">
+    <input id="kcSearch_${kind}" type="text" placeholder="${t('search_ph')}" value="${st.search.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter')kcSearch('${kind}')" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;padding:5px 10px;border-radius:6px;font-size:0.82em;width:190px">
+    <button onclick="kcSearch('${kind}')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82em">🔍</button>
+    <span style="color:#8b949e;font-size:0.8em;margin-left:auto">${t('per_page')}</span>
+    <select id="kcSize_${kind}" onchange="kcSize('${kind}')" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;padding:5px 8px;border-radius:6px;font-size:0.82em">${sizeOpts}</select>
+  </div>`;
+}
+
+function kcPager(kind, st, total) {
+  const pages = Math.max(1, Math.ceil(total / st.pageSize));
+  const btn = (label, page, disabled) => `<button onclick="kcGo('${kind}', ${page})"${disabled ? ' disabled style="opacity:.4;cursor:not-allowed"' : ''} style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em">${label}</button>`;
+  return `<div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+    ${btn(t('prev_page'), st.page - 1, st.page <= 0)}
+    <span style="color:#8b949e;font-size:0.82em">${st.page + 1} / ${pages} · ${total}</span>
+    ${btn(t('next_page'), st.page + 1, st.page + 1 >= pages)}
+  </div>`;
+}
+
+async function kcLoad(kind) {
+  const st = window._kcPaging[kind];
+  const tableEl = document.getElementById('kcTable_' + kind);
+  const pagerEl = document.getElementById('kcPager_' + kind);
+  if (!tableEl) return;
+  tableEl.innerHTML = `<p class="loading">${t('loading')}</p>`;
+  try {
+    const q = new URLSearchParams({ page: st.page, pageSize: st.pageSize, search: st.search });
+    const d = await (await fetch(`${API}/keycloak/${kind}?${q}`)).json();
+    if (d.error) throw new Error(d.error);
+    st.total = d.total || 0;
+    let body;
+    if (kind === 'users') {
+      const rows = (d.items || []).map(u => `<tr><td style="color:#e6edf3">${u.username || '—'}</td><td style="color:#8b949e">${u.email || '—'}</td><td style="color:${u.enabled ? '#56d364' : '#f85149'}">${u.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
+      body = (d.items && d.items.length) ? `<table><tr><th>${t('username')}</th><th>${t('email')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
+    } else {
+      const rows = (d.items || []).map(c => `<tr><td style="color:#e6edf3">${c.clientId || '—'}</td><td style="color:${c.enabled ? '#56d364' : '#f85149'}">${c.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
+      body = (d.items && d.items.length) ? `<table><tr><th>${t('kc_clients')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
+    }
+    tableEl.innerHTML = body;
+    pagerEl.innerHTML = kcPager(kind, st, d.total);
+  } catch (e) {
+    tableEl.innerHTML = `<p class="error">${e.message}</p>`;
+    pagerEl.innerHTML = '';
+  }
+}
+
+function kcGo(kind, page) {
+  const st = window._kcPaging[kind];
+  const pages = Math.max(1, Math.ceil(st.total / st.pageSize));
+  if (page < 0 || page >= pages) return;
+  st.page = page;
+  kcLoad(kind);
+}
+
+function kcSearch(kind) {
+  const st = window._kcPaging[kind];
+  st.search = document.getElementById('kcSearch_' + kind).value.trim();
+  st.page = 0;
+  kcLoad(kind);
+}
+
+function kcSize(kind) {
+  const st = window._kcPaging[kind];
+  st.pageSize = parseInt(document.getElementById('kcSize_' + kind).value, 10) || 10;
+  st.page = 0;
+  kcLoad(kind);
+}
+
 async function loadKeycloak(el) {
   setActive(el);
-  const url = 'http://192.168.31.117:9090';
+  const url = P('keycloak');
   const title = t('keycloak');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
     const d = await (await fetch(API + '/keycloak/overview')).json();
     if (d.error) throw new Error(d.error);
-    document.getElementById('main').innerHTML = renderProductOverview('🔐', title, url, [
+    const stats = [
       { value: d.users ?? '—', label: t('kc_users') },
       { value: d.clients ?? '—', label: t('kc_clients') },
       { value: d.roles ?? '—', label: t('kc_roles') },
       { value: (d.idps || []).length, label: t('kc_idps') },
-    ], t('open_keycloak'));
+    ];
+    const roleBadges = (d.role_list || []).map(r => `<span class="admin-badge">${r}</span>`).join(' ');
+    const newBtn = (href, label) => `<a href="${href}" target="_blank" style="background:#1f6feb;color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${label} ↗</a>`;
+    const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/realms/enterprise-ai';
+    window._kcPaging = {
+      users: { page: 0, pageSize: 10, search: '', total: 0 },
+      clients: { page: 0, pageSize: 10, search: '', total: 0 },
+    };
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${title}</h1>${openAdminBtn(url, t('open_keycloak'))}</div>`
+      + aboutCard(t('kc_about'))
+      + metricsCard(stats)
+      + keyInfoCard(`
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px"><span style="color:#8b949e">👤 ${t('kc_users')}（${d.users ?? 0}）</span>${newBtn(kcBase + '/users/add', t('kc_new_user'))}</div>
+        ${kcToolbar('users')}
+        <div id="kcTable_users"></div>
+        <div id="kcPager_users"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:#8b949e">🔑 ${t('kc_clients')}（${d.clients ?? 0}）</span>${newBtn(kcBase + '/clients/add-client', t('kc_new_client'))}</div>
+        ${kcToolbar('clients')}
+        <div id="kcTable_clients"></div>
+        <div id="kcPager_clients"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:#8b949e">🎭 ${t('kc_roles')}（${(d.role_list || []).length}）</span>${newBtn(kcBase + '/roles', t('kc_new_role'))}</div>
+        ${roleBadges ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${roleBadges}</div>` : `<p class="loading">${t('no_data')}</p>`}
+      `, t('identity_resources'));
+    kcLoad('users');
+    kcLoad('clients');
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🔐', title, url, e.message, t('open_keycloak'));
   }
@@ -2210,7 +2579,7 @@ async function loadKeycloak(el) {
 
 async function loadUpdate(el) {
   setActive(el);
-  const url = 'http://192.168.31.117:8091';
+  const url = P('update');
   const title = t('update');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>⬇️ ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
@@ -2220,17 +2589,14 @@ async function loadUpdate(el) {
     const fmtTime = ts => ts ? new Date(ts * 1000).toLocaleString() : '—';
     const files = d.files || [];
     const rows = files.map(f => `<tr><td><code>${f.name}</code></td><td>${fmtSize(f.size)}</td><td>${fmtTime(f.mtime)}</td></tr>`).join('');
-    document.getElementById('main').innerHTML = `
-      <div class="topbar"><h1>⬇️ ${title}</h1></div>
-      <div class="stats-bar">
-        <div class="stat total"><div class="value">${d.version || '—'}</div><div class="label">${t('update_version')}</div></div>
-        <div class="stat total"><div class="value">${files.length}</div><div class="label">${t('installers')}</div></div>
-      </div>
-      <div class="card"><h3>📦 ${t('installers')}（${files.length}）</h3>
-        ${rows ? `<table><tr><th>${t('name')}</th><th>${t('size')}</th><th>${t('last_updated')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_files')}</p>`}
-      </div>
-      <div class="card"><h3>🕒 ${t('last_updated')}</h3><p style="color:#8b949e">${fmtTime(d.last_updated)}</p></div>
-      ${openAdminBtn(url, t('open_update'))}`;
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>⬇️ ${title}</h1>${openAdminBtn(url, t('open_update'))}</div>`
+      + aboutCard(t('update_about'))
+      + metricsCard([
+          { value: d.version || '—', label: t('update_version') },
+          { value: files.length, label: t('installers') },
+          { value: fmtTime(d.last_updated), label: t('last_updated') },
+        ])
+      + keyInfoCard(`${rows ? `<table><tr><th>${t('name')}</th><th>${t('size')}</th><th>${t('last_updated')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_files')}</p>`}`, t('installers'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('⬇️', title, url, e.message, t('open_update'));
   }
@@ -2277,7 +2643,17 @@ async function loadUserInfo() {
 applyDir();
 applyI18n();
 initNavGroups();
-loadDashboard();
+(async function init() {
+  try {
+    const r = await fetch(API + '/urls');
+    const d = await r.json();
+    if (d && d.publicUrl) {
+      PUBLIC_URL = d.publicUrl;
+      PRODUCT_URLS = d.products || {};
+    }
+  } catch (e) {}
+  loadDashboard();
+})();
 loadUserInfo();
 </script>
 </body>

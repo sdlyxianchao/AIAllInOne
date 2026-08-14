@@ -16,7 +16,11 @@
       <div class="sub">PII 脱敏代理：模型列表、脱敏规则、缓存、Langfuse 上报。</div>
     </div>
 
-    <p><b>入口</b>：<span class="entry">http://&lt;服务器IP&gt;:4001</span>（纯 API，无 Web 界面，调试用 <code>/v1/models</code>）。配置在 <code>litellm-config.yaml</code>。</p>
+    <p><b>入口</b>：管理后台 <span class="entry">http://&lt;服务器IP&gt;:4001/ui</span>（Web 界面）；API <span class="entry">http://&lt;服务器IP&gt;:4001</span>（调试用 <code>/v1/models</code>）。配置在 <code>litellm-config.yaml</code>。</p>
+
+    <h2>16.0 登录管理后台</h2>
+    <p>LiteLLM 的 <code>/ui</code> 管理后台用<b>统一账号</b>登录（用户名 <code>ai_all_in_one_admin</code>、密码见 <code>credentials.html</code>），由 <code>.env</code> 的 <code>UI_USERNAME</code> / <code>UI_PASSWORD</code> 控制。</p>
+    <div class="note">📌 也可配置 <b>Keycloak SSO 自动登录</b>：在 <code>.env</code> 设 <code>LITELLM_UI_*</code>（<code>GENERIC_CLIENT_ID/SECRET</code> + Keycloak 的 auth/token/userinfo 端点 + <code>AUTO_REDIRECT_UI_LOGIN_TO_SSO=true</code>），并在 Keycloak 建 OIDC Client <code>litellm</code>（redirect <code>&lt;服务器IP&gt;:4001/sso/callback</code>）+ 返回 <code>litellm_role=proxy_admin</code> 的 claim。配置后访问 <code>/ui</code> 自动跳 Keycloak 免密登录。</div>
 
     <h2>16.1 模型列表维护</h2>
     <p>编辑 <code>litellm-config.yaml</code> 的 <code>model_list</code>，增删模型与对应 API Key。加新 provider 的步骤：</p>

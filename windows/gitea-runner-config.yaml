@@ -15,7 +15,9 @@ container:
   workdir_parent: ""
   valid_volumes: []
   docker_host: ""
-  force_pull: true
+  # 内网 Docker daemon 无法访问 Docker Hub（registry-1.docker.io 超时），
+  # 本地已预置 node:20 镜像，故禁用强制拉取，直接用本地镜像
+  force_pull: false
   force_rebuild: false
 
 host:

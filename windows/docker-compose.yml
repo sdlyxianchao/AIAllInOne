@@ -136,6 +136,21 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      # LiteLLM 数据库（UI 登录 / 虚拟密钥持久化 / SSO 用户都需要 PostgreSQL）
+      - DATABASE_URL=postgresql://litellm:${LITELLM_DB_PASSWORD}@litellm-db:5432/litellm
+      # LiteLLM Admin UI 登录（统一账号基础认证，SSO 兜底）
+      - UI_USERNAME=${UI_USERNAME:-ai_all_in_one_admin}
+      - UI_PASSWORD=${UI_PASSWORD}
+      # LiteLLM Admin UI SSO（通用 OIDC → Keycloak，浏览器跳转用授权端点走内网 IP，token/userinfo 走容器内 host.docker.internal）
+      - GENERIC_CLIENT_ID=${LITELLM_UI_CLIENT_ID}
+      - GENERIC_CLIENT_SECRET=${LITELLM_UI_CLIENT_SECRET}
+      - GENERIC_AUTHORIZATION_ENDPOINT=${LITELLM_UI_AUTH_ENDPOINT}
+      - GENERIC_TOKEN_ENDPOINT=${LITELLM_UI_TOKEN_ENDPOINT}
+      - GENERIC_USERINFO_ENDPOINT=${LITELLM_UI_USERINFO_ENDPOINT}
+      - GENERIC_SCOPE=${LITELLM_UI_SCOPE:-openid profile email}
+      - GENERIC_USER_ROLE_ATTRIBUTE=${LITELLM_UI_ROLE_ATTR:-litellm_role}
+      - PROXY_BASE_URL=${LITELLM_UI_PROXY_BASE_URL}
+      - AUTO_REDIRECT_UI_LOGIN_TO_SSO=${LITELLM_UI_AUTO_SSO:-false}
       # PII 脱敏（Presidio）端点 —— litellm 会自动拼 /analyze、/anonymize，这里填 base URL 即可
       - PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:3000
       - PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:3000
@@ -144,12 +159,33 @@ services:
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
       - LANGFUSE_HOST=http://langfuse:3000
     depends_on:
+      litellm-db:
+        condition: service_healthy
       litellm-redis:
         condition: service_started
       presidio-analyzer:
         condition: service_started
       presidio-anonymizer:
         condition: service_started
+    networks:
+      - ai-platform
+
+  litellm-db:
+    image: postgres:16-alpine
+    container_name: litellm-db
+    restart: always
+    logging: *default-logging
+    environment:
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=${LITELLM_DB_PASSWORD}
+      - POSTGRES_DB=litellm
+    volumes:
+      - litellm-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - ai-platform
 
@@ -275,6 +311,7 @@ services:
       - "8091:80"
     volumes:
       - ./deepchat-updates:/usr/share/nginx/html
+      - ./update-server-nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - ai-platform
 
@@ -303,7 +340,8 @@ services:
     command: sh -c "node server.js"
     environment:
       - PORT=3000
-      - KEYCLOAK_URL=http://192.168.31.117:9090
+      - SERVER_PUBLIC_URL=${SERVER_PUBLIC_URL}
+      - KEYCLOAK_URL=${SERVER_PUBLIC_URL}:9090
       - KEYCLOAK_REALM=enterprise-ai
       - KEYCLOAK_CLIENT_ID=AI-all-in-one-admin-portal
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
@@ -314,19 +352,19 @@ services:
       - SESSION_SECRET=${SESSION_SECRET}
       - REDIS_URL=redis://admin-session-redis:6379
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
-      - LITELLM_URL=http://192.168.31.117:4001
+      - LITELLM_URL=${SERVER_PUBLIC_URL}:4001
       - NEWAPI_URL=http://new-api:3000
       - NEWAPI_ADMIN_USERNAME=${NEWAPI_ADMIN_USERNAME}
       - NEWAPI_ADMIN_PASSWORD=${NEWAPI_ADMIN_PASSWORD}
       - NEWAPI_DB_PASSWORD=${NEWAPI_DB_PASSWORD}
       - MCP_GATEWAY_URL=http://mcp-gateway:3100
       - MCP_ADMIN_TOKEN=${MCP_ADMIN_TOKEN}
-      - GITEA_URL=http://192.168.31.117:3002
-      - DIFY_URL=http://192.168.31.117
+      - GITEA_URL=${SERVER_PUBLIC_URL}:3002
+      - DIFY_URL=${SERVER_PUBLIC_URL}
       - DIFY_ADMIN_EMAIL=${DIFY_ADMIN_EMAIL}
       - DIFY_ADMIN_PASSWORD=${DIFY_ADMIN_PASSWORD}
-      - GRAFANA_URL=http://192.168.31.117:3030
-      - LANGFUSE_URL=http://192.168.31.117:3010
+      - GRAFANA_URL=${SERVER_PUBLIC_URL}:3030
+      - LANGFUSE_URL=${SERVER_PUBLIC_URL}:3010
       - LANGFUSE_CLICKHOUSE_PASSWORD=${LANGFUSE_CLICKHOUSE_PASSWORD}
       - LOKI_URL=http://loki:3100
       - AVAILABILITY_INTERVAL_MIN=${AVAILABILITY_INTERVAL_MIN:-10}
@@ -645,6 +683,7 @@ services:
 volumes:
   keycloak-data:
   keycloak-db-data:
+  litellm-db-data:
   new-api-data:
   new-api-db-data:
   ghost-data:

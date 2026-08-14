@@ -1560,7 +1560,7 @@ curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/d
   -u "ai_all_in_one_admin:&lt;密码&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'
 
 <span class="comment"># 或 Gitea Web UI：deepchat-sync → Actions → 运行工作流</span></code></pre>
-<div class="note">关键坑：① act_runner 的 <code>container.network</code> 必须通过 <code>config.yaml</code>（+ <code>CONFIG_FILE</code> 环境变量）配置，否则 job 容器在独立网络解析不了 <code>gitea</code> 主机名；② docker.sock 由 act_runner 自动挂载，不要在 <code>options</code> 里再挂一次（会报 Duplicate mount point）；③ 下载 docker CLI 时偶发 <code>curl (18) HTTP/2 stream</code> 网络瞬断，workflow 已给该下载加 <code>--http1.1 --retry 5</code>。</div>
+<div class="note">关键坑：① act_runner 的 <code>container.network</code> 必须通过 <code>config.yaml</code>（+ <code>CONFIG_FILE</code> 环境变量）配置，否则 job 容器在独立网络解析不了 <code>gitea</code> 主机名；② docker.sock 由 act_runner 自动挂载，不要在 <code>options</code> 里再挂一次（会报 Duplicate mount point）；③ 下载 docker CLI 时偶发 <code>curl (18) HTTP/2 stream</code> 网络瞬断，workflow 已给该下载加 <code>--http1.1 --retry 5</code>；④ <b>内网 Docker daemon 通常访问不了 Docker Hub</b>（<code>registry-1.docker.io</code> 超时），而 runner 默认 <code>force_pull: true</code> 会每次强制拉取 job 镜像 <code>node:20</code>，导致 job 在跑任何 step 之前就失败——需在 <code>gitea-runner-config.yaml</code> 里设 <code>force_pull: false</code>，并在宿主机先 <code>docker pull node:20</code> 预置镜像（或给 Docker Desktop 配镜像加速器）。</div>
 
 <h4>国内下载源配置（<code>sync-config.json</code>）</h4>
 <div class="callout callout-warn">

@@ -31,7 +31,11 @@ const ADMIN_USER = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@company.com';
 const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY || '';
-const LITELLM_URL = process.env.LITELLM_URL || 'http://127.0.0.1:4001';
+// 服务器对外地址（浏览器访问用）：IP 或域名，不含端口、不含尾斜杠。
+// 所有产品入口 URL 都由它派生，将来换成域名（如 https://ai.example.com）只需改 SERVER_PUBLIC_URL 一处。
+const SERVER_PUBLIC_URL = (process.env.SERVER_PUBLIC_URL || 'http://192.168.31.117').replace(/\/+$/, '');
+const extUrl = (port) => port ? `${SERVER_PUBLIC_URL}:${port}` : SERVER_PUBLIC_URL;
+const LITELLM_URL = process.env.LITELLM_URL || extUrl(4001);
 const NEWAPI_URL = process.env.NEWAPI_URL || 'http://new-api:3000';
 const NEWAPI_ADMIN_USER = process.env.NEWAPI_ADMIN_USERNAME || ADMIN_USER;
 const NEWAPI_ADMIN_PASS = process.env.NEWAPI_ADMIN_PASSWORD || ADMIN_PASS;
@@ -40,20 +44,20 @@ const MCP_ADMIN_TOKEN = process.env.MCP_ADMIN_TOKEN || '';
 const GITEA_URL = process.env.GITEA_URL || 'http://gitea:3000';
 const GITEA_ADMIN_USER = process.env.GITEA_ADMIN_USERNAME || ADMIN_USER;
 const GITEA_ADMIN_PASS = process.env.GITEA_ADMIN_PASSWORD || ADMIN_PASS;
-const DIFY_URL = process.env.DIFY_URL || 'http://192.168.31.117';
+const DIFY_URL = process.env.DIFY_URL || SERVER_PUBLIC_URL;
 const DIFY_ADMIN_EMAIL = process.env.DIFY_ADMIN_EMAIL || ADMIN_EMAIL;
 const DIFY_ADMIN_PASS = process.env.DIFY_ADMIN_PASSWORD || ADMIN_PASS;
 const GHOST_CONTAINER = process.env.GHOST_CONTAINER || 'ghost';
 const GHOST_INTERNAL_URL = process.env.GHOST_INTERNAL_URL || 'http://ghost:2368';
-const GHOST_EXTERNAL_URL = process.env.GHOST_EXTERNAL_URL || 'http://192.168.31.117:8090';
+const GHOST_EXTERNAL_URL = process.env.GHOST_EXTERNAL_URL || extUrl(8090);
 const GHOST_ADMIN_EMAIL = process.env.GHOST_ADMIN_EMAIL || 'ai_all_in_one_admin@company.com';
 const LITELLM_INTERNAL_URL = process.env.LITELLM_INTERNAL_URL || 'http://litellm:4000';
 const UPDATE_CONTAINER = process.env.UPDATE_CONTAINER || 'update-server';
 const REDIS_URL = process.env.REDIS_URL || 'redis://admin-session-redis:6379';
 const NEWAPI_DB_CONTAINER = process.env.NEWAPI_DB_CONTAINER || 'new-api-db';
 const NEWAPI_DB_PASSWORD = process.env.NEWAPI_DB_PASSWORD || 'CHANGE_ME_NEWAPI_DB_PASSWORD';
-const GRAFANA_URL = process.env.GRAFANA_URL || 'http://192.168.31.117:3030';
-const LANGFUSE_URL = process.env.LANGFUSE_URL || 'http://192.168.31.117:3010';
+const GRAFANA_URL = process.env.GRAFANA_URL || extUrl(3030);
+const LANGFUSE_URL = process.env.LANGFUSE_URL || extUrl(3010);
 const PROMETHEUS_INTERNAL_URL = process.env.PROMETHEUS_INTERNAL_URL || 'http://prometheus:9090';
 const LANGFUSE_INTERNAL_URL = process.env.LANGFUSE_INTERNAL_URL || 'http://langfuse:3000';
 const PRESIDIO_ANALYZER_URL = process.env.PRESIDIO_ANALYZER_URL || 'http://presidio-analyzer:3000';
@@ -232,6 +236,69 @@ app.get('/api/admins', keycloak.protect('realm:ai-platform-admin'), async (req, 
   }
 });
 
+// 当前登录用户的 Keycloak sub（用于防止管理员操作自己）
+function currentUserId(req) {
+  try {
+    return (req.kauth && req.kauth.grant && req.kauth.grant.access_token &&
+      req.kauth.grant.access_token.content && req.kauth.grant.access_token.content.sub) || '';
+  } catch (e) { return ''; }
+}
+
+// 启用/禁用管理员账号（禁止操作自己）
+app.post('/api/admins/:id/toggle', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const uid = req.params.id;
+    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能禁用自己的账号' });
+    const kc = await getKcAdmin();
+    const u = await kc.users.findOne({ id: uid });
+    if (!u) return res.status(404).json({ error: '用户不存在' });
+    await kc.users.update({ id: uid }, { enabled: !u.enabled });
+    res.json({ ok: true, enabled: !u.enabled });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 移除管理员角色（降级为普通用户，禁止操作自己）
+app.post('/api/admins/:id/demote', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const uid = req.params.id;
+    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能移除自己的管理员角色' });
+    const kc = await getKcAdmin();
+    const role = await kc.roles.findOneByName({ name: 'ai-platform-admin' });
+    if (!role) return res.status(404).json({ error: '角色不存在' });
+    await kc.users.delRealmRoleMappings({ id: uid, roles: [{ id: role.id, name: 'ai-platform-admin' }] });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 添加管理员（按用户名，加入 ai-platform-admin 角色）
+app.post('/api/admins', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const username = (req.body && req.body.username || '').trim();
+    if (!username) return res.status(400).json({ error: '请输入用户名' });
+    const kc = await getKcAdmin();
+    const users = await kc.users.find({ username, realm: KC_REALM, exact: true });
+    if (!users || !users.length) return res.status(404).json({ error: `未找到用户「${username}」` });
+    const u = users[0];
+    const role = await kc.roles.findOneByName({ name: 'ai-platform-admin' });
+    if (!role) return res.status(404).json({ error: '角色不存在' });
+    await kc.users.addRealmRoleMappings({ id: u.id, roles: [{ id: role.id, name: 'ai-platform-admin' }] });
+    res.json({ ok: true, username: u.username });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 重置管理员密码（生成临时随机密码，强制首次登录改密）
+app.post('/api/admins/:id/reset-password', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const uid = req.params.id;
+    const kc = await getKcAdmin();
+    const u = await kc.users.findOne({ id: uid });
+    if (!u) return res.status(404).json({ error: '用户不存在' });
+    const tmp = require('crypto').randomBytes(9).toString('base64url') + 'A1';
+    await kc.users.resetPassword({ id: uid, credential: { type: 'password', value: tmp, temporary: true } });
+    res.json({ ok: true, username: u.username, tempPassword: tmp });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // System info
 app.get('/api/system', keycloak.protect(), async (req, res) => {
   try {
@@ -255,10 +322,44 @@ app.get('/api/litellm', keycloak.protect(), (req, res) => {
   res.json({ masterKey: LITELLM_MASTER_KEY, url: LITELLM_URL });
 });
 
+// LiteLLM 可用模型列表（供 LiteLLM+PII 页展示）
+app.get('/api/litellm/models', keycloak.protect(), async (req, res) => {
+  try {
+    const r = await fetch(`${LITELLM_INTERNAL_URL}/v1/models`, { headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}` } });
+    const data = await r.json();
+    const models = ((data && data.data) || []).map(m => m.id);
+    res.json({ models, count: models.length });
+  } catch (e) {
+    res.json({ models: [], count: 0, error: e.message });
+  }
+});
+
 // 当前登录用户信息（左下角账号名用）
 app.get('/api/me', keycloak.protect(), (req, res) => {
   const c = (req.kauth && req.kauth.grant && req.kauth.grant.access_token && req.kauth.grant.access_token.content) || {};
   res.json({ username: c.preferred_username || c.name || '—', email: c.email || '', name: c.name || '' });
+});
+
+// 产品入口 URL（由 SERVER_PUBLIC_URL 派生，供前端动态渲染与跳转）
+app.get('/api/urls', keycloak.protect(), (req, res) => {
+  res.json({
+    publicUrl: SERVER_PUBLIC_URL,
+    products: {
+      ghost: extUrl(8090),
+      dify: SERVER_PUBLIC_URL,
+      gitea: extUrl(3002),
+      newapi: extUrl(3000),
+      litellm: extUrl(4001),
+      keycloak: extUrl(9090),
+      mcp: extUrl(3100),
+      update: extUrl(8091),
+      grafana: extUrl(3030),
+      prometheus: extUrl(9091),
+      alertmanager: extUrl(9093),
+      langfuse: extUrl(3010),
+      mailhog: extUrl(8025),
+    },
+  });
 });
 
 // Unified authentication overview (admin only — contains credentials)
@@ -423,6 +524,23 @@ async function giteaApi(path) {
   return { status: resp.status, data, total: parseInt(resp.headers.get('x-total-count') || '0', 10) };
 }
 
+// 取 job 原始日志文本，提取关键错误行（当失败发生在 step 之前，如镜像拉取超时）
+async function giteaJobError(jobId) {
+  try {
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/jobs/${jobId}/logs`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    const text = await resp.text();
+    const lines = text.split('\n').filter(Boolean);
+    // 取最后一条含 error/timeout/failed 关键字的行，去掉时间戳前缀
+    const errLine = [...lines].reverse().find(l => /error|timeout|failed|denied|not found|cannot|unable/i.test(l));
+    if (!errLine) return null;
+    const cleaned = errLine.replace(/^\S+Z?\s+/, '').trim();
+    return cleaned.length > 160 ? cleaned.slice(0, 160) + '…' : cleaned;
+  } catch (e) { return null; }
+}
+
 app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
   try {
     const [version, users, repos, orgs, issues, reposList] = await Promise.all([
@@ -448,11 +566,29 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
       const runs = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/runs?limit=1`);
       const run = (runs.data && runs.data.workflow_runs && runs.data.workflow_runs[0]) || null;
       if (run) {
+        let failure_reason = null;
+        if (run.conclusion === 'failure' && run.id) {
+          try {
+            const jobs = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/runs/${run.id}/jobs`);
+            const jobList = (jobs.data && jobs.data.jobs) || [];
+            const failedJob = jobList.find(j => j.conclusion === 'failure');
+            if (failedJob) {
+              const failedStep = (failedJob.steps || []).find(s => s.conclusion === 'failure');
+              if (failedStep) {
+                failure_reason = `${failedJob.name} → ${failedStep.name}`;
+              } else {
+                // 没有失败 step（失败发生在 step 之前，如镜像拉取），从日志提取真实错误
+                failure_reason = await giteaJobError(failedJob.id) || failedJob.name;
+              }
+            }
+          } catch (e) { failure_reason = null; }
+        }
         sync_last_run = {
           status: run.status,
           conclusion: run.conclusion,
           completed_at: run.completed_at || run.started_at || null,
           display_title: run.display_title || '',
+          failure_reason,
         };
       }
     } catch (e) { sync_last_run = null; }
@@ -472,7 +608,7 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
 app.get('/api/keycloak/overview', keycloak.protect(), async (req, res) => {
   try {
     const kc = await getKcAdmin();
-    const [users, clients, roles] = await Promise.all([
+    const [userCount, clientList, roleList] = await Promise.all([
       kc.users.count({ realm: KC_REALM }),
       kc.clients.find({ realm: KC_REALM }),
       kc.roles.find({ realm: KC_REALM }),
@@ -480,11 +616,51 @@ app.get('/api/keycloak/overview', keycloak.protect(), async (req, res) => {
     let idps = [];
     try { idps = await kc.identityProviders.find({ realm: KC_REALM }); } catch (e) { idps = []; }
     res.json({
-      users,
-      clients: (clients || []).length,
-      roles: (roles || []).length,
+      users: userCount,
+      clients: (clientList || []).length,
+      roles: (roleList || []).length,
+      role_list: (roleList || []).map(r => r.name).filter(Boolean),
       idps: (idps || []).map(i => i.alias || i.displayName).filter(Boolean),
     });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Keycloak 用户分页 + 检索 ----
+app.get('/api/keycloak/users', keycloak.protect(), async (req, res) => {
+  try {
+    const page = Math.max(0, parseInt(req.query.page, 10) || 0);
+    const pageSize = Math.min(200, Math.max(1, parseInt(req.query.pageSize, 10) || 10));
+    const search = (req.query.search || '').trim();
+    const kc = await getKcAdmin();
+    const opts = { realm: KC_REALM };
+    if (search) opts.search = search;
+    const [total, list] = await Promise.all([
+      kc.users.count(opts),
+      kc.users.find({ ...opts, first: page * pageSize, max: pageSize }),
+    ]);
+    res.json({
+      total,
+      page,
+      pageSize,
+      items: (list || []).map(u => ({ id: u.id, username: u.username, email: u.email, firstName: u.firstName, lastName: u.lastName, enabled: u.enabled })),
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Keycloak 客户端分页 + 检索 ----
+app.get('/api/keycloak/clients', keycloak.protect(), async (req, res) => {
+  try {
+    const page = Math.max(0, parseInt(req.query.page, 10) || 0);
+    const pageSize = Math.min(200, Math.max(1, parseInt(req.query.pageSize, 10) || 10));
+    const search = (req.query.search || '').trim();
+    const kc = await getKcAdmin();
+    const all = await kc.clients.find({ realm: KC_REALM });
+    const filtered = search
+      ? (all || []).filter(c => (c.clientId || '').toLowerCase().includes(search.toLowerCase()))
+      : (all || []);
+    const total = filtered.length;
+    const items = filtered.slice(page * pageSize, (page + 1) * pageSize).map(c => ({ id: c.id, clientId: c.clientId, enabled: c.enabled }));
+    res.json({ total, page, pageSize, items });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -515,12 +691,15 @@ for(const d of fs.readdirSync('/var/lib/ghost/versions')){
 const D=require(sp);
 const db=new D.Database('/var/lib/ghost/content/data/ghost.db',D.OPEN_READONLY);
 const q=(sql)=>new Promise((res,rej)=>db.get(sql,(e,r)=>e?rej(e):res(r)));
+const qa=(sql)=>new Promise((res,rej)=>db.all(sql,(e,r)=>e?rej(e):res(r)));
 (async()=>{
   const posts=await q("SELECT COUNT(*) c FROM posts WHERE type='post'");
   const pages=await q("SELECT COUNT(*) c FROM posts WHERE type='page'");
   const members=await q("SELECT COUNT(*) c FROM members");
   const tags=await q("SELECT COUNT(*) c FROM tags");
-  console.log(JSON.stringify({posts:posts.c,pages:pages.c,members:members.c,tags:tags.c}));
+  const recent_posts=await qa("SELECT title, status, updated_at FROM posts WHERE type='post' ORDER BY updated_at DESC LIMIT 5");
+  const recent_pages=await qa("SELECT title, status, updated_at FROM posts WHERE type='page' ORDER BY updated_at DESC LIMIT 5");
+  console.log(JSON.stringify({posts:posts.c,pages:pages.c,members:members.c,tags:tags.c,recent_posts,recent_pages}));
   db.close();
 })();`;
 
@@ -609,12 +788,16 @@ async function difyApi(path) {
 app.get('/api/dify/overview', keycloak.protect(), async (req, res) => {
   try {
     const [apps, workspaces] = await Promise.all([
-      difyApi('/console/api/apps?page=1&limit=1'),
+      difyApi('/console/api/apps?page=1&limit=50'),
       difyApi('/console/api/workspaces'),
     ]);
+    const appItems = (apps.data && apps.data.data) ? apps.data.data : [];
+    const wsItems = (workspaces.data && workspaces.data.workspaces) ? workspaces.data.workspaces : [];
     res.json({
-      apps: (apps.data && apps.data.total) ?? 0,
-      workspaces: (workspaces.data && workspaces.data.workspaces) ? workspaces.data.workspaces.length : 0,
+      apps: (apps.data && apps.data.total) ?? appItems.length,
+      workspaces: wsItems.length,
+      app_list: appItems.map(a => ({ id: a.id, name: a.name, mode: a.mode })),
+      workspace_list: wsItems.map(w => ({ id: w.id, name: w.name })),
       version: '1.16.1',
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -669,16 +852,35 @@ app.get('/api/monitoring/overview', keycloak.protect(), async (req, res) => {
 app.get('/api/langfuse/overview', keycloak.protect(), async (req, res) => {
   try {
     const health = await fetch(`${LANGFUSE_INTERNAL_URL}/api/public/health`).then(r => r.json());
-    let traces = null;
+    const ck = (sql) => dockerExec('langfuse-clickhouse', [
+      'clickhouse-client', '-u', 'langfuse', '--password', LANGFUSE_CLICKHOUSE_PASSWORD,
+      '--query', sql,
+    ]).then(r => (r.stdout || '').trim());
+    let traces = null, recent_traces = [], model_stats = [], projects = [];
     try {
-      const { stdout } = await dockerExec('langfuse-clickhouse', [
-        'clickhouse-client', '-u', 'langfuse', '--password', LANGFUSE_CLICKHOUSE_PASSWORD,
-        '--query', 'SELECT count() FROM default.traces',
-      ]);
-      traces = parseInt((stdout || '').trim(), 10);
+      const countStr = await ck('SELECT count() FROM default.traces WHERE is_deleted = 0');
+      traces = parseInt(countStr, 10);
       if (isNaN(traces)) traces = 0;
     } catch (e) { traces = null; }
-    res.json({ version: health.version || '—', traces });
+    try {
+      const recentStr = await ck("SELECT toString(timestamp), name, coalesce(user_id, ''), environment FROM default.traces WHERE is_deleted = 0 ORDER BY timestamp DESC LIMIT 5 FORMAT TSV");
+      recent_traces = recentStr.split('\n').filter(Boolean).map(line => {
+        const [ts, name, userId, env] = line.split('\t');
+        return { ts, name, userId, env };
+      });
+    } catch (e) { recent_traces = []; }
+    try {
+      const projStr = await ck('SELECT project_id FROM default.traces WHERE is_deleted = 0 GROUP BY project_id ORDER BY count() DESC LIMIT 10 FORMAT TSV');
+      projects = projStr.split('\n').filter(Boolean);
+    } catch (e) { projects = []; }
+    try {
+      const modelStr = await ck("SELECT provided_model_name, count(), sum(usage_details['total']), round(sum(total_cost), 4) FROM default.observations WHERE type = 'GENERATION' AND provided_model_name != '' AND is_deleted = 0 GROUP BY provided_model_name ORDER BY count() DESC LIMIT 20 FORMAT TSV");
+      model_stats = modelStr.split('\n').filter(Boolean).map(line => {
+        const [model, calls, tokens, cost] = line.split('\t');
+        return { model, calls: parseInt(calls, 10) || 0, tokens: parseInt(tokens, 10) || 0, cost: parseFloat(cost) || 0 };
+      });
+    } catch (e) { model_stats = []; }
+    res.json({ version: health.version || '—', traces, recent_traces, model_stats, projects });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -813,21 +1015,31 @@ app.get('/api/metrics', keycloak.protect(), async (req, res) => {
         });
       } catch (e) { metrics.mcp = err(e); }
     })(),
-    // LiteLLM（模型数）
+    // LiteLLM（模型数 + 名称）
     (async () => {
       try {
         const resp = await fetch(`${LITELLM_INTERNAL_URL}/v1/models`, {
           headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}` },
         });
         const data = await resp.json();
-        metrics.litellm = ok({ models: (data.data || []).length });
+        const names = (data.data || []).map(m => m.id);
+        metrics.litellm = ok({ models: names.length, model_names: names });
       } catch (e) { metrics.litellm = err(e); }
     })(),
-    // Update Server（DeepChat 版本）
+    // Update Server（DeepChat 版本 + 更新时间）
     (async () => {
       try {
-        const { stdout } = await dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']);
-        metrics.update = ok({ version: (stdout || '').trim() || '—' });
+        const [verRes, statRes] = await Promise.all([
+          dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']),
+          dockerExec(UPDATE_CONTAINER, ['sh', '-c', 'for f in /usr/share/nginx/html/deepchat/*; do stat -c "%Y" "$f" 2>/dev/null; done']),
+        ]);
+        const version = (verRes.stdout || '').trim() || '—';
+        let last_updated = 0;
+        for (const line of (statRes.stdout || '').split('\n').map(s => s.trim()).filter(Boolean)) {
+          const t = parseInt(line, 10);
+          if (t > last_updated) last_updated = t;
+        }
+        metrics.update = ok({ version, last_updated });
       } catch (e) { metrics.update = err(e); }
     })(),
     // 监控（Prometheus + Grafana）
@@ -855,12 +1067,20 @@ app.get('/api/metrics', keycloak.protect(), async (req, res) => {
           : ok({ state: 'degraded', analyzer, anonymizer });
       } catch (e) { metrics.presidio = err(e); }
     })(),
-    // LLM 可观测（Langfuse 健康）
+    // LLM 可观测（Langfuse — trace 数量 + 健康）
     (async () => {
       try {
-        const r = await fetch(`${LANGFUSE_INTERNAL_URL}/api/public/health`);
-        const d = await r.json();
-        metrics.langfuse = ok({ version: d.version || '—' });
+        const health = await fetch(`${LANGFUSE_INTERNAL_URL}/api/public/health`).then(r => r.json());
+        let traces = null;
+        try {
+          const { stdout } = await dockerExec('langfuse-clickhouse', [
+            'clickhouse-client', '-u', 'langfuse', '--password', LANGFUSE_CLICKHOUSE_PASSWORD,
+            '--query', 'SELECT count() FROM default.traces',
+          ]);
+          traces = parseInt((stdout || '').trim(), 10);
+          if (isNaN(traces)) traces = 0;
+        } catch (e) { traces = null; }
+        metrics.langfuse = ok({ traces, version: health.version || '—' });
       } catch (e) { metrics.langfuse = err(e); }
     })(),
   ]);
@@ -1126,6 +1346,7 @@ app.get('/api/logs/query', keycloak.protect(), async (req, res) => {
     const keyword = (req.query.keyword || '').slice(0, 200);
     const limit = Math.min(parseInt(req.query.limit) || 200, 1000);
     const since = req.query.since || '1h'; // 1h / 6h / 24h / 7d
+    const level = (req.query.level || '').replace(/[^a-z]/g, '');
     const m = since.match(/^(\d+)([smhd])$/);
     const sec = m ? (m[2] === 's' ? +m[1] : m[2] === 'm' ? +m[1] * 60 : m[2] === 'h' ? +m[1] * 3600 : +m[1] * 86400) : 3600;
 
@@ -1133,7 +1354,14 @@ app.get('/api/logs/query', keycloak.protect(), async (req, res) => {
     if (container) selector = `{container="${container}"}`;
     else if (service) selector = `{service="${service}"}`;
 
-    const logql = keyword ? `${selector} |= \`${keyword.replace(/`/g, '')}\`` : selector;
+    let logql = selector;
+    if (keyword) logql += ` |= \`${keyword.replace(/`/g, '')}\``;
+    const levelPatterns = {
+      error: '(?i)(error|exception|fatal|panic|traceback|failed|ERR!)',
+      warn: '(?i)(warn|warning|deprecated)',
+      info: '(?i)(info|INFO)',
+    };
+    if (levelPatterns[level]) logql += ` |~ \`${levelPatterns[level]}\``;
     const end = Date.now();
     const start = end - sec * 1000;
     const url = `${LOKI_URL}/loki/api/v1/query_range?query=${encodeURIComponent(logql)}&limit=${limit}&start=${start * 1000000}&end=${end * 1000000}`;

@@ -16,7 +16,11 @@
       <div class="sub">PII redaction proxy: model list, redaction rules, caching, Langfuse reporting.</div>
     </div>
 
-    <p><b>Entry</b>: <span class="entry">http://&lt;server-IP&gt;:4001</span> (pure API, no web UI; use <code>/v1/models</code> for debugging). Configuration is in <code>litellm-config.yaml</code>.</p>
+    <p><b>Entry</b>: admin console <span class="entry">http://&lt;server-IP&gt;:4001/ui</span> (web UI); API <span class="entry">http://&lt;server-IP&gt;:4001</span> (use <code>/v1/models</code> for debugging). Configuration is in <code>litellm-config.yaml</code>.</p>
+
+    <h2>16.0 Log in to the Admin Console</h2>
+    <p>The LiteLLM <code>/ui</code> console uses the <b>unified account</b> (username <code>ai_all_in_one_admin</code>, password in <code>credentials.html</code>), controlled by <code>UI_USERNAME</code> / <code>UI_PASSWORD</code> in <code>.env</code>.</p>
+    <div class="note">📌 You can also enable <b>Keycloak SSO auto-login</b>: set <code>LITELLM_UI_*</code> in <code>.env</code> (<code>GENERIC_CLIENT_ID/SECRET</code> + Keycloak auth/token/userinfo endpoints + <code>AUTO_REDIRECT_UI_LOGIN_TO_SSO=true</code>), and create a Keycloak OIDC Client <code>litellm</code> (redirect <code>&lt;server-IP&gt;:4001/sso/callback</code>) with a claim that returns <code>litellm_role=proxy_admin</code>. After that, visiting <code>/ui</code> auto-redirects to Keycloak for passwordless login.</div>
 
     <h2>16.1 Model List Maintenance</h2>
     <p>Edit <code>model_list</code> in <code>litellm-config.yaml</code> to add/remove models and their API Keys. Steps to add a new provider:</p>
