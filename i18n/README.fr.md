@@ -164,3 +164,11 @@ Si vous préférez ne pas utiliser d'outil de type Harness, vous pouvez déploye
 - Ce dépôt ne contient **aucun secret réel** ; toutes les valeurs réelles vivent dans le `.env` de chaque environnement d'exécution (seuls les modèles `.env.example` sont versionnés).
 - Par défaut, HTTP en clair sur l'intranet ; pour HTTPS, voir le chapitre correspondant du guide de déploiement de chaque plateforme.
 - Les pièges, diagrammes d'architecture, tables de ports et flux de données de chaque plateforme figurent dans les documents `*-deploy-guide*.html` correspondants.
+
+---
+
+## 5. Exploiter avec un agent IA
+
+Cette plateforme peut être entièrement exploitée et maintenue via un agent IA (WorkBuddy, OpenClaw, Microsoft Scout, etc.) : vérifications de santé, gestion des conteneurs, modifications de configuration, synchronisation Gitea, portail Ghost, sauvegardes, versions et dépannage.
+
+Consultez le **[Guide d'exploitation par agent IA](AI-AGENT-OPS.fr.md)** (disponible en 9 langues).

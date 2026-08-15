@@ -165,3 +165,11 @@ git clone <你的倉庫位址> AIAllInOne
 - 本倉庫**不含任何真實金鑰**，所有真實值在各自執行環境的 `.env` 中（提交的是 `.env.example` 範本）。
 - 預設內網 HTTP 明文；如需 HTTPS 見各平台部署指導的相關章節。
 - 各平台的踩坑記錄、架構圖、連接埠表、資料流，見對應 `*-deploy-guide*.html` 文檔。
+
+---
+
+## 五、用 AI Agent 維運
+
+這套系統可以完全透過 AI Agent（WorkBuddy、OpenClaw、Microsoft Scout 等）來維運：健康檢查、容器管理、設定修改、Gitea 同步、Ghost 入口網站、備份、發佈、排除故障。
+
+完整教學見 **[AI Agent 維運指南](AI-AGENT-OPS.zh-TW.md)**（提供 9 種語言版本）。

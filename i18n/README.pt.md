@@ -164,3 +164,11 @@ Se preferir não usar uma ferramenta do tipo Harness, você pode implantar manua
 - Este repositório não contém **nenhum segredo real**; todos os valores reais ficam no `.env` de cada ambiente de execução (apenas os modelos `.env.example` são versionados).
 - Por padrão, usa-se HTTP em texto claro na intranet; para HTTPS, consulte o capítulo correspondente no guia de implantação de cada plataforma.
 - Armadilhas, diagramas de arquitetura, tabelas de portas e fluxos de dados de cada plataforma estão nos documentos `*-deploy-guide*.html` correspondentes.
+
+---
+
+## 5. Operar com um agente de IA
+
+Esta plataforma pode ser totalmente operada e mantida por um agente de IA (WorkBuddy, OpenClaw, Microsoft Scout etc.): verificações de integridade, gerenciamento de contêineres, mudanças de configuração, sincronização do Gitea, o portal Ghost, backups, releases e solução de problemas.
+
+Veja o **[Guia de operação com agentes de IA](AI-AGENT-OPS.pt.md)** (disponível em 9 idiomas).

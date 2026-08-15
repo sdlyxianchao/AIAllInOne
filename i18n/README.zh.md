@@ -175,3 +175,11 @@ git clone <你的仓库地址> AIAllInOne
 > 👥 **微信群** —— 本群用于交流（部署、使用、反馈）。扫码添加微信，我们会拉你进群。
 
 <img src="../pics/wechat.png" alt="微信群二维码" width="200" />
+
+---
+
+## 六、用 AI Agent 运维
+
+这套系统可以完全通过 AI Agent（WorkBuddy、OpenClaw、Microsoft Scout 等）来运维：健康检查、容器管理、配置修改、Gitea 同步、Ghost 门户、备份、发布、排障。
+
+完整教程见 **[AI Agent 运维指南](AI-AGENT-OPS.zh.md)**（提供 9 种语言版本）。

@@ -182,3 +182,11 @@ If you prefer not to use a Harness-style tool, you can deploy manually following
 > 👥 **WeChat group** — this group is for communication and discussion (deployment, usage, feedback). Scan the QR code to add us on WeChat and we'll pull you into the group.
 
 <img src="pics/wechat.png" alt="WeChat group QR code" width="200" />
+
+---
+
+## 6. Operating & maintaining with an AI agent
+
+This platform can be fully operated and maintained through an AI agent (WorkBuddy, OpenClaw, Microsoft Scout, etc.): health checks, container management, configuration changes, Gitea sync, the Ghost portal, backups, releases, and troubleshooting.
+
+See the **[AI Agent Operations Guide](AI-AGENT-OPS.md)** for the complete walkthrough (available in 9 languages).
