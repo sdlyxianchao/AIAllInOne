@@ -155,7 +155,7 @@
 基于 windows-checklist.html 的内容，在本目录生成「部署进度-&lt;日期&gt;.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
 
 ## 第三步：按部署指南逐步执行
-精读 windows-deploy-guide-v2.html，严格按第 1~13 章顺序执行，特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。
+精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须部署项目自带的 Corp Portal 主题：跑 <code>scripts\ghost-theme-setup.ps1</code> 自动装好并激活，不要停留在官方默认主题。
 
 ## 第四步：反复测试解决
 出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
@@ -1441,11 +1441,21 @@ litellm_settings:
   <div class="callout callout-info"><strong>🤖 自动化（可选）：</strong>不用在浏览器里点向导，直接跑 <code>scripts\ghost-setup.ps1</code> 即可用 setup API 一次性创建管理员（从 <code>.env</code> 读 <code>GHOST_ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code>），等效于走完向导：<code>powershell -File .\scripts\ghost-setup.ps1</code>（已初始化时自动跳过）。</div>
 </div>
 <div class="step">
-  <span class="step-num">2</span><strong>安装主题</strong>
+  <span class="step-num">2</span><strong>安装并激活项目自带主题 Corp Portal</strong>
+  <p>项目自带一个定制好的 Ghost 主题 <code>ghost-theme-corp-portal/</code>（稳重专业的企业风格：首页含 Hero + 平台能力卡片 + 新闻列表，移动端自适应，中文宋体/黑体），用它替换官方默认主题：</p>
+  <div class="callout callout-info"><strong>🤖 自动化（推荐）：</strong>直接跑一键脚本 <code>scripts\ghost-theme-setup.ps1</code>，它会自动完成「复制主题进容器 → 改 <code>settings.active_theme</code> 激活 → 重启 Ghost」：</div>
+  <pre><code>powershell -File .\scripts\ghost-theme-setup.ps1</code></pre>
+  <p>等价的手工步骤（脚本内部做的事，便于排障）：</p>
+  <pre><code># 复制主题进容器
+docker cp .\ghost-theme-corp-portal\. ghost:/var/lib/ghost/content/themes/corp-portal-theme/
+# 激活（改 active_theme，免后台点选）
+docker cp .\scripts\ghost-activate-theme.js ghost:/tmp/
+docker exec ghost node /tmp/ghost-activate-theme.js corp-portal-theme
+# 重启生效
+docker restart ghost</code></pre>
   <ul>
-    <li>后台 → <strong>外观</strong> → <strong>主题</strong>，Ghost 已自带 <code>Casper</code> 和 <code>Source</code> 两个官方主题（100% 兼容），直接激活即可。</li>
-    <li>要更多样式：从<strong>主题市场</strong>（Design → Change theme → 浏览主题）安装，市场会匹配当前版本兼容的主题。</li>
-    <li style="color:#f0883e"><b>⚠️ 别从 GitHub 直接装最新版主题：</b>部分官方主题（如 <code>Journal</code>）的 main 分支已适配 Ghost 6.x，在 Ghost 5.x 上会报 <code>Theme is not compatible or contains errors</code>（invalid Handlebars syntax）。要装这类主题需找兼容 5.x 的旧版 zip 手动上传。</li>
+    <li>激活后无需再手动选主题；想换回官方主题时，后台 <strong>外观 → 主题</strong> 激活 Casper / Source 即可。</li>
+    <li style="color:#f0883e"><b>⚠️ 别从 GitHub 直接装最新版主题：</b>部分官方主题（如 <code>Journal</code>）的 main 分支已适配 Ghost 6.x，在 Ghost 5.x 上会报 <code>Theme is not compatible or contains errors</code>（invalid Handlebars syntax）。本主题 <code>ghost-theme-corp-portal</code> 已针对 Ghost 5.x 验证，直接用即可。</li>
   </ul>
 </div>
 <div class="step">
