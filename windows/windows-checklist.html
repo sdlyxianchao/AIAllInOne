@@ -117,7 +117,7 @@
   <li data-id="w6_01"><input type="checkbox"> Dify (80) 初始化，管理员 <code>ai_all_in_one_admin</code> 可登录</li>
   <li data-id="w6_02"><input type="checkbox"> Dify 模型供应商指向 NewAPI + 聊天应用正常</li>
   <li data-id="w6_03"><input type="checkbox"> Dify Keycloak OIDC SSO 配置</li>
-  <li data-id="w6_04"><input type="checkbox"> Ghost (8090) 初始化 + 导航菜单 + 下载中心</li>
+  <li data-id="w6_04"><input type="checkbox"> Ghost (8090) 初始化 + 部署 Corp Portal 主题 + 导入示例内容（DeepChat Page）</li>
   <li data-id="w6_05"><input type="checkbox"> Gitea (3002) 安装 + Actions + Runner 注册</li>
   <li data-id="w6_06"><input type="checkbox"> Update Server 托管 DeepChat 安装包</li>
   <li data-id="w6_07"><input type="checkbox"> DeepChat 安装 + Provider 指向 NewAPI + AI 回复</li>
@@ -127,7 +127,7 @@
 <ul class="checklist">
   <li data-id="w7_01"><input type="checkbox"> DeepChat → NewAPI → LiteLLM → 外部模型 往返</li>
   <li data-id="w7_02"><input type="checkbox"> Dify → NewAPI → LiteLLM → 外部模型 往返</li>
-  <li data-id="w7_03" class="warn"><input type="checkbox"> PII 脱敏 + 还原（待 guardrail 兼容后启用）</li>
+  <li data-id="w7_03" class="checked"><input type="checkbox" checked> PII 脱敏（内置正则 + Presidio 打码，已启用生效）</li>
   <li data-id="w7_04"><input type="checkbox"> Ghost → Dify 门户跳转</li>
   <li data-id="w7_05"><input type="checkbox"> AI 管理中心 Dashboard 全部正常</li>
   <li data-id="w7_06"><input type="checkbox"> 开机自检脚本计划任务已配置</li>
@@ -173,7 +173,7 @@
 
 <h4 style="color:#f85149">第五阶段 · 端到端全链路（约 0.5 天）</h4>
 <ul class="checklist">
-  <li data-id="w8_20"><input type="checkbox"> <b>全链路 LLM：</b>DeepChat → NewAPI → LiteLLM(PII脱敏) → 外部大模型 → 响应还原 → OK</li>
+  <li data-id="w8_20"><input type="checkbox"> <b>全链路 LLM：</b>DeepChat → NewAPI → LiteLLM(PII脱敏打码) → 外部大模型 → 响应 → OK</li>
   <li data-id="w8_21"><input type="checkbox"> <b>全链路 Dify：</b>浏览器 → Dify → NewAPI → LiteLLM → 外部大模型 → RAG/Agent 回复正常</li>
   <li data-id="w8_22"><input type="checkbox"> <b>SSO 认证：</b>Keycloak → Dify/NewAPI OIDC 登录正常</li>
   <li data-id="w8_23"><input type="checkbox"> <b>MCP 工具：</b>DeepChat → MCP Gateway → 工具调用返回正常</li>

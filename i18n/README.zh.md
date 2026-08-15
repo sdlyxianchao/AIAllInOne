@@ -116,14 +116,15 @@ git clone <你的仓库地址> AIAllInOne
 
 开始配置前，请收集以下信息，缺哪项就问我哪项，并说明每项的用途：
 
-1. 对外提供服务的内网 IP（其他机器访问本平台的地址，如 192.168.1.100）。
+1. 对外提供服务的内网 IP（或域名，其他机器访问本平台的地址，如 192.168.1.100 或 portal.company.com）。这个地址也会用来生成门户示例内容里的各产品链接。
 2. 身份源（Identity Provider）：
    - 接公司 AD 域控（Active Directory）：向我要域名、域控 IP、LDAP base DN、bind DN、bind 账号密码、sAMAccountName 等。
    - 接其他 IdP（LDAP/OpenLDAP/OIDC/飞书/企微/钉钉等）：向我要对应的配置与账号信息。
    - 不接任何外部身份源（只用本地账号）：与我确认后跳过。
 3. 统一管理员账号：用户名、密码、邮箱（用于 Keycloak SSO 及各产品管理员登录）。
 4. 大模型 API Key：我实际拥有的模型服务商及 Key（DeepSeek / OpenAI / Claude / 通义 / 文心等），没有的跳过。
-5. 其他按需询问：告警通知渠道（钉钉/企微/飞书 webhook 地址）、HTTPS 证书、备份保留策略等。
+5. Ghost 门户示例内容语言：中文，或选择其他语言，导入前先把示例内容种子翻译成目标语言。
+6. 其他按需询问：MCP Skill 市场主机名（Windows）、告警通知渠道（钉钉/企微/飞书 webhook 地址）、HTTPS 证书、备份保留策略等。
 
 ## 第三步：生成本地进度文件
 
@@ -134,8 +135,8 @@ git clone <你的仓库地址> AIAllInOne
 ## 第四步：按部署指导逐步配置
 
 1. 精读该平台「部署指导」文档（如 *-deploy-guide*.html），严格按步骤执行，特别注意文档里标注的「⚠️ 关键坑 / 踩坑记录」。
-2. 顺序大致为：准备环境变量 → 起容器 → 初始化认证/IdP → 配置 LLM 路由与模型渠道 → 初始化各产品 → 配置监控/可观测/日志/脱敏 → 配置备份与恢复。
-3. 优先使用目录里已有的自动化脚本（如 bootstrap.ps1、keycloak-realm-init.ps1、health-check 等），能自动化的步骤不要手工点 UI。
+2. 顺序大致为：准备环境变量 → 起容器 → 初始化认证/IdP → 配置 LLM 路由与模型渠道 → 初始化各产品（Ghost 门户：部署自带「Corp Portal」主题并导入示例内容种子）→ 配置监控/可观测/日志/脱敏 → 配置备份与恢复。
+3. 优先使用目录里已有的自动化脚本（如 bootstrap.ps1、keycloak-realm-init.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、health-check 等），能自动化的步骤不要手工点 UI。
 
 ## 第五步：遇到问题反复测试解决
 

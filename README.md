@@ -123,14 +123,15 @@ You are a deployment engineer for an enterprise intranet AI platform. Based on t
 
 Before configuring, collect the following information, asking me for anything missing and explaining the purpose of each item:
 
-1. The intranet IP used to expose the platform (the address other machines use to reach it, e.g. 192.168.1.100).
+1. The intranet IP (or domain) used to expose the platform (the address other machines use to reach it, e.g. 192.168.1.100 or portal.company.com). This same address is used to generate the product links in the Ghost portal's example content.
 2. Identity source (Identity Provider):
    - Company AD domain controller (Active Directory): ask me for the domain name, DC IP, LDAP base DN, bind DN, bind account password, sAMAccountName, etc.
    - Other IdP (LDAP/OpenLDAP/OIDC/Feishu/WeCom/DingTalk, etc.): ask me for the corresponding config and account info.
    - No external identity source (local accounts only): confirm with me and skip.
 3. Unified admin account: username, password, email (used for Keycloak SSO and admin login to every product).
 4. LLM API keys: which model providers and keys I actually have (DeepSeek / OpenAI / Claude / Qwen / ERNIE, etc.); skip any I don't have.
-5. Other items to ask as needed: alert notification channel (DingTalk/WeCom/Feishu webhook URL), HTTPS certificates, backup retention policy, etc.
+5. Ghost portal example content language: Chinese, or another language to translate the example content seed into before importing.
+6. Other items to ask as needed: the MCP skill-market hostname (Windows), alert notification channel (DingTalk/WeCom/Feishu webhook URL), HTTPS certificates, backup retention policy, etc.
 
 ## Step 3: Generate a local progress file
 
@@ -141,8 +142,8 @@ Before configuring, collect the following information, asking me for anything mi
 ## Step 4: Configure step by step per the deployment guide
 
 1. Carefully read the platform's "deployment guide" document (e.g. *-deploy-guide*.html) and follow it strictly, paying special attention to "⚠️ critical pitfalls / gotchas" it marks.
-2. Rough order: prepare environment variables → start containers → initialize auth/IdP → configure LLM routing and model channels → initialize each product → configure monitoring/observability/logging/redaction → configure backup & restore.
-3. Prefer the automation scripts already in the directory (e.g. bootstrap.ps1, keycloak-realm-init.ps1, health-check, etc.); don't click through UIs for steps that can be automated.
+2. Rough order: prepare environment variables → start containers → initialize auth/IdP → configure LLM routing and model channels → initialize each product (for the Ghost portal: deploy the bundled "Corp Portal" theme and import the example content seed) → configure monitoring/observability/logging/redaction → configure backup & restore.
+3. Prefer the automation scripts already in the directory (e.g. bootstrap.ps1, keycloak-realm-init.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, health-check, etc.); don't click through UIs for steps that can be automated.
 
 ## Step 5: Iterate with me to test and fix problems
 
