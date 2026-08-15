@@ -17,12 +17,18 @@ const D = require(sp);
 const db = new D.Database('/var/lib/ghost/content/data/ghost.db');
 
 const seedPath = process.argv[2] || '/tmp/content.json';
-const serverIp = process.argv[3] || '127.0.0.1';
+const serverAddr = process.argv[3] || '127.0.0.1';
 
 if (!fs.existsSync(seedPath)) { console.error('seed 文件不存在: ' + seedPath); process.exit(1); }
 const seed = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
 
-function repl(s) { return (s == null) ? s : String(s).split('<服务器IP>').join(serverIp); }
+// 替换 <服务器IP> 占位符；同时兼容 html 字段里被 HTML 转义成的 &lt;服务器IP&gt;
+function repl(s) {
+  if (s == null) return s;
+  return String(s)
+    .split('<服务器IP>').join(serverAddr)
+    .split('&lt;服务器IP&gt;').join(serverAddr);
+}
 function genId() { return crypto.randomBytes(12).toString('hex'); }
 function genUuid() { return crypto.randomUUID(); }
 function now() { return new Date().toISOString().replace('T', ' ').slice(0, 19); }
