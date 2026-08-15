@@ -96,7 +96,7 @@ This is the step that most often blocks people:
 
 **4. Git clone or download the project locally**
 ```bash
-git clone <your-repo-url> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # or download the archive and extract it to any local directory
 ```
 

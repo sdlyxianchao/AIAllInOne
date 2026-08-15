@@ -1,12 +1,41 @@
 {{!< default}}
 
-<article class="post post--page">
+{{#page}}
+{{#match slug "deepchat"}}
+<section class="hero hero--page">
+    <div class="container hero-inner">
+        <div class="hero-eyebrow">最新版本 <span data-dc-version>—</span></div>
+        <h1 class="hero-title">DeepChat 企业版</h1>
+        <p class="hero-sub">企业内网 AI 桌面客户端，选择你的平台开始下载</p>
+    </div>
+</section>
+<script>
+(function () {
+    function setVer() {
+        var meta = document.querySelector('.dc-card .dc-meta');
+        var span = document.querySelector('[data-dc-version]');
+        if (meta && span) {
+            var m = meta.textContent.match(/v[\d.]+/);
+            if (m) { span.textContent = m[0]; }
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setVer);
+    } else {
+        setVer();
+    }
+})();
+</script>
+{{/match}}
+
+<article class="post post--page page-{{slug}}">
     <div class="container post-container">
-        {{#page}}
+        {{#match slug "deepchat"}}
+        {{else}}
         {{#if @page.show_title_and_feature_image}}
             <header class="post-header">
                 <h1 class="post-title">{{title}}</h1>
-                <p class="post-subtitle">{{custom_excerpt}}</p>
+                {{#if custom_excerpt}}<p class="post-subtitle">{{custom_excerpt}}</p>{{/if}}
             </header>
             {{#if feature_image}}
                 <figure class="post-feature">
@@ -14,9 +43,10 @@
                 </figure>
             {{/if}}
         {{/if}}
+        {{/match}}
         <div class="post-content">
             {{content}}
         </div>
-        {{/page}}
     </div>
 </article>
+{{/page}}

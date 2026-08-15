@@ -87,7 +87,7 @@ Harness 類工具（OpenClaw、Microsoft Scout、WorkBuddy 等）能讀取本專
 
 **4. Git clone 或下載本專案到本機**
 ```bash
-git clone <你的倉庫位址> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # 或下載壓縮包後解壓到本機任意目錄
 ```
 

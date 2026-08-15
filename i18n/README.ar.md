@@ -86,7 +86,7 @@
 
 **4. استنساخ المستودع أو تنزيل المشروع محلياً**
 ```bash
-git clone <عنوان-مستودعك> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # أو نزّل الأرشيف وفكّ ضغطه في أي مجلد محلي
 ```
 

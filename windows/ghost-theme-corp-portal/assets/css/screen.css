@@ -373,11 +373,109 @@ a:hover { color: var(--color-gold); }
 }
 
 /* ============================================================
+   文章工具栏（卡片/列表切换 + 分页）
+   ============================================================ */
+.posts-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--color-line);
+}
+.posts-count { font-size: 13px; color: #7a8290; }
+.view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+.view-btn {
+    border: none;
+    background: transparent;
+    color: #5a6270;
+    padding: 7px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+.view-btn.active {
+    background: var(--color-navy);
+    color: #fff;
+}
+.page-size {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5a6270;
+}
+.page-size select {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    color: var(--color-navy);
+    padding: 5px 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* 列表模式 */
+.post-grid.list { display: block; }
+.post-grid.list .post-card {
+    margin-bottom: 14px;
+    box-shadow: none;
+}
+.post-grid.list .post-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+.post-grid.list .post-card-link {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.post-grid.list .post-card-media { display: none; }
+.post-grid.list .post-card-body { padding: 16px 22px; flex: 1; }
+.post-grid.list .post-card-title { font-size: 17px; margin-bottom: 4px; }
+.post-grid.list .post-card-excerpt { -webkit-line-clamp: 1; }
+
+/* 分页控件 */
+.posts-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 26px;
+}
+.pg-btn {
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-navy);
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition), opacity var(--transition);
+}
+.pg-btn:disabled { opacity: .4; cursor: not-allowed; }
+.pg-btn:not(:disabled):hover { background: var(--color-navy); color: #fff; }
+.pg-info { font-size: 13px; color: #5a6270; }
+
+/* ============================================================
    文章详情页
    ============================================================ */
 .post { padding: 48px 0 24px; }
 
 .post-container { max-width: 900px; }
+
+/* DeepChat 下载页：与首页同宽 + 深色 hero 化 */
+.page-deepchat .post-container { max-width: var(--container); }
+.page-deepchat .post-header { display: none; }
+.page-deepchat .dc-hero { display: none !important; }
+.hero--page { padding: 72px 0 64px; }
 
 .post-header { margin-bottom: 32px; }
 

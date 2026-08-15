@@ -86,7 +86,7 @@ OpenClaw / Microsoft Scout / WorkBuddy（または同等品）のいずれかを
 
 **4. プロジェクトをローカルにクローンまたはダウンロードする**
 ```bash
-git clone <リポジトリのURL> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # またはアーカイブをダウンロードして任意のローカルディレクトリに展開
 ```
 

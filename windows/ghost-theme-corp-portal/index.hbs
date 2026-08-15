@@ -4,7 +4,6 @@
     <div class="container hero-inner">
         <div class="hero-eyebrow">内部工作平台</div>
         <h1 class="hero-title">{{#if @site.description}}{{@site.description}}{{else}}欢迎进入公司内部门户{{/if}}</h1>
-        <p class="hero-sub">汇聚公司资讯、制度文档与协作入口，一站式触达。统一账号登录，内网即可访问全部 AI 能力。</p>
         <div class="hero-actions">
             <a class="btn btn-primary" href="#latest">浏览最新动态</a>
             <a class="btn btn-ghost" href="{{@site.url}}/deepchat/">下载 DeepChat</a>
@@ -69,7 +68,24 @@
             <h2 class="section-title">最新动态</h2>
         </div>
 
-        <div class="post-grid">
+        <div class="posts-toolbar">
+            <span class="posts-count"></span>
+            <div class="view-toggle" role="group" aria-label="视图切换">
+                <button type="button" class="view-btn active" data-view="card">卡片</button>
+                <button type="button" class="view-btn" data-view="list">列表</button>
+            </div>
+            <label class="page-size">
+                每页
+                <select data-page-size>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                条
+            </label>
+        </div>
+
+        <div class="post-grid" id="post-grid">
             {{#foreach posts}}
                 {{> post-card}}
             {{else}}
@@ -77,6 +93,66 @@
             {{/foreach}}
         </div>
 
-        {{pagination}}
+        <div class="posts-pagination" id="posts-pagination">
+            <button type="button" class="pg-btn" data-pg="prev">上一页</button>
+            <span class="pg-info"></span>
+            <button type="button" class="pg-btn" data-pg="next">下一页</button>
+        </div>
     </div>
 </section>
+<script>
+(function () {
+    var grid = document.getElementById('post-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.post-card');
+    var pag = document.getElementById('posts-pagination');
+    if (!cards.length) { if (pag) pag.style.display = 'none'; return; }
+
+    var pageSize = 10;
+    var page = 1;
+    var info = pag ? pag.querySelector('.pg-info') : null;
+    var prevBtn = pag ? pag.querySelector('[data-pg="prev"]') : null;
+    var nextBtn = pag ? pag.querySelector('[data-pg="next"]') : null;
+    var sizeSel = document.querySelector('[data-page-size]');
+    var countEl = document.querySelector('.posts-count');
+
+    function totalPages() { return Math.ceil(cards.length / pageSize); }
+    function render() {
+        var start = (page - 1) * pageSize;
+        var end = start + pageSize;
+        cards.forEach(function (c, i) {
+            c.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+        var tp = totalPages();
+        if (info) info.textContent = '第 ' + page + ' / ' + tp + ' 页';
+        if (prevBtn) prevBtn.disabled = page <= 1;
+        if (nextBtn) nextBtn.disabled = page >= tp;
+        if (pag) pag.style.display = tp > 1 ? '' : 'none';
+    }
+    function applyView(v) {
+        grid.classList.toggle('list', v === 'list');
+        document.querySelectorAll('.view-btn').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-view') === v);
+        });
+        try { localStorage.setItem('corp-news-view', v); } catch (e) {}
+    }
+
+    if (countEl) countEl.textContent = '共 ' + cards.length + ' 篇';
+
+    document.querySelectorAll('.view-btn').forEach(function (b) {
+        b.addEventListener('click', function () { applyView(b.getAttribute('data-view')); });
+    });
+    if (prevBtn) prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+    if (nextBtn) nextBtn.addEventListener('click', function () { if (page < totalPages()) { page++; render(); } });
+    if (sizeSel) sizeSel.addEventListener('change', function () {
+        pageSize = parseInt(sizeSel.value, 10) || 10;
+        page = 1;
+        render();
+    });
+
+    var saved = null;
+    try { saved = localStorage.getItem('corp-news-view'); } catch (e) {}
+    applyView(saved === 'list' ? 'list' : 'card');
+    render();
+})();
+</script>

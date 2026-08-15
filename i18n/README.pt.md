@@ -86,7 +86,7 @@ Esta é a etapa que mais costuma bloquear:
 
 **4. Clonar ou baixar o projeto localmente**
 ```bash
-git clone <url-do-seu-repositório> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # ou baixe o arquivo e extraia em qualquer pasta local
 ```
 

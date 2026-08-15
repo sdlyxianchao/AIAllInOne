@@ -89,7 +89,7 @@ Harness 类工具（OpenClaw、Microsoft Scout、WorkBuddy 等）能读取本项
 
 **4. Git clone 或下载本项目到本地**
 ```bash
-git clone <你的仓库地址> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # 或下载压缩包后解压到本地任意目录
 ```
 

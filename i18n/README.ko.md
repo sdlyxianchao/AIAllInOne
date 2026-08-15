@@ -86,7 +86,7 @@ OpenClaw / Microsoft Scout / WorkBuddy(또는 동급 도구) 중 하나를 설�
 
 **4. 프로젝트를 로컬에 Git clone 또는 다운로드**
 ```bash
-git clone <저장소-URL> AIAllInOne
+git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 # 또는 아카이브를 다운로드하여 임의의 로컬 폴더에 압축 해제
 ```
 
