@@ -37,6 +37,26 @@ El repositorio admite tres plataformas de despliegue:
 
 Cada carpeta de plataforma contiene: `docker-compose.yml`, `.env.example`, `*-deploy-guide*.html` (guía de despliegue), `*-checklist*.html` (lista de verificación), la guía de integración del proveedor de identidad, scripts de despliegue en un clic, además del código fuente y la configuración saneados. **No se versiona ningún secreto real.**
 
+### Arquitectura y flujo de datos
+
+Los componentes están organizados en capas, todos orquestados por Docker en una sola red `ai-platform` (los contenedores se comunican por nombre de contenedor, no por `localhost`):
+
+- **Capa de usuario** — cliente de escritorio DeepChat + usuarios de navegador.
+- **Portal y aplicaciones** — portal empresarial Ghost (`:8090`) y plataforma de aplicaciones de IA Web Dify (`:80`).
+- **Enrutamiento LLM** — NewAPI (`:3000`, enrutamiento / facturación / límite de velocidad) → LiteLLM + Presidio (`:4000`, redacción de PII) → modelos externos.
+- **Observabilidad** — Langfuse (`:3010`) rastrea cada llamada al modelo.
+- **Infraestructura** — Keycloak (`:9090`, SSO / OIDC / RBAC), MCP Gateway, Gitea (`:3002`), servidor de actualizaciones (`:8091`) y monitoreo/registro (Prometheus / Grafana / cadvisor / Loki).
+- **Gestión unificada** — el **sitio AI Admin Center** (`:10086`): el portal de administración único, autenticado por Keycloak, con una sola entrada al panel, a la página de administración de cada producto, a informes de auditoría/costos, copias de seguridad/restauración y registros unificados.
+
+Flujos de datos clave:
+
+1. **Solicitud LLM (cadena principal)** — DeepChat / Dify → NewAPI (`:3000`) → LiteLLM enmascara PII (`:4000`) → modelo externo → LiteLLM restaura PII → respuesta devuelta; el `success_callback` de LiteLLM reporta cada llamada a Langfuse.
+2. **Acceso de usuario** — navegador → portal Ghost (`:8090`) → noticias / descargas → salto a Dify (`:80`); los administradores abren el AI Admin Center (`:10086`).
+3. **Autenticación (SSO)** — Keycloak OIDC ofrece un inicio de sesión único para todos los productos web (cuenta de administrador compartida `ai_all_in_one_admin`).
+4. **Actualización automática** — Gitea Actions compila → el servidor de actualizaciones (`:8091`) aloja los instaladores → DeepChat descarga automáticamente mediante `version.txt`.
+5. **Skill / MCP** — la MCP Gateway sirve herramientas Skill/MCP a DeepChat y Dify.
+6. **Monitoreo y registros unificados** — Prometheus / cadvisor → Grafana (`:3030`); Promtail recopila los registros de contenedores → Loki (`:3110`) → vistos en la página «registros unificados» del AI Admin Center.
+
 ### Capturas de pantalla
 
 **AI Admin Center** — portal de administración unificado
@@ -50,10 +70,6 @@ Cada carpeta de plataforma contiene: `docker-compose.yml`, `.env.example`, `*-de
 **Portal empresarial** — inicio (Ghost)
 
 ![Inicio del portal](<../pics/AI All In One Hub.png>)
-
-**Portal empresarial** — noticias
-
-![Noticias del portal](<../pics/AI All In One Hub News.png>)
 
 **Centro de descargas** — instaladores de DeepChat
 

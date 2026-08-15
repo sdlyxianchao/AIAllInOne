@@ -37,6 +37,26 @@
 
 각 플랫폼 디렉터리에는 `docker-compose.yml`, `.env.example`, `*-deploy-guide*.html`(배포 가이드), `*-checklist*.html`(진행 체크리스트), ID 공급자 통합 가이드, 원클릭 배포 스크립트, 그리고 정화된 소스 코드와 설정이 포함됩니다. **실제 시크릿은 커밋되지 않습니다.**
 
+### 아키텍처와 데이터 흐름
+
+구성 요소는 계층으로 나뉘며, 모두 Docker가 단일 `ai-platform` 네트워크에서 오케스트레이션합니다(컨테이너끼리는 `localhost`가 아닌 컨테이너 이름으로 통신).
+
+- **사용자 계층** — DeepChat 데스크톱 클라이언트 + 브라우저 사용자.
+- **포털 및 앱** — Ghost 기업 포털(`:8090`) + Dify 웹 AI 앱 플랫폼(`:80`).
+- **LLM 라우팅** — NewAPI(`:3000`, 라우팅/과금/속도 제한) → LiteLLM + Presidio(`:4000`, PII 마스킹) → 외부 모델.
+- **관측성** — Langfuse(`:3010`)가 모든 모델 호출을 추적.
+- **인프라** — Keycloak(`:9090`, SSO/OIDC/RBAC), MCP Gateway, Gitea(`:3002`), 업데이트 서버(`:8091`), 모니터링/로그(Prometheus/Grafana/cadvisor/Loki).
+- **통합 관리** — **AI 관리 센터 사이트**(`:10086`): Keycloak 인증을 거치는 유일한 관리자 포털로, 대시보드, 각 제품 관리 페이지, 감사/비용 리포트, 백업/복원, 통합 로그에 대한 단일 진입점을 제공합니다.
+
+주요 데이터 흐름:
+
+1. **LLM 요청(핵심 체인)** — DeepChat / Dify → NewAPI(`:3000`) → LiteLLM이 PII 마스킹(`:4000`) → 외부 모델 → LiteLLM이 PII 복원 → 응답 반환; LiteLLM의 `success_callback`이 각 호출을 Langfuse에 보고.
+2. **사용자 접근** — 브라우저 → Ghost 포털(`:8090`) → 뉴스/다운로드 → Dify로 이동(`:80`); 관리자는 AI 관리 센터(`:10086`)를 엽니다.
+3. **인증(SSO)** — Keycloak OIDC가 모든 웹 제품에 단일 로그인을 제공(공유 관리자 계정 `ai_all_in_one_admin`).
+4. **자동 업데이트** — Gitea Actions가 빌드 → 업데이트 서버(`:8091`)가 설치 파일 호스팅 → DeepChat이 `version.txt`에 따라 자동 다운로드.
+5. **Skill / MCP** — MCP Gateway가 DeepChat과 Dify에 Skill/MCP 도구를 제공.
+6. **모니터링 및 통합 로그** — Prometheus / cadvisor → Grafana(`:3030`); Promtail이 컨테이너 로그 수집 → Loki(`:3110`) → AI 관리 센터 '통합 로그' 페이지에서 확인.
+
 ### 스크린샷
 
 **AI 관리 센터** — 통합 관리 포털
@@ -50,10 +70,6 @@
 **기업 포털** — 홈 (Ghost)
 
 ![기업 포털 홈](<../pics/AI All In One Hub.png>)
-
-**기업 포털** — 뉴스
-
-![기업 포털 뉴스](<../pics/AI All In One Hub News.png>)
 
 **다운로드 센터** — DeepChat 설치 프로그램
 

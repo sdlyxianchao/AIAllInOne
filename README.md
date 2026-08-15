@@ -39,6 +39,26 @@ The repository supports three deployment platforms:
 
 Every platform directory contains: `docker-compose.yml`, `.env.example`, `*-deploy-guide*.html` (deployment guide), `*-checklist*.html` (progress checklist), identity-provider integration guide, one-click deployment scripts, plus sanitized source code and config. **No real secrets are committed.**
 
+### Architecture & data flow
+
+The components are organized into layers, all Docker-orchestrated on one `ai-platform` network (containers reach each other by container name, not `localhost`):
+
+- **User layer** — DeepChat desktop client + browser users.
+- **Portal & apps** — Ghost enterprise portal (`:8090`) and Dify Web AI app platform (`:80`).
+- **LLM routing** — NewAPI (`:3000`, router / billing / rate-limit) → LiteLLM + Presidio (`:4000`, PII redaction) → external models.
+- **Observability** — Langfuse (`:3010`) traces every model call.
+- **Infrastructure** — Keycloak (`:9090`, SSO / OIDC / RBAC), MCP Gateway, Gitea (`:3002`), Update Server (`:8091`), and monitoring/logging (Prometheus / Grafana / cadvisor / Loki).
+- **Unified management** — the **AI Admin Center site** (`:10086`): the single admin portal, authenticated by Keycloak, giving one entry to the dashboard, every product's admin page, audit/cost reports, backup/restore, and unified logs.
+
+Key data flows:
+
+1. **LLM request (core chain)** — DeepChat / Dify → NewAPI (`:3000`) → LiteLLM masks PII (`:4000`) → external model → LiteLLM restores PII → response returned; LiteLLM's `success_callback` reports each call to Langfuse.
+2. **User access** — browser → Ghost portal (`:8090`) → news / downloads → jump to Dify (`:80`); admins open the AI Admin Center (`:10086`).
+3. **Auth (SSO)** — Keycloak OIDC gives one login for all web products (shared `ai_all_in_one_admin` admin account).
+4. **Auto-update** — Gitea Actions builds → Update Server (`:8091`) hosts installers → DeepChat auto-downloads via `version.txt`.
+5. **Skill / MCP** — the MCP Gateway serves skills/MCP tools to DeepChat and Dify.
+6. **Monitoring & unified logs** — Prometheus / cadvisor → Grafana (`:3030`); Promtail collects container logs → Loki (`:3110`) → viewed in the AI Admin Center "unified logs" page.
+
 ### Screenshots
 
 **AI Admin Center** — unified management portal
@@ -52,10 +72,6 @@ Every platform directory contains: `docker-compose.yml`, `.env.example`, `*-depl
 **Enterprise portal** — home (Ghost)
 
 ![Enterprise portal home](<pics/AI All In One Hub.png>)
-
-**Enterprise portal** — news
-
-![Enterprise portal news](<pics/AI All In One Hub News.png>)
 
 **Download center** — DeepChat installers
 
