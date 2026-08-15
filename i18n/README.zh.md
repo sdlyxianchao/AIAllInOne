@@ -41,23 +41,9 @@
 
 ### 架构与数据流
 
-所有组件分层编排，全部用 Docker 跑在同一个 `ai-platform` 网络里（容器之间用容器名互访，不经过 localhost）：
+![架构总览](<../pics/Architecture.png>)
 
-- **用户层** — DeepChat 桌面客户端 + 浏览器用户。
-- **门户与应用** — Ghost 企业门户（`:8090`）+ Dify Web AI 应用平台（`:80`）。
-- **LLM 路由** — NewAPI（`:3000`，路由 / 计费 / 限流）→ LiteLLM + Presidio（`:4000`，PII 脱敏）→ 外部大模型。
-- **可观测** — Langfuse（`:3010`）追踪每次模型调用。
-- **基础设施** — Keycloak（`:9090`，SSO / OIDC / RBAC）、MCP Gateway、Gitea（`:3002`）、更新服务器（`:8091`）、监控日志（Prometheus / Grafana / cadvisor / Loki）。
-- **统一管理** — **AI 管理中心站点**（`:10086`）：唯一的管理员门户，经 Keycloak 鉴权，一个入口搞定 Dashboard、各产品管理页、审计/成本报表、备份恢复、统一日志。
-
-主要数据流：
-
-1. **LLM 请求（核心链路）** — DeepChat / Dify → NewAPI（`:3000`）→ LiteLLM 脱敏 PII（`:4000`）→ 外部模型 → LiteLLM 还原 PII → 返回结果；LiteLLM 的 `success_callback` 把每次调用上报给 Langfuse。
-2. **用户访问** — 浏览器 → Ghost 门户（`:8090`）→ 新闻 / 下载 → 跳转 Dify（`:80`）；管理员打开 AI 管理中心（`:10086`）。
-3. **认证（SSO）** — Keycloak OIDC 给所有 Web 产品统一登录（共用 `ai_all_in_one_admin` 管理员账号）。
-4. **自动更新** — Gitea Actions 构建 → 更新服务器（`:8091`）托管安装包 → DeepChat 按 `version.txt` 自动下载。
-5. **Skill / MCP** — MCP Gateway 给 DeepChat 和 Dify 提供 Skill / MCP 工具。
-6. **监控与统一日志** — Prometheus / cadvisor → Grafana（`:3030`）；Promtail 采集容器日志 → Loki（`:3110`）→ 在 AI 管理中心「统一日志」页查看。
+![数据流](<../pics/DataFlow.png>)
 
 ### 效果截图
 

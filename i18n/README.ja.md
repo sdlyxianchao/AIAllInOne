@@ -39,23 +39,9 @@
 
 ### アーキテクチャとデータフロー
 
-コンポーネントはレイヤーに分かれており、すべて Docker で単一の `ai-platform` ネットワーク上に編成されます（コンテナ同士は `localhost` ではなくコンテナ名で通信）。
+![アーキテクチャ](<../pics/Architecture.png>)
 
-- **ユーザー層** — DeepChat デスクトップクライアント + ブラウザユーザー。
-- **ポータルとアプリ** — Ghost 企業ポータル（`:8090`）+ Dify Web AI アプリプラットフォーム（`:80`）。
-- **LLM ルーティング** — NewAPI（`:3000`、ルーティング / 課金 / レート制限）→ LiteLLM + Presidio（`:4000`、PII マスキング）→ 外部モデル。
-- **可観測性** — Langfuse（`:3010`）が毎回のモデル呼び出しを追跡。
-- **インフラ** — Keycloak（`:9090`、SSO / OIDC / RBAC）、MCP Gateway、Gitea（`:3002`）、更新サーバー（`:8091`）、監視/ログ（Prometheus / Grafana / cadvisor / Loki）。
-- **統合管理** — **AI Admin Center サイト**（`:10086`）：唯一の管理者ポータルで、Keycloak 認証により、ダッシュボード、各プロダクトの管理ページ、監査/コストレポート、バックアップ/復元、統合ログへの単一エントリを提供します。
-
-主なデータフロー：
-
-1. **LLM リクエスト（コアチェーン）** — DeepChat / Dify → NewAPI（`:3000`）→ LiteLLM が PII をマスキング（`:4000`）→ 外部モデル → LiteLLM が PII を復元 → 応答を返却。LiteLLM の `success_callback` が各呼び出しを Langfuse に報告。
-2. **ユーザーアクセス** — ブラウザ → Ghost ポータル（`:8090`）→ ニュース / ダウンロード → Dify へ遷移（`:80`）。管理者は AI Admin Center（`:10086`）を開きます。
-3. **認証（SSO）** — Keycloak OIDC がすべての Web プロダクトに単一ログインを提供（共有管理者アカウント `ai_all_in_one_admin`）。
-4. **自動更新** — Gitea Actions がビルド → 更新サーバー（`:8091`）がインストーラを配信 → DeepChat が `version.txt` に従って自動ダウンロード。
-5. **Skill / MCP** — MCP Gateway が DeepChat と Dify に Skill / MCP ツールを提供。
-6. **監視と統合ログ** — Prometheus / cadvisor → Grafana（`:3030`）。Promtail がコンテナログを収集 → Loki（`:3110`）→ AI Admin Center の「統合ログ」ページで閲覧。
+![データフロー](<../pics/DataFlow.png>)
 
 ### スクリーンショット
 

@@ -39,23 +39,9 @@ Chaque dossier de plateforme contient : `docker-compose.yml`, `.env.example`, `*
 
 ### Architecture et flux de données
 
-Les composants sont organisés en couches, tous orchestrés par Docker sur un seul réseau `ai-platform` (les conteneurs se joignent par nom de conteneur, pas via `localhost`) :
+![Architecture](<../pics/Architecture.png>)
 
-- **Couche utilisateur** — client de bureau DeepChat + utilisateurs navigateur.
-- **Portail et applications** — portail d'entreprise Ghost (`:8090`) et plateforme d'applications IA Web Dify (`:80`).
-- **Routage LLM** — NewAPI (`:3000`, routage / facturation / limitation) → LiteLLM + Presidio (`:4000`, anonymisation des PII) → modèles externes.
-- **Observabilité** — Langfuse (`:3010`) trace chaque appel de modèle.
-- **Infrastructure** — Keycloak (`:9090`, SSO / OIDC / RBAC), MCP Gateway, Gitea (`:3002`), serveur de mise à jour (`:8091`), supervision/journalisation (Prometheus / Grafana / cadvisor / Loki).
-- **Gestion unifiée** — le **site AI Admin Center** (`:10086`) : le portail d'administration unique, authentifié par Keycloak, donnant un accès unique au tableau de bord, à la page d'administration de chaque produit, aux rapports d'audit/coûts, à la sauvegarde/restauration et aux journaux unifiés.
-
-Principaux flux de données :
-
-1. **Requête LLM (chaîne principale)** — DeepChat / Dify → NewAPI (`:3000`) → LiteLLM anonymise les PII (`:4000`) → modèle externe → LiteLLM restaure les PII → réponse renvoyée ; le `success_callback` de LiteLLM rapporte chaque appel à Langfuse.
-2. **Accès utilisateur** — navigateur → portail Ghost (`:8090`) → actualités / téléchargements → saut vers Dify (`:80`) ; les administrateurs ouvrent l'AI Admin Center (`:10086`).
-3. **Authentification (SSO)** — Keycloak OIDC offre une connexion unique pour tous les produits Web (compte admin partagé `ai_all_in_one_admin`).
-4. **Mise à jour automatique** — Gitea Actions construit → serveur de mise à jour (`:8091`) héberge les installateurs → DeepChat télécharge automatiquement via `version.txt`.
-5. **Skill / MCP** — la MCP Gateway fournit des outils Skill/MCP à DeepChat et Dify.
-6. **Supervision et journaux unifiés** — Prometheus / cadvisor → Grafana (`:3030`) ; Promtail collecte les journaux des conteneurs → Loki (`:3110`) → consultés dans la page « journaux unifiés » de l'AI Admin Center.
+![Flux de données](<../pics/DataFlow.png>)
 
 ### Captures d’écran
 
