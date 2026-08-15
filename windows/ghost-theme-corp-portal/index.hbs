@@ -8,9 +8,20 @@
         <div class="hero-actions">
             <a class="btn btn-primary" href="#latest">浏览最新动态</a>
             <a class="btn btn-ghost" href="{{@site.url}}/deepchat/">下载 DeepChat</a>
+            <a class="btn btn-ghost" href="{{@site.url}}/" data-dify-link>访问 Dify</a>
         </div>
     </div>
 </section>
+<script>
+(function () {
+    // Dify 部署在宿主机 80 端口（服务器根路径）：用当前访问地址去掉端口号得到 Dify 入口
+    var el = document.querySelector('[data-dify-link]');
+    if (el) {
+        var base = window.location.origin.replace(/:\d+$/, '');
+        el.setAttribute('href', base + '/');
+    }
+})();
+</script>
 
 <section class="section features">
     <div class="container">
