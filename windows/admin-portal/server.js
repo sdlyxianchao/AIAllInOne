@@ -574,24 +574,30 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
             const failedJob = jobList.find(j => j.conclusion === 'failure');
             if (failedJob) {
               const failedStep = (failedJob.steps || []).find(s => s.conclusion === 'failure');
-              if (failedStep) {
-                failure_reason = `${failedJob.name} → ${failedStep.name}`;
-              } else {
-                // 没有失败 step（失败发生在 step 之前，如镜像拉取），从日志提取真实错误
-                failure_reason = await giteaJobError(failedJob.id) || failedJob.name;
-              }
+              // 优先从日志提取真实错误原因，再退回「job → step」
+              failure_reason = await giteaJobError(failedJob.id)
+                || (failedStep ? `${failedJob.name} → ${failedStep.name}` : failedJob.name);
             }
           } catch (e) { failure_reason = null; }
         }
+        // Gitea 对进行中的 run 返回 completed_at='1970-01-01T00:00:00Z'（epoch 占位），
+        // 这里规范化成 null；进行中时用 started_at（真实开始时间）作「上次更新」。
+        const _norm = (t) => (t && !/^1970-01-01/.test(t) ? t : null);
         sync_last_run = {
           status: run.status,
           conclusion: run.conclusion,
-          completed_at: run.completed_at || run.started_at || null,
+          completed_at: _norm(run.completed_at) || _norm(run.started_at) || null,
           display_title: run.display_title || '',
           failure_reason,
         };
       }
     } catch (e) { sync_last_run = null; }
+    // 同步进度（sync_download.py 写的 /deepchat/sync-progress.json）
+    let sync_progress = null;
+    try {
+      const pr = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-progress.json']);
+      sync_progress = JSON.parse(pr.stdout);
+    } catch (e) { sync_progress = null; }
     res.json({
       version: (version.data && version.data.version) || '—',
       users: users.total,
@@ -600,7 +606,180 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
       issues: issues.total,
       repos_list,
       sync_last_run,
+      sync_progress,
     });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 手动触发 deepchat-sync 工作流（workflow_dispatch）
+app.post('/api/gitea/sync/trigger', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/workflows/sync.yml/dispatches`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main' }),
+    });
+    if (resp.status === 204) {
+      res.json({ ok: true });
+    } else {
+      const txt = await resp.text().catch(() => '');
+      res.status(resp.status).json({ error: `触发失败 (HTTP ${resp.status}) ${txt}` });
+    }
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 读取 deepchat-sync 的自动同步计划（sync.yml 里的 cron）
+app.get('/api/gitea/sync/schedule', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml?ref=main`);
+    if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync.yml' });
+    const content = Buffer.from(r.data.content, 'base64').toString('utf8');
+    const m = content.match(/cron:\s*["']([^"']+)["']/);
+    res.json({ cron: m ? m[1] : '', sha: r.data.sha });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 更新 deepchat-sync 的自动同步计划（改 sync.yml 里的 cron）
+app.post('/api/gitea/sync/schedule', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const cron = ((req.body && req.body.cron) || '').trim();
+    if (!cron) return res.status(400).json({ error: '请提供 cron 表达式' });
+    if (cron.split(/\s+/).filter(Boolean).length !== 5) {
+      return res.status(400).json({ error: 'cron 表达式必须是 5 段（分 时 日 月 周）' });
+    }
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml?ref=main`);
+    if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync.yml' });
+    const content = Buffer.from(r.data.content, 'base64').toString('utf8');
+    const newContent = content.replace(/cron:\s*["'][^"']+["']/, `cron: "${cron}"`);
+    if (newContent === content) return res.status(400).json({ error: '未找到 cron 配置行' });
+
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `chore: 调整同步计划为 ${cron}`,
+        content: Buffer.from(newContent, 'utf8').toString('base64'),
+        sha: r.data.sha,
+        branch: 'main',
+      }),
+    });
+    if (resp.status >= 200 && resp.status < 300) {
+      res.json({ ok: true, cron });
+    } else {
+      const txt = await resp.text().catch(() => '');
+      res.status(resp.status).json({ error: `更新失败 (HTTP ${resp.status}) ${txt}` });
+    }
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 读取 sync-config.json（targets / keep_releases 等）
+app.get('/api/gitea/sync/config', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json?ref=main`);
+    if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync-config.json' });
+    const cfg = JSON.parse(Buffer.from(r.data.content, 'base64').toString('utf8'));
+    res.json({ ...cfg, sha: r.data.sha });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 更新 sync-config.json（targets / keep_releases）
+app.post('/api/gitea/sync/config', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json?ref=main`);
+    if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync-config.json' });
+    const cfg = JSON.parse(Buffer.from(r.data.content, 'base64').toString('utf8'));
+    if (Array.isArray(req.body && req.body.targets)) cfg.targets = req.body.targets;
+    if (req.body && req.body.keep_releases !== undefined) {
+      const k = parseInt(req.body.keep_releases, 10);
+      if (k >= 1 && k <= 20) cfg.keep_releases = k;
+    }
+    const newContent = JSON.stringify(cfg, null, 2) + '\n';
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'chore: 更新同步配置（平台/架构、保留版本数）',
+        content: Buffer.from(newContent, 'utf8').toString('base64'),
+        sha: r.data.sha,
+        branch: 'main',
+      }),
+    });
+    if (resp.status >= 200 && resp.status < 300) {
+      res.json({ ok: true });
+    } else {
+      const txt = await resp.text().catch(() => '');
+      res.status(resp.status).json({ error: `更新失败 (HTTP ${resp.status}) ${txt}` });
+    }
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 追加一条同步历史到 update-server 的 sync-history.json（同步脚本与删除操作共用）
+async function appendSyncHistory(status, detail) {
+  try {
+    let hist = { history: [] };
+    try {
+      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-history.json']);
+      hist = JSON.parse(stdout || '{"history":[]}');
+    } catch (e) { hist = { history: [] }; }
+    if (!Array.isArray(hist.history)) hist.history = [];
+    hist.history.push({ time: new Date().toISOString(), status, detail: detail || '' });
+    hist.history = hist.history.slice(-200);
+    const b64 = Buffer.from(JSON.stringify(hist, null, 2)).toString('base64');
+    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/deepchat/sync-history.json`]);
+  } catch (e) {
+    console.error('记录同步历史失败:', e.message);
+  }
+}
+
+// 读取 update-server 上的版本清单（versions.json）
+app.get('/api/gitea/sync/versions', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/versions.json']);
+    const d = JSON.parse(stdout || '{"versions":[]}');
+    res.json({ versions: d.versions || [] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 读取同步历史（sync-history.json，由同步脚本维护）
+app.get('/api/gitea/sync/history', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-history.json']);
+    const d = JSON.parse(stdout || '{"history":[]}');
+    res.json({ history: d.history || [] });
+  } catch (e) {
+    res.json({ history: [] });
+  }
+});
+
+// 删除某个版本（删目录 + 更新 versions.json + 触发重建页面）
+app.delete('/api/gitea/sync/version/:ver', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const ver = (req.params.ver || '').replace(/[^a-zA-Z0-9.\-]/g, '');
+    if (!ver) return res.status(400).json({ error: '无效版本号' });
+    // 1. 删除版本目录
+    await dockerExec('update-server', ['sh', '-c', `rm -rf "/usr/share/nginx/html/deepchat/${ver}"`]);
+    // 2. 更新 versions.json（移除该版本）
+    let d;
+    try {
+      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/versions.json']);
+      d = JSON.parse(stdout || '{"versions":[]}');
+    } catch (e) { d = { versions: [] }; }
+    d.versions = (d.versions || []).filter(v => v.version !== ver);
+    const b64 = Buffer.from(JSON.stringify(d, null, 2)).toString('base64');
+    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/deepchat/versions.json`]);
+    // 3. 记录删除历史（软件信息已变化）
+    await appendSyncHistory('success', `删除版本 ${ver}`);
+    // 4. 触发 rebuild_only 重建页面
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/workflows/sync.yml/dispatches`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main', inputs: { rebuild_only: 'true' } }),
+    }).catch(() => {});
+    res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

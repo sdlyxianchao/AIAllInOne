@@ -5,65 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 管理中心</title>
 <style>
+  :root{--bg:#0d1117;--panel:#161b22;--panel2:#21262d;--border:#30363d;--text:#c9d1d9;--textdim:#8b949e;--textstrong:#e6edf3;--title:#f0f6fc;--accent:#58a6ff;--accentbtn:#1f6feb;--hover:#1f2937;--purple:#d2a8ff;--code:#79c0ff;--green:#56d364;--greenbtn:#238636;--red:#f85149;--yellow:#d29922;--errbg:#3b0d0d;--onaccent:#0d1117}
+  body.light{--bg:#f6f8fa;--panel:#ffffff;--panel2:#eaeef2;--border:#d0d7de;--text:#24292f;--textdim:#57606a;--textstrong:#1f2328;--title:#0d1117;--accent:#0969da;--accentbtn:#0969da;--hover:#eaeef2;--purple:#8250df;--code:#0550ae;--green:#1a7f37;--greenbtn:#1a7f37;--red:#cf222e;--yellow:#9a6700;--errbg:#ffebe9;--onaccent:#ffffff}
+  .theme-toggle{display:inline-flex;align-items:center;margin:10px 16px 12px;padding:0;background:none;border:none;cursor:pointer}
+  .theme-toggle .tt-track{position:relative;display:inline-block;width:46px;height:24px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;transition:background .2s}
+  .theme-toggle .tt-thumb{position:absolute;top:1px;left:1px;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  body.light .theme-toggle .tt-thumb{transform:translateX(22px)}
   *{margin:0;padding:0;box-sizing:border-box}
-  body{display:flex;height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0d1117;color:#c9d1d9}
+  body{display:flex;height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
   /* ── Sidebar ── */
-  .sidebar{width:240px;background:#161b22;border-right:1px solid #30363d;padding:16px 0;overflow-y:auto;display:flex;flex-direction:column}
-  .sidebar h2{color:#58a6ff;font-size:1.05em;padding:8px 16px;margin-bottom:12px;border-bottom:1px solid #30363d;white-space:nowrap}
-  .sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#8b949e;text-decoration:none;font-size:0.88em;transition:background 0.12s;cursor:pointer;border-right:3px solid transparent}
-  .sidebar .nav-item:hover{background:#1f2937;color:#e6edf3}
-  .sidebar .nav-item.active{background:#1f6feb;color:#fff;border-right:3px solid #58a6ff;font-weight:600}
-  .sidebar .divider{margin:8px 16px;border-top:1px solid #21262d}
+  .sidebar{width:240px;background:var(--panel);border-right:1px solid var(--border);padding:16px 0;overflow-y:auto;display:flex;flex-direction:column}
+  .sidebar h2{color:var(--accent);font-size:1.05em;padding:8px 16px;margin-bottom:12px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .sidebar .nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--textdim);text-decoration:none;font-size:0.88em;transition:background 0.12s;cursor:pointer;border-right:3px solid transparent}
+  .sidebar .nav-item:hover{background:var(--hover);color:var(--textstrong)}
+  .sidebar .nav-item.active{background:var(--accentbtn);color:#fff;border-right:3px solid var(--accent);font-weight:600}
+  .sidebar .divider{margin:8px 16px;border-top:1px solid var(--panel2)}
   /* ── Sidebar groups (collapsible) ── */
   .nav-group{margin-bottom:2px}
-  .nav-group-head{display:flex;align-items:center;gap:6px;padding:7px 16px;color:#6e7681;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;cursor:pointer;user-select:none;transition:color 0.12s}
-  .nav-group-head:hover{color:#e6edf3}
-  .nav-group-head .group-arrow{font-size:0.9em;transition:transform 0.15s;color:#8b949e}
+  .nav-group-head{display:flex;align-items:center;gap:6px;padding:7px 16px;color:var(--textdim);font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;cursor:pointer;user-select:none;transition:color 0.12s}
+  .nav-group-head:hover{color:var(--textstrong)}
+  .nav-group-head .group-arrow{font-size:0.9em;transition:transform 0.15s;color:var(--textdim)}
   .nav-group.collapsed .group-arrow{transform:rotate(-90deg)}
   .nav-group-body{overflow:hidden}
   .nav-group.collapsed .nav-group-body{display:none}
   .nav-group .nav-item{padding-left:24px}
-  .sidebar .user-info{margin-top:auto;padding:12px 16px;border-top:1px solid #30363d;font-size:0.8em;color:#8b949e}
-  .sidebar .user-info button{display:block;margin-top:8px;background:#21262d;color:#f85149;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.85em;width:100%}
+  .sidebar .user-info{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);font-size:0.8em;color:var(--textdim)}
+  .sidebar .user-info button{display:block;margin-top:8px;background:var(--panel2);color:var(--red);border:1px solid var(--border);padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.85em;width:100%}
   /* ── Main content ── */
   .main{flex:1;padding:24px;overflow-y:auto}
-  .topbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #30363d}
-  .topbar h1{font-size:1.4em;color:#f0f6fc}
+  .topbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .topbar h1{font-size:1.4em;color:var(--title)}
   /* ── Cards ── */
-  .card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px;margin-bottom:14px}
-  .card h3{color:#58a6ff;font-size:1.05em;margin-bottom:12px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
+  .card h3{color:var(--accent);font-size:1.05em;margin-bottom:12px}
   .card table{width:100%;border-collapse:collapse}
-  .card th,.card td{border:1px solid #30363d;padding:8px 10px;text-align:left;font-size:0.88em}
-  .card th{background:#0d1117;color:#58a6ff;font-weight:600}
+  .card th,.card td{border:1px solid var(--border);padding:8px 10px;text-align:left;font-size:0.88em}
+  .card th{background:var(--bg);color:var(--accent);font-weight:600}
   /* ── Status grid ── */
   .status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-  .svc-card{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:14px;transition:border-color 0.2s}
-  .svc-card:hover{border-color:#58a6ff}
+  .svc-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;transition:border-color 0.2s}
+  .svc-card:hover{border-color:var(--accent)}
   .svc-card .svc-name{font-weight:600;margin-bottom:6px;font-size:0.95em}
   .svc-card .svc-status{font-size:0.85em;margin-bottom:4px}
-  .svc-card .svc-status.running{color:#56d364}.svc-card .svc-status.exited,.svc-card .svc-status.dead{color:#f85149}.svc-card .svc-status.created{color:#d29922}
-  .svc-card .svc-image{color:#8b949e;font-size:0.78em}
+  .svc-card .svc-status.running{color:var(--green)}.svc-card .svc-status.exited,.svc-card .svc-status.dead{color:var(--red)}.svc-card .svc-status.created{color:var(--yellow)}
+  .svc-card .svc-image{color:var(--textdim);font-size:0.78em}
   /* ── Service groups (Docker) ── */
-  .docker-shell{border:1px solid #1f6feb;border-radius:12px;padding:16px;margin-bottom:14px;background:linear-gradient(180deg,#0d1117,#161b22)}
-  .docker-shell .docker-tip{color:#8b949e;font-size:0.82em;margin:2px 0 14px}
-  .service-group{margin-bottom:16px;border:1px solid #30363d;border-radius:10px;padding:12px;background:#0d1117}
+  .docker-shell{border:1px solid var(--accentbtn);border-radius:12px;padding:16px;margin-bottom:14px;background:linear-gradient(180deg,var(--bg),var(--panel))}
+  .docker-shell .docker-tip{color:var(--textdim);font-size:0.82em;margin:2px 0 14px}
+  .service-group{margin-bottom:16px;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg)}
   .service-group:last-child{margin-bottom:0}
-  .service-group-head{display:flex;align-items:center;gap:8px;font-weight:600;color:#58a6ff;margin-bottom:10px;font-size:0.95em}
-  .service-group-head .count{margin-left:auto;color:#8b949e;font-size:0.78em;font-weight:400}
+  .service-group-head{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--accent);margin-bottom:10px;font-size:0.95em}
+  .service-group-head .count{margin-left:auto;color:var(--textdim);font-size:0.78em;font-weight:400}
   /* ── Stats ── */
   .stats-bar{display:flex;gap:14px;margin-bottom:16px}
-  .stat{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px 20px;flex:1;text-align:center}
-  .stat .value{font-size:1.8em;font-weight:700}.stat .label{font-size:0.8em;color:#8b949e;margin-top:4px}
-  .stat.running .value{color:#56d364}.stat.total .value{color:#58a6ff}.stat.stopped .value{color:#f85149}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 20px;flex:1;text-align:center}
+  .stat .value{font-size:1.8em;font-weight:700}.stat .label{font-size:0.8em;color:var(--textdim);margin-top:4px}
+  .stat.running .value{color:var(--green)}.stat.total .value{color:var(--accent)}.stat.stopped .value{color:var(--red)}
   /* ── Admin table ── */
-  .admin-badge{background:#21262d;color:#d2a8ff;padding:2px 8px;border-radius:10px;font-size:0.75em}
-  .loading{color:#8b949e;padding:20px;text-align:center}
-  .error{color:#f85149;padding:12px;background:#3b0d0d;border-radius:6px}
-  a.ext-link{color:#58a6ff;font-size:0.82em;text-decoration:none}
+  .admin-badge{background:var(--panel2);color:var(--purple);padding:2px 8px;border-radius:10px;font-size:0.75em}
+  .loading{color:var(--textdim);padding:20px;text-align:center}
+  .error{color:var(--red);padding:12px;background:var(--errbg);border-radius:6px}
+  a.ext-link{color:var(--accent);font-size:0.82em;text-decoration:none}
   a.ext-link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
+<script>try{if(localStorage.getItem('ai-center-theme')==='light')document.body.classList.add('light')}catch(e){}</script>
 
 <!-- ═══════ Sidebar ═══════ -->
 <div class="sidebar">
@@ -71,40 +78,40 @@
   <a class="nav-item active" onclick="loadDashboard(this)">📊 <span data-i18n="dashboard">总览仪表板</span></a>
   <div class="divider"></div>
 
-  <div class="nav-group" data-group="apps">
+  <div class="nav-group collapsed" data-group="apps">
     <div class="nav-group-head" onclick="toggleGroup('apps')"><span class="group-arrow">▾</span><span data-i18n="group_apps">产品应用</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8090</span></a>
-      <a class="nav-item" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:80</span></a>
-      <a class="nav-item" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3002</span></a>
-      <a class="nav-item" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3000</span></a>
-      <a class="nav-item" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:9090</span></a>
+      <a class="nav-item" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8090</span></a>
+      <a class="nav-item" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:80</span></a>
+      <a class="nav-item" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002</span></a>
+      <a class="nav-item" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3000</span></a>
+      <a class="nav-item" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:9090</span></a>
     </div>
   </div>
 
-  <div class="nav-group" data-group="ai">
+  <div class="nav-group collapsed" data-group="ai">
     <div class="nav-group-head" onclick="toggleGroup('ai')"><span class="group-arrow">▾</span><span data-i18n="group_ai">AI 网关与集成</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3100</span></a>
-      <a class="nav-item" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:4001</span></a>
-      <a class="nav-item" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:8091</span></a>
+      <a class="nav-item" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3100</span></a>
+      <a class="nav-item" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:4001</span></a>
+      <a class="nav-item" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8091</span></a>
     </div>
   </div>
 
-  <div class="nav-group" data-group="ops">
+  <div class="nav-group collapsed" data-group="ops">
     <div class="nav-group-head" onclick="toggleGroup('ops')"><span class="group-arrow">▾</span><span data-i18n="group_ops">系统运维</span></div>
     <div class="nav-group-body">
       <a class="nav-item" onclick="loadAvailability(this)">🩺 <span data-i18n="availability">可用性测试</span></a>
-      <a class="nav-item" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3030</span></a>
-      <a class="nav-item" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:3010</span></a>
-      <a class="nav-item" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">:5001/:5002</span></a>
-      <a class="nav-item" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:#8b949e">Loki</span></a>
+      <a class="nav-item" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
+      <a class="nav-item" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3010</span></a>
+      <a class="nav-item" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:5001/:5002</span></a>
+      <a class="nav-item" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">Loki</span></a>
       <a class="nav-item" onclick="loadBackup(this)">💾 <span data-i18n="backup">备份与恢复</span></a>
       <a class="nav-item" onclick="loadReport(this)">📄 <span data-i18n="report">报告生成</span></a>
     </div>
   </div>
 
-  <div class="nav-group" data-group="admin">
+  <div class="nav-group collapsed" data-group="admin">
     <div class="nav-group-head" onclick="toggleGroup('admin')"><span class="group-arrow">▾</span><span data-i18n="group_admin">系统管理</span></div>
     <div class="nav-group-body">
       <a class="nav-item" onclick="loadAuthOverview(this)">🔐 <span data-i18n="auth">集中认证</span></a>
@@ -112,6 +119,8 @@
       <a class="nav-item" onclick="loadSettings(this)">⚙️ <span data-i18n="settings">系统设置</span></a>
     </div>
   </div>
+
+  <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="切换主题"><span class="tt-track"><span class="tt-thumb"><span id="themeToggleIcon">🌙</span></span></span></button>
 
   <div class="user-info">
     <div>👤 <span id="username">...</span></div>
@@ -133,12 +142,40 @@
 
 <script>
 const API = '/api';
+// 全局 fetch 拦截：会话失效/未登录时，/api/* 会被 302 重定向到 Keycloak 登录页，
+// 浏览器 fetch 会跟随重定向拿到 HTML（而非 JSON）。这里检测到该情况就整页跳登录，
+// 避免「看板正常渲染、数据区一片报错」的假象。
+(function () {
+  const _f = window.fetch.bind(window);
+  window.fetch = async function (...args) {
+    const resp = await _f(...args);
+    if (resp && resp.redirected && resp.url && /openid-connect\/auth/.test(resp.url)) {
+      window.location.replace('/');
+      throw new Error('unauthorized');
+    }
+    return resp;
+  };
+})();
 // 服务器对外地址与产品入口 URL：启动时从 /api/urls 加载（后端由 SERVER_PUBLIC_URL 派生，换域名/换 IP 只需改后端一处）
 let PUBLIC_URL = '';
 let PRODUCT_URLS = {};
 function P(key) { return PRODUCT_URLS[key] || ''; }
 const LANG_KEY = 'ai-center-lang';
 let LANG = (localStorage.getItem(LANG_KEY) || 'zh');
+const PAGE_KEY = 'ai-center-current-page';
+const THEME_KEY = 'ai-center-theme';
+
+function applyTheme(theme) {
+  const light = theme === 'light';
+  document.body.classList.toggle('light', light);
+  const icon = document.getElementById('themeToggleIcon');
+  if (icon) icon.textContent = light ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const next = document.body.classList.contains('light') ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
 
 const I18N = {
   zh: {
@@ -202,7 +239,7 @@ const I18N = {
     mcp_srv_count: 'MCP 服务', skill_count: '技能', litellm_models: '模型', update_version: 'DeepChat 版本',
     docker_services: 'Docker 服务', docker_desc: '以下服务均运行在 Docker 容器中，按产品分组展示',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新服务器', svc_presidio: 'PII 脱敏', svc_monitoring: '监控', svc_langfuse: 'LLM 可观测', svc_session: '会话存储', svc_other: '其他',
-    repos_list: '仓库列表', repo_desc: '描述', repo_lang: '语言', repo_updated: '最后更新', sync_last_run: '更新脚本上次执行', sync_success: '成功', sync_failed: '失败', sync_running: '执行中', no_repos: '暂无仓库', installers: '安装包', last_updated: '上次更新', no_files: '暂无安装包', open_update: '打开更新服务器', quota_unit: '额度',
+    repos_list: '仓库列表', repo_desc: '描述', repo_lang: '语言', repo_updated: '最后更新', sync_last_run: '同步任务状态', sync_success: '成功', sync_failed: '失败', sync_running: '执行中', refresh: '刷新', sync_files: '文件', sync_elapsed: '已用', sync_eta: '预计剩余', sync_failed_files: '失败文件', sync_partial: '部分完成', sync_refresh_interval: '自动刷新周期', sync_refresh_hint: '执行中自动轮询，改后立即生效', sync_sec_unit: '秒', sync_phase_start: '启动中', sync_phase_github: '正在连接 GitHub', sync_phase_check: '正在检查版本信息', sync_phase_page: '正在更新下载页', sync_phase_download: '正在下载安装包', sync_phase_clean: '正在清理旧版本', sync_phase_nochange: '无新版本', no_repos: '暂无仓库', installers: '安装包', last_updated: '上次更新', no_files: '暂无安装包', open_update: '打开更新服务器', quota_unit: '额度',
     monitoring: '监控告警',
     observability: 'LLM 可观测',
     cost_report: '成本报表',
@@ -256,6 +293,8 @@ const I18N = {
     kc_new_user: '新建用户', kc_new_client: '新建客户端', kc_new_role: '新建角色',
     search_ph: '搜索…', per_page: '每页', prev_page: '上一页', next_page: '下一页', no_results: '无匹配结果',
     sync_fail_reason: '失败原因', litellm_new_model: '新建模型',
+    gitea_sync_trigger: '手动触发同步', gitea_sync_triggered: '已触发，正在后台执行', gitea_schedule: '自动同步计划', gitea_cron: 'cron 表达式', gitea_schedule_save: '保存', gitea_schedule_saved: '已保存', gitea_schedule_hint: '定时表达式：分 时 日 月 周（UTC 时间）。预设选项可直接选，也可自定义。',
+    gitea_sync_targets: '同步平台与架构', gitea_keep_releases: '保留版本数', gitea_versions: '已同步版本', gitea_delete_version: '删除', gitea_config_saved: '已保存', gitea_no_versions: '暂无已同步版本', gitea_delete_confirm: '确定删除版本', gitea_sync_history: '同步历史', gitea_no_history: '暂无同步历史', gitea_hist_sync: '同步', gitea_hist_rebuild: '重建页面', gitea_hist_delete: '删除版本',
     pii: 'PII 脱敏', logs: '统一日志', backup: '备份与恢复', availability: '可用性测试',
     avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DeepChat/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
     presidio_state: '状态', pii_up: '正常', pii_down: '异常',
@@ -336,7 +375,7 @@ const I18N = {
     mcp_srv_count: 'MCP Servers', skill_count: 'Skills', litellm_models: 'Models', update_version: 'DeepChat Version',
     docker_services: 'Docker Services', docker_desc: 'All services below run in Docker containers, grouped by product',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Update Server', svc_presidio: 'PII Redaction', svc_monitoring: 'Monitoring', svc_langfuse: 'LLM Observability', svc_session: 'Session Store', svc_other: 'Other',
-    repos_list: 'Repository List', repo_desc: 'Description', repo_lang: 'Language', repo_updated: 'Last updated', sync_last_run: 'Sync script last run', sync_success: 'Success', sync_failed: 'Failed', sync_running: 'Running', no_repos: 'No repositories', installers: 'Installers', last_updated: 'Last updated', no_files: 'No installers', open_update: 'Open Update Server', quota_unit: 'quota',
+    repos_list: 'Repository List', repo_desc: 'Description', repo_lang: 'Language', repo_updated: 'Last updated', sync_last_run: 'Sync task status', sync_success: 'Success', sync_failed: 'Failed', sync_running: 'Running', refresh: 'Refresh', sync_files: 'Files', sync_elapsed: 'Elapsed', sync_eta: 'ETA', sync_failed_files: 'Failed files', sync_partial: 'Partial', sync_refresh_interval: 'Auto-refresh interval', sync_refresh_hint: 'Auto-polls while running; applies immediately', sync_sec_unit: 'sec', sync_phase_start: 'Starting', sync_phase_github: 'Connecting to GitHub', sync_phase_check: 'Checking versions', sync_phase_page: 'Updating download page', sync_phase_download: 'Downloading packages', sync_phase_clean: 'Cleaning old versions', sync_phase_nochange: 'No new version', no_repos: 'No repositories', installers: 'Installers', last_updated: 'Last updated', no_files: 'No installers', open_update: 'Open Update Server', quota_unit: 'quota',
     monitoring: 'Monitoring',
     observability: 'LLM Observability',
     cost_report: 'Cost Report',
@@ -390,6 +429,8 @@ const I18N = {
     kc_new_user: 'New User', kc_new_client: 'New Client', kc_new_role: 'New Role',
     search_ph: 'Search…', per_page: 'Per page', prev_page: 'Prev', next_page: 'Next', no_results: 'No results',
     sync_fail_reason: 'Failure Reason', litellm_new_model: 'Add Model',
+    gitea_sync_trigger: 'Trigger Sync', gitea_sync_triggered: 'Triggered, running in background', gitea_schedule: 'Sync Schedule', gitea_cron: 'Cron expression', gitea_schedule_save: 'Save', gitea_schedule_saved: 'Saved', gitea_schedule_hint: 'Schedule: min hour day month weekday (UTC). Pick a preset or enter a custom expression.',
+    gitea_sync_targets: 'Sync Targets', gitea_keep_releases: 'Keep Releases', gitea_versions: 'Synced Versions', gitea_delete_version: 'Delete', gitea_config_saved: 'Saved', gitea_no_versions: 'No versions synced yet', gitea_delete_confirm: 'Delete version', gitea_sync_history: 'Sync History', gitea_no_history: 'No sync history yet', gitea_hist_sync: 'Sync', gitea_hist_rebuild: 'Rebuild page', gitea_hist_delete: 'Delete version',
     pii: 'PII Redaction', logs: 'Unified Logs', backup: 'Backup & Restore', availability: 'Availability Test',
     avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DeepChat/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
     presidio_state: 'State', pii_up: 'Up', pii_down: 'Down',
@@ -464,7 +505,7 @@ const I18N = {
     mcp_srv_count: 'MCP 服務', skill_count: '技能', litellm_models: '模型', update_version: 'DeepChat 版本',
     docker_services: 'Docker 服務', docker_desc: '以下服務均運行在 Docker 容器中，按產品分組展示',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新伺服器', svc_presidio: 'PII 脫敏', svc_monitoring: '監控', svc_langfuse: 'LLM 可觀測', svc_session: '工作階段儲存', svc_other: '其他',
-    repos_list: '儲存庫列表', repo_desc: '描述', repo_lang: '語言', repo_updated: '最後更新', sync_last_run: '更新腳本上次執行', sync_success: '成功', sync_failed: '失敗', sync_running: '執行中', no_repos: '暫無儲存庫', installers: '安裝包', last_updated: '上次更新', no_files: '暫無安裝包', open_update: '開啟更新伺服器', quota_unit: '額度',
+    repos_list: '儲存庫列表', repo_desc: '描述', repo_lang: '語言', repo_updated: '最後更新', sync_last_run: '同步任務狀態', sync_success: '成功', sync_failed: '失敗', sync_running: '執行中', refresh: '重新整理', no_repos: '暫無儲存庫', installers: '安裝包', last_updated: '上次更新', no_files: '暫無安裝包', open_update: '開啟更新伺服器', quota_unit: '額度',
     monitoring: '監控告警',
     observability: 'LLM 可觀測',
     cost_report: '成本報表',
@@ -553,7 +594,7 @@ const I18N = {
     mcp_srv_count: 'Serveurs MCP', skill_count: 'Skills', litellm_models: 'Modèles', update_version: 'Version DeepChat',
     docker_services: 'Services Docker', docker_desc: 'Tous les services ci-dessous s’exécutent dans des conteneurs Docker, groupés par produit',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Serveur de mise à jour', svc_presidio: 'Anonymisation PII', svc_monitoring: 'Supervision', svc_langfuse: 'Observabilité LLM', svc_session: 'Stockage de session',     svc_other: 'Autre',
-    repos_list: 'Liste des dépôts', repo_desc: 'Description', repo_lang: 'Langage', repo_updated: 'Dernière mise à jour', sync_last_run: 'Dernière exécution du script', sync_success: 'Réussi', sync_failed: 'Échec', sync_running: 'En cours', no_repos: 'Aucun dépôt', installers: 'Installateurs', last_updated: 'Dernière mise à jour', no_files: 'Aucun installateur', open_update: 'Ouvrir le serveur de mise à jour', quota_unit: 'quota',
+    repos_list: 'Liste des dépôts', repo_desc: 'Description', repo_lang: 'Langage', repo_updated: 'Dernière mise à jour', sync_last_run: 'Statut de synchronisation', sync_success: 'Réussi', sync_failed: 'Échec', sync_running: 'En cours', refresh: 'Actualiser', no_repos: 'Aucun dépôt', installers: 'Installateurs', last_updated: 'Dernière mise à jour', no_files: 'Aucun installateur', open_update: 'Ouvrir le serveur de mise à jour', quota_unit: 'quota',
     monitoring: 'Supervision',
     observability: 'Observabilité LLM',
     cost_report: 'Rapport de coûts',
@@ -642,7 +683,7 @@ const I18N = {
     mcp_srv_count: 'Servidores MCP', skill_count: 'Skills', litellm_models: 'Modelos', update_version: 'Versión de DeepChat',
     docker_services: 'Servicios Docker', docker_desc: 'Todos los servicios siguientes se ejecutan en contenedores Docker, agrupados por producto',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Servidor de actualizaciones', svc_presidio: 'Anonimización PII', svc_monitoring: 'Monitoreo', svc_langfuse: 'Observabilidad LLM', svc_session: 'Almacén de sesión', svc_other: 'Otro',
-    repos_list: 'Lista de repositorios', repo_desc: 'Descripción', repo_lang: 'Lenguaje', repo_updated: 'Última actualización', sync_last_run: 'Última ejecución del script', sync_success: 'Éxito', sync_failed: 'Fallido', sync_running: 'En ejecución', no_repos: 'Sin repositorios', installers: 'Instaladores', last_updated: 'Última actualización', no_files: 'Sin instaladores', open_update: 'Abrir servidor de actualizaciones', quota_unit: 'cuota',
+    repos_list: 'Lista de repositorios', repo_desc: 'Descripción', repo_lang: 'Lenguaje', repo_updated: 'Última actualización', sync_last_run: 'Estado de sincronización', sync_success: 'Éxito', sync_failed: 'Fallido', sync_running: 'En ejecución', refresh: 'Actualizar', no_repos: 'Sin repositorios', installers: 'Instaladores', last_updated: 'Última actualización', no_files: 'Sin instaladores', open_update: 'Abrir servidor de actualizaciones', quota_unit: 'cuota',
     monitoring: 'Monitoreo',
     observability: 'Observabilidad LLM',
     cost_report: 'Informe de costos',
@@ -731,7 +772,7 @@ const I18N = {
     mcp_srv_count: 'Servidores MCP', skill_count: 'Skills', litellm_models: 'Modelos', update_version: 'Versão do DeepChat',
     docker_services: 'Serviços Docker', docker_desc: 'Todos os serviços abaixo são executados em contêineres Docker, agrupados por produto',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Servidor de atualização', svc_presidio: 'Anonimização PII', svc_monitoring: 'Monitoramento', svc_langfuse: 'Observabilidade LLM', svc_session: 'Armazenamento de sessão',     svc_other: 'Outro',
-    repos_list: 'Lista de repositórios', repo_desc: 'Descrição', repo_lang: 'Linguagem', repo_updated: 'Última atualização', sync_last_run: 'Última execução do script', sync_success: 'Sucesso', sync_failed: 'Falha', sync_running: 'Em execução', no_repos: 'Sem repositórios', installers: 'Instaladores', last_updated: 'Última atualização', no_files: 'Sem instaladores', open_update: 'Abrir servidor de atualização', quota_unit: 'cota',
+    repos_list: 'Lista de repositórios', repo_desc: 'Descrição', repo_lang: 'Linguagem', repo_updated: 'Última atualização', sync_last_run: 'Status de sincronização', sync_success: 'Sucesso', sync_failed: 'Falha', sync_running: 'Em execução', refresh: 'Atualizar', no_repos: 'Sem repositórios', installers: 'Instaladores', last_updated: 'Última atualização', no_files: 'Sem instaladores', open_update: 'Abrir servidor de atualização', quota_unit: 'cota',
     monitoring: 'Monitoramento',
     observability: 'Observabilidade LLM',
     cost_report: 'Relatório de custos',
@@ -820,7 +861,7 @@ const I18N = {
     mcp_srv_count: 'MCP サービス', skill_count: 'スキル', litellm_models: 'モデル', update_version: 'DeepChat バージョン',
     docker_services: 'Docker サービス', docker_desc: '以下のサービスはすべて Docker コンテナで動作し、製品別にグループ化して表示しています',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新サーバー', svc_presidio: 'PII 匿名化', svc_monitoring: '監視', svc_langfuse: 'LLM 可観測性', svc_session: 'セッションストア', svc_other: 'その他',
-    repos_list: 'リポジトリ一覧', repo_desc: '説明', repo_lang: '言語', repo_updated: '最終更新', sync_last_run: '更新スクリプト最終実行', sync_success: '成功', sync_failed: '失敗', sync_running: '実行中', no_repos: 'リポジトリなし', installers: 'インストーラー', last_updated: '最終更新', no_files: 'インストーラーなし', open_update: '更新サーバーを開く', quota_unit: 'クォータ',
+    repos_list: 'リポジトリ一覧', repo_desc: '説明', repo_lang: '言語', repo_updated: '最終更新', sync_last_run: '同期ステータス', sync_success: '成功', sync_failed: '失敗', sync_running: '実行中', refresh: '更新', no_repos: 'リポジトリなし', installers: 'インストーラー', last_updated: '最終更新', no_files: 'インストーラーなし', open_update: '更新サーバーを開く', quota_unit: 'クォータ',
     monitoring: '監視',
     observability: 'LLM 可観測性',
     cost_report: 'コストレポート',
@@ -909,7 +950,7 @@ const I18N = {
     mcp_srv_count: 'MCP 서비스', skill_count: '스킬', litellm_models: '모델', update_version: 'DeepChat 버전',
     docker_services: 'Docker 서비스', docker_desc: '아래 서비스는 모두 Docker 컨테이너에서 실행되며 제품별로 그룹화되어 표시됩니다',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '업데이트 서버', svc_presidio: 'PII 익명화', svc_monitoring: '모니터링', svc_langfuse: 'LLM 관측', svc_session: '세션 저장소',     svc_other: '기타',
-    repos_list: '저장소 목록', repo_desc: '설명', repo_lang: '언어', repo_updated: '최종 업데이트', sync_last_run: '업데이트 스크립트 최종 실행', sync_success: '성공', sync_failed: '실패', sync_running: '실행 중', no_repos: '저장소 없음', installers: '설치 패키지', last_updated: '최종 업데이트', no_files: '설치 패키지 없음', open_update: '업데이트 서버 열기', quota_unit: '할당량',
+    repos_list: '저장소 목록', repo_desc: '설명', repo_lang: '언어', repo_updated: '최종 업데이트', sync_last_run: '동기화 상태', sync_success: '성공', sync_failed: '실패', sync_running: '실행 중', refresh: '새로고침', no_repos: '저장소 없음', installers: '설치 패키지', last_updated: '최종 업데이트', no_files: '설치 패키지 없음', open_update: '업데이트 서버 열기', quota_unit: '할당량',
     monitoring: '모니터링',
     observability: 'LLM 관측',
     cost_report: '비용 보고서',
@@ -998,7 +1039,7 @@ const I18N = {
     mcp_srv_count: 'خوادم MCP', skill_count: 'المهارات', litellm_models: 'النماذج', update_version: 'إصدار DeepChat',
     docker_services: 'خدمات Docker', docker_desc: 'جميع الخدمات أدناه تعمل في حاويات Docker، مجمّعة حسب المنتج',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'خادم التحديث', svc_presidio: 'إخفاء PII', svc_monitoring: 'المراقبة', svc_langfuse: 'مراقبة LLM', svc_session: 'مخزن الجلسة', svc_other: 'أخرى',
-    repos_list: 'قائمة المستودعات', repo_desc: 'الوصف', repo_lang: 'اللغة', repo_updated: 'آخر تحديث', sync_last_run: 'آخر تشغيل لسكربت التحديث', sync_success: 'نجاح', sync_failed: 'فشل', sync_running: 'قيد التشغيل', no_repos: 'لا توجد مستودعات', installers: 'حزم التثبيت', last_updated: 'آخر تحديث', no_files: 'لا توجد حزم تثبيت', open_update: 'فتح خادم التحديث', quota_unit: 'حصة',
+    repos_list: 'قائمة المستودعات', repo_desc: 'الوصف', repo_lang: 'اللغة', repo_updated: 'آخر تحديث', sync_last_run: 'حالة المزامنة', sync_success: 'نجاح', sync_failed: 'فشل', sync_running: 'قيد التشغيل', refresh: 'تحديث', no_repos: 'لا توجد مستودعات', installers: 'حزم التثبيت', last_updated: 'آخر تحديث', no_files: 'لا توجد حزم تثبيت', open_update: 'فتح خادم التحديث', quota_unit: 'حصة',
     monitoring: 'المراقبة',
     observability: 'مراقبة LLM',
     cost_report: 'تقرير التكلفة',
@@ -1103,7 +1144,7 @@ async function loadDashboard(el) {
         <div class="svc-card" style="cursor:pointer" onclick="loadAvailability()">
           <div class="svc-name">🩺 ${t('availability')}</div>
           <div class="svc-status ${cls}">${t('avail_pass')} ${s.ok ?? 0}/${s.total ?? 0}</div>
-          <div class="svc-image" style="font-size:0.78em;color:#8b949e">${t('avail_fail')} ${s.fail ?? 0} · ${t('avail_last')} ${lastTxt}</div>
+          <div class="svc-image" style="font-size:0.78em;color:var(--textdim)">${t('avail_fail')} ${s.fail ?? 0} · ${t('avail_last')} ${lastTxt}</div>
         </div>`);
     }
   } catch(e) {}
@@ -1223,11 +1264,11 @@ async function loadHealth(name, port) {
       <div class="topbar"><h1>🔍 ${name}</h1></div>
       <div class="card"><h3>${t('svc_detail')}</h3>
         <table>
-          <tr><td>${t('status')}</td><td style="color:${data.status==='running'?'#56d364':'#f85149'}">${data.status}</td></tr>
+          <tr><td>${t('status')}</td><td style="color:${data.status==='running'?'var(--green)':'var(--red)'}">${data.status}</td></tr>
           <tr><td>${t('uptime')}</td><td>${data.uptime || 'N/A'}</td></tr>
           <tr><td>${t('image')}</td><td>${data.image || 'N/A'}</td></tr>
         </table>
-        <p style="margin-top:12px;color:#8b949e">${t('api_no_ui')}<code>curl http://localhost:${port}/health</code></p>
+        <p style="margin-top:12px;color:var(--textdim)">${t('api_no_ui')}<code>curl http://localhost:${port}/health</code></p>
       </div>`;
   } catch(e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${name}</h1></div><div class="card"><p class="error">${t('health_error')}${e.message}</p><p>${t('manual_check')}<code>curl http://localhost:${port}/health</code></p></div>`;
@@ -1239,7 +1280,7 @@ const MCAPI = API + '/mcp-gateway';
 
 async function loadMcpGateway(el) {
   setActive(el);
-  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔌 ${t('mcp_title')}</h1><a href="${P('mcp')}/market" target="_blank" style="background:#1f6feb;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">🧩 ${t('skill_market')} ↗</a></div>`
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔌 ${t('mcp_title')}</h1><a href="${P('mcp')}/market" target="_blank" style="background:var(--accentbtn);color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">🧩 ${t('skill_market')} ↗</a></div>`
     + aboutCard(t('mcp_about'))
     + keyInfoCard(`<table>
         <tr><td style="width:30%">${t('mcp_endpoint')}</td><td><code>${P('mcp')}/mcp</code></td></tr>
@@ -1258,25 +1299,23 @@ async function loadMcpServers() {
     const d = await r.json();
     if (d.error) throw new Error(d.error);
     const servers = d.servers || [];
-    const rows = servers.length ? servers.map(s => `
-      <tr>
+    box.innerHTML = `
+      ${servers.length === 0 ? `<p class="loading">${t('no_mcp')}</p>` : pagedTable('mcp_servers', servers, `<tr><th>${t('name')}</th><th>${t('type')}</th><th>${t('cmd_url')}</th><th></th></tr>`, s => `<tr>
         <td><code>${s.name}</code></td>
         <td>${s.type}</td>
         <td><code style="font-size:0.8em">${s.type === 'stdio' ? s.command : (s.url || '')}</code></td>
-        <td><button onclick="deleteMcpServer('${s.name}')" style="background:#21262d;color:#f85149;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer">${t('delete')}</button></td>
-      </tr>`).join('') : `<tr><td colspan="4" style="color:#8b949e">${t('no_mcp')}</td></tr>`;
-    box.innerHTML = `
-      <table><tr><th>${t('name')}</th><th>${t('type')}</th><th>${t('cmd_url')}</th><th></th></tr>${rows}</table>
-      <div style="margin-top:14px;border-top:1px solid #30363d;padding-top:14px">
-        <h4 style="color:#8b949e;font-size:0.9em;margin-bottom:8px">${t('add_mcp')}</h4>
+        <td><button onclick="deleteMcpServer('${s.name}')" style="background:var(--panel2);color:var(--red);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer">${t('delete')}</button></td>
+      </tr>`)}
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <h4 style="color:var(--textdim);font-size:0.9em;margin-bottom:8px">${t('add_mcp')}</h4>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input id="srvName" placeholder="${t('name_ph')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:6px;flex:1;min-width:140px">
-          <select id="srvType" onchange="toggleSrvField()" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:6px">
+          <input id="srvName" placeholder="${t('name_ph')}" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;flex:1;min-width:140px">
+          <select id="srvType" onchange="toggleSrvField()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px">
             <option value="http">http</option>
             <option value="stdio">stdio</option>
           </select>
-          <input id="srvCmd" placeholder="${t('cmd_url_ph')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:6px 10px;border-radius:6px;flex:2;min-width:200px">
-          <button onclick="addMcpServer()" style="background:#238636;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600">${t('add')}</button>
+          <input id="srvCmd" placeholder="${t('cmd_url_ph')}" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;flex:2;min-width:200px">
+          <button onclick="addMcpServer()" style="background:var(--greenbtn);color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600">${t('add')}</button>
         </div>
       </div>`;
   } catch (e) {
@@ -1317,21 +1356,19 @@ async function loadGwSkills() {
     const d = await r.json();
     if (d.error) throw new Error(d.error);
     const skills = d.skills || [];
-    const rows = skills.length ? skills.map(s => `
-      <tr>
+    box.innerHTML = `
+      ${skills.length === 0 ? `<p class="loading">${t('no_skills')}</p>` : pagedTable('mcp_skills', skills, `<tr><th>${t('name')}</th><th>${t('version')}</th><th>${t('desc')}</th><th>${t('size')}</th><th></th></tr>`, s => `<tr>
         <td><code>${s.name}</code></td>
         <td>v${s.version || '—'}</td>
-        <td style="color:#8b949e">${s.description || ''}</td>
+        <td style="color:var(--textdim)">${s.description || ''}</td>
         <td>${(s.size/1024).toFixed(1)} KB</td>
-        <td><button onclick="deleteGwSkill('${s.name}')" style="background:#21262d;color:#f85149;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer">${t('delete')}</button></td>
-      </tr>`).join('') : `<tr><td colspan="5" style="color:#8b949e">${t('no_skills')}</td></tr>`;
-    box.innerHTML = `
-      <table><tr><th>${t('name')}</th><th>${t('version')}</th><th>${t('desc')}</th><th>${t('size')}</th><th></th></tr>${rows}</table>
-      <div style="margin-top:14px;border-top:1px solid #30363d;padding-top:14px">
-        <h4 style="color:#8b949e;font-size:0.9em;margin-bottom:8px">${t('upload_skill')}</h4>
+        <td><button onclick="deleteGwSkill('${s.name}')" style="background:var(--panel2);color:var(--red);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer">${t('delete')}</button></td>
+      </tr>`)}
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <h4 style="color:var(--textdim);font-size:0.9em;margin-bottom:8px">${t('upload_skill')}</h4>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input id="skillFile" type="file" accept=".zip" style="color:#8b949e">
-          <button onclick="uploadGwSkill()" style="background:#238636;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600">${t('upload')}</button>
+          <input id="skillFile" type="file" accept=".zip" style="color:var(--textdim)">
+          <button onclick="uploadGwSkill()" style="background:var(--greenbtn);color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600">${t('upload')}</button>
         </div>
       </div>`;
   } catch (e) {
@@ -1368,18 +1405,19 @@ async function loadLitellm(el) {
       (await fetch(API + '/litellm/models')).json(),
     ]);
     const base = (info.url || '').replace(/\/$/, '');
-    const modelItems = (models.models || []).map(m => `<li style="padding:6px 0;border-bottom:1px solid #21262d"><code style="color:#79c0ff">${m}</code></li>`).join('');
+    const modelsList = models.models || [];
+    const modelsTable = pagedTable('litellm_models', modelsList, `<tr><th>${t('model')}</th></tr>`, m => `<tr><td><code style="color:var(--code)">${m}</code></td></tr>`);
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ ${t('litellm_title')}</h1></div>`
       + aboutCard(t('litellm_about'))
       + metricsCard([
           { value: models.count ?? '—', label: t('litellm_models') },
           { value: '✅', label: t('litellm_pii_on') },
         ])
-      + `<div class="card"><h3 style="display:flex;align-items:center;justify-content:space-between;gap:12px">🔎 ${t('litellm_model_hub')}（${models.count ?? 0}）<a href="${base}/ui/model_hub_table" target="_blank" style="background:#1f6feb;color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${t('litellm_new_model')} ↗</a></h3>
-          <p style="color:#8b949e;margin:0 0 8px">${t('litellm_models_hint')}</p>
-          ${modelItems ? `<ul style="list-style:none;margin:0;padding:0">${modelItems}</ul>` : `<p class="loading">${t('no_models')}</p>`}
+      + `<div class="card"><h3 style="display:flex;align-items:center;justify-content:space-between;gap:12px">🔎 ${t('litellm_model_hub')}（${models.count ?? 0}）<a href="${base}/ui/model_hub_table" target="_blank" style="background:var(--accentbtn);color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${t('litellm_new_model')} ↗</a></h3>
+          <p style="color:var(--textdim);margin:0 0 8px">${t('litellm_models_hint')}</p>
+          ${modelsList.length === 0 ? `<p class="loading">${t('no_models')}</p>` : modelsTable}
         </div>`
-      + `<div class="card" style="text-align:right;padding:10px 16px"><a href="${base}/fallback/login" target="_blank" style="color:#8b949e;text-decoration:none;font-size:0.85em">🔑 ${t('litellm_fallback_login')} ↗</a></div>`;
+      + `<div class="card" style="text-align:right;padding:10px 16px"><a href="${base}/fallback/login" target="_blank" style="color:var(--textdim);text-decoration:none;font-size:0.85em">🔑 ${t('litellm_fallback_login')} ↗</a></div>`;
   } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ LiteLLM</h1></div><div class="card"><p class="error">${t('litellm_fail')}${e.message}</p></div>`;
   }
@@ -1435,40 +1473,19 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
   const us = (users?.data?.items || []);
   const tk = (tokens?.data?.items || []);
   const usd = q => (q >= 0 ? (q / 500000).toFixed(2) : '—');
-  const chRows = ch.map(c => `
-    <tr><td>${c.name || '—'}</td><td>${c.models || '—'}</td>
-      <td style="color:${c.status===1?'#56d364':'#f85149'}">${c.status===1?t('enabled'):t('disabled')}</td>
-      <td>${c.used_quota ?? 0}</td></tr>`).join('');
-  const usRows = us.map(u => `
-    <tr><td><span class="admin-badge">${u.username}</span></td>
-      <td>${u.role===100?t('admin_role'):(u.role===1?t('user_role'):t('other_role'))}</td>
-      <td>${u.group || 'default'}</td>
-      <td>${usd(u.quota)} ${t('usd')}</td><td>${usd(u.used_quota)} ${t('usd')}</td><td>${u.request_count ?? 0}</td></tr>`).join('');
-  const tkRows = tk.map(tk => `
-    <tr><td><span class="admin-badge">${tk.name || '—'}</span></td>
-      <td style="color:${tk.status===1?'#56d364':'#f85149'}">${tk.status===1?t('enabled'):t('disabled')}</td>
-      <td>${tk.used_quota ?? 0} ${t('quota_unit')}</td>
-      <td>${tk.unlimited_quota ? t('unlimited') : ((tk.remain_quota ?? 0) + ' ' + t('quota_unit'))}</td></tr>`).join('');
+  const chTable = pagedTable('newapi_channels', ch, `<tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>`, c => `<tr><td>${c.name || '—'}</td><td>${c.models || '—'}</td><td style="color:${c.status===1?'var(--green)':'var(--red)'}">${c.status===1?t('enabled'):t('disabled')}</td><td>${c.used_quota ?? 0}</td></tr>`);
+  const usTable = pagedTable('newapi_users', us, `<tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>`, u => `<tr><td><span class="admin-badge">${u.username}</span></td><td>${u.role===100?t('admin_role'):(u.role===1?t('user_role'):t('other_role'))}</td><td>${u.group || 'default'}</td><td>${usd(u.quota)} ${t('usd')}</td><td>${usd(u.used_quota)} ${t('usd')}</td><td>${u.request_count ?? 0}</td></tr>`);
+  const tkTable = pagedTable('newapi_tokens', tk, `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>`, x => `<tr><td><span class="admin-badge">${x.name || '—'}</span></td><td style="color:${x.status===1?'var(--green)':'var(--red)'}">${x.status===1?t('enabled'):t('disabled')}</td><td>${x.used_quota ?? 0} ${t('quota_unit')}</td><td>${x.unlimited_quota ? t('unlimited') : ((x.remain_quota ?? 0) + ' ' + t('quota_unit'))}</td></tr>`);
 
-  // 审计日志
-  const auditItems = audit?.items || [];
-  const fmtTime = ts => { const d = new Date(ts * 1000); return d.toLocaleString(); };
-  const auditRows = auditItems.map(a => `
-    <tr><td style="color:#8b949e;white-space:nowrap">${fmtTime(a.created_at)}</td>
-      <td>${a.username || '—'}</td><td>${a.model_name || '—'}</td>
-      <td>${a.prompt_tokens + a.completion_tokens}</td>
-      <td>${a.quota}</td><td style="color:#58a6ff">$${a.cost_usd}</td></tr>`).join('');
+  // 审计日志（客户端分页）
+  _newapiAuditItems = audit?.items || [];
+  _newapiAuditPage = 1;
 
   // 成本报表
   const costData = cost || {};
-  const byUserRows = (costData.by_user || []).map(r => `
-    <tr><td><span class="admin-badge">${r.username}</span></td>
-      <td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
-  const byModelRows = (costData.by_model || []).map(r => `
-    <tr><td>${r.model || '—'}</td>
-      <td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
-  const byDayRows = (costData.by_day || []).map(r => `
-    <tr><td>${r.date}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:#58a6ff">$${r.cost_usd}</td></tr>`).join('');
+  const byUserTable = pagedTable('newapi_cost_user', costData.by_user || [], `<tr><th>${t('username')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, r => `<tr><td><span class="admin-badge">${r.username}</span></td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:var(--accent)">$${r.cost_usd}</td></tr>`);
+  const byModelTable = pagedTable('newapi_cost_model', costData.by_model || [], `<tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, r => `<tr><td>${r.model || '—'}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:var(--accent)">$${r.cost_usd}</td></tr>`);
+  const byDayTable = pagedTable('newapi_cost_day', costData.by_day || [], `<tr><th>${t('date')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, r => `<tr><td>${r.date}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:var(--accent)">$${r.cost_usd}</td></tr>`);
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔀 ${t('newapi_title')}</h1>${openAdminBtn(P('newapi'), t('open_newapi'))}</div>`
     + aboutCard(t('newapi_about'))
     + metricsCard([
@@ -1477,13 +1494,13 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
         { value: overview.tokens, label: t('keys') },
       ])
     + keyInfoCard(`
-      <h4 style="color:#d2a8ff;margin:0 0 6px">🔌 ${t('channels')}（${ch.length}）</h4>
-      ${ch.length === 0 ? `<p class="loading">${t('no_channels')}</p>` : `<table><tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>${chRows}</table>`}
-      <h4 style="color:#d2a8ff;margin:14px 0 6px">👥 ${t('users')}（${us.length}）</h4>
-      ${us.length === 0 ? `<p class="loading">${t('no_users')}</p>` : `<table><tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>${usRows}</table>`}
-      <p style="margin-top:8px;color:#8b949e;font-size:0.85em">${t('org_note')}</p>
-      <h4 style="color:#d2a8ff;margin:14px 0 6px">🔑 ${t('keys')}（${tk.length}）</h4>
-      ${tk.length === 0 ? `<p class="loading">${t('no_keys')}</p>` : `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>${tkRows}</table>`}
+      <h4 style="color:var(--purple);margin:0 0 6px">🔌 ${t('channels')}（${ch.length}）</h4>
+      ${ch.length === 0 ? `<p class="loading">${t('no_channels')}</p>` : chTable}
+      <h4 style="color:var(--purple);margin:14px 0 6px">👥 ${t('users')}（${us.length}）</h4>
+      ${us.length === 0 ? `<p class="loading">${t('no_users')}</p>` : usTable}
+      <p style="margin-top:8px;color:var(--textdim);font-size:0.85em">${t('org_note')}</p>
+      <h4 style="color:var(--purple);margin:14px 0 6px">🔑 ${t('keys')}（${tk.length}）</h4>
+      ${tk.length === 0 ? `<p class="loading">${t('no_keys')}</p>` : tkTable}
     `, t('business_detail'))
     + `<div class="card"><h3>💰 ${t('cost_report')}（${t('recent_days')} ${costData.days || 30} ${t('days')}）</h3>
       <div class="stats-bar">
@@ -1491,18 +1508,97 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
         <div class="stat total"><div class="value">${costData.total?.calls ?? 0}</div><div class="label">${t('total_calls')}</div></div>
         <div class="stat total"><div class="value">${(costData.total?.prompt_tokens ?? 0) + (costData.total?.completion_tokens ?? 0)}</div><div class="label">${t('total_tokens')}</div></div>
       </div>
-      <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_user')}</h4>
-      ${byUserRows ? `<table><tr><th>${t('username')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byUserRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-      <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_model')}</h4>
-      ${byModelRows ? `<table><tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byModelRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-      <h4 style="color:#d2a8ff;margin:14px 0 6px">${t('by_day')}</h4>
-      ${byDayRows ? `<table><tr><th>${t('date')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${byDayRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+      <h4 style="color:var(--purple);margin:14px 0 6px">${t('by_user')}</h4>
+      ${(costData.by_user || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : byUserTable}
+      <h4 style="color:var(--purple);margin:14px 0 6px">${t('by_model')}</h4>
+      ${(costData.by_model || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : byModelTable}
+      <h4 style="color:var(--purple);margin:14px 0 6px">${t('by_day')}</h4>
+      ${(costData.by_day || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : byDayTable}
     </div>`
-    + `<div class="card"><h3>📋 ${t('audit_log')}（${t('recent')} ${auditItems.length} ${t('records')}）</h3>
-      ${auditRows ? `<table><tr><th>${t('time')}</th><th>${t('username')}</th><th>${t('model')}</th><th>${t('tokens')}</th><th>${t('quota')}</th><th>${t('cost')}</th></tr>${auditRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-      <p style="margin-top:8px;color:#8b949e;font-size:0.85em">${t('audit_note')}</p>
+    + `<div class="card"><h3>📋 ${t('audit_log')}</h3>
+      <div id="newapiAudit"></div>
+      <p style="margin-top:8px;color:var(--textdim);font-size:0.85em">${t('audit_note')}</p>
     </div>`
-    + `<div class="card"><span style="color:#8b949e;font-size:0.85em">${t('newapi_note')}</span></div>`;
+    + `<div class="card"><span style="color:var(--textdim);font-size:0.85em">${t('newapi_note')}</span></div>`;
+  newapiAuditRender();
+}
+
+// ═══ 通用客户端分页列表 ═══
+const _paged = {};
+function pagedTable(id, items, headers, renderRow) {
+  _paged[id] = _paged[id] || { page: 1, pageSize: 10 };
+  const st = _paged[id];
+  st.items = items; st.headers = headers; st.renderRow = renderRow;
+  return `<div id="paged_${id}">${_pagedRender(id)}</div>`;
+}
+function _pagedRender(id) {
+  const st = _paged[id];
+  const total = st.items.length;
+  const pages = Math.max(1, Math.ceil(total / st.pageSize));
+  if (st.page > pages) st.page = pages;
+  if (st.page < 1) st.page = 1;
+  const start = (st.page - 1) * st.pageSize;
+  const rows = st.items.slice(start, start + st.pageSize).map(st.renderRow).join('');
+  const sizeOpts = [10, 20, 50, 100].map(n => `<option value="${n}"${st.pageSize === n ? ' selected' : ''}>${n}</option>`).join('');
+  const btn = (label, delta, disabled) => `<button onclick="pagedGo('${id}',${delta})"${disabled ? ' disabled' : ''} style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em;${disabled ? 'opacity:.4;cursor:not-allowed' : ''}">${label}</button>`;
+  return `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="color:var(--textdim);font-size:0.82em">${total} ${t('records')}</span>
+      <span style="color:var(--textdim);font-size:0.8em;margin-left:auto">${t('per_page')}</span>
+      <select onchange="pagedSize('${id}',this.value)" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${sizeOpts}</select>
+    </div>
+    ${rows ? `<table>${st.headers}${rows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+      ${btn(t('prev_page'), -1, st.page <= 1)}
+      <span style="color:var(--textdim);font-size:0.82em">${st.page} / ${pages}</span>
+      ${btn(t('next_page'), 1, st.page >= pages)}
+    </div>`;
+}
+function pagedGo(id, delta) { _paged[id].page += delta; const el = document.getElementById('paged_' + id); if (el) el.innerHTML = _pagedRender(id); }
+function pagedSize(id, v) { _paged[id].pageSize = parseInt(v, 10) || 10; _paged[id].page = 1; const el = document.getElementById('paged_' + id); if (el) el.innerHTML = _pagedRender(id); }
+
+// 审计日志客户端分页
+let _newapiAuditItems = [];
+let _newapiAuditPage = 1;
+let _newapiAuditPageSize = 10;
+function newapiAuditRender() {
+  const el = document.getElementById('newapiAudit');
+  if (!el) return;
+  const total = _newapiAuditItems.length;
+  const pages = Math.max(1, Math.ceil(total / _newapiAuditPageSize));
+  if (_newapiAuditPage > pages) _newapiAuditPage = pages;
+  if (_newapiAuditPage < 1) _newapiAuditPage = 1;
+  const start = (_newapiAuditPage - 1) * _newapiAuditPageSize;
+  const pageItems = _newapiAuditItems.slice(start, start + _newapiAuditPageSize);
+  const fmtTime = ts => { const d = new Date(ts * 1000); return d.toLocaleString(); };
+  const rows = pageItems.map(a => `
+    <tr><td style="color:var(--textdim);white-space:nowrap">${fmtTime(a.created_at)}</td>
+      <td>${a.username || '—'}</td><td>${a.model_name || '—'}</td>
+      <td>${a.prompt_tokens + a.completion_tokens}</td>
+      <td>${a.quota}</td><td style="color:var(--accent)">$${a.cost_usd}</td></tr>`).join('');
+  const sizeOpts = [10, 20, 50, 100].map(n => `<option value="${n}"${_newapiAuditPageSize === n ? ' selected' : ''}>${n}</option>`).join('');
+  const btn = (label, page, disabled) => `<button onclick="newapiAuditGo(${page})"${disabled ? ' disabled' : ''} style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em;${disabled ? 'opacity:.4;cursor:not-allowed' : ''}">${label}</button>`;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="color:var(--textdim);font-size:0.85em">${t('recent')} ${total} ${t('records')}</span>
+      <span style="color:var(--textdim);font-size:0.8em;margin-left:auto">${t('per_page')}</span>
+      <select onchange="newapiAuditSetSize(this.value)" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${sizeOpts}</select>
+    </div>
+    ${rows ? `<table><tr><th>${t('time')}</th><th>${t('username')}</th><th>${t('model')}</th><th>${t('tokens')}</th><th>${t('quota')}</th><th>${t('cost')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+      ${btn(t('prev_page'), -1, _newapiAuditPage <= 1)}
+      <span style="color:var(--textdim);font-size:0.82em">${_newapiAuditPage} / ${pages}</span>
+      ${btn(t('next_page'), 1, _newapiAuditPage >= pages)}
+    </div>`;
+}
+function newapiAuditSetSize(v) {
+  _newapiAuditPageSize = parseInt(v, 10) || 10;
+  _newapiAuditPage = 1;
+  newapiAuditRender();
+}
+function newapiAuditGo(delta) {
+  _newapiAuditPage += delta;
+  newapiAuditRender();
 }
 
 // ═══ 集中认证（统一账号体系） ═══
@@ -1516,7 +1612,7 @@ async function loadAuthOverview(el) {
       document.getElementById('main').innerHTML = `
         <div class="topbar"><h1>🔐 ${t('auth')}</h1></div>
         <div class="card"><p class="error">${t('auth_need_admin')}</p>
-        <p style="margin-top:8px;color:#8b949e">${t('auth_need_admin2')}</p></div>`;
+        <p style="margin-top:8px;color:var(--textdim)">${t('auth_need_admin2')}</p></div>`;
       return;
     }
     const data = await resp.json();
@@ -1533,25 +1629,25 @@ function renderAuthOverview(data) {
   document.getElementById('main').innerHTML = `
     <div class="topbar"><h1>🔐 ${t('auth_title')}</h1></div>
 
-    <div class="card" style="border-left:3px solid #d29922">
+    <div class="card" style="border-left:3px solid var(--yellow)">
       <h3>${t('security')}</h3>
-      <p style="color:#d29922">${t('security_desc')}</p>
+      <p style="color:var(--yellow)">${t('security_desc')}</p>
     </div>
 
     <div class="card">
       <h3>${t('unified_admin')}</h3>
       <table>
         <tr><th style="width:22%">${t('item')}</th><th>${t('value')}</th><th style="width:18%">${t('action')}</th></tr>
-        <tr><td>${t('username')}</td><td><code style="font-size:1.1em">${u.username}</code></td><td><button onclick="copyUnified('username')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer">${t('copy')}</button></td></tr>
-        <tr><td>${t('password')}</td><td><code style="font-size:1.1em">${u.password}</code></td><td><button onclick="copyUnified('password')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 12px;border-radius:4px;cursor:pointer">${t('copy')}</button></td></tr>
+        <tr><td>${t('username')}</td><td><code style="font-size:1.1em">${u.username}</code></td><td><button onclick="copyUnified('username')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:4px;cursor:pointer">${t('copy')}</button></td></tr>
+        <tr><td>${t('password')}</td><td><code style="font-size:1.1em">${u.password}</code></td><td><button onclick="copyUnified('password')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:4px;cursor:pointer">${t('copy')}</button></td></tr>
       </table>
-      <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('unified_desc')}</p>
+      <p style="margin-top:12px;color:var(--textdim);font-size:0.85em">${t('unified_desc')}</p>
     </div>
 
     <div class="card">
       <h3>${t('sso_mech')}</h3>
-      <pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:14px;color:#c9d1d9;font-size:0.88em;line-height:1.7">${LANG === 'zh' ? '你登录 AI 管理中心（ai_all_in_one_admin）\n        ↓  实际跳转 Keycloak 认证\n     Keycloak 颁发 SSO 会话\n        ↓  所有接入 Keycloak 的产品共享这个会话\nDify / Ghost / Gitea / NewAPI  →  全部自动登录，无需再输密码' : 'You sign in to AI Admin Center (ai_all_in_one_admin)\n        ↓  redirected to Keycloak\n     Keycloak issues an SSO session\n        ↓  shared by all Keycloak-enabled products\nDify / Ghost / Gitea / NewAPI  →  all auto-login, no password needed'}</pre>
-      <p style="margin-top:10px;color:#8b949e;font-size:0.85em">${t('sso_desc')}</p>
+      <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.88em;line-height:1.7">${LANG === 'zh' ? '你登录 AI 管理中心（ai_all_in_one_admin）\n        ↓  实际跳转 Keycloak 认证\n     Keycloak 颁发 SSO 会话\n        ↓  所有接入 Keycloak 的产品共享这个会话\nDify / Ghost / Gitea / NewAPI  →  全部自动登录，无需再输密码' : 'You sign in to AI Admin Center (ai_all_in_one_admin)\n        ↓  redirected to Keycloak\n     Keycloak issues an SSO session\n        ↓  shared by all Keycloak-enabled products\nDify / Ghost / Gitea / NewAPI  →  all auto-login, no password needed'}</pre>
+      <p style="margin-top:10px;color:var(--textdim);font-size:0.85em">${t('sso_desc')}</p>
     </div>
 
     <div class="card">
@@ -1564,17 +1660,17 @@ function renderAuthOverview(data) {
         <tr><td>🤖 Dify</td><td>SSO</td><td>${LANG === 'zh' ? '首次访问向导用统一账号初始化' : 'Initialized with unified account on first visit'}</td></tr>
         <tr><td>📰 Ghost</td><td>SSO</td><td>${LANG === 'zh' ? '首次访问向导用统一账号初始化' : 'Initialized with unified account on first visit'}</td></tr>
         <tr><td>📦 Gitea</td><td>SSO</td><td>${LANG === 'zh' ? '首次访问向导用统一账号初始化' : 'Initialized with unified account on first visit'}</td></tr>
-        <tr><td>🛡️ LiteLLM</td><td style="color:#f85149">Master Key（不走 SSO）</td><td>${LANG === 'zh' ? '内部脱敏代理，见下方卡片' : 'Internal redaction proxy, see below'}</td></tr>
+        <tr><td>🛡️ LiteLLM</td><td style="color:var(--red)">Master Key（不走 SSO）</td><td>${LANG === 'zh' ? '内部脱敏代理，见下方卡片' : 'Internal redaction proxy, see below'}</td></tr>
         <tr><td>🔌 MCP Gateway / ⬇️ Update Server</td><td>${LANG === 'zh' ? '无认证（内部 API）' : 'No auth (internal API)'}</td><td>${LANG === 'zh' ? '仅 Docker 内部 / 员工下载用，不对用户开放' : 'Docker-internal / employee downloads only'}</td></tr>
       </table>
     </div>
 
     <div class="card">
       <h3>${t('litellm_exception')}</h3>
-      <p style="color:#8b949e">${t('litellm_exception_desc')}</p>
+      <p style="color:var(--textdim)">${t('litellm_exception_desc')}</p>
       <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
-        <a href="${l.url}" target="_blank" style="background:#1f6feb;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a>
-        <button onclick="copyMasterKey()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('copy_master_key')}</button>
+        <a href="${l.url}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a>
+        <button onclick="copyMasterKey()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('copy_master_key')}</button>
       </div>
     </div>
 
@@ -1586,7 +1682,7 @@ function renderAuthOverview(data) {
         <tr><td>${t('bind_dn')}</td><td><code style="font-size:0.85em">${ldap.bindDn}</code></td></tr>
         <tr><td>${t('password')}</td><td>${LANG === 'zh' ? '与应用密码统一（' + u.password + '）' : 'Same as app password (' + u.password + ')'}</td></tr>
       </table>
-      <p style="margin-top:10px;color:#d29922;font-size:0.85em">${t('ad_note')}</p>
+      <p style="margin-top:10px;color:var(--yellow);font-size:0.85em">${t('ad_note')}</p>
     </div>`;
 }
 
@@ -1613,38 +1709,37 @@ async function loadAdmins(el) {
     const admins = await resp.json();
     if (!Array.isArray(admins)) throw new Error(admins.error || 'error');
     const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/realms/enterprise-ai/users';
-    const btn = (onclick, label, color) => `<button onclick="${onclick}" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;white-space:nowrap">${label}</button>`;
-    const rows = admins.map(a => `<tr>
+    const btn = (onclick, label, color) => `<button onclick="${onclick}" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;white-space:nowrap">${label}</button>`;
+    const adminsTable = pagedTable('admins', admins, `<tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('status')}</th><th>${t('admins_actions')}</th></tr>`, a => `<tr>
       <td><span class="admin-badge">${a.username}</span></td>
       <td>${a.firstName || ''} ${a.lastName || ''}</td>
       <td>${a.email || '—'}</td>
-      <td style="color:${a.enabled ? '#56d364' : '#f85149'}">${a.enabled ? t('enabled') : t('disabled')}</td>
+      <td style="color:${a.enabled ? 'var(--green)' : 'var(--red)'}">${a.enabled ? t('enabled') : t('disabled')}</td>
       <td style="white-space:nowrap">
         <div style="display:flex;gap:6px;align-items:center">
           ${btn(`adminToggle('${a.id}')`, a.enabled ? t('admins_disable') : t('admins_enable'))}
           ${btn(`adminResetPwd('${a.id}')`, t('admins_reset_pwd'))}
           ${btn(`adminDemote('${a.id}')`, t('admins_demote'))}
-          <a href="${kcBase}/${a.id}" target="_blank" style="color:#58a6ff;font-size:0.78em;text-decoration:none;white-space:nowrap">${t('admins_open_kc')} ↗</a>
+          <a href="${kcBase}/${a.id}" target="_blank" style="color:var(--accent);font-size:0.78em;text-decoration:none;white-space:nowrap">${t('admins_open_kc')} ↗</a>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`);
     document.getElementById('main').innerHTML = `
       <div class="topbar"><h1>👥 ${t('admins_title')}</h1></div>
       <div class="card"><h3>➕ ${t('admins_add')}</h3>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input id="adminsAddUser" placeholder="${t('admins_add_ph')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px" onkeydown="if(event.key==='Enter')adminAdd()">
-          <button onclick="adminAdd()" style="background:#1f6feb;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('admins_add_btn')}</button>
-          <span id="adminsAddMsg" style="color:#8b949e;font-size:0.85em"></span>
+          <input id="adminsAddUser" placeholder="${t('admins_add_ph')}" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px" onkeydown="if(event.key==='Enter')adminAdd()">
+          <button onclick="adminAdd()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('admins_add_btn')}</button>
+          <span id="adminsAddMsg" style="color:var(--textdim);font-size:0.85em"></span>
         </div>
-        <p style="margin-top:8px;color:#8b949e;font-size:0.82em">${t('admins_add_hint')}</p>
+        <p style="margin-top:8px;color:var(--textdim);font-size:0.82em">${t('admins_add_hint')}</p>
       </div>
       <div class="card"><h3>${t('admins_list')}（${admins.length}）</h3>
-        ${admins.length === 0 ? `<p class="loading">${t('no_admins')}</p>` : `
-        <table><tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('status')}</th><th>${t('admins_actions')}</th></tr>${rows}</table>`}
-        <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('admins_desc')}</p>
+        ${admins.length === 0 ? `<p class="loading">${t('no_admins')}</p>` : adminsTable}
+        <p style="margin-top:12px;color:var(--textdim);font-size:0.85em">${t('admins_desc')}</p>
       </div>`;
   } catch (e) {
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>👥 ${t('admins_title')}</h1></div><div class="card"><p class="error">${t('admins_need_admin')}</p><p style="margin-top:8px;color:#8b949e">${t('admins_need_admin2')}</p></div>`;
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>👥 ${t('admins_title')}</h1></div><div class="card"><p class="error">${t('admins_need_admin')}</p><p style="margin-top:8px;color:var(--textdim)">${t('admins_need_admin2')}</p></div>`;
   }
 }
 
@@ -1690,10 +1785,10 @@ async function adminAdd() {
   try {
     await adminPost('/admins', { username: uname });
     if (input) input.value = '';
-    if (msg) { msg.textContent = `${t('admins_add_ok')}: ${uname}`; msg.style.color = '#56d364'; }
+    if (msg) { msg.textContent = `${t('admins_add_ok')}: ${uname}`; msg.style.color = 'var(--green)'; }
     loadAdmins();
   } catch (e) {
-    if (msg) { msg.textContent = `${t('admins_add_err')}: ${e.message}`; msg.style.color = '#f85149'; }
+    if (msg) { msg.textContent = `${t('admins_add_err')}: ${e.message}`; msg.style.color = 'var(--red)'; }
   }
 }
 
@@ -1704,8 +1799,8 @@ function loadSettings(el) {
   document.getElementById('main').innerHTML = `
     <div class="topbar"><h1>⚙️ ${t('settings_title')}</h1></div>
     <div class="card"><h3>🌐 ${t('language')}</h3>
-      <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px">${t('language_desc')}</p>
-      <select id="langSelect" onchange="setLang(this.value)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px">
+      <p style="color:var(--textdim);font-size:0.85em;margin-bottom:12px">${t('language_desc')}</p>
+      <select id="langSelect" onchange="setLang(this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px">
         <option value="zh" ${LANG === 'zh' ? 'selected' : ''}>简体中文</option>
         <option value="zh-TW" ${LANG === 'zh-TW' ? 'selected' : ''}>繁體中文</option>
         <option value="en" ${LANG === 'en' ? 'selected' : ''}>English</option>
@@ -1718,21 +1813,21 @@ function loadSettings(el) {
       </select>
     </div>
     <div class="card"><h3>📄 ${t('report_retention')}</h3>
-      <p style="color:#8b949e;font-size:0.85em;margin-bottom:12px">${t('report_history_desc')}</p>
+      <p style="color:var(--textdim);font-size:0.85em;margin-bottom:12px">${t('report_history_desc')}</p>
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
         <div>
-          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_retention_mode')}</div>
-          <select id="retentionMode" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+          <div style="color:var(--textdim);font-size:0.85em;margin-bottom:6px">${t('report_retention_mode')}</div>
+          <select id="retentionMode" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em">
             <option value="count">${t('report_retention_count')}</option>
             <option value="days">${t('report_retention_days')}</option>
           </select>
         </div>
         <div>
-          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_retention_value')}</div>
-          <input id="retentionValue" type="number" min="1" max="3650" value="20" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;width:100px">
+          <div style="color:var(--textdim);font-size:0.85em;margin-bottom:6px">${t('report_retention_value')}</div>
+          <input id="retentionValue" type="number" min="1" max="3650" value="20" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em;width:100px">
         </div>
-        <button onclick="saveReportRetention()" style="background:#1f6feb;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_retention_save')}</button>
-        <span id="retentionMsg" style="color:#56d364;font-size:0.85em"></span>
+        <button onclick="saveReportRetention()" style="background:var(--accentbtn);color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_retention_save')}</button>
+        <span id="retentionMsg" style="color:var(--green);font-size:0.85em"></span>
       </div>
     </div>
     <div class="card"><h3>${t('env_config')}</h3>
@@ -1745,11 +1840,11 @@ function loadSettings(el) {
         <tr><td>SESSION_SECRET</td><td>会话加密密钥</td></tr>
         <tr><td>PORT</td><td>管理中心端口（默认 3000，Docker 映射为 10086）</td></tr>
       </table>
-      <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('env_desc')}</p>
+      <p style="margin-top:12px;color:var(--textdim);font-size:0.85em">${t('env_desc')}</p>
     </div>
     <div class="card"><h3>${t('product_urls')}</h3>
       <table id="productUrlsTable"><tr><td class="loading">${t('loading')}</td></tr></table>
-      <p style="margin-top:12px;color:#8b949e;font-size:0.85em">${t('prod_note')}</p>
+      <p style="margin-top:12px;color:var(--textdim);font-size:0.85em">${t('prod_note')}</p>
     </div>`;
   loadReportSettingsForm();
   renderProductUrls();
@@ -1788,7 +1883,7 @@ async function renderProductUrls() {
 // ═══ 产品概览（Ghost / Dify / Gitea / Keycloak）═══
 function openAdminBtn(url, label) {
   const txt = label || t('open_admin');
-  return `<a href="${url}" target="_blank" style="background:#1f6feb;color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">${txt} ↗</a>`;
+  return `<a href="${url}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">${txt} ↗</a>`;
 }
 
 function renderProductOverview(icon, title, url, stats, openLabel) {
@@ -1807,15 +1902,15 @@ function productError(icon, title, url, msg, openLabel) {
 function statsHtml(stats) {
   return stats.map(s => `<div class="stat total"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
 }
-function aboutCard(desc) {
-  return `<div class="card"><h3>ℹ️ ${t('product_about')}</h3><p style="color:#8b949e;line-height:1.6;margin:0">${desc}</p></div>`;
+function aboutCard(desc, note) {
+  return `<div class="card"><h3>ℹ️ ${t('product_about')}</h3><p style="color:var(--textdim);line-height:1.6;margin:0">${desc}</p>${note ? `<p style="color:var(--textdim);line-height:1.6;margin:10px 0 0;font-size:0.9em">${note}</p>` : ''}</div>`;
 }
 function metricsCard(stats) {
   return `<div class="card"><h3>📊 ${t('data_metrics')}</h3><div class="stats-bar">${statsHtml(stats)}</div></div>`;
 }
 function entriesCard(entries, docsUrl) {
-  const btns = (entries || []).map(e => `<a href="${e.url}" target="_blank" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95em">${e.label} ↗</a>`).join('');
-  const docs = docsUrl ? `<p style="color:#8b949e;font-size:0.85em;margin-top:12px">📖 ${t('official_docs')}: <code>${docsUrl}</code></p>` : '';
+  const btns = (entries || []).map(e => `<a href="${e.url}" target="_blank" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95em">${e.label} ↗</a>`).join('');
+  const docs = docsUrl ? `<p style="color:var(--textdim);font-size:0.85em;margin-top:12px">📖 ${t('official_docs')}: <code>${docsUrl}</code></p>` : '';
   return `<div class="card"><h3>🔗 ${t('related_entries')}</h3><div style="display:flex;gap:10px;flex-wrap:wrap">${btns}</div>${docs}</div>`;
 }
 function keyInfoCard(html, title) {
@@ -1846,7 +1941,7 @@ async function loadMonitoring(el) {
         ], 'https://grafana.com/docs/')
       + keyInfoCard(`<table>
           <tr><td style="width:30%">${t('monitoring_targets')}</td><td>${d.prometheus?.up ?? '—'} / ${d.prometheus?.total ?? '—'}</td></tr>
-          <tr><td>${t('alerts_firing')}</td><td style="color:${d.alerts_firing > 0 ? '#f85149' : '#56d364'}">${d.alerts_firing ?? 0}</td></tr>
+          <tr><td>${t('alerts_firing')}</td><td style="color:${d.alerts_firing > 0 ? 'var(--red)' : 'var(--green)'}">${d.alerts_firing ?? 0}</td></tr>
         </table>`, t('monitoring_status'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📈', title, url, e.message, t('open_monitoring'));
@@ -1870,8 +1965,8 @@ async function loadObservability(el) {
       { value: (d.model_stats || []).length, label: t('langfuse_models') },
       { value: d.version ?? '—', label: t('langfuse_version') },
     ];
-    const traceRows = (d.recent_traces || []).map(r => `<tr><td style="color:#e6edf3">${r.name || '—'}</td><td style="color:#8b949e">${r.ts ? new Date(r.ts.replace(' ', 'T') + 'Z').toLocaleString() : '—'}</td><td style="color:#8b949e">${r.userId || '—'}</td></tr>`).join('');
-    const modelRows = (d.model_stats || []).map(m => `<tr><td style="color:#e6edf3"><code>${m.model}</code></td><td>${m.calls}</td><td>${m.tokens.toLocaleString()}</td><td>$${m.cost.toFixed(4)}</td></tr>`).join('');
+    const traceTable = pagedTable('obs_traces', d.recent_traces || [], `<tr><th>${t('name')}</th><th>${t('time')}</th><th>${t('username')}</th></tr>`, r => `<tr><td style="color:var(--textstrong)">${r.name || '—'}</td><td style="color:var(--textdim)">${r.ts ? new Date(r.ts.replace(' ', 'T') + 'Z').toLocaleString() : '—'}</td><td style="color:var(--textdim)">${r.userId || '—'}</td></tr>`);
+    const modelTable = pagedTable('obs_models', d.model_stats || [], `<tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, m => `<tr><td style="color:var(--textstrong)"><code>${m.model}</code></td><td>${m.calls}</td><td>${m.tokens.toLocaleString()}</td><td>$${m.cost.toFixed(4)}</td></tr>`);
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${title}</h1>${openAdminBtn(url, t('open_observability'))}</div>`
       + aboutCard(t('obs_about'))
       + metricsCard(stats)
@@ -1883,10 +1978,10 @@ async function loadObservability(el) {
           { url: `${base}/project/${proj}/settings`, label: '⚙️ ' + t('langfuse_settings') },
         ], 'https://langfuse.com/docs')
       + keyInfoCard(`
-        <p style="color:#8b949e;margin:0 0 8px">🔍 ${t('langfuse_recent_traces')}（${(d.recent_traces || []).length}）</p>
-        ${traceRows ? `<table><tr><th>${t('name')}</th><th>${t('time')}</th><th>${t('username')}</th></tr>${traceRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-        <p style="color:#8b949e;margin:14px 0 8px">🤖 ${t('langfuse_model_usage')}</p>
-        ${modelRows ? `<table><tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>${modelRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
+        <p style="color:var(--textdim);margin:0 0 8px">🔍 ${t('langfuse_recent_traces')}（${(d.recent_traces || []).length}）</p>
+        ${(d.recent_traces || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : traceTable}
+        <p style="color:var(--textdim);margin:14px 0 8px">🤖 ${t('langfuse_model_usage')}</p>
+        ${(d.model_stats || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : modelTable}
       `, t('trace_usage'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🔍', title, url, e.message, t('open_observability'));
@@ -1901,10 +1996,10 @@ async function loadPii(el) {
   try {
     const d = await (await fetch(API + '/pii/overview')).json();
     if (d.error) throw new Error(d.error);
-    const st = up => up ? `<span style="color:#56d364;font-weight:600">${t('pii_up')}</span>` : `<span style="color:#f85149;font-weight:600">${t('pii_down')}</span>`;
+    const st = up => up ? `<span style="color:var(--green);font-weight:600">${t('pii_up')}</span>` : `<span style="color:var(--red);font-weight:600">${t('pii_down')}</span>`;
     const presidioUp = d.presidio.analyzer.up && d.presidio.anonymizer.up;
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🧬 ${t('pii_title')}</h1></div>`
-      + aboutCard(t('pii_about'))
+      + aboutCard(t('pii_about'), t('pii_note'))
       + metricsCard([
           { value: presidioUp ? t('pii_up') : t('pii_down'), label: 'Presidio' },
           { value: (d.guardrails || []).length, label: t('pii_guardrails') },
@@ -1913,16 +2008,13 @@ async function loadPii(el) {
       + `<div class="card"><h3>🧬 ${t('pii_presidio')}</h3>
         <table>
           <tr><th style="width:30%">${t('item')}</th><th style="width:20%">${t('status')}</th><th>${t('desc')}</th></tr>
-          <tr><td>${t('pii_analyzer')}</td><td>${st(d.presidio.analyzer.up)}</td><td style="color:#8b949e">${d.presidio.analyzer.detail}</td></tr>
-          <tr><td>${t('pii_anonymizer')}</td><td>${st(d.presidio.anonymizer.up)}</td><td style="color:#8b949e">${d.presidio.anonymizer.detail}</td></tr>
+          <tr><td>${t('pii_analyzer')}</td><td>${st(d.presidio.analyzer.up)}</td><td style="color:var(--textdim)">${d.presidio.analyzer.detail}</td></tr>
+          <tr><td>${t('pii_anonymizer')}</td><td>${st(d.presidio.anonymizer.up)}</td><td style="color:var(--textdim)">${d.presidio.anonymizer.detail}</td></tr>
         </table></div>`
       + `<div class="card"><h3>🛡️ ${t('pii_guardrails')}</h3>
-        <table>
-          <tr><th>${t('pii_guardrail_name')}</th><th>${t('pii_guardrail_type')}</th><th>${t('pii_guardrail_note')}</th></tr>
-          ${d.guardrails.map(g => `<tr><td><code>${g.name}</code></td><td>${g.type}</td><td style="color:#8b949e">${g.note}</td></tr>`).join('')}
-        </table></div>`
-      + `<div class="card"><h3>🤖 ${t('pii_litellm_models')}</h3><p style="font-size:0.95em;margin:0">${(d.litellm.models || []).join('、') || '—'}</p></div>`
-      + `<div class="card"><p style="color:#8b949e;font-size:0.85em;margin:0">${t('pii_note')}</p></div>`;
+        ${(d.guardrails || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : pagedTable('pii_guardrails', d.guardrails || [], `<tr><th>${t('pii_guardrail_name')}</th><th>${t('pii_guardrail_type')}</th><th>${t('pii_guardrail_note')}</th></tr>`, g => `<tr><td><code>${g.name}</code></td><td>${g.type}</td><td style="color:var(--textdim)">${g.note}</td></tr>`)}
+        </div>`
+      + `<div class="card"><h3>🤖 ${t('pii_litellm_models')}</h3><p style="font-size:0.95em;margin:0">${(d.litellm.models || []).join('、') || '—'}</p></div>`;
   } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🧬 ${title}</h1></div><div class="card"><p class="error">${t('overview_fail')}${e.message}</p></div>`;
   }
@@ -1936,29 +2028,29 @@ async function loadLogs(el) {
     <div class="topbar"><h1>📜 ${title}</h1></div>
     <div class="card"><h3>🔎 ${t('logs_desc')}</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px">
-        <select id="logContainer" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:170px"><option value="">${t('logs_all')}</option></select>
-        <select id="logLevel" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+        <select id="logContainer" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:170px"><option value="">${t('logs_all')}</option></select>
+        <select id="logLevel" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em">
           <option value="">${t('logs_level_all')}</option>
           <option value="error">${t('logs_level_error')}</option>
           <option value="warn">${t('logs_level_warn')}</option>
           <option value="info">${t('logs_level_info')}</option>
         </select>
-        <input id="logKeyword" placeholder="${t('logs_keyword')}" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em;flex:1;min-width:180px" onkeydown="if(event.key==='Enter')runLogQuery()">
-        <select id="logSince" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+        <input id="logKeyword" placeholder="${t('logs_keyword')}" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em;flex:1;min-width:180px" onkeydown="if(event.key==='Enter')runLogQuery()">
+        <select id="logSince" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em">
           <option value="15m">15m</option><option value="1h" selected>1h</option><option value="6h">6h</option><option value="24h">24h</option><option value="7d">7d</option>
         </select>
-        <select id="logLimit" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+        <select id="logLimit" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em">
           <option value="50">50</option><option value="100">100</option><option value="200" selected>200</option><option value="500">500</option><option value="1000">1000</option>
         </select>
-        <button onclick="runLogQuery()" style="background:#1f6feb;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('logs_search_btn')}</button>
+        <button onclick="runLogQuery()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('logs_search_btn')}</button>
       </div>
       <div style="display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap">
-        <button onclick="exportLogs()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">⬇️ ${t('logs_export')}</button>
-        <button onclick="copyLogs()" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">📋 ${t('logs_copy')}</button>
-        <label style="display:flex;align-items:center;gap:6px;color:#8b949e;font-size:0.85em;cursor:pointer"><input type="checkbox" id="logAuto" onchange="toggleLogAuto(this.checked)"> ${t('logs_auto_refresh')}</label>
+        <button onclick="exportLogs()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">⬇️ ${t('logs_export')}</button>
+        <button onclick="copyLogs()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">📋 ${t('logs_copy')}</button>
+        <label style="display:flex;align-items:center;gap:6px;color:var(--textdim);font-size:0.85em;cursor:pointer"><input type="checkbox" id="logAuto" onchange="toggleLogAuto(this.checked)"> ${t('logs_auto_refresh')}</label>
       </div>
     </div>
-    <div class="card"><h3>${t('logs_results')} <span id="logCount" style="color:#8b949e;font-size:0.8em"></span></h3><div id="logResults"><p class="loading">${t('logs_empty')}</p></div></div>`;
+    <div class="card"><h3>${t('logs_results')} <span id="logCount" style="color:var(--textdim);font-size:0.8em"></span></h3><div id="logResults"><p class="loading">${t('logs_empty')}</p></div></div>`;
   try {
     const d = await (await fetch(API + '/health')).json();
     const names = (d.services || []).map(s => s.name).sort();
@@ -1995,8 +2087,8 @@ function renderLogEntries() {
   if (!res) return;
   const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   if (!_logEntries.length) { res.innerHTML = `<p class="loading">${t('logs_empty')}</p>`; return; }
-  res.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;color:#c9d1d9;font-size:0.78em;line-height:1.6;max-height:520px;overflow:auto">` +
-    _logEntries.map(e => `<span style="color:#8b949e">[${new Date(e.ts).toLocaleString()}]</span> <span style="color:#58a6ff">${esc(e.container || '')}</span> ${esc(e.line)}`).join('\n') +
+  res.innerHTML = `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;color:var(--text);font-size:0.78em;line-height:1.6;max-height:520px;overflow:auto">` +
+    _logEntries.map(e => `<span style="color:var(--textdim)">[${new Date(e.ts).toLocaleString()}]</span> <span style="color:var(--accent)">${esc(e.container || '')}</span> ${esc(e.line)}`).join('\n') +
     `</pre>`;
 }
 
@@ -2036,25 +2128,26 @@ async function refreshBackup() {
   try {
     const d = await (await fetch(API + '/backup/list')).json();
     if (d.error) throw new Error(d.error);
-    const rows = (d.dirs || []).map(b => {
-      const files = (b.files || []).map(f => `<div style="font-size:0.8em;color:#8b949e">${f.name} (${(f.size / 1024).toFixed(1)} KB)</div>`).join('');
+    const dirs = d.dirs || [];
+    const backupTable = pagedTable('backup_dirs', dirs, `<tr><th style="width:34%">${t('backup_time')}</th><th>${t('backup_files')}</th><th style="width:16%"></th></tr>`, b => {
+      const files = (b.files || []).map(f => `<div style="font-size:0.8em;color:var(--textdim)">${f.name} (${(f.size / 1024).toFixed(1)} KB)</div>`).join('');
       return `<tr>
-        <td><code>${b.name}</code><div style="font-size:0.78em;color:#8b949e">${new Date(b.mtime).toLocaleString()}</div></td>
+        <td><code>${b.name}</code><div style="font-size:0.78em;color:var(--textdim)">${new Date(b.mtime).toLocaleString()}</div></td>
         <td>${files || '—'}</td>
-        <td><button onclick="restoreBackup('${b.name}')" style="background:#d29922;color:#0d1117;border:none;padding:4px 14px;border-radius:4px;cursor:pointer;font-weight:600">${t('backup_restore')}</button></td>
+        <td><button onclick="restoreBackup('${b.name}')" style="background:var(--yellow);color:var(--onaccent);border:none;padding:4px 14px;border-radius:4px;cursor:pointer;font-weight:600">${t('backup_restore')}</button></td>
       </tr>`;
-    }).join('');
+    });
     const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const logHtml = d.logTail ? `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;color:#8b949e;font-size:0.78em;max-height:240px;overflow:auto">${esc(d.logTail)}</pre>` : '';
+    const logHtml = d.logTail ? `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;color:var(--textdim);font-size:0.78em;max-height:240px;overflow:auto">${esc(d.logTail)}</pre>` : '';
     document.getElementById('main').innerHTML = `
       <div class="topbar"><h1>💾 ${t('backup_title')}</h1></div>
       <div class="card"><h3>📋 ${t('backup_desc')}</h3>
-        <button onclick="runBackup()" style="background:#1f6feb;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">💾 ${t('backup_run')}</button>
+        <button onclick="runBackup()" style="background:var(--accentbtn);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">💾 ${t('backup_run')}</button>
       </div>
       <div class="card"><h3>🗂️ ${t('backup_list')}</h3>
-        ${rows ? `<table><tr><th style="width:34%">${t('backup_time')}</th><th>${t('backup_files')}</th><th style="width:16%"></th></tr>${rows}</table>` : `<p class="loading">${t('backup_no')}</p>`}
+        ${dirs.length === 0 ? `<p class="loading">${t('backup_no')}</p>` : backupTable}
       </div>
-      <div class="card"><h3>📄 ${t('backup_log')}</h3>${logHtml || `<p style="color:#8b949e">${t('backup_no')}</p>`}</div>
+      <div class="card"><h3>📄 ${t('backup_log')}</h3>${logHtml || `<p style="color:var(--textdim)">${t('backup_no')}</p>`}</div>
       <div id="backupResult"></div>`;
   } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>💾 ${t('backup_title')}</h1></div><div class="card"><p class="error">${t('overview_fail')}${e.message}</p></div>`;
@@ -2067,8 +2160,8 @@ async function runBackup() {
   try {
     const d = await (await fetch(API + '/backup/run', { method: 'POST' })).json();
     if (d.error) throw new Error(d.error);
-    if (r) r.innerHTML = `<div class="card"><h3>${t('backup_result')}</h3><p style="color:#56d364;font-weight:600">${t('backup_pass')} ${d.pass} / ${t('backup_fail')} ${d.fail}</p>` +
-      d.results.map(x => `<div style="font-size:0.85em;color:${x.ok ? '#56d364' : '#f85149'}">${x.ok ? '✓' : '✗'} ${x.name}${x.detail ? ' (' + x.detail + ')' : ''}</div>`).join('') + `</div>`;
+    if (r) r.innerHTML = `<div class="card"><h3>${t('backup_result')}</h3><p style="color:var(--green);font-weight:600">${t('backup_pass')} ${d.pass} / ${t('backup_fail')} ${d.fail}</p>` +
+      d.results.map(x => `<div style="font-size:0.85em;color:${x.ok ? 'var(--green)' : 'var(--red)'}">${x.ok ? '✓' : '✗'} ${x.name}${x.detail ? ' (' + x.detail + ')' : ''}</div>`).join('') + `</div>`;
     await refreshBackup();
   } catch (e) {
     if (r) r.innerHTML = `<div class="card"><p class="error">${e.message}</p></div>`;
@@ -2096,8 +2189,8 @@ async function loadReport(el) {
     <div class="card"><h3>📄 ${t('report_desc')}</h3>
       <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
         <div>
-          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_days')}</div>
-          <select id="reportDays" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:8px 12px;border-radius:6px;font-size:0.9em">
+          <div style="color:var(--textdim);font-size:0.85em;margin-bottom:6px">${t('report_days')}</div>
+          <select id="reportDays" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em">
             <option value="1">${t('report_days_1')}</option>
             <option value="7" selected>${t('report_days_7')}</option>
             <option value="30">${t('report_days_30')}</option>
@@ -2105,24 +2198,24 @@ async function loadReport(el) {
           </select>
         </div>
         <div>
-          <div style="color:#8b949e;font-size:0.85em;margin-bottom:6px">${t('report_sections')}</div>
+          <div style="color:var(--textdim);font-size:0.85em;margin-bottom:6px">${t('report_sections')}</div>
           <div style="display:flex;gap:14px;flex-wrap:wrap">
             ${[['system','report_sec_system'],['usage','report_sec_usage'],['client','report_sec_client'],['issues','report_sec_issues'],['avail','report_sec_avail'],['backup','report_sec_backup'],['pii','report_sec_pii']]
-              .map(([k,kk]) => `<label style="display:flex;align-items:center;gap:5px;color:#c9d1d9;font-size:0.85em;cursor:pointer"><input type="checkbox" class="report-sec" value="${k}" checked> ${t(kk)}</label>`).join('')}
+              .map(([k,kk]) => `<label style="display:flex;align-items:center;gap:5px;color:var(--text);font-size:0.85em;cursor:pointer"><input type="checkbox" class="report-sec" value="${k}" checked> ${t(kk)}</label>`).join('')}
           </div>
         </div>
-        <button onclick="generateReport()" style="background:#1f6feb;color:#fff;border:none;padding:9px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_generate')}</button>
+        <button onclick="generateReport()" style="background:var(--accentbtn);color:#fff;border:none;padding:9px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_generate')}</button>
       </div>
-      <p style="color:#8b949e;font-size:0.8em;margin-top:10px">🌐 ${t('report_lang')} · 📂 <span id="reportRetention" style="color:#58a6ff">—</span></p>
+      <p style="color:var(--textdim);font-size:0.8em;margin-top:10px">🌐 ${t('report_lang')} · 📂 <span id="reportRetention" style="color:var(--accent)">—</span></p>
     </div>
     <div class="card"><h3>${t('report_preview')}</h3>
       <div id="reportToolbar" style="display:none;margin-bottom:10px">
-        <button onclick="downloadReport()" style="background:#238636;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_download')}</button>
+        <button onclick="downloadReport()" style="background:var(--greenbtn);color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_download')}</button>
       </div>
       <div id="reportPreview"><p class="loading">${t('report_none')}</p></div>
     </div>
     <div class="card"><h3>📂 ${t('report_history')}</h3>
-      <p style="color:#8b949e;font-size:0.85em;margin-bottom:10px">${t('report_history_desc')}</p>
+      <p style="color:var(--textdim);font-size:0.85em;margin-bottom:10px">${t('report_history_desc')}</p>
       <div id="reportHistory"><p class="loading">${t('loading')}</p></div>
     </div>`;
   refreshReportHistory();
@@ -2141,7 +2234,7 @@ async function generateReport() {
     lastReportMd = d.markdown;
     lastReportFilename = d.filename || 'report.md';
     if (toolbar) toolbar.style.display = 'block';
-    preview.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:14px;color:#c9d1d9;font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
+    preview.innerHTML = `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
     refreshReportHistory();
   } catch (e) {
     preview.innerHTML = `<p class="error">${e.message}</p>`;
@@ -2177,19 +2270,16 @@ async function refreshReportHistory() {
     if (!el) return;
     if (!items.length) { el.innerHTML = `<p class="loading">${t('report_no_history')}</p>`; return; }
     const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    el.innerHTML = `<table>
-      <tr><th style="width:42%">${t('backup_files')}</th><th style="width:26%">${t('backup_time')}</th><th style="width:12%">${t('report_size')}</th><th>${t('action')}</th></tr>
-      ${items.map(r => `<tr>
+    el.innerHTML = pagedTable('report_history', items, `<tr><th style="width:42%">${t('backup_files')}</th><th style="width:26%">${t('backup_time')}</th><th style="width:12%">${t('report_size')}</th><th>${t('action')}</th></tr>`, r => `<tr>
         <td><code>${esc(r.name)}</code></td>
-        <td style="color:#8b949e">${new Date(r.mtime).toLocaleString()}</td>
-        <td style="color:#8b949e">${(r.size / 1024).toFixed(1)} KB</td>
+        <td style="color:var(--textdim)">${new Date(r.mtime).toLocaleString()}</td>
+        <td style="color:var(--textdim)">${(r.size / 1024).toFixed(1)} KB</td>
         <td style="white-space:nowrap">
-          <button onclick="viewReport('${esc(r.name)}')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;margin-right:4px">${t('report_view')}</button>
-          <button onclick="downloadReportFile('${esc(r.name)}')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;margin-right:4px">${t('report_download_file')}</button>
-          <button onclick="deleteReportFile('${esc(r.name)}')" style="background:#3b0d0d;color:#f85149;border:1px solid #30363d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('report_delete')}</button>
+          <button onclick="viewReport('${esc(r.name)}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;margin-right:4px">${t('report_view')}</button>
+          <button onclick="downloadReportFile('${esc(r.name)}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;margin-right:4px">${t('report_download_file')}</button>
+          <button onclick="deleteReportFile('${esc(r.name)}')" style="background:var(--errbg);color:var(--red);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('report_delete')}</button>
         </td>
-      </tr>`).join('')}
-    </table>`;
+      </tr>`);
   } catch (e) {
     if (el) el.innerHTML = `<p class="error">${e.message}</p>`;
   }
@@ -2205,7 +2295,7 @@ async function viewReport(name) {
     lastReportMd = d.markdown;
     lastReportFilename = d.name;
     if (toolbar) toolbar.style.display = 'block';
-    if (preview) preview.innerHTML = `<pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:14px;color:#c9d1d9;font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
+    if (preview) preview.innerHTML = `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
   } catch (e) {
     if (preview) preview.innerHTML = `<p class="error">${e.message}</p>`;
   }
@@ -2250,9 +2340,9 @@ async function saveReportRetention() {
       body: JSON.stringify({ retentionMode: mode, retentionValue: val }),
     })).json();
     if (d.error) throw new Error(d.error);
-    if (msg) { msg.style.color = '#56d364'; msg.textContent = t('report_retention_saved').replace('{n}', d.removed ?? 0); }
+    if (msg) { msg.style.color = 'var(--green)'; msg.textContent = t('report_retention_saved').replace('{n}', d.removed ?? 0); }
   } catch (e) {
-    if (msg) { msg.style.color = '#f85149'; msg.textContent = e.message; }
+    if (msg) { msg.style.color = 'var(--red)'; msg.textContent = e.message; }
   }
 }
 
@@ -2262,22 +2352,22 @@ function escHtml(s) { return (s == null ? '' : String(s)).replace(/&/g, '&amp;')
 function availCard(r) {
   const ok = r.status === 'ok', fail = r.status === 'fail';
   const icon = ok ? '✅' : (fail ? '❌' : '⚠️');
-  const color = ok ? '#56d364' : (fail ? '#f85149' : '#d29922');
-  const lat = (r.latency_ms != null) ? `<span style="font-size:0.78em;color:#8b949e">${r.latency_ms} ms</span>` : '';
+  const color = ok ? 'var(--green)' : (fail ? 'var(--red)' : 'var(--yellow)');
+  const lat = (r.latency_ms != null) ? `<span style="font-size:0.78em;color:var(--textdim)">${r.latency_ms} ms</span>` : '';
   return `<div class="svc-card" id="avail-${r.id}">
     <div class="svc-name">${icon} ${escHtml(r.name)}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <span style="font-size:0.78em;font-weight:600;color:${color}">${r.status.toUpperCase()}</span>${lat}
     </div>
-    <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:0.78em;color:#c9d1d9;min-height:34px;max-height:110px;overflow:auto;white-space:pre-wrap;word-break:break-all" id="avail-log-${r.id}">${escHtml(r.detail || '')}</div>
-    <button onclick="runOneAvail('${r.id}')" style="margin-top:8px;background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">▶ ${t('avail_test')}</button>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:0.78em;color:var(--text);min-height:34px;max-height:110px;overflow:auto;white-space:pre-wrap;word-break:break-all" id="avail-log-${r.id}">${escHtml(r.detail || '')}</div>
+    <button onclick="runOneAvail('${r.id}')" style="margin-top:8px;background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">▶ ${t('avail_test')}</button>
   </div>`;
 }
 
 function renderAvail(d) {
   const s = d.summary || {};
   const sumEl = document.getElementById('availSummary');
-  if (sumEl) sumEl.innerHTML = `✅ <span style="color:#56d364">${s.ok ?? 0}</span> · ❌ <span style="color:#f85149">${s.fail ?? 0}</span> · <span style="color:#8b949e">/ ${s.total ?? 0}</span>`;
+  if (sumEl) sumEl.innerHTML = `✅ <span style="color:var(--green)">${s.ok ?? 0}</span> · ❌ <span style="color:var(--red)">${s.fail ?? 0}</span> · <span style="color:var(--textdim)">/ ${s.total ?? 0}</span>`;
   const grid = document.getElementById('availGrid');
   if (grid) grid.innerHTML = (d.results || []).map(availCard).join('');
 }
@@ -2288,8 +2378,8 @@ async function loadAvailability(el) {
     <div class="topbar"><h1>🩺 ${t('availability')}</h1></div>
     <div class="card"><h3>🩺 ${t('avail_desc')}</h3>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <button onclick="runAllAvail()" style="background:#1f6feb;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('avail_run_all')}</button>
-        <span id="availInterval" style="color:#8b949e;font-size:0.85em"></span>
+        <button onclick="runAllAvail()" style="background:var(--accentbtn);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('avail_run_all')}</button>
+        <span id="availInterval" style="color:var(--textdim);font-size:0.85em"></span>
         <span id="availSummary" style="font-size:0.9em"></span>
       </div>
     </div>
@@ -2344,9 +2434,9 @@ async function loadGhost(el) {
     ];
     const stTxt = s => ({ published: t('ghost_st_published'), draft: t('ghost_st_draft'), scheduled: t('ghost_st_scheduled') }[s] || s);
     const fmtDate = ts => ts ? new Date(ts).toLocaleDateString() : '—';
-    const postRows = (d.recent_posts || []).map(p => `<tr><td style="color:#e6edf3">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:#8b949e">${fmtDate(p.updated_at)}</td></tr>`).join('');
-    const pageRows = (d.recent_pages || []).map(p => `<tr><td style="color:#e6edf3">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:#8b949e">${fmtDate(p.updated_at)}</td></tr>`).join('');
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1><button onclick="ghostAutoLogin(this)" style="background:#1f6feb;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;white-space:nowrap">${t('open_ghost')} ↗</button></div>`
+    const postTable = pagedTable('ghost_posts', d.recent_posts || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td style="color:var(--textstrong)">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
+    const pageTable = pagedTable('ghost_pages', d.recent_pages || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td style="color:var(--textstrong)">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1><button onclick="ghostAutoLogin(this)" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;white-space:nowrap">${t('open_ghost')} ↗</button></div>`
       + aboutCard(t('ghost_about'))
       + metricsCard(stats)
       + entriesCard([
@@ -2354,10 +2444,10 @@ async function loadGhost(el) {
           { url: P('ghost') + '/ghost/#/members/', label: '👥 ' + t('ghost_members') },
           { url: P('ghost') + '/ghost/#/settings/', label: '⚙️ ' + t('ghost_settings') },
         ], 'https://ghost.org/docs/')
-      + keyInfoCard(`<p style="color:#8b949e;margin:0 0 8px">📄 ${t('ghost_recent_posts')}</p>
-        ${postRows ? `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>${postRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-        <p style="color:#8b949e;margin:14px 0 8px">📃 ${t('ghost_recent_pages')}</p>
-        ${pageRows ? `<table><tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>${pageRows}</table>` : `<p class="loading">${t('no_data')}</p>`}`, t('content_activity'));
+      + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">📄 ${t('ghost_recent_posts')}</p>
+        ${(d.recent_posts || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : postTable}
+        <p style="color:var(--textdim);margin:14px 0 8px">📃 ${t('ghost_recent_pages')}</p>
+        ${(d.recent_pages || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : pageTable}`, t('content_activity'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📰', title, url, e.message, t('open_ghost'));
   }
@@ -2390,8 +2480,8 @@ async function loadDify(el) {
       { value: d.workspaces ?? '—', label: t('dify_workspaces') },
       { value: d.version ?? '—', label: t('dify_version') },
     ];
-    const appRows = (d.app_list || []).map(a => `<tr><td style="color:#e6edf3">${a.name || '—'}</td><td style="color:#8b949e">${a.mode || '—'}</td></tr>`).join('');
-    const wsRows = (d.workspace_list || []).map(w => `<tr><td style="color:#e6edf3">${w.name || '—'}</td></tr>`).join('');
+    const appTable = pagedTable('dify_apps', d.app_list || [], `<tr><th>${t('name')}</th><th>${t('type')}</th></tr>`, a => `<tr><td style="color:var(--textstrong)">${a.name || '—'}</td><td style="color:var(--textdim)">${a.mode || '—'}</td></tr>`);
+    const wsTable = pagedTable('dify_workspaces', d.workspace_list || [], `<tr><th>${t('name')}</th></tr>`, w => `<tr><td style="color:var(--textstrong)">${w.name || '—'}</td></tr>`);
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1>${openAdminBtn(url, t('open_dify'))}</div>`
       + aboutCard(t('dify_about'))
       + metricsCard(stats)
@@ -2399,13 +2489,122 @@ async function loadDify(el) {
           { url: P('dify') + '/apps', label: '🧩 ' + t('dify_new_app') },
           { url: P('dify') + '/datasets/create', label: '📚 ' + t('dify_new_kb') },
         ], 'https://docs.dify.ai')
-      + keyInfoCard(`<p style="color:#8b949e;margin:0 0 8px">🧩 ${t('dify_apps')}（${(d.app_list || []).length}）</p>
-        ${appRows ? `<table><tr><th>${t('name')}</th><th>${t('type')}</th></tr>${appRows}</table>` : `<p class="loading">${t('no_data')}</p>`}
-        <p style="color:#8b949e;margin:14px 0 8px">🗂️ ${t('dify_workspaces')}（${(d.workspace_list || []).length}）</p>
-        ${wsRows ? `<table><tr><th>${t('name')}</th></tr>${wsRows}</table>` : `<p class="loading">${t('no_data')}</p>`}`, t('apps_workspaces'));
+      + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">🧩 ${t('dify_apps')}（${(d.app_list || []).length}）</p>
+        ${(d.app_list || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : appTable}
+        <p style="color:var(--textdim);margin:14px 0 8px">🗂️ ${t('dify_workspaces')}（${(d.workspace_list || []).length}）</p>
+        ${(d.workspace_list || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : wsTable}`, t('apps_workspaces'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🤖', title, url, e.message, t('open_dify'));
   }
+}
+
+let _giteaSyncTimer = null;
+const SYNC_REFRESH_KEY = 'ai-center-sync-refresh';
+function getSyncRefreshSec() { const v = parseInt(localStorage.getItem(SYNC_REFRESH_KEY) || '5', 10); return (v >= 3 && v <= 120) ? v : 5; }
+function setSyncRefreshSec(v) {
+  const n = parseInt(v, 10);
+  localStorage.setItem(SYNC_REFRESH_KEY, String((n >= 3 && n <= 120) ? n : 5));
+  if (_giteaSyncTimer) { clearTimeout(_giteaSyncTimer); _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000); }
+}
+function fmtDur(s) {
+  if (s == null || isNaN(s) || s < 0) return '—';
+  s = Math.round(s);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s / 60) + 'm ' + (s % 60) + 's';
+  return Math.floor(s / 3600) + 'h ' + Math.floor((s % 3600) / 60) + 'm';
+}
+function giteaProgressHtml(p) {
+  if (!p || !p.total_files) return '';
+  const pct = Math.min(100, Math.round(p.done_files / p.total_files * 100));
+  const etaTxt = p.status === 'running' ? fmtDur(p.eta_s) : (p.status === 'partial' ? t('sync_partial') : t('sync_success'));
+  return `<div style="margin-top:12px">
+    <div style="display:flex;justify-content:space-between;font-size:0.82em;color:var(--textdim);margin-bottom:4px">
+      <span>${t('sync_files')}: <b style="color:var(--textstrong)">${p.done_files}/${p.total_files}</b></span>
+      <span>${p.done_mb} / ${p.total_mb} MB</span>
+    </div>
+    <div style="height:6px;background:var(--panel2);border-radius:3px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accentbtn),var(--accent));border-radius:3px;transition:width .4s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.8em;color:var(--textdim);margin-top:4px">
+      <span>${t('sync_elapsed')}: ${fmtDur(p.elapsed_s)}</span>
+      <span>${t('sync_eta')}: ${etaTxt}</span>
+    </div>
+    ${p.failed && p.failed.length ? `<div style="color:var(--red);font-size:0.8em;margin-top:4px">${t('sync_failed_files')}: ${p.failed.join(', ')}</div>` : ''}
+  </div>`;
+}
+function giteaPhaseInfo(p) {
+  if (!p || !p.phase) return null;
+  const RUNNING = {
+    starting: t('sync_phase_start'),
+    connecting_github: t('sync_phase_github'),
+    checking_version: t('sync_phase_check'),
+    updating_page: t('sync_phase_page'),
+    downloading: t('sync_phase_download'),
+    cleaning: t('sync_phase_clean'),
+  };
+  if (RUNNING[p.phase]) return { text: RUNNING[p.phase], color: 'var(--yellow)' };
+  if (p.phase === 'no_change') return { text: t('sync_success') + '(' + t('sync_phase_nochange') + ')', color: 'var(--green)' };
+  if (p.phase === 'done') return { text: t('sync_success') + '(' + (p.detail || '') + ')', color: 'var(--green)' };
+  if (p.phase === 'partial') return { text: t('sync_failed') + '(' + (p.detail || '') + ')', color: 'var(--red)' };
+  return null;
+}
+function giteaSyncCard(s, p) {
+  if (!s) return '';
+  const running = !s.conclusion;
+  const STALE_PHASES = ['no_change', 'done', 'partial'];
+  const info = giteaPhaseInfo(p);
+  const stale = running && p && STALE_PHASES.includes(p.phase);
+  let statusTxt, statusColor;
+  if (stale) {
+    statusTxt = t('sync_phase_start'); statusColor = 'var(--yellow)';
+  } else if (info) {
+    statusTxt = info.text; statusColor = info.color;
+  } else if (running) {
+    statusTxt = t('sync_phase_start'); statusColor = 'var(--yellow)';
+  } else {
+    statusTxt = s.conclusion === 'success' ? t('sync_success') : t('sync_failed');
+    statusColor = s.conclusion === 'success' ? 'var(--green)' : 'var(--red)';
+  }
+  const done = running ? t('sync_phase_start') : (s.completed_at ? new Date(s.completed_at).toLocaleString() : '—');
+  return `<div class="card" id="giteaSyncCard"><h3>🔄 ${t('sync_last_run')} <span class="admin-badge">deepchat-sync</span>
+      <button class="gitea-sync-refresh" onclick="giteaSyncRefresh()" style="float:right;background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78em;font-weight:600">↻ ${t('refresh')}</button>
+    </h3>
+    <table>
+      <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
+      <tr><td>${t('last_updated')}</td><td>${done}</td></tr>
+      ${s.conclusion === 'failure' && s.failure_reason ? `<tr><td>${t('sync_fail_reason')}</td><td style="color:var(--red)">${s.failure_reason}</td></tr>` : ''}
+    </table>
+    ${giteaProgressHtml(p)}
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--panel2);font-size:0.82em;color:var(--textdim)">
+      ${t('sync_refresh_interval')}: <input id="giteaSyncInterval" type="number" min="3" max="120" value="${getSyncRefreshSec()}" onchange="setSyncRefreshSec(this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:2px 8px;border-radius:6px;width:60px"> ${t('sync_sec_unit')} · ${t('sync_refresh_hint')}
+    </div>
+  </div>`;
+}
+async function giteaSyncRefresh() {
+  const el = document.getElementById('giteaSyncCard');
+  if (!el) return;
+  const btn = el.querySelector('.gitea-sync-refresh');
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+  try {
+    const d = await (await fetch(API + '/gitea/overview')).json();
+    const s = d.sync_last_run;
+    const card = giteaSyncCard(s, d.sync_progress);
+    if (card) el.outerHTML = card;
+    updateSyncTriggerBtn(!!(s && !s.conclusion));
+    if (s && !s.conclusion) {
+      clearTimeout(_giteaSyncTimer);
+      _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
+    }
+  } catch (e) {
+    if (btn) { btn.textContent = '↻ ' + t('refresh'); btn.disabled = false; }
+  }
+}
+function updateSyncTriggerBtn(running) {
+  const btn = document.getElementById('giteaSyncTriggerBtn');
+  if (!btn) return;
+  btn.disabled = !!running;
+  btn.style.opacity = running ? '0.5' : '1';
+  btn.style.cursor = running ? 'not-allowed' : 'pointer';
 }
 
 async function loadGitea(el) {
@@ -2418,34 +2617,20 @@ async function loadGitea(el) {
     if (d.error) throw new Error(d.error);
     // 仓库列表
     const repos = d.repos_list || [];
-    const repoRows = repos.map(r => {
+    const reposTable = pagedTable('gitea_repos', repos, `<tr><th>${t('name')}</th><th>${t('repo_desc')}</th><th>${t('repo_lang')}</th><th>${t('size')}</th><th>${t('repo_updated')}</th></tr>`, r => {
       const isSync = (r.name || '').includes('deepchat-sync');
       const sizeTxt = r.size_kb >= 1024 ? (r.size_kb / 1024).toFixed(1) + ' MB' : r.size_kb + ' KB';
       const upd = r.updated_at ? new Date(r.updated_at).toLocaleString() : '—';
       return `<tr>
         <td>${r.html_url ? `<a class="ext-link" href="${r.html_url}" target="_blank"><code>${r.name || '—'}</code></a>` : `<code>${r.name || '—'}</code>`}${isSync ? ' <span class="admin-badge">sync</span>' : ''}</td>
-        <td style="color:#8b949e">${r.description || '—'}</td>
+        <td style="color:var(--textdim)">${r.description || '—'}</td>
         <td>${r.language || '—'}</td>
         <td>${sizeTxt}</td>
         <td>${upd}</td>
       </tr>`;
-    }).join('');
+    });
     // deepchat-sync 上次执行
-    let syncHtml = '';
-    if (d.sync_last_run) {
-      const s = d.sync_last_run;
-      const statusTxt = s.conclusion === 'success' ? t('sync_success') : (s.status === 'running' ? t('sync_running') : t('sync_failed'));
-      const statusColor = s.conclusion === 'success' ? '#56d364' : (s.status === 'running' ? '#d29922' : '#f85149');
-      const done = s.completed_at ? new Date(s.completed_at).toLocaleString() : '—';
-      syncHtml = `<div class="card"><h3>🔄 ${t('sync_last_run')} <span class="admin-badge">deepchat-sync</span></h3>
-        <table>
-          <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
-          <tr><td>${t('last_updated')}</td><td>${done}</td></tr>
-          ${s.display_title ? `<tr><td>${t('repo_desc')}</td><td style="color:#8b949e">${s.display_title}</td></tr>` : ''}
-          ${s.conclusion === 'failure' && s.failure_reason ? `<tr><td>${t('sync_fail_reason')}</td><td style="color:#f85149">${s.failure_reason}</td></tr>` : ''}
-        </table>
-      </div>`;
-    }
+    const syncHtml = giteaSyncCard(d.sync_last_run, d.sync_progress);
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1>${openAdminBtn(url, t('open_gitea'))}</div>`
       + aboutCard(t('gitea_about'))
       + metricsCard([
@@ -2454,13 +2639,225 @@ async function loadGitea(el) {
         { value: d.orgs ?? '—', label: t('gitea_orgs') },
         { value: d.issues ?? '—', label: t('gitea_issues') },
       ])
-      + keyInfoCard(`<p style="color:#8b949e;margin:0 0 8px">${t('repos_list')}（${repos.length}）</p>
-        ${repoRows ? `<table><tr><th>${t('name')}</th><th>${t('repo_desc')}</th><th>${t('repo_lang')}</th><th>${t('size')}</th><th>${t('repo_updated')}</th></tr>${repoRows}</table>` : `<p class="loading">${t('no_repos')}</p>`}`, t('repos_list'))
+      + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">${t('repos_list')}（${repos.length}）</p>
+        ${repos.length === 0 ? `<p class="loading">${t('no_repos')}</p>` : reposTable}`, t('repos_list'))
       + syncHtml
-      + `<div class="card"><h3>${t('gitea_version')}</h3><p style="color:#8b949e">Gitea <code>${d.version || '—'}</code></p></div>`;
+      + `<div class="card"><h3>🔧 ${t('gitea_sync_trigger')}</h3>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">▶️ ${t('gitea_sync_trigger')}</button>
+            <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.85em"></span>
+          </div>
+        </div>`
+      + `<div class="card"><h3>⏰ ${t('gitea_schedule')}</h3>
+          <p style="color:var(--textdim);font-size:0.85em;margin:0 0 10px">${t('gitea_schedule_hint')}</p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <select id="giteaCronSelect" onchange="giteaCronSelectChange()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:0.88em">
+              <option value="0 2 * * *">每天 02:00 (UTC)</option>
+              <option value="0 */12 * * *">每 12 小时</option>
+              <option value="0 */6 * * *">每 6 小时</option>
+              <option value="0 */3 * * *">每 3 小时</option>
+              <option value="0 * * * *">每小时</option>
+              <option value="30 2 * * 1">每周一 02:30 (UTC)</option>
+              <option value="__custom__">${t('gitea_cron')}…</option>
+            </select>
+            <input id="giteaCronInput" placeholder="分 时 日 月 周" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:0.88em;width:150px">
+            <button onclick="giteaSyncSaveSchedule()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">${t('gitea_schedule_save')}</button>
+            <span id="giteaScheduleMsg" style="color:var(--textdim);font-size:0.85em"></span>
+          </div>
+        </div>`
+      + `<div class="card"><h3>📦 ${t('gitea_sync_targets')}</h3>
+          <div id="giteaTargets" style="display:flex;gap:14px;flex-wrap:wrap"></div>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap">
+            <span style="color:var(--textdim);font-size:0.85em">${t('gitea_keep_releases')}</span>
+            <input id="giteaKeepReleases" type="number" min="1" max="20" value="3" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:0.88em;width:70px">
+            <button onclick="giteaSaveConfig()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">${t('gitea_schedule_save')}</button>
+            <span id="giteaConfigMsg" style="color:var(--textdim);font-size:0.85em"></span>
+          </div>
+        </div>`
+      + `<div class="card"><h3>📜 ${t('gitea_versions')}</h3>
+          <div id="giteaVersions"><p class="loading">${t('loading')}</p></div>
+        </div>`
+      + `<div class="card"><h3>📋 ${t('gitea_sync_history')}</h3>
+          <div id="giteaHistory"><p class="loading">${t('loading')}</p></div>
+        </div>`;
+    giteaLoadSchedule();
+    giteaLoadConfig();
+    giteaLoadVersions();
+    giteaLoadHistory();
+    updateSyncTriggerBtn(!!(d.sync_last_run && !d.sync_last_run.conclusion));
+    if (d.sync_last_run && !d.sync_last_run.conclusion) {
+      clearTimeout(_giteaSyncTimer);
+      _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
+    }
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📦', title, url, e.message, t('open_gitea'));
   }
+}
+
+async function giteaSyncTrigger() {
+  const btn = document.getElementById('giteaSyncTriggerBtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.style.cursor = 'not-allowed'; }
+  const msg = document.getElementById('giteaSyncMsg');
+  if (msg) { msg.textContent = '…'; msg.style.color = 'var(--textdim)'; }
+  try {
+    const r = await fetch(API + '/gitea/sync/trigger', { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = t('gitea_sync_triggered'); msg.style.color = 'var(--green)'; }
+      setTimeout(() => loadGitea(), 2000);
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
+async function giteaLoadSchedule() {
+  const sel = document.getElementById('giteaCronSelect');
+  const inp = document.getElementById('giteaCronInput');
+  try {
+    const d = await (await fetch(API + '/gitea/sync/schedule')).json();
+    const cron = (d && d.cron) || '';
+    if (inp) inp.value = cron;
+    if (sel) {
+      const matched = [...sel.options].some(o => o.value === cron);
+      sel.value = matched ? cron : '__custom__';
+    }
+  } catch (e) {
+    if (inp) inp.value = '';
+  }
+}
+
+function giteaCronSelectChange() {
+  const sel = document.getElementById('giteaCronSelect');
+  const inp = document.getElementById('giteaCronInput');
+  if (sel && inp && sel.value !== '__custom__') inp.value = sel.value;
+}
+
+async function giteaSyncSaveSchedule() {
+  const inp = document.getElementById('giteaCronInput');
+  const msg = document.getElementById('giteaScheduleMsg');
+  const cron = (inp && inp.value || '').trim();
+  if (!cron) return;
+  try {
+    const r = await fetch(API + '/gitea/sync/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cron }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = t('gitea_schedule_saved'); msg.style.color = 'var(--green)'; }
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
+const GITEA_TARGETS = [
+  ['windows-x64', 'Windows x64'],
+  ['windows-arm64', 'Windows ARM64'],
+  ['mac-x64', 'macOS x64'],
+  ['mac-arm64', 'macOS ARM64'],
+  ['linux-x64', 'Linux x64'],
+  ['linux-arm64', 'Linux ARM64'],
+];
+
+async function giteaLoadConfig() {
+  const box = document.getElementById('giteaTargets');
+  const keep = document.getElementById('giteaKeepReleases');
+  try {
+    const d = await (await fetch(API + '/gitea/sync/config')).json();
+    const targets = d.targets || [];
+    if (box) {
+      box.innerHTML = GITEA_TARGETS.map(([k, label]) => {
+        const checked = targets.includes(k) ? ' checked' : '';
+        return `<label style="display:flex;align-items:center;gap:5px;color:var(--text);font-size:0.85em;cursor:pointer"><input type="checkbox" data-target="${k}"${checked} style="accent-color:var(--accentbtn)"> ${label}</label>`;
+      }).join('');
+    }
+    if (keep && d.keep_releases) keep.value = d.keep_releases;
+  } catch (e) {}
+}
+
+async function giteaSaveConfig() {
+  const msg = document.getElementById('giteaConfigMsg');
+  const keep = document.getElementById('giteaKeepReleases');
+  const targets = [...document.querySelectorAll('#giteaTargets input[type=checkbox]:checked')].map(i => i.dataset.target);
+  if (!targets.length) { alert('请至少勾选一个平台'); return; }
+  try {
+    const r = await fetch(API + '/gitea/sync/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targets, keep_releases: parseInt(keep && keep.value, 10) || 3 }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = t('gitea_config_saved'); msg.style.color = 'var(--green)'; }
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
+async function giteaLoadVersions() {
+  const box = document.getElementById('giteaVersions');
+  if (!box) return;
+  try {
+    const d = await (await fetch(API + '/gitea/sync/versions')).json();
+    const versions = d.versions || [];
+    if (!versions.length) { box.innerHTML = `<p class="loading">${t('gitea_no_versions')}</p>`; return; }
+    box.innerHTML = `<table><tr><th>${t('version')}</th><th>${t('last_updated')}</th><th>${t('gitea_sync_targets')}</th><th></th></tr>` +
+      versions.map(v => {
+        const files = Object.keys(v.files || {});
+        return `<tr>
+          <td><code>${v.version}</code></td>
+          <td style="color:var(--textdim)">${v.date || '—'}</td>
+          <td style="color:var(--textdim);font-size:0.85em">${files.join('、')}</td>
+          <td><button onclick="giteaDeleteVersion('${v.version}')" style="background:var(--red);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('gitea_delete_version')}</button></td>
+        </tr>`;
+      }).join('') + `</table>`;
+  } catch (e) { box.innerHTML = `<p class="error">${e.message}</p>`; }
+}
+
+async function giteaDeleteVersion(ver) {
+  if (!confirm(t('gitea_delete_confirm') + ' ' + ver + '？')) return;
+  try {
+    const r = await fetch(API + '/gitea/sync/version/' + encodeURIComponent(ver), { method: 'DELETE' });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      giteaLoadVersions();
+      giteaLoadHistory();
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) { alert(e.message); }
+}
+
+async function giteaLoadHistory() {
+  const box = document.getElementById('giteaHistory');
+  if (!box) return;
+  try {
+    const d = await (await fetch(API + '/gitea/sync/history')).json();
+    const hist = (d.history || []).slice().reverse();
+    if (!hist.length) { box.innerHTML = `<p class="loading">${t('gitea_no_history')}</p>`; return; }
+    const st = h => {
+      if (h.status === 'success') return `<span style="color:var(--green)">${t('sync_success')}</span>`;
+      if (h.status === 'failure') return `<span style="color:var(--red)">${t('sync_failed')}</span>`;
+      const act = { sync: t('gitea_hist_sync'), rebuild: t('gitea_hist_rebuild'), delete: t('gitea_hist_delete') }[h.action];
+      return act || '—';
+    };
+    box.innerHTML = `<table><tr><th>${t('last_updated')}</th><th>${t('status')}</th><th>${t('repo_desc')}</th></tr>` +
+      hist.map(h => `<tr>
+        <td style="color:var(--textdim);white-space:nowrap">${h.time ? new Date(h.time).toLocaleString() : '—'}</td>
+        <td style="white-space:nowrap">${st(h)}</td>
+        <td style="color:var(--textdim)">${h.detail || ''}</td>
+      </tr>`).join('') + `</table>`;
+  } catch (e) { box.innerHTML = `<p class="error">${e.message}</p>`; }
 }
 
 // Keycloak 用户/客户端分页 + 检索辅助函数
@@ -2468,19 +2865,19 @@ function kcToolbar(kind) {
   const st = window._kcPaging[kind];
   const sizeOpts = [10, 25, 50, 100].map(n => `<option value="${n}"${st.pageSize === n ? ' selected' : ''}>${n}</option>`).join('');
   return `<div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;flex-wrap:wrap">
-    <input id="kcSearch_${kind}" type="text" placeholder="${t('search_ph')}" value="${st.search.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter')kcSearch('${kind}')" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;padding:5px 10px;border-radius:6px;font-size:0.82em;width:190px">
-    <button onclick="kcSearch('${kind}')" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82em">🔍</button>
-    <span style="color:#8b949e;font-size:0.8em;margin-left:auto">${t('per_page')}</span>
-    <select id="kcSize_${kind}" onchange="kcSize('${kind}')" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;padding:5px 8px;border-radius:6px;font-size:0.82em">${sizeOpts}</select>
+    <input id="kcSearch_${kind}" type="text" placeholder="${t('search_ph')}" value="${st.search.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter')kcSearch('${kind}')" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 10px;border-radius:6px;font-size:0.82em;width:190px">
+    <button onclick="kcSearch('${kind}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82em">🔍</button>
+    <span style="color:var(--textdim);font-size:0.8em;margin-left:auto">${t('per_page')}</span>
+    <select id="kcSize_${kind}" onchange="kcSize('${kind}')" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${sizeOpts}</select>
   </div>`;
 }
 
 function kcPager(kind, st, total) {
   const pages = Math.max(1, Math.ceil(total / st.pageSize));
-  const btn = (label, page, disabled) => `<button onclick="kcGo('${kind}', ${page})"${disabled ? ' disabled style="opacity:.4;cursor:not-allowed"' : ''} style="background:#21262d;color:#e6edf3;border:1px solid #30363d;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em">${label}</button>`;
+  const btn = (label, page, disabled) => `<button onclick="kcGo('${kind}', ${page})"${disabled ? ' disabled style="opacity:.4;cursor:not-allowed"' : ''} style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em">${label}</button>`;
   return `<div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
     ${btn(t('prev_page'), st.page - 1, st.page <= 0)}
-    <span style="color:#8b949e;font-size:0.82em">${st.page + 1} / ${pages} · ${total}</span>
+    <span style="color:var(--textdim);font-size:0.82em">${st.page + 1} / ${pages} · ${total}</span>
     ${btn(t('next_page'), st.page + 1, st.page + 1 >= pages)}
   </div>`;
 }
@@ -2498,10 +2895,10 @@ async function kcLoad(kind) {
     st.total = d.total || 0;
     let body;
     if (kind === 'users') {
-      const rows = (d.items || []).map(u => `<tr><td style="color:#e6edf3">${u.username || '—'}</td><td style="color:#8b949e">${u.email || '—'}</td><td style="color:${u.enabled ? '#56d364' : '#f85149'}">${u.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
+      const rows = (d.items || []).map(u => `<tr><td style="color:var(--textstrong)">${u.username || '—'}</td><td style="color:var(--textdim)">${u.email || '—'}</td><td style="color:${u.enabled ? 'var(--green)' : 'var(--red)'}">${u.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
       body = (d.items && d.items.length) ? `<table><tr><th>${t('username')}</th><th>${t('email')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
     } else {
-      const rows = (d.items || []).map(c => `<tr><td style="color:#e6edf3">${c.clientId || '—'}</td><td style="color:${c.enabled ? '#56d364' : '#f85149'}">${c.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
+      const rows = (d.items || []).map(c => `<tr><td style="color:var(--textstrong)">${c.clientId || '—'}</td><td style="color:${c.enabled ? 'var(--green)' : 'var(--red)'}">${c.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
       body = (d.items && d.items.length) ? `<table><tr><th>${t('kc_clients')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
     }
     tableEl.innerHTML = body;
@@ -2549,7 +2946,7 @@ async function loadKeycloak(el) {
       { value: (d.idps || []).length, label: t('kc_idps') },
     ];
     const roleBadges = (d.role_list || []).map(r => `<span class="admin-badge">${r}</span>`).join(' ');
-    const newBtn = (href, label) => `<a href="${href}" target="_blank" style="background:#1f6feb;color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${label} ↗</a>`;
+    const newBtn = (href, label) => `<a href="${href}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${label} ↗</a>`;
     const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/realms/enterprise-ai';
     window._kcPaging = {
       users: { page: 0, pageSize: 10, search: '', total: 0 },
@@ -2559,15 +2956,15 @@ async function loadKeycloak(el) {
       + aboutCard(t('kc_about'))
       + metricsCard(stats)
       + keyInfoCard(`
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px"><span style="color:#8b949e">👤 ${t('kc_users')}（${d.users ?? 0}）</span>${newBtn(kcBase + '/users/add', t('kc_new_user'))}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px"><span style="color:var(--textdim)">👤 ${t('kc_users')}（${d.users ?? 0}）</span>${newBtn(kcBase + '/users/add', t('kc_new_user'))}</div>
         ${kcToolbar('users')}
         <div id="kcTable_users"></div>
         <div id="kcPager_users"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:#8b949e">🔑 ${t('kc_clients')}（${d.clients ?? 0}）</span>${newBtn(kcBase + '/clients/add-client', t('kc_new_client'))}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:var(--textdim)">🔑 ${t('kc_clients')}（${d.clients ?? 0}）</span>${newBtn(kcBase + '/clients/add-client', t('kc_new_client'))}</div>
         ${kcToolbar('clients')}
         <div id="kcTable_clients"></div>
         <div id="kcPager_clients"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:#8b949e">🎭 ${t('kc_roles')}（${(d.role_list || []).length}）</span>${newBtn(kcBase + '/roles', t('kc_new_role'))}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:var(--textdim)">🎭 ${t('kc_roles')}（${(d.role_list || []).length}）</span>${newBtn(kcBase + '/roles', t('kc_new_role'))}</div>
         ${roleBadges ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${roleBadges}</div>` : `<p class="loading">${t('no_data')}</p>`}
       `, t('identity_resources'));
     kcLoad('users');
@@ -2588,7 +2985,7 @@ async function loadUpdate(el) {
     const fmtSize = s => s >= 1048576 ? (s / 1048576).toFixed(1) + ' MB' : (s / 1024).toFixed(1) + ' KB';
     const fmtTime = ts => ts ? new Date(ts * 1000).toLocaleString() : '—';
     const files = d.files || [];
-    const rows = files.map(f => `<tr><td><code>${f.name}</code></td><td>${fmtSize(f.size)}</td><td>${fmtTime(f.mtime)}</td></tr>`).join('');
+    const filesTable = pagedTable('update_files', files, `<tr><th>${t('name')}</th><th>${t('size')}</th><th>${t('last_updated')}</th></tr>`, f => `<tr><td><code>${f.name}</code></td><td>${fmtSize(f.size)}</td><td>${fmtTime(f.mtime)}</td></tr>`);
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>⬇️ ${title}</h1>${openAdminBtn(url, t('open_update'))}</div>`
       + aboutCard(t('update_about'))
       + metricsCard([
@@ -2596,7 +2993,7 @@ async function loadUpdate(el) {
           { value: files.length, label: t('installers') },
           { value: fmtTime(d.last_updated), label: t('last_updated') },
         ])
-      + keyInfoCard(`${rows ? `<table><tr><th>${t('name')}</th><th>${t('size')}</th><th>${t('last_updated')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_files')}</p>`}`, t('installers'));
+      + keyInfoCard(`${files.length === 0 ? `<p class="loading">${t('no_files')}</p>` : filesTable}`, t('installers'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('⬇️', title, url, e.message, t('open_update'));
   }
@@ -2605,11 +3002,15 @@ async function loadUpdate(el) {
 // ═══ Helpers ═══
 function setActive(el) {
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-  if (el && el.classList) el.classList.add('active');
+  if (el && el.classList) {
+    el.classList.add('active');
+    const m = (el.getAttribute('onclick') || '').match(/(\w+)\s*\(/);
+    if (m && typeof window[m[1]] === 'function') localStorage.setItem(PAGE_KEY, m[1]);
+  }
 }
 
 // ═══ 侧边栏分组折叠 ═══
-const NAV_GROUP_KEY = 'ai-center-nav-groups';
+const NAV_GROUP_KEY = 'ai-center-nav-groups-v2';
 function toggleGroup(name) {
   const g = document.querySelector('.nav-group[data-group="' + name + '"]');
   if (!g) return;
@@ -2624,7 +3025,8 @@ function initNavGroups() {
   try { state = JSON.parse(localStorage.getItem(NAV_GROUP_KEY) || '{}'); } catch (e) {}
   document.querySelectorAll('.nav-group').forEach(g => {
     const name = g.getAttribute('data-group');
-    if (state[name]) g.classList.add('collapsed');
+    // 默认收起：只有用户明确展开过（state[name] === false）才展开
+    if (state[name] === false) g.classList.remove('collapsed');
   });
 }
 
@@ -2642,6 +3044,7 @@ async function loadUserInfo() {
 // ═══ Init ═══
 applyDir();
 applyI18n();
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 initNavGroups();
 (async function init() {
   try {
@@ -2652,7 +3055,13 @@ initNavGroups();
       PRODUCT_URLS = d.products || {};
     }
   } catch (e) {}
-  loadDashboard();
+  const savedPage = localStorage.getItem(PAGE_KEY);
+  const navEl = savedPage ? document.querySelector('.nav-item[onclick^="' + savedPage + '"]') : null;
+  if (savedPage && navEl && typeof window[savedPage] === 'function') {
+    window[savedPage](navEl);
+  } else {
+    loadDashboard();
+  }
 })();
 loadUserInfo();
 </script>
