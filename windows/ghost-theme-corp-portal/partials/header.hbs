@@ -1,0 +1,25 @@
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="{{@site.url}}">
+            {{#if @site.logo}}
+                <img class="brand-logo" src="{{@site.logo}}" alt="{{@site.title}}">
+            {{else}}
+                <span class="brand-mark">
+                    <svg viewBox="0 0 32 32" width="28" height="28" fill="none"><rect x="4" y="4" width="24" height="24" rx="6" fill="currentColor" opacity="0.15"/><path d="M10 22V10l12 12V10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+            {{/if}}
+            <span class="brand-name">{{@site.title}}</span>
+        </a>
+
+        <nav class="site-nav">
+            <ul class="nav-list">
+                {{navigation}}
+            </ul>
+        </nav>
+
+        <button class="nav-toggle" id="navToggle" aria-label="打开导航菜单">            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </div>
+</header>

@@ -1,0 +1,71 @@
+{{!< default}}
+
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="hero-eyebrow">内部工作平台</div>
+        <h1 class="hero-title">{{#if @site.description}}{{@site.description}}{{else}}欢迎进入公司内部门户{{/if}}</h1>
+        <p class="hero-sub">汇聚公司资讯、制度文档与协作入口，一站式触达。统一账号登录，内网即可访问全部 AI 能力。</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="#latest">浏览最新动态</a>
+            <a class="btn btn-ghost" href="{{@site.url}}/deepchat/">下载 DeepChat</a>
+        </div>
+    </div>
+</section>
+
+<section class="section features">
+    <div class="container">
+        <div class="section-head">
+            <h2 class="section-title">平台能力</h2>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3 class="feature-title">统一认证</h3>
+                <p class="feature-desc">Keycloak SSO 一套账号登录所有产品，支持对接公司 AD 域。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔀</div>
+                <h3 class="feature-title">大模型网关</h3>
+                <p class="feature-desc">NewAPI 统一路由与计费，员工自助申请 API Key。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">模型代理</h3>
+                <p class="feature-desc">LiteLLM 代理 + PII 脱敏 + 响应缓存，安全可控。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI 应用编排</h3>
+                <p class="feature-desc">Dify 低代码搭建智能体与工作流，快速上线业务场景。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">桌面客户端</h3>
+                <p class="feature-desc">DeepChat 开箱即用，企业内网 AI 桌面客户端。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3 class="feature-title">源码管理</h3>
+                <p class="feature-desc">Gitea + CI/CD 自动构建分发，代码资产安全可控。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="latest">
+    <div class="container">
+        <div class="section-head">
+            <h2 class="section-title">最新动态</h2>
+        </div>
+
+        <div class="post-grid">
+            {{#foreach posts}}
+                {{> post-card}}
+            {{else}}
+                <p class="empty">暂无内容，请稍后再来。</p>
+            {{/foreach}}
+        </div>
+
+        {{pagination}}
+    </div>
+</section>

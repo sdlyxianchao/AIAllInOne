@@ -1,0 +1,22 @@
+{{!< default}}
+
+<section class="archive-hero">
+    <div class="container">
+        <div class="archive-eyebrow">作者</div>
+        <h1 class="archive-title">{{primary_author.name}}</h1>
+        {{#if primary_author.bio}}
+            <p class="archive-desc">{{primary_author.bio}}</p>
+        {{/if}}
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="post-grid">
+            {{#foreach posts}}
+                {{> post-card}}
+            {{/foreach}}
+        </div>
+        {{pagination}}
+    </div>
+</section>

@@ -1,0 +1,23 @@
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-brand">
+            <div class="footer-title">{{@site.title}}</div>
+            {{#if @site.description}}
+                <p class="footer-desc">{{@site.description}}</p>
+            {{/if}}
+        </div>
+
+        <div class="footer-nav">
+            <h4 class="footer-heading">快速导航</h4>
+            <ul class="footer-links">
+                {{navigation}}
+            </ul>
+        </div>
+
+        <div class="footer-meta">
+            <h4 class="footer-heading">关于</h4>
+            <p class="footer-copy">© {{date format="YYYY"}} {{@site.title}}</p>
+            <p class="footer-ghost">Powered by Ghost</p>
+        </div>
+    </div>
+</footer>

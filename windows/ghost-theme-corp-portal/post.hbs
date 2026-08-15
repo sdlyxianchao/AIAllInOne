@@ -1,0 +1,36 @@
+{{!< default}}
+
+<article class="post">
+    <div class="container post-container">
+        {{#post}}
+        <header class="post-header">
+            {{#if primary_tag}}
+                <a class="post-tag" href="{{primary_tag.url}}">{{primary_tag.name}}</a>
+            {{/if}}
+            <h1 class="post-title">{{title}}</h1>
+            <div class="post-meta">
+                <time datetime="{{date format="YYYY-MM-DD"}}">{{date format="YYYY年MM月DD日"}}</time>
+                {{#if primary_author}}<span class="post-author">· {{primary_author.name}}</span>{{/if}}
+            </div>
+        </header>
+
+        {{#if feature_image}}
+            <figure class="post-feature">
+                <img src="{{img_url feature_image size="xl"}}" alt="{{title}}">
+            </figure>
+        {{/if}}
+
+        <div class="post-content">
+            {{content}}
+        </div>
+
+        {{#if tags}}
+            <div class="post-tags">
+                {{#foreach tags}}
+                    <a class="tag-chip" href="{{url}}"># {{name}}</a>
+                {{/foreach}}
+            </div>
+        {{/if}}
+        {{/post}}
+    </div>
+</article>

@@ -65,6 +65,13 @@ Every platform directory contains: `docker-compose.yml`, `.env.example`, `*-depl
 
 ![DeepChat](<pics/DeepChat.png>)
 
+### Custom Ghost theme — Corp Portal
+
+The enterprise portal also ships with a custom-built Ghost theme, **Corp Portal** (`windows/ghost-theme-corp-portal/`) — a professional corporate style with a hero banner, platform-capability cards, and the news/article list directly on the home page. It's fully responsive and uses Chinese serif/sans fonts (Noto Serif SC / Noto Sans SC).
+
+- **Use it**: upload the theme in Ghost admin (**Settings → Design → upload & activate "Corp Portal"**), or copy the folder into the Ghost container's `content/themes/` directory.
+- **Full instructions**: see `windows/ghost-theme-corp-portal/README.md` (installation, file layout, and routing notes).
+
 ---
 
 ## 2. Quick start: automated deployment via a Harness-style tool (recommended)

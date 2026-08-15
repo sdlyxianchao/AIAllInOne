@@ -1,0 +1,17 @@
+{
+  "name": "corp-portal",
+  "version": "1.0.0",
+  "description": "公司内部门户 Ghost 主题 —— 稳重专业的企业品牌风格",
+  "keywords": ["ghost", "theme", "ghost-theme", "portal", "corporate"],
+  "author": {
+    "name": "Internal Portal Team",
+    "email": "portal@corp.local"
+  },
+  "config": {
+    "posts_per_page": 8,
+    "image_sizes": {}
+  },
+  "engines": {
+    "ghost": ">=5.0.0"
+  }
+}

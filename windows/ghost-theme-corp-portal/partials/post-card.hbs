@@ -1,0 +1,26 @@
+<article class="post-card">
+    <a class="post-card-link" href="{{url}}">
+        {{#if feature_image}}
+            <div class="post-card-media">
+                <img class="post-card-img" src="{{img_url feature_image size="m"}}" alt="{{title}}" loading="lazy">
+            </div>
+        {{else}}
+            <div class="post-card-media post-card-media--fallback">
+                <span class="post-card-fallback-mark">+</span>
+            </div>
+        {{/if}}
+
+        <div class="post-card-body">
+            <div class="post-card-meta">
+                <time datetime="{{date format="YYYY-MM-DD"}}">{{date format="YYYY年MM月DD日"}}</time>
+                {{#if primary_tag}}
+                    <span class="post-card-tag">{{primary_tag.name}}</span>
+                {{/if}}
+            </div>
+            <h3 class="post-card-title">{{title}}</h3>
+            {{#if excerpt}}
+                <p class="post-card-excerpt">{{excerpt words="18"}}</p>
+            {{/if}}
+        </div>
+    </a>
+</article>
