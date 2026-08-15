@@ -155,7 +155,7 @@
 基于 windows-checklist.html 的内容，在本目录生成「部署进度-&lt;日期&gt;.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
 
 ## 第三步：按部署指南逐步执行
-精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须部署项目自带的 Corp Portal 主题：跑 <code>scripts\ghost-theme-setup.ps1</code> 自动装好并激活，不要停留在官方默认主题。
+精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 <code>scripts\ghost-theme-setup.ps1</code> 自动装好并激活，不要停留在官方默认主题；②导入示例内容，先问用户「门户示例内容用什么语言」，中文则直接跑 <code>scripts\ghost-content-import.ps1 -ServerIp "实际内网IP"</code> 导入；用户选其他语言时，先把 <code>ghost-content-seed/content.json</code> 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <code>&lt;服务器IP&gt;</code> 占位符和所有 URL 结构不动），再导入。
 
 ## 第四步：反复测试解决
 出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
@@ -1459,32 +1459,19 @@ docker restart ghost</code></pre>
   </ul>
 </div>
 <div class="step">
-  <span class="step-num">3</span><strong>配置导航菜单</strong>
-  <p>后台 → <strong>外观</strong> → <strong>菜单</strong> → 创建"主导航"：</p>
-  <table>
-    <tr><th>菜单项</th><th>类型</th><th>URL</th></tr>
-    <tr><td>首页</td><td>页面</td><td><code>/</code></td></tr>
-    <tr><td>新闻动态</td><td>分类</td><td><code>/category/news</code></td></tr>
-    <tr><td>下载中心</td><td>页面</td><td><code>/downloads</code></td></tr>
-    <tr><td>AI 工作台</td><td>自定义链接</td><td><code>http://&lt;服务器IP&gt;</code></td></tr>
-    <tr><td>帮助文档</td><td>分类</td><td><code>/category/docs</code></td></tr>
-  </table>
+  <span class="step-num">3</span><strong>导入示例内容（可选，含语言选择）</strong>
+  <p>项目自带一份门户示例内容种子 <code>ghost-content-seed/content.json</code>（站点标题/描述、主导航、4 篇示例文章 + 1 个 DeepChat 下载页）。导入后门户开箱即有内容，无需从零建页面。</p>
+  <div class="callout callout-info"><strong>🤖 自动化（推荐，含语言翻译）：</strong>部署 Agent 会先问你「门户示例内容用什么语言」，再按你的选择处理：</div>
+  <ul>
+    <li><b>中文（默认）</b>：直接导入。</li>
+    <li><b>其他语言</b>：Agent 会先把 seed 里的 <code>title</code> / <code>html</code> / <code>plaintext</code> / <code>custom_excerpt</code> 翻译成目标语言，再导入。</li>
+  </ul>
+  <p>导入命令（Agent 自动执行）：</p>
+  <pre><code>powershell -File .\scripts\ghost-content-import.ps1 -ServerIp "&lt;服务器IP&gt;"</code></pre>
+  <p>脚本内部做的事：把 <code>ghost-content-seed/content.json</code> 复制进容器 → 在容器内执行 <code>node /tmp/ghost-content-import.js /tmp/content.json &lt;服务器IP&gt;</code> → 自动替换 <code>&lt;服务器IP&gt;</code> 占位符、创建文章/页面、写入导航和站点设置（已存在的 slug 自动跳过，幂等）。</p>
+  <p>导入后门户首页即为新闻列表，导航含 Home / DeepChat / Dify，下载页 <code>/deepchat/</code> 已有完整下载链接——原「配置导航菜单」「创建下载页」两步由种子自动完成，无需手工再配。</p>
 </div>
-<div class="step">
-  <span class="step-num">4</span><strong>创建下载中心页面</strong>
-  <p>后台 → <strong>页面</strong> → 新建"下载中心"（slug 用 <code>downloads</code>）：</p>
-  <pre><code>## DeepChat 企业版
-
-### Windows
-- [DeepChat v1.1.0（Windows x64）](http://&lt;服务器IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
-
-### macOS
-- [DeepChat v1.1.0（macOS x64）](http://&lt;服务器IP&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
-
-### 版本历史
-- **v1.1.0** — 2026-08-11 发布</code></pre>
-</div>
-<div class="verify">Ghost 首页显示主题样式，导航菜单包含"AI 工作台"链接，点击跳转到 Dify。</div>
+<div class="verify">Ghost 首页显示主题样式 + 示例新闻列表，导航含 Home / DeepChat / Dify，下载页 /deepchat/ 有安装包链接。</div>
 
 <h3 id="config-gitea">6.6 Gitea — 初始化和 Runner 注册</h3>
 <div class="step">
