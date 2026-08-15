@@ -73,9 +73,9 @@ Key data flows:
 
 ![Enterprise portal home](<pics/AI All In One Hub.png>)
 
-**Download center** — DeepChat installers
+**DeepChat Page** — Download DeepChat installers
 
-![Download center](<pics/AI All In One Hub Download.png>)
+![DeepChat Page](<pics/AI All In One Hub Download.png>)
 
 **DeepChat** — desktop AI client
 

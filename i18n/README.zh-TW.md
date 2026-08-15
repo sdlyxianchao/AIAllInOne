@@ -71,9 +71,9 @@
 
 ![企業入口網站首頁](<../pics/AI All In One Hub.png>)
 
-**下載中心** — DeepChat 安裝包
+**DeepChat 頁面** — 下載 DeepChat 安裝包
 
-![下載中心](<../pics/AI All In One Hub Download.png>)
+![DeepChat 頁面](<../pics/AI All In One Hub Download.png>)
 
 **DeepChat** — 桌面 AI 用戶端
 

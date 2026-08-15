@@ -71,9 +71,9 @@
 
 ![الصفحة الرئيسية للبوابة](<../pics/AI All In One Hub.png>)
 
-**مركز التنزيل** — مثبّتات DeepChat
+**صفحة DeepChat** — تنزيل مثبّتات DeepChat
 
-![مركز التنزيل](<../pics/AI All In One Hub Download.png>)
+![صفحة DeepChat](<../pics/AI All In One Hub Download.png>)
 
 **DeepChat** — عميل ذكاء اصطناعي لسطح المكتب
 

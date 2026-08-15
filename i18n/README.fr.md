@@ -71,9 +71,9 @@ Principaux flux de données :
 
 ![Accueil du portail](<../pics/AI All In One Hub.png>)
 
-**Centre de téléchargement** — installeurs DeepChat
+**Page DeepChat** — Télécharger les installeurs DeepChat
 
-![Centre de téléchargement](<../pics/AI All In One Hub Download.png>)
+![Page DeepChat](<../pics/AI All In One Hub Download.png>)
 
 **DeepChat** — client IA de bureau
 

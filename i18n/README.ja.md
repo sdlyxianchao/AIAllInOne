@@ -71,9 +71,9 @@
 
 ![企業ポータル ホーム](<../pics/AI All In One Hub.png>)
 
-**ダウンロードセンター** — DeepChat インストーラー
+**DeepChat ページ** — DeepChat インストーラーをダウンロード
 
-![ダウンロードセンター](<../pics/AI All In One Hub Download.png>)
+![DeepChat ページ](<../pics/AI All In One Hub Download.png>)
 
 **DeepChat** — デスクトップ AI クライアント
 

@@ -71,9 +71,9 @@
 
 ![기업 포털 홈](<../pics/AI All In One Hub.png>)
 
-**다운로드 센터** — DeepChat 설치 프로그램
+**DeepChat 페이지** — DeepChat 설치 프로그램 다운로드
 
-![다운로드 센터](<../pics/AI All In One Hub Download.png>)
+![DeepChat 페이지](<../pics/AI All In One Hub Download.png>)
 
 **DeepChat** — 데스크톱 AI 클라이언트
 

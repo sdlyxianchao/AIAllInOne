@@ -71,9 +71,9 @@ Flujos de datos clave:
 
 ![Inicio del portal](<../pics/AI All In One Hub.png>)
 
-**Centro de descargas** — instaladores de DeepChat
+**Página DeepChat** — Descargar los instaladores de DeepChat
 
-![Centro de descargas](<../pics/AI All In One Hub Download.png>)
+![Página DeepChat](<../pics/AI All In One Hub Download.png>)
 
 **DeepChat** — cliente IA de escritorio
 
