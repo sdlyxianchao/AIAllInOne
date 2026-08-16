@@ -1139,6 +1139,11 @@ app.get('/api/mcp-gateway/skills', keycloak.protect('realm:ai-platform-admin'), 
   res.status(r.status).json(r.data);
 });
 
+app.get('/api/mcp-gateway/tools', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  const r = await gwFetch('/api/tools');
+  res.status(r.status).json(r.data);
+});
+
 app.post('/api/mcp-gateway/skills/upload', keycloak.protect('realm:ai-platform-admin'), express.raw({ type: ['application/zip', 'application/octet-stream'], limit: '200mb' }), async (req, res) => {
   const buf = req.body;
   if (!buf || !buf.length) return res.status(400).json({ error: '空文件' });

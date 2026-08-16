@@ -10,7 +10,7 @@ version: 1.0.0
 
 ## 市场地址（可配置）
 
-市场地址写在同目录 `config.json` 的 `market_url` 字段里。**先读它**，别硬编码。若 `config.json` 缺失，默认用 `http://<市场主机名>:3100`。
+市场地址写在同目录 `config.json` 的 `market_url` 字段里。**先读它**，别硬编码。若 `config.json` 缺失，默认用 `http://skillmarket.local:3100`。
 
 > ⚠️ 用**主机名**而非 IP 作为市场地址：DeepChat 的 agent 环境会把 IP 地址打码（隐私保护），导致读不到真实 IP 而无法发起请求。`<市场主机名>` 是**部署参数**，部署时须替换成实际可解析的主机名（本环境当前为 `skillmarket.chxia.lab`）——单机在 `C:\Windows\System32\drivers\etc\hosts` 加 `<服务器IP>  <市场主机名>`；公司内网则在 DNS 加 A 记录 `<市场主机名>` → `<服务器IP>`。
 

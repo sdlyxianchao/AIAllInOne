@@ -171,22 +171,22 @@
 
 <h3>1.1 架构总览</h3>
 <div style="margin: 12px 24px;">
-<svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
+<svg viewBox="0 0 1200 1000" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
   <!-- ====== Layer Background Bands ====== -->
   <rect x="0" y="30" width="1200" height="90" rx="4" fill="#d2a8ff08" stroke="#d2a8ff22" stroke-width="0.5"/>
   <rect x="0" y="140" width="1200" height="95" rx="4" fill="#d2992208" stroke="#d2992222" stroke-width="0.5"/>
   <rect x="0" y="255" width="1200" height="90" rx="4" fill="#1f6feb08" stroke="#1f6feb22" stroke-width="0.5"/>
   <rect x="0" y="365" width="1200" height="60" rx="4" fill="#39c5cf08" stroke="#39c5cf22" stroke-width="0.5"/>
-  <rect x="0" y="445" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
-  <rect x="0" y="565" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
+  <rect x="0" y="545" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
+  <rect x="0" y="665" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
 
   <!-- ====== Layer Labels ====== -->
   <rect x="8" y="36" width="56" height="18" rx="9" fill="#d2a8ff22"/><text x="36" y="49" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">用户层</text>
   <rect x="8" y="146" width="76" height="18" rx="9" fill="#d2992222"/><text x="46" y="159" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">门户&amp;应用</text>
   <rect x="8" y="261" width="66" height="18" rx="9" fill="#1f6feb22"/><text x="41" y="274" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">LLM路由</text>
   <rect x="8" y="371" width="76" height="18" rx="9" fill="#39c5cf22"/><text x="46" y="384" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">可观测</text>
-  <rect x="8" y="451" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="464" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">基础设施</text>
-  <rect x="8" y="571" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="584" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">统一管理</text>
+  <rect x="8" y="551" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="564" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">基础设施</text>
+  <rect x="8" y="671" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="684" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">统一管理</text>
 
   <!-- ====== Layer 1: User ====== -->
   <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
@@ -204,7 +204,7 @@
 
   <g filter="url(#sh)"><rect x="700" y="160" width="300" height="70" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="2"/><rect x="700" y="160" width="4" height="70" rx="2" fill="#58a6ff"/></g>
   <text x="720" y="183" fill="#58a6ff" font-size="14" font-weight="700">🤖 Dify</text>
-  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI 应用平台 · RAG/Agent/Workflow</text>
+  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI 应用 · 知识库(RAG) · Agent/Workflow</text>
 
   <!-- ====== Layer 3: LLM Routing ====== -->
   <g filter="url(#sh)"><rect x="130" y="275" width="220" height="60" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="1.5"/><rect x="130" y="275" width="4" height="60" rx="2" fill="#58a6ff"/></g>
@@ -228,30 +228,30 @@
   <text x="568" y="360" fill="#39c5cf" font-size="8" font-weight="600">上报</text>
 
   <!-- ====== Layer 5: Infrastructure ====== -->
-  <g filter="url(#sh)"><rect x="60" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
-  <text x="80" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
-  <text x="80" y="505" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
+  <g filter="url(#sh)"><rect x="60" y="565" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="565" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="80" y="588" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
+  <text x="80" y="605" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
 
-  <g filter="url(#sh)"><rect x="285" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
-  <text x="305" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
-  <text x="305" y="505" fill="#8b949e" font-size="10">Skill / MCP 管理 Hub</text>
+  <g filter="url(#sh)"><rect x="285" y="565" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="565" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="305" y="588" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
+  <text x="305" y="605" fill="#8b949e" font-size="10">Skill / MCP Hub · search_knowledge 检索</text>
 
-  <g filter="url(#sh)"><rect x="510" y="465" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="465" width="4" height="60" rx="2" fill="#f85149"/></g>
-  <text x="530" y="488" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
-  <text x="530" y="505" fill="#8b949e" font-size="10">源码 + Actions CI/CD</text>
+  <g filter="url(#sh)"><rect x="510" y="565" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="565" width="4" height="60" rx="2" fill="#f85149"/></g>
+  <text x="530" y="588" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
+  <text x="530" y="605" fill="#8b949e" font-size="10">源码 + Actions CI/CD</text>
 
-  <g filter="url(#sh)"><rect x="735" y="465" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="465" width="4" height="60" rx="2" fill="#56d364"/></g>
-  <text x="755" y="488" fill="#56d364" font-size="13" font-weight="600">📦 更新服务器</text>
-  <text x="755" y="505" fill="#8b949e" font-size="10">DeepChat 安装包托管</text>
+  <g filter="url(#sh)"><rect x="735" y="565" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="565" width="4" height="60" rx="2" fill="#56d364"/></g>
+  <text x="755" y="588" fill="#56d364" font-size="13" font-weight="600">📦 更新服务器</text>
+  <text x="755" y="605" fill="#8b949e" font-size="10">DeepChat 安装包托管</text>
 
-  <g filter="url(#sh)"><rect x="960" y="465" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="465" width="4" height="60" rx="2" fill="#d29922"/></g>
-  <text x="980" y="488" fill="#d29922" font-size="13" font-weight="600">📈 监控 · 日志</text>
-  <text x="980" y="505" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
+  <g filter="url(#sh)"><rect x="960" y="565" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="565" width="4" height="60" rx="2" fill="#d29922"/></g>
+  <text x="980" y="588" fill="#d29922" font-size="13" font-weight="600">📈 监控 · 日志</text>
+  <text x="980" y="605" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
 
   <!-- ====== Layer 6: Management ====== -->
-  <g filter="url(#sh)"><rect x="80" y="575" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="575" width="4" height="55" rx="2" fill="#58a6ff"/></g>
-  <text x="600" y="598" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI 管理中心（统一管理员门户 + Keycloak 鉴权）</text>
-  <text x="600" y="618" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard 容器状态/业务指标 · 产品内嵌统计页 · 审计/成本报表 · Keycloak SSO</text>
+  <g filter="url(#sh)"><rect x="80" y="675" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="675" width="4" height="55" rx="2" fill="#58a6ff"/></g>
+  <text x="600" y="698" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI 管理中心（统一管理员门户 + Keycloak 鉴权）</text>
+  <text x="600" y="718" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard 容器状态/业务指标 · 产品内嵌统计页 · 审计/成本报表 · Keycloak SSO</text>
 
   <!-- ====== Connections ====== -->
   <path d="M 250 105 L 250 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
@@ -277,60 +277,63 @@
   <text x="960" y="240" fill="#39c5cf" font-size="8" font-weight="600">查看追踪</text>
 
   <!-- 监控：浏览器 -> Grafana -->
-  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 465" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 565" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
 
   <!-- CI/CD -->
-  <path d="M 612 465 L 735 465" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
-  <text x="674" y="458" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">构建产物</text>
-  <path d="M 1062 465 L 1175 465 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <path d="M 612 565 L 735 565" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <text x="674" y="558" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">构建产物</text>
+  <path d="M 1062 565 L 1175 565 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
   <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DeepChat 自动更新（检查 version.txt → 下载安装）</text>
 
   <!-- Keycloak OIDC -->
-  <path d="M 162 465 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 162 565 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
   <path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
   <text x="162" y="442" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ OIDC SSO → 全部 Web 产品</text>
 
   <!-- MCP -->
-  <path d="M 387 465 L 387 447" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
-  <path d="M 387 447 Q 387 425 250 425 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
-  <text x="387" y="444" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+  <path d="M 387 565 L 387 455" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 387 455 L 250 455 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="2.5" stroke-dasharray="5,3" opacity="0.9" marker-end="url(#ap)"/>
+  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+  <!-- RAG 检索链路：MCP Gateway → Dify 知识库 -->
+  <path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" stroke="#39c5cf" stroke-width="2.5" stroke-dasharray="7" marker-end="url(#at)"/>
+  <text x="577" y="498" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="700">RAG 检索：search_knowledge → Dify 知识库</text>
 
   <!-- 管理 bracket -->
-  <path d="M 80 575 L 80 545 L 1120 545 L 1120 575" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
-  <text x="600" y="541" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI 管理中心（Keycloak 鉴权 → Dashboard → 全部产品入口 + 审计/成本）</text>
+  <path d="M 80 675 L 80 645 L 1120 645 L 1120 675" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
+  <text x="600" y="641" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI 管理中心（Keycloak 鉴权 → Dashboard → 全部产品入口 + 审计/成本）</text>
 
   <!-- ====== Legend ====== -->
-  <rect x="20" y="670" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="40" y="695" fill="#58a6ff" font-size="13" font-weight="700">📊 数据流说明</text>
+  <rect x="20" y="770" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="40" y="795" fill="#58a6ff" font-size="13" font-weight="700">📊 数据流说明</text>
 
-  <line x1="40" y1="715" x2="80" y2="715" stroke="#58a6ff" stroke-width="2"/>
-  <text x="90" y="719" fill="#c9d1d9" font-size="11">LLM 请求流：DeepChat / Dify → NewAPI → LiteLLM 脱敏 → 外部模型 → 响应还原 PII → 返回</text>
+  <line x1="40" y1="815" x2="80" y2="815" stroke="#58a6ff" stroke-width="2"/>
+  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM 请求流：DeepChat / Dify → NewAPI → LiteLLM 脱敏 → 外部模型 → 响应还原 PII → 返回</text>
 
-  <line x1="40" y1="740" x2="80" y2="740" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="744" fill="#c9d1d9" font-size="11">可观测流：LiteLLM success_callback → Langfuse 追踪每次调用（提示词/响应/延迟/token/成本）</text>
+  <line x1="40" y1="840" x2="80" y2="840" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="844" fill="#c9d1d9" font-size="11">可观测流：LiteLLM success_callback → Langfuse 追踪每次调用（提示词/响应/延迟/token/成本）</text>
 
-  <line x1="40" y1="765" x2="80" y2="765" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="769" fill="#c9d1d9" font-size="11">自动更新流：Gitea Actions 构建 → 更新服务器 → DeepChat 自动下载安装</text>
+  <line x1="40" y1="865" x2="80" y2="865" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="869" fill="#c9d1d9" font-size="11">自动更新流：Gitea Actions 构建 → 更新服务器 → DeepChat 自动下载安装</text>
 
-  <line x1="620" y1="715" x2="660" y2="715" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="670" y="719" fill="#c9d1d9" font-size="11">门户流：浏览器 → Ghost 门户 → 浏览新闻/下载/跳转 Dify</text>
+  <line x1="620" y1="815" x2="660" y2="815" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="670" y="819" fill="#c9d1d9" font-size="11">门户流：浏览器 → Ghost 门户 → 浏览新闻/下载/跳转 Dify</text>
 
-  <line x1="620" y1="740" x2="660" y2="740" stroke="#d29922" stroke-width="1.5"/>
-  <text x="670" y="744" fill="#c9d1d9" font-size="11">监控流：浏览器 → Grafana 大盘（Prometheus + cadvisor 容器资源/告警）</text>
+  <line x1="620" y1="840" x2="660" y2="840" stroke="#d29922" stroke-width="1.5"/>
+  <text x="670" y="844" fill="#c9d1d9" font-size="11">监控流：浏览器 → Grafana 大盘（Prometheus + cadvisor 容器资源/告警）</text>
 
-  <line x1="620" y1="765" x2="660" y2="765" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
-  <text x="670" y="769" fill="#c9d1d9" font-size="11">认证流：Keycloak OIDC SSO 统一登录（全部 Web 产品共用 ai_all_in_one_admin）</text>
+  <line x1="620" y1="865" x2="660" y2="865" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
+  <text x="670" y="869" fill="#c9d1d9" font-size="11">认证流：Keycloak OIDC SSO 统一登录（全部 Web 产品共用 ai_all_in_one_admin）</text>
 
-  <line x1="40" y1="790" x2="80" y2="790" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
-  <text x="90" y="794" fill="#c9d1d9" font-size="11">统一日志流：Promtail 采集各容器日志 → Loki 聚合 → AI 管理中心「统一日志」页查询</text>
+  <line x1="40" y1="890" x2="80" y2="890" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
+  <text x="90" y="894" fill="#c9d1d9" font-size="11">统一日志流：Promtail 采集各容器日志 → Loki 聚合 → AI 管理中心「统一日志」页查询</text>
 
-  <line x1="40" y1="795" x2="1160" y2="795" stroke="#30363d" stroke-width="0.5"/>
-  <text x="40" y="812" fill="#d2a8ff" font-size="10" font-weight="700">🔐 组件交互：</text>
-  <text x="40" y="827" fill="#8b949e" font-size="9">Keycloak OIDC SSO → 全部 Web 产品　　MCP Gateway 提供 Skill/MCP → DeepChat/Dify　　LiteLLM 上报 → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
-  <text x="40" y="842" fill="#8b949e" font-size="9">Gitea 构建 → 更新服务器 + Ghost 公告　　AI 管理中心 — 统一管理门户（Dashboard + 产品内嵌页 + 审计/成本报表 + 备份恢复 + 统一日志）</text>
+  <line x1="40" y1="895" x2="1160" y2="895" stroke="#30363d" stroke-width="0.5"/>
+  <text x="40" y="912" fill="#d2a8ff" font-size="10" font-weight="700">🔐 组件交互：</text>
+  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → 全部 Web 产品　　MCP Gateway 提供 Skill/MCP → DeepChat/Dify　　LiteLLM 上报 → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+  <text x="40" y="942" fill="#8b949e" font-size="9">Gitea 构建 → 更新服务器 + Ghost 公告　　AI 管理中心 — 统一管理门户（Dashboard + 产品内嵌页 + 审计/成本报表 + 备份恢复 + 统一日志）</text>
 
-  <rect x="40" y="850" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
-  <text x="600" y="866" text-anchor="middle" fill="#8b949e" font-size="10">16 个独立开源组件 · 全部 Docker 部署 · 零代码开发 · 通过 URL + API Key / OIDC 互连 · Keycloak 统一 SSO</text>
+  <rect x="40" y="950" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
+  <text x="600" y="966" text-anchor="middle" fill="#8b949e" font-size="10">16 个独立开源组件 · 全部 Docker 部署 · 零代码开发 · 通过 URL + API Key / OIDC 互连 · Keycloak 统一 SSO</text>
 
 </div>
 
@@ -1657,7 +1660,9 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
 <div class="note"><strong>说明：</strong>MCP Gateway 是 Skill 和 MCP 工具的集中管理网关，基于官方 <code>@modelcontextprotocol/sdk</code> 实现，暴露标准 Streamable HTTP <code>/mcp</code> 端点。DeepChat 和 Dify 连这一个地址即可获取所有工具（内置平台工具 + 聚合的外部 MCP Server）。已并入主 docker-compose.yml，随核心服务一起启动。</div>
 
 <h3>8.1 部署（已并入主 docker-compose.yml）</h3>
-<p>MCP Gateway 已作为 <code>mcp-gateway</code> 服务加入主 <code>docker-compose.yml</code>，端口 <code>3100</code>，随核心服务 <code>docker compose up -d</code> 一起启动，无需单独部署。源码在 <code>mcp-gateway/</code> 目录（gateway.js + package.json + mcp-servers.json）。</p>
+<p>MCP Gateway 已作为 <code>mcp-gateway</code> 服务加入主 <code>docker-compose.yml</code>，端口 <code>3100</code>，随核心服务 <code>docker compose up -d</code> 一起启动。源码在 <code>mcp-gateway/</code> 目录（gateway.js + package.json + mcp-servers.json）。</p>
+<div class="callout callout-warn"><strong>⚠️ 前置步骤（一次性）：</strong>网关依赖 <code>@modelcontextprotocol/sdk</code>（<code>node_modules</code> 不随仓库发布），首次部署前先装依赖：<pre><code>cd mcp-gateway
+npm install</code></pre>否则 <code>node gateway.js</code> 会报 <code>Cannot find module '@modelcontextprotocol/sdk'</code>。</div>
 
 <h3>8.2 内置平台工具</h3>
 <table>
@@ -1681,10 +1686,12 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
 
 <h3>8.4 客户端接入（DeepChat / Dify）</h3>
 <ol>
-  <li>DeepChat：设置 → MCP 设置 → 添加服务器 → 类型选 <b>可流式传输的 HTTP（http）</b></li>
+  <li>DeepChat：设置 → MCP → <b>新增</b> → 点 <b>「跳过至手动配置」</b> → 类型选 <b>可流式传输的 HTTP 请求（HTTP）</b></li>
   <li>基础 URL 填：<code>http://&lt;服务器IP&gt;:3100/mcp</code></li>
   <li>Dify 工作流：自定义工具 / MCP 工具配置同样指向 <code>http://&lt;服务器IP&gt;:3100/mcp</code></li>
 </ol>
+<div class="callout callout-warn"><strong>⚠️ 关键：</strong>DeepChat 点「新增」后默认进入模板/预设选择页，<b>必须点「跳过至手动配置」</b>才会出现手动填类型和基础 URL 的界面（否则找不到「可流式传输的 HTTP 请求」类型）。</div>
+<div class="note"><strong>一键接入 vs 手动配置：</strong>① <b>一键接入</b>（<code>/market</code> 页顶部或 AI 管理中心 MCP 页的「复制 DeepChat 一键接入链接」）走 <b>SSE 端点 <code>/sse</code></b>——因为 DeepChat 的 <code>deepchat://mcp/install</code> 处理器<b>只接受 stdio/sse，不接受 Streamable HTTP</b>，SSE 会显示「SSE is legacy-only」提示，<b>属正常、不影响使用</b>。② <b>手动配置</b>走 Streamable HTTP <code>/mcp</code>（无该提示，推荐）。两者连的是同一个网关、同一套工具（含 <code>search_knowledge</code>）。</div>
 
 <h3>8.5 验证</h3>
 <ol>
@@ -1787,6 +1794,27 @@ DIFY_DEFAULT_DATASET_ID=&lt;知识库 UUID&gt;</code></pre>
     <li><b>Knowledge Key 是账号级</b>：一个 key 可访问该账号所有知识库；如需「按用户分库」，Dify Knowledge API 不直接支持，需在 MCP 工具层做「用户 → dataset_id」映射。</li>
     <li><b><code>GET /v1</code> 会 308</b>：检索请求必须用完整路径 <code>/v1/datasets/{id}/hit-testing</code>，不要只写 <code>/v1</code>。</li>
     <li><b>中文 query 用 curl <code>-d</code> 直传会 400</b>（编码问题）：用 <code>--data-binary @文件</code> 或脚本（Python/Node）发 UTF-8 请求。</li>
+  </ul>
+</div>
+
+<h4>备选接入方式：DeepChat 内置 difyKnowledge（不经 MCP Gateway）</h4>
+<p>DeepChat 客户端内置了一个 <code>difyKnowledge</code>（InMemory）MCP 服务器，可直接连 Dify 知识库做检索，<b>不经过本平台的 MCP Gateway</b>。适合个人或极少数人使用；企业统一发布仍建议走网关的 <code>search_knowledge</code>（密钥不落地、可审计、可统一切换数据集）。</p>
+<ol>
+  <li>DeepChat → 设置 → <b>MCP 设置</b> → 找到内置的 <b><code>difyKnowledge</code></b> → 点其 <b>编辑</b> 按钮 → <b>添加 Dify 配置</b>。</li>
+  <li>填三项（用第 1 步生成的值）：
+    <ul>
+      <li><b>API 服务器地址 (endpoint)</b>：<code>http://&lt;服务器IP&gt;/v1</code>（务必带 <code>/v1</code>）</li>
+      <li><b>API 密钥 (apiKey)</b>：<code>dataset-...</code> 前缀的 Knowledge API Key</li>
+      <li><b>数据集 ID (datasetId)</b>：知识库 UUID</li>
+    </ul>
+  </li>
+  <li>回到对话界面，<b>启用 Dify 知识库 MCP</b> 开关。</li>
+</ol>
+<div class="callout callout-warn">
+  <strong>⚠️ 注意事项：</strong>
+  <ul>
+    <li><b>模型必须支持工具调用（function calling）</b>，否则检索不会被触发。</li>
+    <li><b>密钥下发风险</b>：<code>difyKnowledge</code> 把 Knowledge API Key 直接存在每个客户端本地；key 是<b>账号级</b>的，散到各客户端后会失去统一管控。企业对外发布建议用网关 <code>search_knowledge</code>（key 只留在服务器 <code>.env</code>）。</li>
   </ul>
 </div>
 

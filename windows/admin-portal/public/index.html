@@ -191,8 +191,8 @@ const I18N = {
     health_check: '健康检查', svc_detail: '服务详情', status: '状态', uptime: '运行时间', image: '镜像',
     api_no_ui: '这是一个 API 服务，无 Web 界面。健康检查:', health_error: '无法获取状态：', manual_check: '手动检查:',
     mcp_title: 'MCP Gateway — Skill / MCP 管理', endpoints: '端点信息', mcp_endpoint: 'MCP 端点', skill_market: 'Skill 市场', client_access: '客户端接入',
-    client_access_desc: 'DeepChat：设置 → MCP → 添加服务器 → 类型「可流式传输的 HTTP」→ 填上面的 /mcp 地址',
-    mcp_servers: 'MCP Server 管理（聚合外部 MCP）', skills: 'Skill 管理（内网技能包）',
+    client_access_desc: 'DeepChat：设置 → MCP → 新增 → 跳过至手动配置 → 类型「可流式传输的 HTTP 请求」→ 基础 URL 填上面的 /mcp 地址',
+    mcp_servers: 'MCP Server 管理（聚合外部 MCP）', skills: 'Skill 管理（内网技能包）', builtin_tools: '内置工具', no_tools: '暂无内置工具', params: '参数', copy_deepchat_link: '复制 DeepChat 一键接入链接',
     name: '名称', type: '类型', cmd_url: '命令 / URL', delete: '删除', no_mcp: '暂无外部 MCP server（内置工具始终可用）',
     add_mcp: '添加 MCP Server', name_ph: '名称（如 filesystem）', cmd_url_ph: 'http：填 URL；stdio：填命令', add: '添加',
     cmd_url_ph_http: 'http：填 URL（如 http://example.com/mcp）', cmd_url_ph_stdio: 'stdio：填命令（如 npx -y ...）',
@@ -327,8 +327,8 @@ const I18N = {
     health_check: 'Health Check', svc_detail: 'Service Details', status: 'Status', uptime: 'Uptime', image: 'Image',
     api_no_ui: 'This is an API service with no web UI. Health check: ', health_error: 'Cannot get status: ', manual_check: 'Manual check: ',
     mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Endpoints', mcp_endpoint: 'MCP Endpoint', skill_market: 'Skill Market', client_access: 'Client Access',
-    client_access_desc: 'DeepChat: Settings → MCP → Add server → type "Streamable HTTP" → fill the /mcp URL above',
-    mcp_servers: 'MCP Servers (external MCP aggregation)', skills: 'Skills (internal skill packages)',
+    client_access_desc: 'DeepChat: Settings → MCP → Add → Skip to manual config → type "Streamable HTTP" → Base URL: the /mcp URL above',
+    mcp_servers: 'MCP Servers (external MCP aggregation)', skills: 'Skills (internal skill packages)', builtin_tools: 'Built-in Tools', no_tools: 'No built-in tools', params: 'Params', copy_deepchat_link: 'Copy DeepChat one-click install link',
     name: 'Name', type: 'Type', cmd_url: 'Command / URL', delete: 'Delete', no_mcp: 'No external MCP servers (built-in tools always available)',
     add_mcp: 'Add MCP Server', name_ph: 'Name (e.g. filesystem)', cmd_url_ph: 'http: URL; stdio: command', add: 'Add',
     cmd_url_ph_http: 'http: URL (e.g. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: command (e.g. npx -y ...)',
@@ -463,8 +463,8 @@ const I18N = {
     health_check: '健康檢查', svc_detail: '服務詳情', status: '狀態', uptime: '運行時間', image: '映像',
     api_no_ui: '這是一個 API 服務，無 Web 介面。健康檢查:', health_error: '無法取得狀態：', manual_check: '手動檢查:',
     mcp_title: 'MCP Gateway — Skill / MCP 管理', endpoints: '端點資訊', mcp_endpoint: 'MCP 端點', skill_market: 'Skill 市場', client_access: '用戶端接入',
-    client_access_desc: 'DeepChat：設定 → MCP → 新增伺服器 → 類型「可串流的 HTTP」→ 填上面的 /mcp 位址',
-    mcp_servers: 'MCP Server 管理（聚合外部 MCP）', skills: 'Skill 管理（內網技能包）',
+    client_access_desc: 'DeepChat：設定 → MCP → 新增 → 跳過至手動設定 → 類型「可串流的 HTTP 請求」→ 基礎 URL 填上面的 /mcp 位址',
+    mcp_servers: 'MCP Server 管理（聚合外部 MCP）', skills: 'Skill 管理（內網技能包）', builtin_tools: '內建工具', no_tools: '暫無內建工具', params: '參數', copy_deepchat_link: '複製 DeepChat 一鍵接入連結',
     name: '名稱', type: '類型', cmd_url: '命令 / URL', delete: '刪除', no_mcp: '暫無外部 MCP server（內建工具始終可用）',
     add_mcp: '新增 MCP Server', name_ph: '名稱（如 filesystem）', cmd_url_ph: 'http：填 URL；stdio：填命令', add: '新增',
     cmd_url_ph_http: 'http：填 URL（如 http://example.com/mcp）', cmd_url_ph_stdio: 'stdio：填命令（如 npx -y ...）',
@@ -552,8 +552,8 @@ const I18N = {
     health_check: 'Vérification de santé', svc_detail: 'Détails du service', status: 'Statut', uptime: 'Disponibilité', image: 'Image',
     api_no_ui: 'Service API sans interface web. Vérification : ', health_error: 'Impossible de récupérer le statut : ', manual_check: 'Vérification manuelle : ',
     mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Points de terminaison', mcp_endpoint: 'Point de terminaison MCP', skill_market: 'Marché de skills', client_access: 'Accès client',
-    client_access_desc: 'DeepChat : Paramètres → MCP → Ajouter un serveur → type « HTTP diffusé en continu » → saisir l’URL /mcp ci-dessus',
-    mcp_servers: 'Serveurs MCP (agrégation MCP externe)', skills: 'Skills (paquets internes)',
+    client_access_desc: 'DeepChat : Paramètres → MCP → Ajouter → Passer à la configuration manuelle → type « HTTP diffusé en continu » → URL de base : l’URL /mcp ci-dessus',
+    mcp_servers: 'Serveurs MCP (agrégation MCP externe)', skills: 'Skills (paquets internes)', builtin_tools: 'Outils intégrés', no_tools: 'Aucun outil intégré', params: 'Paramètres', copy_deepchat_link: 'Copier le lien d’installation en un clic DeepChat',
     name: 'Nom', type: 'Type', cmd_url: 'Commande / URL', delete: 'Supprimer', no_mcp: 'Aucun serveur MCP externe (outils intégrés toujours disponibles)',
     add_mcp: 'Ajouter un serveur MCP', name_ph: 'Nom (ex. filesystem)', cmd_url_ph: 'http : URL ; stdio : commande', add: 'Ajouter',
     cmd_url_ph_http: 'http : URL (ex. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio : commande (ex. npx -y ...)',
@@ -641,8 +641,8 @@ const I18N = {
     health_check: 'Comprobación de estado', svc_detail: 'Detalles del servicio', status: 'Estado', uptime: 'Tiempo activo', image: 'Imagen',
     api_no_ui: 'Este es un servicio API sin interfaz web. Comprobación: ', health_error: 'No se pudo obtener el estado: ', manual_check: 'Comprobación manual: ',
     mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Puntos finales', mcp_endpoint: 'Punto final MCP', skill_market: 'Mercado de skills', client_access: 'Acceso de cliente',
-    client_access_desc: 'DeepChat: Ajustes → MCP → Añadir servidor → tipo «HTTP transmitido» → introducir la URL /mcp',
-    mcp_servers: 'Servidores MCP (agregación MCP externa)', skills: 'Skills (paquetes internos)',
+    client_access_desc: 'DeepChat: Ajustes → MCP → Añadir → Saltar a configuración manual → tipo «HTTP transmitido» → URL base: la URL /mcp',
+    mcp_servers: 'Servidores MCP (agregación MCP externa)', skills: 'Skills (paquetes internos)', builtin_tools: 'Herramientas integradas', no_tools: 'Sin herramientas integradas', params: 'Parámetros', copy_deepchat_link: 'Copiar enlace de instalación de un clic de DeepChat',
     name: 'Nombre', type: 'Tipo', cmd_url: 'Comando / URL', delete: 'Eliminar', no_mcp: 'Sin servidores MCP externos (herramientas integradas siempre disponibles)',
     add_mcp: 'Añadir servidor MCP', name_ph: 'Nombre (p. ej. filesystem)', cmd_url_ph: 'http: URL; stdio: comando', add: 'Añadir',
     cmd_url_ph_http: 'http: URL (p. ej. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: comando (p. ej. npx -y ...)',
@@ -730,8 +730,8 @@ const I18N = {
     health_check: 'Verificação de integridade', svc_detail: 'Detalhes do serviço', status: 'Status', uptime: 'Tempo ativo', image: 'Imagem',
     api_no_ui: 'Este é um serviço de API sem interface web. Verificação: ', health_error: 'Não foi possível obter o status: ', manual_check: 'Verificação manual: ',
     mcp_title: 'MCP Gateway — Skill / MCP', endpoints: 'Endpoints', mcp_endpoint: 'Endpoint MCP', skill_market: 'Mercado de skills', client_access: 'Acesso do cliente',
-    client_access_desc: 'DeepChat: Configurações → MCP → Adicionar servidor → tipo «HTTP transmitido» → preencher a URL /mcp',
-    mcp_servers: 'Servidores MCP (agregação MCP externa)', skills: 'Skills (pacotes internos)',
+    client_access_desc: 'DeepChat: Configurações → MCP → Adicionar → Pular para configuração manual → tipo «HTTP transmitido» → URL base: a URL /mcp',
+    mcp_servers: 'Servidores MCP (agregação MCP externa)', skills: 'Skills (pacotes internos)', builtin_tools: 'Ferramentas integradas', no_tools: 'Sem ferramentas integradas', params: 'Parâmetros', copy_deepchat_link: 'Copiar link de instalação em um clique do DeepChat',
     name: 'Nome', type: 'Tipo', cmd_url: 'Comando / URL', delete: 'Excluir', no_mcp: 'Sem servidores MCP externos (ferramentas integradas sempre disponíveis)',
     add_mcp: 'Adicionar servidor MCP', name_ph: 'Nome (ex. filesystem)', cmd_url_ph: 'http: URL; stdio: comando', add: 'Adicionar',
     cmd_url_ph_http: 'http: URL (ex. http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: comando (ex. npx -y ...)',
@@ -819,8 +819,8 @@ const I18N = {
     health_check: 'ヘルスチェック', svc_detail: 'サービス詳細', status: '状態', uptime: '稼働時間', image: 'イメージ',
     api_no_ui: 'これは Web UI のない API サービスです。ヘルスチェック：', health_error: '状態を取得できません：', manual_check: '手動チェック：',
     mcp_title: 'MCP Gateway — Skill / MCP 管理', endpoints: 'エンドポイント情報', mcp_endpoint: 'MCP エンドポイント', skill_market: 'Skill マーケット', client_access: 'クライアント接続',
-    client_access_desc: 'DeepChat：設定 → MCP → サーバー追加 → タイプ「ストリーミング HTTP」→ 上の /mcp アドレスを入力',
-    mcp_servers: 'MCP サーバー管理（外部 MCP 集約）', skills: 'Skill 管理（社内スキルパック）',
+    client_access_desc: 'DeepChat：設定 → MCP → 追加 → 手動設定へスキップ → タイプ「ストリーミング HTTP リクエスト」→ 基本 URL に上の /mcp アドレスを入力',
+    mcp_servers: 'MCP サーバー管理（外部 MCP 集約）', skills: 'Skill 管理（社内スキルパック）', builtin_tools: '内蔵ツール', no_tools: '内蔵ツールなし', params: '引数', copy_deepchat_link: 'DeepChat ワンクリック導入リンクをコピー',
     name: '名前', type: 'タイプ', cmd_url: 'コマンド / URL', delete: '削除', no_mcp: '外部 MCP サーバーなし（組み込みツールは常に利用可能）',
     add_mcp: 'MCP サーバーを追加', name_ph: '名前（例：filesystem）', cmd_url_ph: 'http：URL；stdio：コマンド', add: '追加',
     cmd_url_ph_http: 'http：URL（例：http://example.com/mcp）', cmd_url_ph_stdio: 'stdio：コマンド（例：npx -y ...）',
@@ -908,8 +908,8 @@ const I18N = {
     health_check: '상태 점검', svc_detail: '서비스 상세', status: '상태', uptime: '가동 시간', image: '이미지',
     api_no_ui: '웹 UI가 없는 API 서비스입니다. 상태 점검: ', health_error: '상태를 가져올 수 없습니다: ', manual_check: '수동 점검: ',
     mcp_title: 'MCP Gateway — Skill / MCP 관리', endpoints: '엔드포인트 정보', mcp_endpoint: 'MCP 엔드포인트', skill_market: 'Skill 마켓', client_access: '클라이언트 접속',
-    client_access_desc: 'DeepChat: 설정 → MCP → 서버 추가 → 유형「스트리밍 HTTP」→ 위 /mcp 주소 입력',
-    mcp_servers: 'MCP 서버 관리(외부 MCP 집계)', skills: 'Skill 관리(내부 스킬 패키지)',
+    client_access_desc: 'DeepChat: 설정 → MCP → 추가 → 수동 설정으로 건너뛰기 → 유형「스트리밍 HTTP 요청」→ 기본 URL에 위 /mcp 주소 입력',
+    mcp_servers: 'MCP 서버 관리(외부 MCP 집계)', skills: 'Skill 관리(내부 스킬 패키지)', builtin_tools: '내장 도구', no_tools: '내장 도구 없음', params: '매개변수', copy_deepchat_link: 'DeepChat 원클릭 설치 링크 복사',
     name: '이름', type: '유형', cmd_url: '명령 / URL', delete: '삭제', no_mcp: '외부 MCP 서버 없음(내장 도구는 항상 사용 가능)',
     add_mcp: 'MCP 서버 추가', name_ph: '이름(예: filesystem)', cmd_url_ph: 'http: URL; stdio: 명령', add: '추가',
     cmd_url_ph_http: 'http: URL(예: http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: 명령(예: npx -y ...)',
@@ -997,8 +997,8 @@ const I18N = {
     health_check: 'فحص الصحة', svc_detail: 'تفاصيل الخدمة', status: 'الحالة', uptime: 'مدة التشغيل', image: 'الصورة',
     api_no_ui: 'هذه خدمة API بدون واجهة ويب. فحص الصحة: ', health_error: 'تعذر جلب الحالة: ', manual_check: 'فحص يدوي: ',
     mcp_title: 'MCP Gateway — إدارة Skill / MCP', endpoints: 'معلومات نقاط النهاية', mcp_endpoint: 'نقطة نهاية MCP', skill_market: 'سوق المهارات', client_access: 'وصول العميل',
-    client_access_desc: 'DeepChat: الإعدادات → MCP → إضافة خادم → النوع «HTTP متدفق» → أدخل عنوان /mcp أعلاه',
-    mcp_servers: 'إدارة خوادم MCP (تجميع MCP خارجي)', skills: 'إدارة المهارات (حزم داخلية)',
+    client_access_desc: 'DeepChat: الإعدادات → MCP → إضافة → تخطَّ إلى الإعداد اليدوي → النوع «HTTP متدفق» → عنوان URL الأساسي: عنوان /mcp أعلاه',
+    mcp_servers: 'إدارة خوادم MCP (تجميع MCP خارجي)', skills: 'إدارة المهارات (حزم داخلية)', builtin_tools: 'الأدوات المدمجة', no_tools: 'لا توجد أدوات مدمجة', params: 'المعلمات', copy_deepchat_link: 'نسخ رابط التثبيت بنقرة واحدة في DeepChat',
     name: 'الاسم', type: 'النوع', cmd_url: 'الأمر / الرابط', delete: 'حذف', no_mcp: 'لا توجد خوادم MCP خارجية (الأدوات المدمجة متاحة دائمًا)',
     add_mcp: 'إضافة خادم MCP', name_ph: 'الاسم (مثال: filesystem)', cmd_url_ph: 'http: رابط؛ stdio: أمر', add: 'إضافة',
     cmd_url_ph_http: 'http: رابط (مثال: http://example.com/mcp)', cmd_url_ph_stdio: 'stdio: أمر (مثال: npx -y ...)',
@@ -1285,11 +1285,80 @@ async function loadMcpGateway(el) {
     + keyInfoCard(`<table>
         <tr><td style="width:30%">${t('mcp_endpoint')}</td><td><code>${P('mcp')}/mcp</code></td></tr>
         <tr><td>${t('client_access')}</td><td>${t('client_access_desc')}</td></tr>
-      </table>`, t('endpoints'))
+      </table>
+      <div style="margin-top:12px">
+        <button onclick="copyDeepChatInstallLink()" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">📋 ${t('copy_deepchat_link')}</button>
+        <span id="mcpDeepLinkToast" style="color:var(--green, #56d364);font-size:0.82em;margin-left:10px;opacity:0;transition:opacity .2s">${t('copied')}</span>
+      </div>`, t('endpoints'))
     + `<div class="card"><h3>🔌 ${t('mcp_servers')}</h3><div id="mcpServersBox"><p class="loading">${t('loading')}</p></div></div>`
+    + `<div class="card"><h3>🛠️ ${t('builtin_tools')}</h3><div id="builtinToolsBox"><p class="loading">${t('loading')}</p></div></div>`
     + `<div class="card"><h3>🧩 ${t('skills')}</h3><div id="skillsBox"><p class="loading">${t('loading')}</p></div></div>`;
   loadMcpServers();
+  loadMcpTools();
   loadGwSkills();
+}
+
+function deepChatInstallLink() {
+  const base = P('mcp') || '';
+  const cfg = {
+    mcpServers: {
+      'ai-platform': {
+        // DeepChat 的 deepchat://mcp/install 处理器只接受 stdio/sse，不接受 http
+        type: 'sse',
+        url: base + '/sse',
+        descriptions: 'AI 平台 MCP 网关（内置工具 + 知识库检索 search_knowledge）',
+        icons: '🔌',
+        autoApprove: ['all'],
+      },
+    },
+  };
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  // base64 可能含 + / =，必须 URL 编码，否则 + 会被当成空格导致 DeepChat 解码失败
+  return 'deepchat://mcp/install?code=' + encodeURIComponent(code);
+}
+
+function copyDeepChatInstallLink() {
+  const link = deepChatInstallLink();
+  const done = () => {
+    const el = document.getElementById('mcpDeepLinkToast');
+    if (el) { el.style.opacity = '1'; setTimeout(() => el.style.opacity = '0', 2000); }
+  };
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = link;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { alert(link); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+
+async function loadMcpTools() {
+  const box = document.getElementById('builtinToolsBox');
+  try {
+    const r = await fetch(MCAPI + '/tools');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    const tools = d.tools || [];
+    box.innerHTML = tools.length === 0
+      ? `<p class="loading">${t('no_tools')}</p>`
+      : `<table><tr><th>${t('name')}</th><th>${t('desc')}</th><th>${t('params')}</th></tr>`
+        + tools.map(tool => `<tr>
+            <td><code>${tool.name}</code></td>
+            <td style="color:var(--textdim)">${tool.description || ''}</td>
+            <td><code style="font-size:0.78em;color:var(--textdim)">${(tool.params || []).join(', ') || '—'}</code></td>
+          </tr>`).join('')
+        + `</table>`;
+  } catch (e) {
+    box.innerHTML = `<p class="error">${t('mcp_load_fail')}${e.message}</p>`;
+  }
 }
 
 async function loadMcpServers() {

@@ -23,13 +23,13 @@ Le dépôt prend en charge trois plateformes de déploiement :
 | Authentification | Keycloak | SSO / OIDC, intégrable avec AD/LDAP ou comptes locaux |
 | Routage LLM | NewAPI | Canaux, clés, quotas, audit, coût |
 | Masquage PII | LiteLLM + Presidio | Masquage automatique téléphones/identifiants/e-mails avant les appels modèle |
-| Applications IA | Dify | Plateforme d'apps IA visuelles / Agents |
+| Applications IA | Dify | Plateforme d'apps IA visuelles / Agents + base de connaissances unifiée (RAG) |
 | Portail d'entreprise | Ghost | Annonces et actualités de l'entreprise |
 | Source / CI | Gitea + Runner | Git interne + automatisation Actions |
 | Client | DeepChat | Client IA de bureau local (Windows / macOS / Linux) |
 | Distribution client | Update Server | Hébergement et mise à jour auto de l'installeur DeepChat |
-| Administration unifiée | AI Admin Center | Point d'entrée unique : tableau de bord + produits intégrés + audit/coût/rapports |
-| Passerelle | MCP Gateway | Gestion du marché Skill / MCP |
+| Administration unifiée | AI Admin Center | Point d'entrée unique : tableau de bord + produits intégrés + audit/coût/rapports + recherche RAG |
+| Passerelle | MCP Gateway | Gestion du marché Skill / MCP + recherche de connaissances Dify (RAG) |
 | Supervision | Prometheus + Grafana + Alertmanager | Supervision des ressources conteneurs + notifications d'alerte |
 | Observabilité LLM | Langfuse | Trace / latence / tokens / coût de chaque appel modèle |
 | Journalisation unifiée | Loki + Promtail | Journaux agrégés et interrogeables de tous les conteneurs |

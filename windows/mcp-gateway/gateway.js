@@ -13,6 +13,7 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -26,6 +27,29 @@ const PORT = process.env.PORT || 3100;
 const SERVERS_FILE = process.env.MCP_SERVERS_FILE || '/app/mcp-servers.json';
 const SKILLS_DIR = process.env.SKILLS_DIR || '/app/skills';
 const ADMIN_TOKEN = process.env.MCP_ADMIN_TOKEN || '';
+const PUBLIC_URL = (process.env.SERVER_PUBLIC_URL || '').replace(/\/+$/, '');  // 如 http://192.168.31.117
+
+// 生成 DeepChat 一键安装 MCP 的 DeepLink（deepchat://mcp/install?code=<base64 JSON>）
+function buildDeepLink() {
+  const base = PUBLIC_URL ? `${PUBLIC_URL}:${PORT}` : `http://<服务器IP>:${PORT}`;
+  const cfg = {
+    mcpServers: {
+      'ai-platform': {
+        // 注意：DeepChat 的 deepchat://mcp/install 处理器只接受 'stdio' 或 'sse'，
+        // 不接受 'http'（Streamable HTTP），所以一键接入走 /sse，手动配置仍走 /mcp
+        type: 'sse',
+        url: `${base}/sse`,
+        descriptions: 'AI 平台 MCP 网关（内置工具 + 知识库检索 search_knowledge）',
+        icons: '🔌',
+        autoApprove: ['all'],
+      },
+    },
+  };
+  const code = Buffer.from(JSON.stringify(cfg), 'utf8').toString('base64');
+  // base64 里可能含 + / =（如 emoji 图标 🔌），必须 URL 编码，
+  // 否则在 URL 查询参数解析时 + 会被当成空格，导致 DeepChat 解码失败、静默不安装
+  return { base, deepLink: `deepchat://mcp/install?code=${encodeURIComponent(code)}` };
+}
 
 // ═══════════════════════════════════════════
 // 内置平台工具
@@ -242,10 +266,46 @@ app.all('/mcp', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════
+// SSE 端点（DeepChat 一键接入 deepchat://mcp/install 只支持 stdio/sse，
+// 故额外暴露 /sse 供 deep link 使用；Dify/手动配置仍用 /mcp Streamable HTTP）
+// ═══════════════════════════════════════════
+const sseTransports = new Map(); // sessionId -> SSEServerTransport
+
+app.get('/sse', async (req, res) => {
+  const transport = new SSEServerTransport('/messages', res);
+  sseTransports.set(transport.sessionId, transport);
+  res.on('close', () => {
+    sseTransports.delete(transport.sessionId);
+    transport.close().catch(() => {});
+  });
+  const gateway = createGateway();
+  // 注意：Server.connect() 会自动调用 transport.start()，不能重复调用
+  await gateway.connect(transport);
+});
+
+app.post('/messages', async (req, res) => {
+  const sessionId = req.query.sessionId;
+  const transport = typeof sessionId === 'string' ? sseTransports.get(sessionId) : undefined;
+  if (!transport) {
+    res.status(400).json({ error: 'Invalid or expired sessionId' });
+    return;
+  }
+  try {
+    await transport.handlePostMessage(req, res, req.body);
+  } catch (e) {
+    console.error('[sse] handlePostMessage 错误:', e && e.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: e && e.message });
+    }
+  }
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 app.get('/', (req, res) => res.json({
   name: 'AI-All-in-One MCP Gateway',
   endpoint: '/mcp',
+  sse: '/sse',
   health: '/health',
   skills: '/skills',
   market: '/market',
@@ -306,6 +366,17 @@ app.get('/skills', (req, res) => {
   });
 });
 
+// 内置工具清单（公开，与 /mcp 的 tools/list 一致，供 AI 管理中心展示）
+app.get('/api/tools', (req, res) => {
+  res.json({
+    tools: builtinTools.map(t => ({
+      name: t.name,
+      description: t.description,
+      params: Object.keys(t.inputSchema?.properties || {}),
+    })),
+  });
+});
+
 app.get('/skills/:name.zip', (req, res) => {
   const name = req.params.name;
   const dir = path.join(SKILLS_DIR, name);
@@ -321,6 +392,7 @@ app.get('/skills/:name.zip', (req, res) => {
 });
 
 app.get('/market', (req, res) => {
+  const { base: mcpBase, deepLink } = buildDeepLink();
   const skills = discoverSkills();
   const cards = skills.length
     ? skills.map(s => `
@@ -353,6 +425,21 @@ app.get('/market', (req, res) => {
   .sub { color: #8b949e; font-size: 14px; margin-bottom: 24px; }
   .howto { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 24px; font-size: 14px; }
   .howto code { background: #161b22; color: #79c0ff; padding: 1px 6px; border-radius: 4px; }
+  .mcp-box { background: rgba(57,197,207,0.08); border: 1px solid rgba(57,197,207,0.3); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .mcp-box strong { color: #39c5cf; font-size: 15px; }
+  .mcp-desc { color: #8b949e; font-size: 13px; margin: 8px 0 12px; line-height: 1.6; }
+  .mcp-desc code, .mcp-manual code { background: #161b22; color: #79c0ff; padding: 1px 6px; border-radius: 4px; }
+  .mcp-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .mcp-btn { background: #1f7a8a; }
+  .mcp-btn:hover { background: #2394a6; }
+  .mcp-manual { color: #8b949e; font-size: 12px; margin: 0; line-height: 1.6; }
+  .section { border: 1px solid #30363d; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+  .section-head { display: flex; align-items: baseline; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #30363d; background: #161b22; }
+  .section-head .tag { font-weight: 800; font-size: 14px; letter-spacing: 1.5px; }
+  .section-head .hint { color: #8b949e; font-size: 12px; }
+  .section-head.mcp .tag { color: #39c5cf; }
+  .section-head.skill .tag { color: #58a6ff; }
+  .section-body { padding: 16px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
   .skill-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
   .skill-head { display: flex; align-items: center; gap: 8px; }
@@ -374,15 +461,59 @@ app.get('/market', (req, res) => {
 <div class="wrap">
   <h1>AI 平台 Skill 市场</h1>
   <p class="sub">内网技能包分发中心 · 共 ${skills.length} 个技能</p>
-  <div class="howto">
-    <strong>DeepChat 安装方式：</strong>设置 → Skills → 从 URL 安装，填
-    <code>http://&lt;服务器IP&gt;:3100/skills/&lt;名称&gt;.zip</code>（或点「下载 ZIP」后从 ZIP / 文件夹安装）。
+  <div class="section">
+    <div class="section-head mcp"><span class="tag">MCP</span><span class="hint">一键接入平台 MCP 网关（内置工具 + RAG 知识库检索）</span></div>
+    <div class="section-body">
+      <div class="mcp-box">
+        <strong>🔌 一键接入 DeepChat MCP</strong>
+        <p class="mcp-desc">把「AI 平台 MCP 网关」（内置工具 + 知识库检索 <code>search_knowledge</code>）一键加进 DeepChat，即可在对话里使用平台工具和 RAG 知识库检索。</p>
+        <div class="mcp-actions">
+          <a class="btn mcp-btn" href="${deepLink}">🔌 一键接入 DeepChat MCP</a>
+          <button class="btn ghost" onclick="copyDeepLink()">📋 复制一键接入链接</button>
+        </div>
+        <p class="mcp-manual">手动配置：DeepChat → 设置 → MCP → 新增 → <b>跳过至手动配置</b> → 类型「可流式传输的 HTTP 请求」→ 基础 URL 填 <code>${mcpBase}/mcp</code></p>
+        <p class="mcp-manual" style="margin-top:8px;color:#6e7681">⚠️ 一键接入走 <b>SSE</b>（DeepChat 的 deep link 只支持 SSE/stdio，不支持 Streamable HTTP），会显示「SSE is legacy-only」提示，<b>属正常、不影响使用</b>；想要 Streamable HTTP（无提示）请用上面手动配置填 <code>/mcp</code>。</p>
+      </div>
+    </div>
   </div>
-  <div class="grid">${cards}</div>
+  <div class="section">
+    <div class="section-head skill"><span class="tag">SKILL</span><span class="hint">内网技能包安装</span></div>
+    <div class="section-body">
+      <div class="howto">
+        <strong>DeepChat 安装 Skill：</strong>设置 → Skills → 从 URL 安装，填
+        <code>${mcpBase}/skills/&lt;名称&gt;.zip</code>（或点「下载 ZIP」后从 ZIP / 文件夹安装）。
+      </div>
+      <div class="grid">${cards}</div>
+    </div>
+  </div>
   <p class="foot">由 MCP Gateway 托管 · 技能来源：skills/ 目录</p>
 </div>
 <div id="toast">已复制</div>
 <script>
+function copyDeepLink() {
+  const link = document.querySelector('.mcp-btn').getAttribute('href');
+  const done = () => {
+    const t = document.getElementById('toast');
+    t.textContent = '已复制：' + link;
+    t.style.opacity = '1';
+    setTimeout(() => t.style.opacity = '0', 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(done).catch(() => fallbackCopy(link, done));
+  } else {
+    fallbackCopy(link, done);
+  }
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { prompt('复制失败，请手动复制：', text); }
+  document.body.removeChild(ta);
+}
 function copyInstall(name) {
   const url = location.origin + '/skills/' + name + '.zip';
   navigator.clipboard.writeText(url).then(() => {

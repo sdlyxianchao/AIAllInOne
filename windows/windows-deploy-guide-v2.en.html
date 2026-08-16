@@ -171,22 +171,22 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
 <h3>1.1 Architecture Overview</h3>
 <div style="margin: 12px 24px;">
-<svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
+<svg viewBox="0 0 1200 1000" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
   <!-- ====== Layer Background Bands ====== -->
   <rect x="0" y="30" width="1200" height="90" rx="4" fill="#d2a8ff08" stroke="#d2a8ff22" stroke-width="0.5"/>
   <rect x="0" y="140" width="1200" height="95" rx="4" fill="#d2992208" stroke="#d2992222" stroke-width="0.5"/>
   <rect x="0" y="255" width="1200" height="90" rx="4" fill="#1f6feb08" stroke="#1f6feb22" stroke-width="0.5"/>
   <rect x="0" y="365" width="1200" height="60" rx="4" fill="#39c5cf08" stroke="#39c5cf22" stroke-width="0.5"/>
-  <rect x="0" y="445" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
-  <rect x="0" y="565" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
+  <rect x="0" y="545" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
+  <rect x="0" y="665" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
 
   <!-- ====== Layer Labels ====== -->
   <rect x="8" y="36" width="56" height="18" rx="9" fill="#d2a8ff22"/><text x="36" y="49" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Users</text>
   <rect x="8" y="146" width="76" height="18" rx="9" fill="#d2992222"/><text x="46" y="159" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">Portal&amp;Apps</text>
   <rect x="8" y="261" width="66" height="18" rx="9" fill="#1f6feb22"/><text x="41" y="274" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">LLM Route</text>
   <rect x="8" y="371" width="76" height="18" rx="9" fill="#39c5cf22"/><text x="46" y="384" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">Observability</text>
-  <rect x="8" y="451" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="464" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Infrastructure</text>
-  <rect x="8" y="571" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="584" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">Unified Admin</text>
+  <rect x="8" y="551" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="564" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Infrastructure</text>
+  <rect x="8" y="671" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="684" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">Unified Admin</text>
 
   <!-- ====== Layer 1: User ====== -->
   <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
@@ -204,7 +204,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
   <g filter="url(#sh)"><rect x="700" y="160" width="300" height="70" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="2"/><rect x="700" y="160" width="4" height="70" rx="2" fill="#58a6ff"/></g>
   <text x="720" y="183" fill="#58a6ff" font-size="14" font-weight="700">🤖 Dify</text>
-  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI app platform · RAG/Agent/Workflow</text>
+  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI app · Knowledge base (RAG) · Agent/Workflow</text>
 
   <!-- ====== Layer 3: LLM Routing ====== -->
   <g filter="url(#sh)"><rect x="130" y="275" width="220" height="60" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="1.5"/><rect x="130" y="275" width="4" height="60" rx="2" fill="#58a6ff"/></g>
@@ -228,30 +228,30 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <text x="568" y="360" fill="#39c5cf" font-size="8" font-weight="600">report</text>
 
   <!-- ====== Layer 5: Infrastructure ====== -->
-  <g filter="url(#sh)"><rect x="60" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
-  <text x="80" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
-  <text x="80" y="505" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
+  <g filter="url(#sh)"><rect x="60" y="565" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="565" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="80" y="588" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
+  <text x="80" y="605" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
 
-  <g filter="url(#sh)"><rect x="285" y="465" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="465" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
-  <text x="305" y="488" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
-  <text x="305" y="505" fill="#8b949e" font-size="10">Skill / MCP management hub</text>
+  <g filter="url(#sh)"><rect x="285" y="565" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="565" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
+  <text x="305" y="588" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
+  <text x="305" y="605" fill="#8b949e" font-size="10">Skill / MCP hub · search_knowledge retrieval</text>
 
-  <g filter="url(#sh)"><rect x="510" y="465" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="465" width="4" height="60" rx="2" fill="#f85149"/></g>
-  <text x="530" y="488" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
-  <text x="530" y="505" fill="#8b949e" font-size="10">Source + Actions CI/CD</text>
+  <g filter="url(#sh)"><rect x="510" y="565" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="565" width="4" height="60" rx="2" fill="#f85149"/></g>
+  <text x="530" y="588" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
+  <text x="530" y="605" fill="#8b949e" font-size="10">Source + Actions CI/CD</text>
 
-  <g filter="url(#sh)"><rect x="735" y="465" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="465" width="4" height="60" rx="2" fill="#56d364"/></g>
-  <text x="755" y="488" fill="#56d364" font-size="13" font-weight="600">📦 Update Server</text>
-  <text x="755" y="505" fill="#8b949e" font-size="10">DeepChat installer hosting</text>
+  <g filter="url(#sh)"><rect x="735" y="565" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="565" width="4" height="60" rx="2" fill="#56d364"/></g>
+  <text x="755" y="588" fill="#56d364" font-size="13" font-weight="600">📦 Update Server</text>
+  <text x="755" y="605" fill="#8b949e" font-size="10">DeepChat installer hosting</text>
 
-  <g filter="url(#sh)"><rect x="960" y="465" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="465" width="4" height="60" rx="2" fill="#d29922"/></g>
-  <text x="980" y="488" fill="#d29922" font-size="13" font-weight="600">📈 Monitoring · Logging</text>
-  <text x="980" y="505" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
+  <g filter="url(#sh)"><rect x="960" y="565" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="565" width="4" height="60" rx="2" fill="#d29922"/></g>
+  <text x="980" y="588" fill="#d29922" font-size="13" font-weight="600">📈 Monitoring · Logging</text>
+  <text x="980" y="605" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
 
   <!-- ====== Layer 6: Management ====== -->
-  <g filter="url(#sh)"><rect x="80" y="575" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="575" width="4" height="55" rx="2" fill="#58a6ff"/></g>
-  <text x="600" y="598" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI Admin Center (unified admin portal + Keycloak auth)</text>
-  <text x="600" y="618" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard container status/business metrics · embedded product stats · audit/cost reports · Keycloak SSO</text>
+  <g filter="url(#sh)"><rect x="80" y="675" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="675" width="4" height="55" rx="2" fill="#58a6ff"/></g>
+  <text x="600" y="698" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI Admin Center (unified admin portal + Keycloak auth)</text>
+  <text x="600" y="718" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard container status/business metrics · embedded product stats · audit/cost reports · Keycloak SSO</text>
 
   <!-- ====== Connections ====== -->
   <path d="M 250 105 L 250 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
@@ -277,60 +277,63 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <text x="960" y="240" fill="#39c5cf" font-size="8" font-weight="600">view traces</text>
 
   <!-- Monitoring: browser -> Grafana -->
-  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 465" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
+  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 565" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
 
   <!-- CI/CD -->
-  <path d="M 612 465 L 735 465" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
-  <text x="674" y="458" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">build artifact</text>
-  <path d="M 1062 465 L 1175 465 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <path d="M 612 565 L 735 565" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
+  <text x="674" y="558" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">build artifact</text>
+  <path d="M 1062 565 L 1175 565 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
   <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DeepChat auto-update (check version.txt → download & install)</text>
 
   <!-- Keycloak OIDC -->
-  <path d="M 162 465 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 162 565 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
   <path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
   <text x="162" y="442" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ OIDC SSO → all web products</text>
 
   <!-- MCP -->
-  <path d="M 387 465 L 387 447" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
-  <path d="M 387 447 Q 387 425 250 425 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
-  <text x="387" y="444" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+  <path d="M 387 565 L 387 455" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
+  <path d="M 387 455 L 250 455 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="2.5" stroke-dasharray="5,3" opacity="0.9" marker-end="url(#ap)"/>
+  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+  <!-- RAG retrieval: MCP Gateway → Dify knowledge base -->
+  <path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" stroke="#39c5cf" stroke-width="2.5" stroke-dasharray="7" marker-end="url(#at)"/>
+  <text x="577" y="498" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="700">RAG retrieval: search_knowledge → Dify knowledge base</text>
 
   <!-- Management bracket -->
-  <path d="M 80 575 L 80 545 L 1120 545 L 1120 575" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
-  <text x="600" y="541" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI Admin Center (Keycloak auth → Dashboard → all product entries + audit/cost)</text>
+  <path d="M 80 675 L 80 645 L 1120 645 L 1120 675" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
+  <text x="600" y="641" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI Admin Center (Keycloak auth → Dashboard → all product entries + audit/cost)</text>
 
   <!-- ====== Legend ====== -->
-  <rect x="20" y="670" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="40" y="695" fill="#58a6ff" font-size="13" font-weight="700">📊 Data flow legend</text>
+  <rect x="20" y="770" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="40" y="795" fill="#58a6ff" font-size="13" font-weight="700">📊 Data flow legend</text>
 
-  <line x1="40" y1="715" x2="80" y2="715" stroke="#58a6ff" stroke-width="2"/>
-  <text x="90" y="719" fill="#c9d1d9" font-size="11">LLM request flow: DeepChat / Dify → NewAPI → LiteLLM masking → external model → restore PII → return</text>
+  <line x1="40" y1="815" x2="80" y2="815" stroke="#58a6ff" stroke-width="2"/>
+  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM request flow: DeepChat / Dify → NewAPI → LiteLLM masking → external model → restore PII → return</text>
 
-  <line x1="40" y1="740" x2="80" y2="740" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="744" fill="#c9d1d9" font-size="11">Observability flow: LiteLLM success_callback → Langfuse traces every call (prompt/response/latency/token/cost)</text>
+  <line x1="40" y1="840" x2="80" y2="840" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="844" fill="#c9d1d9" font-size="11">Observability flow: LiteLLM success_callback → Langfuse traces every call (prompt/response/latency/token/cost)</text>
 
-  <line x1="40" y1="765" x2="80" y2="765" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="769" fill="#c9d1d9" font-size="11">Auto-update flow: Gitea Actions build → update server → DeepChat auto-download & install</text>
+  <line x1="40" y1="865" x2="80" y2="865" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="90" y="869" fill="#c9d1d9" font-size="11">Auto-update flow: Gitea Actions build → update server → DeepChat auto-download & install</text>
 
-  <line x1="620" y1="715" x2="660" y2="715" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="670" y="719" fill="#c9d1d9" font-size="11">Portal flow: browser → Ghost portal → browse news/download/redirect to Dify</text>
+  <line x1="620" y1="815" x2="660" y2="815" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
+  <text x="670" y="819" fill="#c9d1d9" font-size="11">Portal flow: browser → Ghost portal → browse news/download/redirect to Dify</text>
 
-  <line x1="620" y1="740" x2="660" y2="740" stroke="#d29922" stroke-width="1.5"/>
-  <text x="670" y="744" fill="#c9d1d9" font-size="11">Monitoring flow: browser → Grafana dashboard (Prometheus + cadvisor container resources/alerts)</text>
+  <line x1="620" y1="840" x2="660" y2="840" stroke="#d29922" stroke-width="1.5"/>
+  <text x="670" y="844" fill="#c9d1d9" font-size="11">Monitoring flow: browser → Grafana dashboard (Prometheus + cadvisor container resources/alerts)</text>
 
-  <line x1="620" y1="765" x2="660" y2="765" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
-  <text x="670" y="769" fill="#c9d1d9" font-size="11">Auth flow: Keycloak OIDC SSO unified login (all web products share ai_all_in_one_admin)</text>
+  <line x1="620" y1="865" x2="660" y2="865" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
+  <text x="670" y="869" fill="#c9d1d9" font-size="11">Auth flow: Keycloak OIDC SSO unified login (all web products share ai_all_in_one_admin)</text>
 
-  <line x1="40" y1="790" x2="80" y2="790" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
-  <text x="90" y="794" fill="#c9d1d9" font-size="11">Unified logging flow: Promtail collects container logs → Loki aggregation → AI Admin Center "Unified Logs" query</text>
+  <line x1="40" y1="890" x2="80" y2="890" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
+  <text x="90" y="894" fill="#c9d1d9" font-size="11">Unified logging flow: Promtail collects container logs → Loki aggregation → AI Admin Center "Unified Logs" query</text>
 
-  <line x1="40" y1="795" x2="1160" y2="795" stroke="#30363d" stroke-width="0.5"/>
-  <text x="40" y="812" fill="#d2a8ff" font-size="10" font-weight="700">🔐 Component interactions:</text>
-  <text x="40" y="827" fill="#8b949e" font-size="9">Keycloak OIDC SSO → all web products　　MCP Gateway provides Skill/MCP → DeepChat/Dify　　LiteLLM report → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
-  <text x="40" y="842" fill="#8b949e" font-size="9">Gitea build → update server + Ghost announcement　　AI Admin Center — unified admin portal (Dashboard + embedded product pages + audit/cost reports + backup/restore + unified logs)</text>
+  <line x1="40" y1="895" x2="1160" y2="895" stroke="#30363d" stroke-width="0.5"/>
+  <text x="40" y="912" fill="#d2a8ff" font-size="10" font-weight="700">🔐 Component interactions:</text>
+  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → all web products　　MCP Gateway provides Skill/MCP → DeepChat/Dify　　LiteLLM report → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+  <text x="40" y="942" fill="#8b949e" font-size="9">Gitea build → update server + Ghost announcement　　AI Admin Center — unified admin portal (Dashboard + embedded product pages + audit/cost reports + backup/restore + unified logs)</text>
 
-  <rect x="40" y="850" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
-  <text x="600" y="866" text-anchor="middle" fill="#8b949e" font-size="10">16 independent open-source components · all Docker-deployed · zero code · interconnected via URL + API Key / OIDC · Keycloak unified SSO</text>
+  <rect x="40" y="950" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
+  <text x="600" y="966" text-anchor="middle" fill="#8b949e" font-size="10">16 independent open-source components · all Docker-deployed · zero code · interconnected via URL + API Key / OIDC · Keycloak unified SSO</text>
 
 </div>
 
@@ -1431,6 +1434,8 @@ litellm_settings:
 </div>
 <div class="verify">Dify returns AI replies normally. <code>docker logs new-api</code> shows Dify's request records.</div>
 
+<div class="callout callout-info"><strong>🔍 Using Dify as the unified knowledge base (RAG):</strong> to let DeepChat search the Dify knowledge base over MCP, in addition to the LLM provider above you need to add an <b>embedding model</b> (e.g. <code>bge-m3</code>) in Model Providers and set it as default, then create a knowledge base + Knowledge API Key. Full steps in <a href="#mcp-rag">8.9 RAG — unified knowledge-base retrieval</a>.</div>
+
 <h3 id="config-ghost">6.5 Ghost — configure the portal</h3>
 <div class="step">
   <span class="step-num">1</span>Open the admin entry <code>http://&lt;server-IP&gt;:8090/ghost/</code> in a browser (<b>note the /ghost/ suffix, this is the admin console</b>)
@@ -1667,6 +1672,7 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
   <tr><td><code>platform_time</code></td><td>Return the server's current time</td></tr>
   <tr><td><code>platform_echo</code></td><td>Echo text (connectivity test)</td></tr>
   <tr><td><code>platform_services</code></td><td>List platform services</td></tr>
+  <tr><td><code>search_knowledge</code></td><td>Search the unified Dify knowledge base, returns the most relevant text chunks (RAG, see 8.9)</td></tr>
 </table>
 
 <h3>8.3 Aggregate external MCP servers</h3>
@@ -1682,10 +1688,12 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
 
 <h3>8.4 Client integration (DeepChat / Dify)</h3>
 <ol>
-  <li>DeepChat: Settings → MCP settings → add server → type <b>Streamable HTTP (http)</b></li>
+  <li>DeepChat: Settings → MCP → <b>Add</b> → click <b>"Skip to manual config"</b> → type <b>Streamable HTTP (HTTP)</b></li>
   <li>Base URL: <code>http://&lt;server-IP&gt;:3100/mcp</code></li>
   <li>Dify workflow: custom tool / MCP tool config points to the same <code>http://&lt;server-IP&gt;:3100/mcp</code></li>
 </ol>
+<div class="callout callout-warn"><strong>⚠️ Important:</strong> after clicking "Add" in DeepChat you land on a template/preset page — you <b>must click "Skip to manual config"</b> to reach the fields for type and base URL (otherwise the "Streamable HTTP" type is not visible).</div>
+<div class="note"><strong>One-click vs manual:</strong> ① <b>One-click install</b> (top of the <code>/market</code> page, or "Copy DeepChat one-click install link" on the AI Admin Center MCP page) uses the <b>SSE endpoint <code>/sse</code></b> — because DeepChat's <code>deepchat://mcp/install</code> handler <b>only accepts stdio/sse, not Streamable HTTP</b>; SSE shows an "SSE is legacy-only" hint, which is <b>normal and harmless</b>. ② <b>Manual config</b> uses Streamable HTTP <code>/mcp</code> (no such hint, recommended). Both hit the same gateway and the same tools (including <code>search_knowledge</code>).</div>
 
 <h3>8.5 Verification</h3>
 <ol>
@@ -1746,6 +1754,71 @@ if (name === 'platform_health') {
   <tr><td><code>DELETE /api/skills/:name</code></td><td>Delete a skill</td></tr>
 </table>
 <p>These endpoints are called by the AI Admin Center (Chapter 11) "MCP Gateway" page via proxy endpoints (protected by the Keycloak <code>ai-platform-admin</code> role); admins can add/remove MCP servers and upload/delete skills in the UI, while the employee-facing <code>/market</code> remains a read-only market.</p>
+
+<h3 id="mcp-rag">8.9 RAG — unified knowledge-base retrieval (search_knowledge built-in tool)</h3>
+<div class="note"><strong>Note:</strong> the MCP Gateway has a built-in <code>search_knowledge</code> tool that forwards to Dify's Knowledge API (Service API, <code>POST /v1/datasets/{id}/hit-testing</code>) for knowledge-base retrieval. DeepChat calls this single tool over MCP to use Dify's unified knowledge base (RAG) — no need for DeepChat to talk to Dify directly.</div>
+
+<h4>Overall flow</h4>
+<pre><code>DeepChat ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Knowledge API
+                                                      POST /v1/datasets/{id}/hit-testing</code></pre>
+
+<h4>Step 1: Dify-side prep (embedding model + knowledge base + Knowledge Key)</h4>
+<ol>
+  <li><b>Configure an embedding model</b>: Dify admin → Settings → Model Providers → <b>OpenAI-API-compatible</b> → add an embedding model (if the intranet has none, you can run <code>bge-m3</code> on the host's local Ollama — a 1024-dim Chinese embedding model), then set it as the <b>default text-embedding model</b> in Model Providers (without a default you'll get "Default model not found for text-embedding").</li>
+  <li><b>Create a knowledge base</b>: Knowledge → Create → choose <b>High quality</b> indexing → upload documents → configure retrieval params as needed (hybrid search, top_k, score_threshold).</li>
+  <li><b>Create a Knowledge API Key</b>: Knowledge → <b>API Access</b> → create a "Knowledge API Key", note:
+    <ul>
+      <li>key: a Bearer token with the <code>dataset-...</code> prefix</li>
+      <li><code>dataset_id</code>: the UUID between <code>/datasets/</code> and <code>/documents</code> in the knowledge-base URL</li>
+    </ul>
+  </li>
+</ol>
+
+<h4>Step 2: Configure environment variables</h4>
+<p>Fill in <code>.env</code> (keep the key in .env, don't hardcode it into <code>gateway.js</code>; sanitize before publishing the repo):</p>
+<pre><code># --- Dify Knowledge API (for the MCP Gateway search_knowledge tool) ---
+DIFY_API_BASE=http://&lt;server-IP&gt;/v1
+DIFY_KNOWLEDGE_API_KEY=dataset-xxxxx
+DIFY_DEFAULT_DATASET_ID=&lt;knowledge-base UUID&gt;</code></pre>
+<p><code>DIFY_API_BASE</code> is injected into the <code>mcp-gateway</code> container (in compose, <code>DIFY_API_BASE=${DIFY_API_BASE}</code>), and also into <code>admin-portal</code> (for the RAG retrieval card on the AI Admin Center's "Dify" page).</p>
+
+<h4>Step 3: Restart and verify</h4>
+<ol>
+  <li><code>docker compose up -d mcp-gateway</code> (or <code>docker restart mcp-gateway</code>)</li>
+  <li>DeepChat Settings → MCP → connect <code>http://&lt;server-IP&gt;:3100/mcp</code>, call <code>search_knowledge</code> with a <code>query</code> (optional <code>dataset_id</code>, <code>top_k</code>) in a conversation; it returns the most relevant text chunks (each with <code>content</code> + <code>score</code>).</li>
+  <li>AI Admin Center → "Dify" page → the "🔍 RAG knowledge retrieval" card: type a query to search and display chunks (backend <code>POST /api/dify/retrieve</code>, see 11.5).</li>
+</ol>
+
+<div class="callout callout-warn">
+  <strong>⚠️ Key pitfalls:</strong>
+  <ul>
+    <li><b>Network reachability</b>: the MCP Gateway is on the <code>ai-platform</code> network while Dify is on its own <code>docker_default</code> network (compose project <code>docker</code>); they can't reach each other by default. Use the host's intranet IP <code>http://&lt;server-IP&gt;/v1</code> to reach Dify's port 80 from inside the container.</li>
+    <li><b>Knowledge Key is account-level</b>: one key can access all knowledge bases of that account; Dify's Knowledge API does not directly support "per-user knowledge bases" — you'd need a "user → dataset_id" mapping at the MCP tool layer.</li>
+    <li><b><code>GET /v1</code> returns 308</b>: the retrieval request must use the full path <code>/v1/datasets/{id}/hit-testing</code>, not just <code>/v1</code>.</li>
+    <li><b>Chinese query via curl <code>-d</code> returns 400</b> (encoding issue): use <code>--data-binary @file</code> or a script (Python/Node) to send the UTF-8 request.</li>
+  </ul>
+</div>
+
+<h4>Alternative access: DeepChat's built-in difyKnowledge (bypassing the MCP Gateway)</h4>
+<p>The DeepChat client ships a built-in <code>difyKnowledge</code> (in-memory) MCP server that talks to the Dify knowledge base directly, <b>without going through this platform's MCP Gateway</b>. It suits individuals or a very small number of users; for enterprise rollout, still prefer the gateway's <code>search_knowledge</code> (no key leaves the server, auditable, single point to switch datasets).</p>
+<ol>
+  <li>DeepChat → Settings → <b>MCP settings</b> → find the built-in <b><code>difyKnowledge</code></b> → click its <b>edit</b> button → <b>add Dify config</b>.</li>
+  <li>Fill in three fields (using the values from step 1):
+    <ul>
+      <li><b>API server address (endpoint)</b>: <code>http://&lt;server-IP&gt;/v1</code> (must include <code>/v1</code>)</li>
+      <li><b>API key (apiKey)</b>: the <code>dataset-...</code>-prefixed Knowledge API Key</li>
+      <li><b>Dataset ID (datasetId)</b>: the knowledge base UUID</li>
+    </ul>
+  </li>
+  <li>Back in the chat view, turn on the <b>Dify knowledge base MCP</b> toggle.</li>
+</ol>
+<div class="callout callout-warn">
+  <strong>⚠️ Notes:</strong>
+  <ul>
+    <li><b>The model must support tool/function calling</b>, otherwise retrieval won't be triggered.</li>
+    <li><b>Key distribution risk</b>: <code>difyKnowledge</code> stores the Knowledge API Key locally on every client; the key is <b>account-level</b>, so spreading it to clients forfeits central control. For enterprise rollout use the gateway's <code>search_knowledge</code> (the key stays only in the server's <code>.env</code>).</li>
+  </ul>
+</div>
 
 <h2 id="cicd">9. CI/CD — DeepChat Build &amp; Release</h2>
 
@@ -2056,6 +2129,7 @@ cd ..</code></pre>
   <li><b>Overview Dashboard</b>: 8 product business metrics (NewAPI/Gitea/Ghost/Dify/Keycloak/MCP/LiteLLM/Update Server, each with an independent aggregation endpoint; a single failure doesn't affect the whole) + Docker services (grouped by product) + system info.</li>
   <li><b>Product stats pages</b>: Ghost/Dify/Gitea/Keycloak/update server show key stats first + an "Open admin" button (see 11.2 menu table). Data sources: Gitea REST API (Basic Auth + X-Total-Count), Keycloak Admin API, Dify console API (base64 password + cookie/CSRF), Ghost in-container sqlite (docker exec), Update Server version.txt + stat.</li>
   <li><b>MCP Gateway management</b>: add/remove MCP servers, upload/delete skills (proxy the gateway <code>/api/*</code> management endpoints, inject <code>X-Admin-Token</code>).</li>
+  <li><b>🔍 Dify RAG retrieval</b>: the Dify page has a built-in "RAG knowledge retrieval" card — shows the knowledge-base list (<code>/api/dify/overview</code> returns <code>dataset_list</code> + <code>rag_ready</code>) + search chunks by query (backend <code>POST /api/dify/retrieve</code>, calls the Dify Knowledge API <code>hit-testing</code>, see 8.9).</li>
   <li><b>Central auth / admin management</b>: unified accounts, SSO mechanism, per-platform login methods (ai-platform-admin only).</li>
   <li><b>System settings</b>: env var documentation + product entry URLs + <b>UI language (9: zh-CN/zh-TW/en/fr/es/pt/ja/ko/ar, Arabic supports RTL)</b>.</li>
   <li><b>🧬 PII masking</b>: shows Presidio analyzer/anonymizer health + LiteLLM guardrails (content-safety-filter / presidio-pii-mask) rule list + connected models.</li>

@@ -23,13 +23,13 @@
 | 인증 | Keycloak | SSO / OIDC, AD/LDAP 또는 로컬 계정과 통합 가능 |
 | LLM 라우팅 | NewAPI | 채널, 키, 할당량, 감사, 비용 |
 | PII 마스킹 | LiteLLM + Presidio | 모델 호출 전 전화번호/신분증/이메일 자동 마스킹 |
-| AI 애플리케이션 | Dify | 비주얼 AI 앱 / 에이전트 플랫폼 |
+| AI 애플리케이션 | Dify | 비주얼 AI 앱 / 에이전트 플랫폼 + 통합 지식 베이스(RAG) |
 | 기업 포털 | Ghost | 회사 공지 및 뉴스 포털 |
 | 소스 / CI | Gitea + Runner | 내부 Git + Actions 자동화 |
 | 클라이언트 | DeepChat | 로컬 AI 데스크톱 클라이언트 (Windows / macOS / Linux) |
 | 클라이언트 배포 | Update Server | DeepChat 설치 프로그램 호스팅 및 자동 업데이트 |
-| 통합 관리 | AI 관리 센터 | 단일 진입점: 대시보드 + 제품 임베드 + 감사/비용/보고서 |
-| 게이트웨이 | MCP Gateway | 스킬 / MCP 마켓 관리 |
+| 통합 관리 | AI 관리 센터 | 단일 진입점: 대시보드 + 제품 임베드 + 감사/비용/보고서 + RAG 검색 |
+| 게이트웨이 | MCP Gateway | 스킬 / MCP 마켓 관리 + Dify 지식 검색(RAG) |
 | 모니터링 | Prometheus + Grafana + Alertmanager | 컨테이너 리소스 모니터링 + 알림 통지 |
 | LLM 옵저버빌리티 | Langfuse | 모든 모델 호출의 트레이스 / 지연 / 토큰 / 비용 |
 | 통합 로깅 | Loki + Promtail | 모든 컨테이너 로그 집계·검색 |

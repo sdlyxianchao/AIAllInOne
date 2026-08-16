@@ -23,13 +23,13 @@
 | 統一認證 | Keycloak | SSO / OIDC，可對接 AD/LDAP 或本機帳號 |
 | LLM 路由 | NewAPI | 渠道、金鑰、額度、稽核、成本 |
 | PII 脫敏 | LiteLLM + Presidio | 模型呼叫前自動脫敏手機號/身分證/信箱等 |
-| AI 應用 | Dify | 視覺化 AI 應用 / Agent 平台 |
+| AI 應用 | Dify | 視覺化 AI 應用 / Agent 平台 + 統一知識庫（RAG） |
 | 企業入口網站 | Ghost | 企業公告與新聞入口網站 |
 | 原始碼 / CI | Gitea + Runner | 內部 Git + Actions 自動化 |
 | 用戶端 | DeepChat | 本機 AI 桌面用戶端（Windows / macOS / Linux） |
 | 用戶端分發 | Update Server | DeepChat 安裝包託管與自動更新 |
-| 統一管理 | AI 管理中心 | 唯一入口：Dashboard + 各產品內嵌 + 稽核/成本/報告 |
-| 閘道 | MCP Gateway | Skill / MCP 市場管理 |
+| 統一管理 | AI 管理中心 | 唯一入口：Dashboard + 各產品內嵌 + 稽核/成本/報告 + RAG 檢索 |
+| 閘道 | MCP Gateway | Skill / MCP 市場管理 + Dify 知識庫檢索（RAG） |
 | 監控告警 | Prometheus + Grafana + Alertmanager | 容器資源監控 + 告警通知 |
 | LLM 可觀測 | Langfuse | 每次模型呼叫的 trace / 延遲 / token / 成本 |
 | 統一日誌 | Loki + Promtail | 所有容器日誌聚合檢索 |
