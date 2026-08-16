@@ -25,13 +25,13 @@ The repository supports three deployment platforms:
 | Auth | Keycloak | SSO / OIDC, can integrate with AD/LDAP or local accounts |
 | LLM routing | NewAPI | Channels, keys, quotas, audit, cost |
 | PII redaction | LiteLLM + Presidio | Auto-redact phone numbers / IDs / emails before model calls |
-| AI applications | Dify | Visual AI app / Agent platform |
+| AI applications | Dify | Visual AI app / Agent platform + unified knowledge base (RAG) |
 | Enterprise portal | Ghost | Company announcements & news portal |
 | Source / CI | Gitea + Runner | Internal Git + Actions automation |
 | Client | DeepChat | Local AI desktop client (Windows / macOS / Linux) |
 | Client distribution | Update Server | DeepChat installer hosting & auto-update |
-| Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports |
-| Gateway | MCP Gateway | Skill / MCP market management |
+| Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports + RAG retrieval |
+| Gateway | MCP Gateway | Skill / MCP market management + Dify knowledge retrieval (RAG) |
 | Monitoring | Prometheus + Grafana + Alertmanager | Container resource monitoring + alert notifications |
 | LLM observability | Langfuse | Trace / latency / tokens / cost of every model call |
 | Unified logging | Loki + Promtail | Aggregated, searchable logs from all containers |

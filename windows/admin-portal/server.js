@@ -47,6 +47,8 @@ const GITEA_ADMIN_PASS = process.env.GITEA_ADMIN_PASSWORD || ADMIN_PASS;
 const DIFY_URL = process.env.DIFY_URL || SERVER_PUBLIC_URL;
 const DIFY_ADMIN_EMAIL = process.env.DIFY_ADMIN_EMAIL || ADMIN_EMAIL;
 const DIFY_ADMIN_PASS = process.env.DIFY_ADMIN_PASSWORD || ADMIN_PASS;
+const DIFY_KNOWLEDGE_API_KEY = process.env.DIFY_KNOWLEDGE_API_KEY || '';
+const DIFY_DEFAULT_DATASET_ID = process.env.DIFY_DEFAULT_DATASET_ID || '';
 const GHOST_CONTAINER = process.env.GHOST_CONTAINER || 'ghost';
 const GHOST_INTERNAL_URL = process.env.GHOST_INTERNAL_URL || 'http://ghost:2368';
 const GHOST_EXTERNAL_URL = process.env.GHOST_EXTERNAL_URL || extUrl(8090);
@@ -966,19 +968,54 @@ async function difyApi(path) {
 
 app.get('/api/dify/overview', keycloak.protect(), async (req, res) => {
   try {
-    const [apps, workspaces] = await Promise.all([
+    const [apps, workspaces, datasets] = await Promise.all([
       difyApi('/console/api/apps?page=1&limit=50'),
       difyApi('/console/api/workspaces'),
+      difyApi('/console/api/datasets?page=1&limit=30'),
     ]);
     const appItems = (apps.data && apps.data.data) ? apps.data.data : [];
     const wsItems = (workspaces.data && workspaces.data.workspaces) ? workspaces.data.workspaces : [];
+    const dsItems = (datasets.data && datasets.data.data) ? datasets.data.data : [];
     res.json({
       apps: (apps.data && apps.data.total) ?? appItems.length,
       workspaces: wsItems.length,
       app_list: appItems.map(a => ({ id: a.id, name: a.name, mode: a.mode })),
       workspace_list: wsItems.map(w => ({ id: w.id, name: w.name })),
+      dataset_list: dsItems.map(k => ({ id: k.id, name: k.name, docs: k.document_count, indexing: k.indexing_technique })),
+      rag_ready: !!(DIFY_KNOWLEDGE_API_KEY && DIFY_DEFAULT_DATASET_ID),
       version: '1.16.1',
     });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Dify RAG 检索（Knowledge API hit-testing）----
+app.post('/api/dify/retrieve', keycloak.protect(), async (req, res) => {
+  try {
+    const query = String((req.body && req.body.query) || '').trim();
+    if (!query) return res.status(400).json({ error: 'query 不能为空' });
+    if (!DIFY_KNOWLEDGE_API_KEY) return res.status(503).json({ error: '未配置 DIFY_KNOWLEDGE_API_KEY' });
+    const ds = (req.body && req.body.dataset_id) || DIFY_DEFAULT_DATASET_ID;
+    if (!ds) return res.status(503).json({ error: '未配置知识库 ID' });
+    const topK = Number(req.body && req.body.top_k) || 3;
+    const resp = await fetch(`${DIFY_URL}/v1/datasets/${ds}/hit-testing`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${DIFY_KNOWLEDGE_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query,
+        retrieval_model: { search_method: 'hybrid_search', reranking_enable: false, top_k: topK, score_threshold_enabled: false },
+      }),
+    });
+    if (!resp.ok) {
+      const t = await resp.text().catch(() => '');
+      return res.status(resp.status).json({ error: `检索失败（HTTP ${resp.status}）：${t.slice(0, 300)}` });
+    }
+    const data = await resp.json();
+    const records = (data.records || []).map(r => ({
+      score: typeof r.score === 'number' ? r.score : null,
+      content: ((r.segment && r.segment.content) || r.content || '').trim(),
+      doc: (r.segment && r.segment.document && r.segment.document.name) || (r.document && r.document.name) || '',
+    }));
+    res.json({ records });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

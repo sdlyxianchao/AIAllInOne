@@ -1430,6 +1430,8 @@ litellm_settings:
 </div>
 <div class="verify">Dify 中 AI 正常回复消息。查看 <code>docker logs new-api</code> 能看到 Dify 的请求记录。</div>
 
+<div class="callout callout-info"><strong>🔍 用 Dify 承载统一知识库（RAG）：</strong>如需让 DeepChat 通过 MCP 检索 Dify 知识库，除上面的 LLM 供应商外，还需在「模型供应商」里加一个 <b>embedding 模型</b>（如 <code>bge-m3</code>）并设为默认，再创建知识库 + Knowledge API Key。完整步骤见 <a href="#mcp-rag">8.9 RAG — 统一知识库检索</a>。</div>
+
 <h3 id="config-ghost">6.5 Ghost — 配置门户</h3>
 <div class="step">
   <span class="step-num">1</span>浏览器打开后台入口 <code>http://&lt;服务器IP&gt;:8090/ghost/</code>（<b>注意 /ghost/ 后缀，这是管理员后台</b>）
@@ -1663,6 +1665,7 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
   <tr><td><code>platform_time</code></td><td>返回服务器当前时间</td></tr>
   <tr><td><code>platform_echo</code></td><td>回显文本（连通性测试）</td></tr>
   <tr><td><code>platform_services</code></td><td>列出平台服务清单</td></tr>
+  <tr><td><code>search_knowledge</code></td><td>检索 Dify 统一知识库，返回最相关文本片段（RAG，见 8.9）</td></tr>
 </table>
 
 <h3>8.3 聚合外部 MCP Server</h3>
@@ -1742,6 +1745,50 @@ if (name === 'platform_health') {
   <tr><td><code>DELETE /api/skills/:name</code></td><td>删除技能</td></tr>
 </table>
 <p>这些接口由 AI 管理中心（第 11 章）的「MCP Gateway」页面通过代理端点调用（Keycloak <code>ai-platform-admin</code> 角色保护），管理员在 UI 上即可增删 MCP Server、上传/删除 Skill，员工看到的 <code>/market</code> 仍是只读市场。</p>
+
+<h3 id="mcp-rag">8.9 RAG — 统一知识库检索（search_knowledge 内置工具）</h3>
+<div class="note"><strong>说明：</strong>MCP Gateway 内置 <code>search_knowledge</code> 工具，转发调用 Dify 的 Knowledge API（Service API，<code>POST /v1/datasets/{id}/hit-testing</code>）做知识库检索。DeepChat 通过 MCP 调这一个工具即可用上 Dify 承载的统一知识库（RAG），无需 DeepChat 直连 Dify。</div>
+
+<h4>整体链路</h4>
+<pre><code>DeepChat ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Knowledge API
+                                                      POST /v1/datasets/{id}/hit-testing</code></pre>
+
+<h4>第 1 步：Dify 侧准备（embedding 模型 + 知识库 + Knowledge Key）</h4>
+<ol>
+  <li><b>配 embedding 模型</b>：Dify 后台 → 设置 → 模型供应商 → <b>OpenAI-API-compatible</b> → 添加一个 embedding 模型（内网无 embedding 时可用宿主机本地 Ollama 跑 <code>bge-m3</code>，1024 维中文 embedding），再在「模型供应商」里把它设为<b>默认 text-embedding 模型</b>（不设默认会报「Default model not found for text-embedding」）。</li>
+  <li><b>创建知识库</b>：知识库 → 创建 → 索引方式选<b>高质量（High quality）</b> → 上传文档 → 按需配检索参数（混合检索、top_k、score_threshold）。</li>
+  <li><b>建 Knowledge API Key</b>：知识库 → <b>API 访问</b> → 创建「Knowledge API Key」，记下：
+    <ul>
+      <li>key：<code>dataset-...</code> 前缀的 Bearer token</li>
+      <li><code>dataset_id</code>：知识库 URL 里 <code>/datasets/</code> 与 <code>/documents</code> 之间的 UUID</li>
+    </ul>
+  </li>
+</ol>
+
+<h4>第 2 步：配置环境变量</h4>
+<p>在 <code>.env</code> 中填写（Key 进 .env，不硬编码进 <code>gateway.js</code>，随仓库发布需脱敏）：</p>
+<pre><code># --- Dify Knowledge API（MCP Gateway search_knowledge 检索用）---
+DIFY_API_BASE=http://&lt;服务器IP&gt;/v1
+DIFY_KNOWLEDGE_API_KEY=dataset-xxxxx
+DIFY_DEFAULT_DATASET_ID=&lt;知识库 UUID&gt;</code></pre>
+<p><code>DIFY_API_BASE</code> 已注入 <code>mcp-gateway</code> 容器（compose 里 <code>DIFY_API_BASE=${DIFY_API_BASE}</code>），同时注入 <code>admin-portal</code>（供 AI 管理中心「Dify」页的 RAG 检索卡片用）。</p>
+
+<h4>第 3 步：重启并验证</h4>
+<ol>
+  <li><code>docker compose up -d mcp-gateway</code>（或 <code>docker restart mcp-gateway</code>）</li>
+  <li>DeepChat 设置 → MCP → 连 <code>http://&lt;服务器IP&gt;:3100/mcp</code>，在对话里调用 <code>search_knowledge</code>，传 <code>query</code>（可选 <code>dataset_id</code>、<code>top_k</code>），返回最相关的文本片段（每条含 <code>content</code> + <code>score</code>）。</li>
+  <li>AI 管理中心 →「Dify」页 →「🔍 RAG 知识库检索」卡片，输入问题即可检索并展示片段（后端 <code>POST /api/dify/retrieve</code>，见 11.5）。</li>
+</ol>
+
+<div class="callout callout-warn">
+  <strong>⚠️ 关键坑：</strong>
+  <ul>
+    <li><b>网络打通</b>：MCP Gateway 在 <code>ai-platform</code> 网络，Dify 在它自己的 <code>docker_default</code> 网络（compose 项目名 <code>docker</code>），两者默认不通。用宿主机内网 IP <code>http://&lt;服务器IP&gt;/v1</code> 从容器访问 Dify 的 80 端口即可。</li>
+    <li><b>Knowledge Key 是账号级</b>：一个 key 可访问该账号所有知识库；如需「按用户分库」，Dify Knowledge API 不直接支持，需在 MCP 工具层做「用户 → dataset_id」映射。</li>
+    <li><b><code>GET /v1</code> 会 308</b>：检索请求必须用完整路径 <code>/v1/datasets/{id}/hit-testing</code>，不要只写 <code>/v1</code>。</li>
+    <li><b>中文 query 用 curl <code>-d</code> 直传会 400</b>（编码问题）：用 <code>--data-binary @文件</code> 或脚本（Python/Node）发 UTF-8 请求。</li>
+  </ul>
+</div>
 
 <h2 id="cicd">9. CI/CD — DeepChat 自动构建与发布</h2>
 
@@ -2052,6 +2099,7 @@ cd ..</code></pre>
   <li><b>总览仪表板</b>：8 个产品业务指标（NewAPI/Gitea/Ghost/Dify/Keycloak/MCP/LiteLLM/Update Server，各产品独立聚合端点、单个失败不影响整体）+ Docker 服务（按产品分组圈）+ 系统信息。</li>
   <li><b>产品统计页</b>：Ghost/Dify/Gitea/Keycloak/更新服务器点击后先展示关键统计 + 「打开后台」按钮（见 11.2 菜单表）。数据来源：Gitea REST API（Basic Auth + X-Total-Count）、Keycloak Admin API、Dify console API（base64 密码 + cookie/CSRF）、Ghost 容器内 sqlite（docker exec）、Update Server 的 version.txt + stat。</li>
   <li><b>MCP Gateway 管理</b>：增删 MCP Server、上传/删除 Skill（代理网关 <code>/api/*</code> 管理端点，注入 <code>X-Admin-Token</code>）。</li>
+  <li><b>🔍 Dify RAG 检索</b>：Dify 页内置「RAG 知识库检索」卡片——展示知识库列表（<code>/api/dify/overview</code> 返回 <code>dataset_list</code> + <code>rag_ready</code>）+ 输入查询词检索片段（后端 <code>POST /api/dify/retrieve</code>，调 Dify Knowledge API <code>hit-testing</code>，见 8.9）。</li>
   <li><b>集中认证 / 管理员管理</b>：统一账号、SSO 机制、各平台登录方式（仅 ai-platform-admin 可见）。</li>
   <li><b>系统设置</b>：环境变量说明 + 产品入口 URL + <b>界面语言（9 种：简中/繁中/英/法/西/葡/日/韩/阿，阿拉伯语支持 RTL 从右到左）</b>。</li>
   <li><b>🧬 PII 脱敏</b>：展示 Presidio analyzer/anonymizer 健康状态 + LiteLLM guardrails（content-safety-filter / presidio-pii-mask）规则清单 + 已接入模型。</li>

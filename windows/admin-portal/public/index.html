@@ -2482,6 +2482,11 @@ async function loadDify(el) {
     ];
     const appTable = pagedTable('dify_apps', d.app_list || [], `<tr><th>${t('name')}</th><th>${t('type')}</th></tr>`, a => `<tr><td style="color:var(--textstrong)">${a.name || '—'}</td><td style="color:var(--textdim)">${a.mode || '—'}</td></tr>`);
     const wsTable = pagedTable('dify_workspaces', d.workspace_list || [], `<tr><th>${t('name')}</th></tr>`, w => `<tr><td style="color:var(--textstrong)">${w.name || '—'}</td></tr>`);
+    const kbList = d.dataset_list || [];
+    const kbHtml = kbList.length === 0
+      ? `<p class="loading">暂无知识库（<a href="${url}/datasets/create" target="_blank" style="color:var(--accent)">去 Dify 创建</a>）</p>`
+      : `<table><tr><th>${t('name')}</th><th>文档数</th><th>索引方式</th></tr>${kbList.map(k => `<tr><td style="color:var(--textstrong)">${k.name || '—'}</td><td>${k.docs ?? 0}</td><td style="color:var(--textdim)">${k.indexing === 'high_quality' ? '高质量' : (k.indexing || '—')}</td></tr>`).join('')}</table>`;
+    const ragStatus = d.rag_ready ? '<span style="color:var(--green)">● 已就绪</span>' : '<span style="color:var(--yellow)">● 未配置</span>';
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1>${openAdminBtn(url, t('open_dify'))}</div>`
       + aboutCard(t('dify_about'))
       + metricsCard(stats)
@@ -2489,12 +2494,41 @@ async function loadDify(el) {
           { url: P('dify') + '/apps', label: '🧩 ' + t('dify_new_app') },
           { url: P('dify') + '/datasets/create', label: '📚 ' + t('dify_new_kb') },
         ], 'https://docs.dify.ai')
+      + `<div class="card"><h3>🔍 RAG 知识库检索 ${ragStatus}</h3>
+          <p style="color:var(--textdim);font-size:0.85em;margin:0 0 4px">知识库列表：</p>
+          ${kbHtml}
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <input id="difyRagQuery" placeholder="输入问题检索知识库…" style="flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:6px" onkeydown="if(event.key==='Enter')difyRetrieve()">
+            <button onclick="difyRetrieve()" style="background:var(--accentbtn);color:#fff;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-weight:600">检索</button>
+          </div>
+          <div id="difyRagResult" style="margin-top:10px"></div>
+        </div>`
       + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">🧩 ${t('dify_apps')}（${(d.app_list || []).length}）</p>
         ${(d.app_list || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : appTable}
         <p style="color:var(--textdim);margin:14px 0 8px">🗂️ ${t('dify_workspaces')}（${(d.workspace_list || []).length}）</p>
         ${(d.workspace_list || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : wsTable}`, t('apps_workspaces'));
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🤖', title, url, e.message, t('open_dify'));
+  }
+}
+
+async function difyRetrieve() {
+  const q = document.getElementById('difyRagQuery');
+  const box = document.getElementById('difyRagResult');
+  const query = ((q && q.value) || '').trim();
+  if (!query) { if (box) box.innerHTML = '<p style="color:var(--yellow)">请输入问题</p>'; return; }
+  if (box) box.innerHTML = '<p class="loading">检索中…</p>';
+  try {
+    const r = await (await fetch(API + '/dify/retrieve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) })).json();
+    if (r.error) throw new Error(r.error);
+    const recs = r.records || [];
+    if (!recs.length) { if (box) box.innerHTML = '<p style="color:var(--textdim)">未检索到相关内容。</p>'; return; }
+    if (box) box.innerHTML = recs.map((x, i) => `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:0.8em;color:var(--textdim);margin-bottom:6px">${x.doc ? '来源：' + x.doc + '　' : ''}${x.score != null ? 'score=' + x.score.toFixed(4) : ''}</div>
+        <div style="font-size:0.88em;line-height:1.6;white-space:pre-wrap;color:var(--text)">${x.content}</div>
+      </div>`).join('');
+  } catch (e) {
+    if (box) box.innerHTML = `<p style="color:var(--red)">${e.message}</p>`;
   }
 }
 

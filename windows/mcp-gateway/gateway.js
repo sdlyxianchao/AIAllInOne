@@ -52,6 +52,19 @@ const builtinTools = [
     description: '列出 AI 平台已部署的服务清单（名称 / 端口 / 用途）',
     inputSchema: { type: 'object', properties: {} },
   },
+  {
+    name: 'search_knowledge',
+    description: '在 Dify 知识库中检索相关内容，返回最相关的文本片段（chunks）。用于查询企业制度、文档、知识等内网知识库。',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '要检索的问题或关键词' },
+        dataset_id: { type: 'string', description: '目标知识库 ID（可选，缺省用默认知识库）' },
+        top_k: { type: 'number', description: '返回片段数，默认 3' },
+      },
+      required: ['query'],
+    },
+  },
 ];
 
 const PLATFORM_SERVICES = [
@@ -75,6 +88,46 @@ async function callBuiltin(name, args) {
   }
   if (name === 'platform_services') {
     return 'AI 平台服务清单：\n' + PLATFORM_SERVICES.map(s => `- ${s.name} :${s.port}（${s.note}）`).join('\n');
+  }
+  if (name === 'search_knowledge') {
+    const base = process.env.DIFY_API_BASE || 'http://host.docker.internal/v1';
+    const key = process.env.DIFY_KNOWLEDGE_API_KEY || '';
+    const ds = args?.dataset_id || process.env.DIFY_DEFAULT_DATASET_ID || '';
+    const topK = Number(args?.top_k) || 3;
+    if (!key) return '错误：未配置 DIFY_KNOWLEDGE_API_KEY 环境变量';
+    if (!ds) return '错误：未指定知识库（请传 dataset_id 或配置 DIFY_DEFAULT_DATASET_ID）';
+    try {
+      const resp = await fetch(`${base}/datasets/${ds}/hit-testing`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: String(args?.query ?? ''),
+          retrieval_model: {
+            search_method: 'hybrid_search',
+            reranking_enable: false,
+            top_k: topK,
+            score_threshold_enabled: false,
+          },
+        }),
+      });
+      if (!resp.ok) {
+        const t = await resp.text().catch(() => '');
+        return `检索失败（HTTP ${resp.status}）：${t.slice(0, 400)}`;
+      }
+      const data = await resp.json();
+      const records = Array.isArray(data.records) ? data.records : [];
+      if (!records.length) return '未检索到相关内容。';
+      const lines = records.map((r, i) => {
+        const score = typeof r.score === 'number' ? r.score.toFixed(4) : '';
+        const seg = r.segment || {};
+        const content = String(seg.content || r.content || '').trim();
+        const doc = (seg.document && seg.document.name) || (r.document && r.document.name) || '';
+        return `[${i + 1}]${doc ? ` 来源：${doc}` : ''}${score ? `（score=${score}）` : ''}\n${content}`;
+      });
+      return `检索结果（${lines.length} 条）：\n\n` + lines.join('\n\n');
+    } catch (e) {
+      return `检索出错：${e.message}`;
+    }
   }
   return `未知内置工具：${name}`;
 }
@@ -116,10 +169,11 @@ async function getClient(srv) {
 // ═══════════════════════════════════════════
 // MCP Gateway Server
 // ═══════════════════════════════════════════
-const gateway = new Server(
-  { name: 'AI-All-in-One MCP Gateway', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
+function createGateway() {
+  const gateway = new Server(
+    { name: 'AI-All-in-One MCP Gateway', version: '1.0.0' },
+    { capabilities: { tools: {} } }
+  );
 
 // 聚合：内置工具 + 所有下游 server 的工具（下游工具加 {serverName}_ 前缀避免冲突）
 gateway.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -158,7 +212,10 @@ gateway.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
   }
   return { content: [{ type: 'text', text: `工具 ${name} 不存在` }], isError: true };
-});
+  });
+
+  return gateway;
+}
 
 // ═══════════════════════════════════════════
 // HTTP 服务（Streamable HTTP）
@@ -174,6 +231,7 @@ app.all('/mcp', async (req, res) => {
   });
   res.on('close', () => transport.close());
   try {
+    const gateway = createGateway();
     await gateway.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (e) {
