@@ -57,13 +57,14 @@
 
 ![기업 포털 홈](<../pics/AI All In One Hub.png>)
 
-**DeepChat 페이지** — DeepChat 설치 프로그램 다운로드
-
-![DeepChat 페이지](<../pics/AI All In One Hub Download.png>)
-
 **DeepChat** — 데스크톱 AI 클라이언트
 
 ![DeepChat](<../pics/DeepChat.png>)
+
+**MCP/SKILL 마켓** — MCP 원클릭 연결 + 스킬 패키지 다운로드
+
+![MCP/SKILL 마켓](<../pics/Market.png>)
+
 ---
 
 ## 2. 빠른 시작: Harness형 도구를 통한 자동 배포 (권장)

@@ -57,13 +57,14 @@ Chaque dossier de plateforme contient : `docker-compose.yml`, `.env.example`, `*
 
 ![Accueil du portail](<../pics/AI All In One Hub.png>)
 
-**Page DeepChat** — Télécharger les installeurs DeepChat
-
-![Page DeepChat](<../pics/AI All In One Hub Download.png>)
-
 **DeepChat** — client IA de bureau
 
 ![DeepChat](<../pics/DeepChat.png>)
+
+**Marché MCP/SKILL** — accès MCP en un clic + téléchargement des packs de compétences
+
+![Marché MCP/SKILL](<../pics/Market.png>)
+
 ---
 
 ## 2. Démarrage rapide : déploiement automatisé via un outil de type Harness (recommandé)

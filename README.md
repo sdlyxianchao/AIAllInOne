@@ -59,13 +59,13 @@ Every platform directory contains: `docker-compose.yml`, `.env.example`, `*-depl
 
 ![Enterprise portal home](<pics/AI All In One Hub.png>)
 
-**DeepChat Page** — Download DeepChat installers
-
-![DeepChat Page](<pics/AI All In One Hub Download.png>)
-
 **DeepChat** — desktop AI client
 
 ![DeepChat](<pics/DeepChat.png>)
+
+**MCP/SKILL Market** — one-click MCP gateway access + skill package download
+
+![MCP/SKILL Market](<pics/Market.png>)
 
 ### Custom Ghost theme — Corp Portal
 

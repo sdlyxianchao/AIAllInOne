@@ -394,21 +394,31 @@ app.get('/skills/:name.zip', (req, res) => {
 app.get('/market', (req, res) => {
   const { base: mcpBase, deepLink } = buildDeepLink();
   const skills = discoverSkills();
-  const cards = skills.length
-    ? skills.map(s => `
-    <div class="skill-card">
-      <div class="skill-head">
-        <span class="skill-name">${s.name}</span>
-        <span class="skill-ver">v${s.version || '—'}</span>
-      </div>
-      <p class="skill-desc">${s.description || '（无描述）'}</p>
-      <div class="skill-meta">${(s.size / 1024).toFixed(1)} KB</div>
-      <div class="skill-actions">
-        <a class="btn" href="${s.zipUrl}" download>下载 ZIP</a>
-        <button class="btn ghost" onclick="copyInstall('${s.name}')">复制安装地址</button>
-      </div>
-    </div>`).join('')
-    : '<p class="empty">skills/ 目录下暂无技能，放入带 SKILL.md 的子目录即可。</p>';
+  const SKILL_EMOJI = { 'platform-report': '📊', 'skill-market': '🧩' };
+
+  // 内置工具（含参数）序列化，供前端卡片/列表渲染
+  const tools = builtinTools.map(t => {
+    const props = (t.inputSchema && t.inputSchema.properties) || {};
+    const required = (t.inputSchema && t.inputSchema.required) || [];
+    return {
+      name: t.name,
+      description: t.description,
+      params: Object.keys(props).map(k => ({
+        name: k,
+        required: required.indexOf(k) >= 0,
+        desc: (props[k] && props[k].description) || '',
+      })),
+    };
+  });
+  const toolsJson = JSON.stringify(tools).replace(/</g, '\\u003c');
+  const skillsJson = JSON.stringify(skills.map(s => ({
+    name: s.name,
+    description: s.description || '',
+    version: s.version || '',
+    size: (s.size / 1024).toFixed(1),
+    zipUrl: s.zipUrl,
+    emoji: SKILL_EMOJI[s.folder] || '🧩',
+  }))).replace(/</g, '\\u003c');
 
   res.send(`<!DOCTYPE html>
 <html lang="zh-CN">
@@ -416,96 +426,253 @@ app.get('/market', (req, res) => {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 平台 Skill 市场</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: dark; }
+  :root {
+    --navy: #1a2b4a;
+    --navy-deep: #101d33;
+    --navy-soft: #2a3f66;
+    --gold: #c9a227;
+    --gold-soft: #e6c96a;
+    --ink: #232a33;
+    --body: #f5f6f8;
+    --surface: #ffffff;
+    --line: #e2e5ea;
+    --serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; background: #0d1117; color: #c9d1d9; padding: 32px 20px; line-height: 1.6; }
-  .wrap { max-width: 900px; margin: 0 auto; }
-  h1 { color: #58a6ff; font-size: 24px; margin-bottom: 6px; }
-  .sub { color: #8b949e; font-size: 14px; margin-bottom: 24px; }
-  .howto { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 24px; font-size: 14px; }
-  .howto code { background: #161b22; color: #79c0ff; padding: 1px 6px; border-radius: 4px; }
-  .mcp-box { background: rgba(57,197,207,0.08); border: 1px solid rgba(57,197,207,0.3); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-  .mcp-box strong { color: #39c5cf; font-size: 15px; }
-  .mcp-desc { color: #8b949e; font-size: 13px; margin: 8px 0 12px; line-height: 1.6; }
-  .mcp-desc code, .mcp-manual code { background: #161b22; color: #79c0ff; padding: 1px 6px; border-radius: 4px; }
-  .mcp-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-  .mcp-btn { background: #1f7a8a; }
-  .mcp-btn:hover { background: #2394a6; }
-  .mcp-manual { color: #8b949e; font-size: 12px; margin: 0; line-height: 1.6; }
-  .section { border: 1px solid #30363d; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
-  .section-head { display: flex; align-items: baseline; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #30363d; background: #161b22; }
-  .section-head .tag { font-weight: 800; font-size: 14px; letter-spacing: 1.5px; }
-  .section-head .hint { color: #8b949e; font-size: 12px; }
-  .section-head.mcp .tag { color: #39c5cf; }
-  .section-head.skill .tag { color: #58a6ff; }
-  .section-body { padding: 16px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-  .skill-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-  .skill-head { display: flex; align-items: center; gap: 8px; }
-  .skill-name { color: #e6edf3; font-weight: 600; font-size: 15px; }
-  .skill-ver { color: #8b949e; font-size: 12px; background: #21262d; padding: 1px 8px; border-radius: 999px; }
-  .skill-desc { color: #8b949e; font-size: 13px; flex: 1; }
-  .skill-meta { color: #6e7681; font-size: 12px; }
+  body { font-family: var(--sans); color: var(--ink); background: var(--body); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: var(--navy); text-decoration: none; }
+
+  /* 顶部导航（同 AI All In One Hub） */
+  .site-header { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .header-inner { display: flex; align-items: center; height: 68px; max-width: 1180px; margin: 0 auto; padding: 0 24px; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 12px; color: var(--navy); }
+  .brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--navy), var(--navy-soft)); color: var(--gold-soft); }
+  .brand-name { font-family: var(--serif); font-weight: 700; font-size: 20px; letter-spacing: .5px; color: var(--navy); }
+  .header-divider { width: 1px; height: 24px; background: var(--line); }
+  .page-name { font-size: 14px; color: #6b7280; }
+
+  /* 英雄区（深藏青渐变，左对齐） */
+  .hero { position: relative; padding: 64px 0 72px; background: radial-gradient(1200px 500px at 80% -10%, rgba(201,162,39,.14), transparent 60%), linear-gradient(160deg, var(--navy-deep), var(--navy) 55%, var(--navy-soft)); color: #fff; overflow: hidden; }
+  .hero::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 44px 44px; pointer-events: none; }
+  .hero-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  .hero-eyebrow { display: inline-block; font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-soft); margin-bottom: 18px; border: 1px solid rgba(230,201,106,.35); padding: 5px 14px; border-radius: 999px; }
+  .hero-title { font-family: var(--serif); font-size: clamp(30px, 5vw, 44px); font-weight: 700; line-height: 1.25; margin: 0 0 14px; }
+  .hero-sub { font-size: 16px; color: rgba(255,255,255,.82); margin: 0; }
+
+  /* 主体 */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 48px; }
+  .section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 6px 20px rgba(26,43,74,.08); }
+  .section-head { display: flex; align-items: center; gap: 12px; padding: 16px 22px; border-bottom: 1px solid var(--line); background: #fafbfc; }
+  .section-head .ico { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex: 0 0 auto; }
+  .section-head .title { font-weight: 700; font-size: 16px; color: var(--navy); letter-spacing: 1px; }
+  .section-head .hint { color: #8b949e; font-size: 12px; margin-left: auto; text-align: right; }
+  .section-head.mcp { border-top: 3px solid var(--gold); }
+  .section-head.mcp .ico { background: rgba(201,162,39,.12); }
+  .section-head.skill { border-top: 3px solid var(--navy); }
+  .section-head.skill .ico { background: rgba(26,43,74,.08); }
+  .section-body { padding: 22px; }
+
+  .howto { background: rgba(26,43,74,.04); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; font-size: 13px; color: var(--ink); }
+  .howto code, .mcp-desc code, .mcp-manual code { background: rgba(26,43,74,.06); color: var(--navy); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+  .mcp-box { background: linear-gradient(135deg, rgba(201,162,39,.08), rgba(26,43,74,.03)); border: 1px solid rgba(201,162,39,.28); border-radius: 12px; padding: 20px; }
+  .mcp-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .mcp-desc { color: #4b5563; font-size: 13px; margin-bottom: 16px; line-height: 1.6; }
+  .mcp-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .mcp-manual { color: #6b7280; font-size: 12px; margin: 0; line-height: 1.7; }
+  .mcp-note { color: #8b949e; font-size: 12px; margin-top: 8px; line-height: 1.7; }
+  .subhead { font-size: 14px; font-weight: 700; color: var(--navy); margin: 24px 0 12px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .skill-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+  .skill-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 8px 24px rgba(26,43,74,.10); }
+  .skill-head { display: flex; align-items: center; gap: 12px; }
+  .skill-icon { width: 42px; height: 42px; border-radius: 11px; background: linear-gradient(135deg, rgba(26,43,74,.08), rgba(201,162,39,.10)); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 20px; flex: 0 0 auto; }
+  .skill-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .skill-name { color: var(--ink); font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .skill-ver { color: #8b949e; font-size: 11px; }
+  .skill-desc { color: #6b7280; font-size: 13px; flex: 1; line-height: 1.6; }
+  .skill-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .skill-meta { color: #8b949e; font-size: 12px; }
   .skill-actions { display: flex; gap: 8px; }
-  .btn { background: #238636; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; text-decoration: none; display: inline-block; }
-  .btn:hover { background: #2ea043; }
-  .btn.ghost { background: #21262d; }
-  .btn.ghost:hover { background: #30363d; }
+  .btn { background: var(--navy); color: #fff; border: none; padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 13px; text-decoration: none; display: inline-block; font-weight: 600; transition: background .15s ease, transform .15s ease; }
+  .btn:hover { background: var(--navy-soft); }
+  .btn.ghost { background: #fff; color: var(--navy); border: 1px solid var(--line); }
+  .btn.ghost:hover { background: #f5f6f8; }
+  .mcp-btn { background: var(--gold); color: var(--navy-deep); font-size: 14px; padding: 9px 18px; }
+  .mcp-btn:hover { background: var(--gold-soft); }
   .empty { color: #8b949e; }
-  .foot { color: #6e7681; font-size: 12px; margin-top: 28px; }
-  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #238636; color: #fff; padding: 8px 18px; border-radius: 6px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .foot { color: #8b949e; font-size: 12px; text-align: center; margin-top: 28px; }
+  #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+
+  /* 工具条（搜索 + 视图切换 + 每页条数） */
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .toolbar .search { flex: 1 1 180px; min-width: 150px; }
+  .toolbar input[type=search] { width: 100%; background: #fff; border: 1px solid var(--line); color: var(--ink); border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; transition: border-color .15s ease; }
+  .toolbar input[type=search]:focus { border-color: var(--navy); }
+  .count { color: #8b949e; font-size: 12px; white-space: nowrap; }
+  .view-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+  .view-btn { background: #fff; color: #6b7280; border: none; padding: 6px 12px; font-size: 12px; cursor: pointer; transition: background .15s ease, color .15s ease; }
+  .view-btn.active { background: var(--navy); color: #fff; }
+  .page-size select { background: #fff; border: 1px solid var(--line); color: var(--ink); border-radius: 8px; padding: 6px 8px; font-size: 12px; }
+
+  /* 列表视图：把 grid 变单列 */
+  .grid.list { display: flex; flex-direction: column; gap: 10px; }
+
+  /* 工具卡片 / 行 */
+  .tool-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; transition: transform .15s ease, border-color .15s ease; }
+  .tool-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .tool-name code { background: rgba(201,162,39,.12); color: #8a6d1a; padding: 2px 8px; border-radius: 6px; font-size: 13px; font-weight: 700; }
+  .tool-desc { color: #6b7280; font-size: 13px; line-height: 1.6; }
+  .tool-params { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .param { background: #f0f2f5; color: #6b7280; font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+  .param.req { color: #b0761a; border: 1px solid rgba(201,162,39,.5); background: #fdf6e3; }
+  .param.none { color: #9ca3af; }
+  .tool-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  .tool-row-main { flex: 1; min-width: 0; }
+  .tool-row-main code { color: #8a6d1a; font-weight: 700; font-size: 13px; }
+  .tool-row .tool-desc { font-size: 12px; margin: 2px 0 0; }
+
+  /* 技能行（列表） */
+  .skill-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .skill-row .skill-icon { width: 40px; height: 40px; font-size: 18px; }
+  .skill-row-main { flex: 1; min-width: 0; }
+  .skill-row-title { display: flex; align-items: center; gap: 8px; }
+  .skill-row .skill-desc { margin: 2px 0 0; font-size: 12px; }
+  .skill-row .skill-meta { flex: 0 0 auto; }
+
+  /* 分页 */
+  .pagination { display: flex; align-items: center; gap: 12px; justify-content: center; margin-top: 16px; }
+  .pg-btn { background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; font-size: 12px; cursor: pointer; transition: background .15s ease; }
+  .pg-btn:hover:not(:disabled) { background: #f0f2f5; }
+  .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pg-info { color: #8b949e; font-size: 12px; }
+  @media (max-width: 640px) {
+    .hero { padding: 40px 0 48px; }
+    .hero-title { font-size: 28px; }
+    .section-head .hint { display: none; }
+  }
 </style>
 </head>
 <body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="${mcpBase}/market">
+      <span class="brand-mark">
+        <svg viewBox="0 0 32 32" width="22" height="22" fill="none"><rect x="4" y="4" width="24" height="24" rx="6" fill="currentColor" opacity="0.15"/><path d="M10 22V10l12 12V10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">AI All In One</span>
+    </a>
+    <span class="header-divider"></span>
+    <span class="page-name">Skill 市场</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">内部工作平台</div>
+    <h1 class="hero-title">AI 平台 Skill 市场</h1>
+    <p class="hero-sub">一键接入 MCP 网关 · 下载内网技能包 · 共 ${skills.length} 个技能</p>
+  </div>
+</div>
+
 <div class="wrap">
-  <h1>AI 平台 Skill 市场</h1>
-  <p class="sub">内网技能包分发中心 · 共 ${skills.length} 个技能</p>
   <div class="section">
-    <div class="section-head mcp"><span class="tag">MCP</span><span class="hint">一键接入平台 MCP 网关（内置工具 + RAG 知识库检索）</span></div>
+    <div class="section-head mcp"><span class="ico">🔌</span><span class="title">MCP</span><span class="hint">一键接入平台 MCP 网关</span></div>
     <div class="section-body">
       <div class="mcp-box">
-        <strong>🔌 一键接入 DeepChat MCP</strong>
-        <p class="mcp-desc">把「AI 平台 MCP 网关」（内置工具 + 知识库检索 <code>search_knowledge</code>）一键加进 DeepChat，即可在对话里使用平台工具和 RAG 知识库检索。</p>
+        <div class="mcp-title">🔌 一键接入 DeepChat MCP</div>
+        <p class="mcp-desc">把「AI 平台 MCP 网关」（内置工具 + 知识库检索 <code>search_knowledge</code>）加进 DeepChat，即可在对话里使用平台工具和 RAG 知识库检索。</p>
         <div class="mcp-actions">
           <a class="btn mcp-btn" href="${deepLink}">🔌 一键接入 DeepChat MCP</a>
           <button class="btn ghost" onclick="copyDeepLink()">📋 复制一键接入链接</button>
         </div>
         <p class="mcp-manual">手动配置：DeepChat → 设置 → MCP → 新增 → <b>跳过至手动配置</b> → 类型「可流式传输的 HTTP 请求」→ 基础 URL 填 <code>${mcpBase}/mcp</code></p>
-        <p class="mcp-manual" style="margin-top:8px;color:#6e7681">⚠️ 一键接入走 <b>SSE</b>（DeepChat 的 deep link 只支持 SSE/stdio，不支持 Streamable HTTP），会显示「SSE is legacy-only」提示，<b>属正常、不影响使用</b>；想要 Streamable HTTP（无提示）请用上面手动配置填 <code>/mcp</code>。</p>
+        <p class="mcp-note">⚠️ 一键接入走 <b>SSE</b>（DeepChat 的 deep link 只支持 SSE/stdio，不支持 Streamable HTTP），会显示「SSE is legacy-only」提示，属正常、不影响使用；想要 Streamable HTTP（无提示）请用上面手动配置填 <code>/mcp</code>。</p>
+      </div>
+
+      <div class="subhead">🛠️ 网关内置工具</div>
+      <div class="toolbar">
+        <input type="search" id="tools-search" class="search" placeholder="搜索工具名或描述…">
+        <span class="count" id="tools-count"></span>
+        <div class="view-toggle" id="tools-toggle">
+          <button type="button" class="view-btn active" data-view="card">卡片</button>
+          <button type="button" class="view-btn" data-view="list">列表</button>
+        </div>
+        <label class="page-size">每页
+          <select id="tools-page-size"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select> 条
+        </label>
+      </div>
+      <div class="grid" id="tools-container"></div>
+      <div class="pagination" id="tools-pagination">
+        <button type="button" class="pg-btn" id="tools-pg-prev">上一页</button>
+        <span class="pg-info" id="tools-pg-info"></span>
+        <button type="button" class="pg-btn" id="tools-pg-next">下一页</button>
       </div>
     </div>
   </div>
+
   <div class="section">
-    <div class="section-head skill"><span class="tag">SKILL</span><span class="hint">内网技能包安装</span></div>
+    <div class="section-head skill"><span class="ico">🧩</span><span class="title">SKILL</span><span class="hint">内网技能包安装</span></div>
     <div class="section-body">
       <div class="howto">
         <strong>DeepChat 安装 Skill：</strong>设置 → Skills → 从 URL 安装，填
         <code>${mcpBase}/skills/&lt;名称&gt;.zip</code>（或点「下载 ZIP」后从 ZIP / 文件夹安装）。
       </div>
-      <div class="grid">${cards}</div>
+      <div class="toolbar">
+        <input type="search" id="skills-search" class="search" placeholder="搜索技能名或描述…">
+        <span class="count" id="skills-count"></span>
+        <div class="view-toggle" id="skills-toggle">
+          <button type="button" class="view-btn active" data-view="card">卡片</button>
+          <button type="button" class="view-btn" data-view="list">列表</button>
+        </div>
+        <label class="page-size">每页
+          <select id="skills-page-size"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select> 条
+        </label>
+      </div>
+      <div class="grid" id="skills-container"></div>
+      <div class="pagination" id="skills-pagination">
+        <button type="button" class="pg-btn" id="skills-pg-prev">上一页</button>
+        <span class="pg-info" id="skills-pg-info"></span>
+        <button type="button" class="pg-btn" id="skills-pg-next">下一页</button>
+      </div>
     </div>
   </div>
+
   <p class="foot">由 MCP Gateway 托管 · 技能来源：skills/ 目录</p>
 </div>
 <div id="toast">已复制</div>
 <script>
-function copyDeepLink() {
-  const link = document.querySelector('.mcp-btn').getAttribute('href');
-  const done = () => {
-    const t = document.getElementById('toast');
-    t.textContent = '已复制：' + link;
-    t.style.opacity = '1';
-    setTimeout(() => t.style.opacity = '0', 2000);
-  };
+window.__TOOLS__ = ${toolsJson};
+window.__SKILLS__ = ${skillsJson};
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(function () { t.style.opacity = '0'; }, 2000);
+}
+function copyText(text) {
+  var done = function () { showToast('已复制：' + text); };
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(link).then(done).catch(() => fallbackCopy(link, done));
+    navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
   } else {
-    fallbackCopy(link, done);
+    fallbackCopy(text, done);
   }
 }
+function copyDeepLink() {
+  copyText(document.querySelector('.mcp-btn').getAttribute('href'));
+}
 function fallbackCopy(text, done) {
-  const ta = document.createElement('textarea');
+  var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.position = 'fixed';
   ta.style.opacity = '0';
@@ -514,15 +681,135 @@ function fallbackCopy(text, done) {
   try { document.execCommand('copy'); done(); } catch (e) { prompt('复制失败，请手动复制：', text); }
   document.body.removeChild(ta);
 }
-function copyInstall(name) {
-  const url = location.origin + '/skills/' + name + '.zip';
-  navigator.clipboard.writeText(url).then(() => {
-    const t = document.getElementById('toast');
-    t.textContent = '已复制：' + url;
-    t.style.opacity = '1';
-    setTimeout(() => t.style.opacity = '0', 2000);
-  });
+
+function paramChips(params) {
+  if (!params || !params.length) return '<span class="param none">无参数</span>';
+  return params.map(function (p) {
+    return '<span class="param' + (p.required ? ' req' : '') + '" title="' + esc(p.desc) + '">' + esc(p.name) + (p.required ? ' *' : '') + '</span>';
+  }).join('');
 }
+function toolCard(t) {
+  return '<div class="tool-card">'
+    + '<div class="tool-name"><code>' + esc(t.name) + '</code></div>'
+    + '<p class="tool-desc">' + esc(t.description) + '</p>'
+    + '<div class="tool-params">' + paramChips(t.params) + '</div>'
+    + '</div>';
+}
+function toolRow(t) {
+  return '<div class="tool-row">'
+    + '<div class="tool-row-main"><code>' + esc(t.name) + '</code>'
+    + '<p class="tool-desc">' + esc(t.description) + '</p></div>'
+    + '<div class="tool-params">' + paramChips(t.params) + '</div>'
+    + '</div>';
+}
+function skillCard(s) {
+  return '<div class="skill-card">'
+    + '<div class="skill-head"><span class="skill-icon">' + esc(s.emoji) + '</span>'
+    + '<div class="skill-title"><span class="skill-name">' + esc(s.name) + '</span><span class="skill-ver">v' + esc(s.version || '—') + '</span></div></div>'
+    + '<p class="skill-desc">' + esc(s.description || '（无描述）') + '</p>'
+    + '<div class="skill-foot"><span class="skill-meta">' + esc(s.size) + ' KB</span>'
+    + '<div class="skill-actions">'
+    + '<a class="btn" href="' + s.zipUrl + '" download>下载 ZIP</a>'
+    + '<button class="btn ghost" data-copy="' + s.zipUrl + '">复制安装地址</button>'
+    + '</div></div></div>';
+}
+function skillRow(s) {
+  return '<div class="skill-row">'
+    + '<span class="skill-icon">' + esc(s.emoji) + '</span>'
+    + '<div class="skill-row-main"><div class="skill-row-title"><span class="skill-name">' + esc(s.name) + '</span><span class="skill-ver">v' + esc(s.version || '—') + '</span></div>'
+    + '<p class="skill-desc">' + esc(s.description || '（无描述）') + '</p></div>'
+    + '<span class="skill-meta">' + esc(s.size) + ' KB</span>'
+    + '<div class="skill-actions">'
+    + '<a class="btn" href="' + s.zipUrl + '" download>下载 ZIP</a>'
+    + '<button class="btn ghost" data-copy="' + s.zipUrl + '">复制安装地址</button>'
+    + '</div></div>';
+}
+
+// 通用集合渲染器：搜索 + 卡片/列表切换 + 分页
+function createCollection(cfg) {
+  var view = 'card', page = 1;
+  var pageSize = parseInt(cfg.pageSize.value, 10) || 10;
+  var filtered = cfg.items.slice();
+
+  function render() {
+    var total = filtered.length;
+    var pages = Math.max(1, Math.ceil(total / pageSize));
+    if (page > pages) page = pages;
+    var start = (page - 1) * pageSize;
+    var slice = filtered.slice(start, start + pageSize);
+    cfg.container.classList.toggle('list', view === 'list');
+    cfg.container.innerHTML = slice.length
+      ? slice.map(function (it) { return view === 'list' ? cfg.renderRow(it) : cfg.renderCard(it); }).join('')
+      : '<p class="empty">无匹配结果</p>';
+    cfg.count.textContent = '共 ' + total + ' 项';
+    if (cfg.pg) {
+      cfg.pg.style.display = pages > 1 ? '' : 'none';
+      cfg.pgInfo.textContent = '第 ' + page + ' / ' + pages + ' 页';
+      cfg.pgPrev.disabled = page <= 1;
+      cfg.pgNext.disabled = page >= pages;
+    }
+  }
+
+  cfg.search.addEventListener('input', function () {
+    var q = cfg.search.value.trim().toLowerCase();
+    filtered = cfg.items.filter(function (it) { return cfg.match(it, q); });
+    page = 1;
+    render();
+  });
+  cfg.toggles.forEach(function (b) {
+    b.addEventListener('click', function () {
+      view = b.getAttribute('data-view');
+      cfg.toggles.forEach(function (x) { x.classList.toggle('active', x === b); });
+      render();
+    });
+  });
+  cfg.pageSize.addEventListener('change', function () {
+    pageSize = parseInt(cfg.pageSize.value, 10) || 10;
+    page = 1;
+    render();
+  });
+  cfg.pgPrev.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+  cfg.pgNext.addEventListener('click', function () { if (page < Math.ceil(filtered.length / pageSize)) { page++; render(); } });
+  render();
+}
+
+// 「复制安装地址」按钮（data-copy 属性）事件委托
+document.addEventListener('click', function (e) {
+  var b = e.target && e.target.closest ? e.target.closest('[data-copy]') : null;
+  if (b) copyText(b.getAttribute('data-copy'));
+});
+
+createCollection({
+  items: window.__TOOLS__,
+  container: document.getElementById('tools-container'),
+  count: document.getElementById('tools-count'),
+  search: document.getElementById('tools-search'),
+  toggles: Array.prototype.slice.call(document.querySelectorAll('#tools-toggle .view-btn')),
+  pageSize: document.getElementById('tools-page-size'),
+  pg: document.getElementById('tools-pagination'),
+  pgInfo: document.getElementById('tools-pg-info'),
+  pgPrev: document.getElementById('tools-pg-prev'),
+  pgNext: document.getElementById('tools-pg-next'),
+  renderCard: toolCard,
+  renderRow: toolRow,
+  match: function (t, q) { return !q || t.name.toLowerCase().indexOf(q) >= 0 || t.description.toLowerCase().indexOf(q) >= 0; }
+});
+
+createCollection({
+  items: window.__SKILLS__,
+  container: document.getElementById('skills-container'),
+  count: document.getElementById('skills-count'),
+  search: document.getElementById('skills-search'),
+  toggles: Array.prototype.slice.call(document.querySelectorAll('#skills-toggle .view-btn')),
+  pageSize: document.getElementById('skills-page-size'),
+  pg: document.getElementById('skills-pagination'),
+  pgInfo: document.getElementById('skills-pg-info'),
+  pgPrev: document.getElementById('skills-pg-prev'),
+  pgNext: document.getElementById('skills-pg-next'),
+  renderCard: skillCard,
+  renderRow: skillRow,
+  match: function (s, q) { return !q || s.name.toLowerCase().indexOf(q) >= 0 || s.description.toLowerCase().indexOf(q) >= 0; }
+});
 </script>
 </body>
 </html>`);

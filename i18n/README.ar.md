@@ -57,13 +57,14 @@
 
 ![الصفحة الرئيسية للبوابة](<../pics/AI All In One Hub.png>)
 
-**صفحة DeepChat** — تنزيل مثبّتات DeepChat
-
-![صفحة DeepChat](<../pics/AI All In One Hub Download.png>)
-
 **DeepChat** — عميل ذكاء اصطناعي لسطح المكتب
 
 ![DeepChat](<../pics/DeepChat.png>)
+
+**سوق MCP/SKILL** — اتصال MCP بنقرة واحدة + تنزيل حزم المهارات
+
+![سوق MCP/SKILL](<../pics/Market.png>)
+
 ---
 
 ## 2. البدء السريع: النشر الآلي عبر أداة من نوع Harness (موصى به)

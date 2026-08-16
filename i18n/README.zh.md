@@ -59,13 +59,13 @@
 
 ![企业门户首页](<../pics/AI All In One Hub.png>)
 
-**DeepChat 页面** — 下载 DeepChat 安装包
-
-![DeepChat 页面](<../pics/AI All In One Hub Download.png>)
-
 **DeepChat** — 桌面 AI 客户端
 
 ![DeepChat](<../pics/DeepChat.png>)
+
+**MCP/SKILL 市场** — 一键接入 MCP 网关 + 内网技能包下载
+
+![MCP/SKILL 市场](<../pics/Market.png>)
 
 ---
 

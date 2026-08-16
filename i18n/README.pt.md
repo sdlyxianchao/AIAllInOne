@@ -57,13 +57,14 @@ Cada pasta de plataforma contém: `docker-compose.yml`, `.env.example`, `*-deplo
 
 ![Início do portal](<../pics/AI All In One Hub.png>)
 
-**Página DeepChat** — Baixar os instaladores do DeepChat
-
-![Página DeepChat](<../pics/AI All In One Hub Download.png>)
-
 **DeepChat** — cliente de IA para desktop
 
 ![DeepChat](<../pics/DeepChat.png>)
+
+**Mercado MCP/SKILL** — acesso MCP em um clique + download de pacotes de habilidades
+
+![Mercado MCP/SKILL](<../pics/Market.png>)
+
 ---
 
 ## 2. Início rápido: implantação automatizada via ferramenta do tipo Harness (recomendado)

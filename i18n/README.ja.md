@@ -57,13 +57,14 @@
 
 ![企業ポータル ホーム](<../pics/AI All In One Hub.png>)
 
-**DeepChat ページ** — DeepChat インストーラーをダウンロード
-
-![DeepChat ページ](<../pics/AI All In One Hub Download.png>)
-
 **DeepChat** — デスクトップ AI クライアント
 
 ![DeepChat](<../pics/DeepChat.png>)
+
+**MCP/SKILL マーケット** — MCP をワンクリックで接続 + スキルパックのダウンロード
+
+![MCP/SKILL マーケット](<../pics/Market.png>)
+
 ---
 
 ## 2. クイックスタート：Harness系ツールによる自動デプロイ（推奨）

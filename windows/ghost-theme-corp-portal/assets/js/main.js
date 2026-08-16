@@ -11,6 +11,12 @@
         });
     }
 
+    /* 内网产品入口：MCP/SKILL Market 部署在宿主机 3100 端口（去掉当前端口得到基础地址，再拼 :3100/market） */
+    var productBase = window.location.origin.replace(/:\d+$/, "");
+    document.querySelectorAll("[data-mcp-market-link]").forEach(function (el) {
+        el.setAttribute("href", productBase + ":3100/market");
+    });
+
     /* 回到顶部按钮 */
     var toTop = document.getElementById("toTopBtn");
     if (toTop) {
