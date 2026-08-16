@@ -264,7 +264,7 @@ docker exec keycloak sh -c "microdnf install -y openldap-clients 2>/dev/null; ld
   <li>访问 <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code></li>
   <li>在登录页面输入 AD 域用户的凭证：
     <ul>
-      <li>用户名：<code>aitest1</code>（sAMAccountName）或 <code>aitest1@chxia.lab</code>（UPN），两种格式均可</li>
+      <li>用户名：<code>aitest1</code>（sAMAccountName）或 <code>aitest1@&lt;公司域名&gt;</code>（UPN），两种格式均可</li>
       <li>密码：该域用户在 AD 中设置的密码</li>
     </ul>
   </li>

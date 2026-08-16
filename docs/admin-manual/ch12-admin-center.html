@@ -37,7 +37,7 @@
     <pre><code># configure in .env
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=see the account/password list
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;company-domain&gt;</code></pre>
     <p>After startup, it automatically creates the <code>ai_all_in_one_admin</code> user in Keycloak (skips if it already exists) and assigns the <code>ai-platform-admin</code> Realm Role. Core idea: <b>one Global Admin account manages the whole platform</b>.</p>
 
     <h2>12.3 Docker Compose Deployment</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;company-domain&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;server-IP&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>admin-portal sessions are stored in Redis (<code>admin-session-redis</code>); restarting the container no longer clears login sessions;</li>
         <li>The home page <code>/</code> must be Keycloak-protected (<code>express.static(..., {index:false})</code> + an explicit <code>app.get('/', keycloak.protect())</code>), otherwise it renders an empty dashboard before login;</li>
-        <li>For Dify statistics use the actual admin email (<code>ai_all_in_one_admin@chxia.lab</code>), which must match the AD global admin email;</li>
+        <li>For Dify statistics use the actual admin email (<code>ai_all_in_one_admin@&lt;company-domain&gt;</code>), which must match the AD global admin email;</li>
         <li><b>After modifying server.js you must run <code>docker restart admin-portal</code></b>, not <code>up -d</code> (volume file content changes won't trigger a rebuild).</li>
       </ul>
     </div>

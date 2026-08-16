@@ -37,7 +37,7 @@
     <pre><code># .env 中配置
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=見帳號密碼清單
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;公司網域&gt;</code></pre>
     <p>啟動後自動在 Keycloak 建 <code>ai_all_in_one_admin</code> 使用者（已有則跳過），分配 <code>ai-platform-admin</code> Realm Role。核心理念：<b>一個 Global Admin 帳號管理所有平台</b>。</p>
 
     <h2>12.3 Docker Compose 部署</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;公司網域&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;伺服器IP&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>admin-portal 會話存記憶體，<code>up -d</code> 重建容器會<b>清空登入會話</b>（需重登）；</li>
         <li>首頁 <code>/</code> 必須走 Keycloak 保護（<code>express.static(..., {index:false})</code> + 顯式 <code>app.get('/', keycloak.protect())</code>），否則未登入直接渲染空看板；</li>
-        <li>統計 Dify 用實際管理員郵箱（<code>ai_all_in_one_admin@chxia.lab</code>，須與 AD 全域管理員一致）；</li>
+        <li>統計 Dify 用實際管理員郵箱（<code>ai_all_in_one_admin@&lt;公司網域&gt;</code>，須與 AD 全域管理員一致）；</li>
         <li><b>改 server.js 後必須 <code>docker restart admin-portal</code></b>，不能用 <code>up -d</code>（volume 檔案內容變化不會觸發重建）。</li>
       </ul>
     </div>

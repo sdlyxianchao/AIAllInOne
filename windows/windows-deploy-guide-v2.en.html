@@ -1098,7 +1098,7 @@ docker compose up -d web</code></pre>
   <li>
     Enter AD domain user credentials:
     <ul>
-      <li>Username: <code>aitest1</code> (sAMAccountName) or <code>aitest1@chxia.lab</code> (UPN) — both work</li>
+      <li>Username: <code>aitest1</code> (sAMAccountName) or <code>aitest1@&lt;company-domain&gt;</code> (UPN) — both work</li>
       <li>Password: the domain user's AD password</li>
     </ul>
   </li>
@@ -1529,7 +1529,7 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
   <strong>⚠️ Pitfall 2: Gitea's <code>ROOT_URL</code> must be set to the intranet address:</strong> if <code>GITEA__server__ROOT_URL</code> in docker-compose is still <code>http://localhost:3002/</code>, Gitea generates repo links and API <code>html_url</code> with <code>localhost</code>/container addresses (intranet employees can't open them). Change to <code>http://&lt;server-IP&gt;:3002/</code> then <code>docker compose up -d gitea</code> to rebuild.
 </div>
 <div class="callout callout-info">
-  <strong>🔐 Gitea Keycloak SSO auto-registration (v0.91):</strong> Gitea is connected to Keycloak OIDC (the <code>/user/login</code> page shows a "Sign in with keycloak" button). To auto-create new SSO users on first login and stop redirecting to the <code>link_account</code> page, append an <code>[oauth2_client]</code> section to <code>app.ini</code> (docker-compose already sets the <code>GITEA__oauth2_client__*</code> env vars): <code>ENABLE_AUTO_REGISTRATION=true</code>, <code>ACCOUNT_LINKING=auto</code>, <code>USERNAME=preferred_username</code>. ⚠️ The local Gitea admin email must match Keycloak/AD (<code>@chxia.lab</code>), otherwise SSO can't match by email and will "cross-link" accounts or create duplicates.
+  <strong>🔐 Gitea Keycloak SSO auto-registration (v0.91):</strong> Gitea is connected to Keycloak OIDC (the <code>/user/login</code> page shows a "Sign in with keycloak" button). To auto-create new SSO users on first login and stop redirecting to the <code>link_account</code> page, append an <code>[oauth2_client]</code> section to <code>app.ini</code> (docker-compose already sets the <code>GITEA__oauth2_client__*</code> env vars): <code>ENABLE_AUTO_REGISTRATION=true</code>, <code>ACCOUNT_LINKING=auto</code>, <code>USERNAME=preferred_username</code>. ⚠️ The local Gitea admin email must match Keycloak/AD (<code>@&lt;company-domain&gt;</code>), otherwise SSO can't match by email and will "cross-link" accounts or create duplicates.
 </div>
 
 <!-- ==================== 7. DeepChat ==================== -->
@@ -1751,12 +1751,12 @@ if (name === 'platform_health') {
 { "market_url": "http://&lt;market-hostname&gt;:3100" }</code></pre>
 
 <div class="callout callout-warn">
-  <strong>⚠️ Important: <code>market_url</code> uses a hostname, and <code>&lt;market-hostname&gt;</code> is a <b>deployment parameter that must be replaced</b>.</strong> DeepChat's agent environment masks IP addresses into <code>[IP_ADDRESS_REDACTED]</code>, causing the "skill manager" to fail to read the real IP and unable to request the <code>/skills</code> list; hostnames are unaffected by masking. But the hostname is a <b>local value that differs per deployment</b> and must not be copied as-is (this environment currently uses <code>skillmarket.chxia.lab</code>, where <code>chxia.lab</code> is this company's AD domain; other deployments must replace it with their own).
+  <strong>⚠️ Important: <code>market_url</code> uses a hostname, and <code>&lt;market-hostname&gt;</code> is a <b>deployment parameter that must be replaced</b>.</strong> DeepChat's agent environment masks IP addresses into <code>[IP_ADDRESS_REDACTED]</code>, causing the "skill manager" to fail to read the real IP and unable to request the <code>/skills</code> list; hostnames are unaffected by masking. But the hostname is a <b>local value that differs per deployment</b> and must not be copied as-is (each deployment uses its own domain, e.g. <code>skillmarket.&lt;company-domain&gt;</code>).
   <ul>
     <li><b>Auto (recommended, via Agent deployment):</b> the Agent asks you "Skill market hostname (domain)" during "Chapter 0 · Step 1 collect parameters", then automatically replaces all <code>&lt;market-hostname&gt;</code> in <code>mcp-gateway/skills/skill-market/config.json</code> and the sibling <code>SKILL.md</code> with your value.</li>
     <li><b>Manual:</b> edit <code>mcp-gateway/skills/skill-market/config.json</code> (and the <code>SKILL.md</code> fallback address), replace <code>&lt;market-hostname&gt;</code> with your hostname; then make the hostname resolvable — single machine: add a line <code>&lt;server-IP&gt;  &lt;your-hostname&gt;</code> in <code>C:\Windows\System32\drivers\etc\hosts</code> (for local debugging you can use <code>127.0.0.1</code>); company intranet: add an A record in DNS.</li>
   </ul>
-  <p><b>Hostname naming suggestion</b>: use an FQDN of "service name + company domain", e.g. <code>skillmarket.your-company-domain</code> (in this environment, <code>skillmarket.chxia.lab</code>). Adding an A record in DNS: DC "Server Manager → DNS → Forward Lookup Zones → your domain → New Host (A) → name <code>skillmarket</code>, IP <code>&lt;server-IP&gt;</code>"; or PowerShell: <code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "your-domain" -IPv4Address "&lt;server-IP&gt;"</code>.</p>
+  <p><b>Hostname naming suggestion</b>: use an FQDN of "service name + company domain", e.g. <code>skillmarket.&lt;company-domain&gt;</code>. Adding an A record in DNS: DC "Server Manager → DNS → Forward Lookup Zones → your domain → New Host (A) → name <code>skillmarket</code>, IP <code>&lt;server-IP&gt;</code>"; or PowerShell: <code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "your-domain" -IPv4Address "&lt;server-IP&gt;"</code>.</p>
 </div>
 
 <h3>8.8 Admin API (for AI Admin Center CRUD)</h3>
@@ -2096,12 +2096,12 @@ User browser → AI Admin Center (&lt;server-IP&gt;:10086)
 <pre><code># Add to .env:
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=see-credentials-list
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;company-domain&gt;</code></pre>
 <p>On startup it auto-creates the <code>ai_all_in_one_admin</code> user in Keycloak (skips if exists) and assigns the <code>ai-platform-admin</code> realm role. All Keycloak SSO-connected products (Dify, NewAPI, Ghost) can identify admins via this role.</p>
 <div class="tip"><strong>Core idea:</strong> one Global Admin account manages all platforms. Each product's admin role is uniformly controlled via the Keycloak realm role <code>ai-platform-admin</code>.</div>
 
 <div class="callout callout-info">
-  <strong>Unified admin account (global convention):</strong> all platforms use username <code>ai_all_in_one_admin</code> (Keycloak / NewAPI / AI Admin Center / Ghost / Gitea / Dify), and the AD DC's LDAP bind service account is also named <code>ai_all_in_one_admin</code>.<strong>⚠️ The email must also <b>exactly match</b> the global admin email defined in AD, unified as <code>ai_all_in_one_admin@chxia.lab</code></strong> — if a product's local admin account email differs from Keycloak/AD, SSO login can't match it by email, causing account cross-link or duplicate accounts. Always use the same email when creating accounts / setting <code>ADMIN_EMAIL</code> / initializing each product.<strong>The concrete passwords are in the separate credentials list</strong> (<code>credentials.html</code>, internal confidential, not distributed with this guide).
+  <strong>Unified admin account (global convention):</strong> all platforms use username <code>ai_all_in_one_admin</code> (Keycloak / NewAPI / AI Admin Center / Ghost / Gitea / Dify), and the AD DC's LDAP bind service account is also named <code>ai_all_in_one_admin</code>.<strong>⚠️ The email must also <b>exactly match</b> the global admin email defined in AD, unified as <code>ai_all_in_one_admin@&lt;company-domain&gt;</code></strong> — if a product's local admin account email differs from Keycloak/AD, SSO login can't match it by email, causing account cross-link or duplicate accounts. Always use the same email when creating accounts / setting <code>ADMIN_EMAIL</code> / initializing each product.<strong>The concrete passwords are in the separate credentials list</strong> (<code>credentials.html</code>, internal confidential, not distributed with this guide).
 </div>
 
 <h3>11.4 Docker Compose deployment</h3>
@@ -2127,7 +2127,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;company-domain&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;server-IP&gt;:4001
@@ -2161,7 +2161,7 @@ cd ..</code></pre>
   <ul>
     <li>admin-portal sessions are stored in <b>Redis</b> (<code>admin-session-redis</code>, same as Keycloak); restarting the container no longer clears login sessions. Sensitive state such as temp passwords is also stored in the same Redis (<code>pcred:*</code> keys).</li>
     <li>The homepage <code>/</code> must be Keycloak-protected: <code>express.static(..., { index:false })</code> must not serve index.html + explicit <code>app.get('/', keycloak.protect(), ...)</code>, otherwise unauthenticated users see an empty dashboard and all APIs return 401 (symptoms: "no login page opens, pages fail massively").</li>
-    <li>When aggregating Dify stats, the email must be Dify's actual admin email (<code>ai_all_in_one_admin@chxia.lab</code>, matching the AD global admin), not the old <code>@company.com</code> domain email.</li>
+    <li>When aggregating Dify stats, the email must be Dify's actual admin email (<code>ai_all_in_one_admin@&lt;company-domain&gt;</code>, matching the AD global admin), not the old <code>@company.com</code> domain email.</li>
   </ul>
 </div>
 
@@ -2384,12 +2384,12 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
   <tr><td>langfuse-redis</td><td>Queue</td></tr>
 </table>
 <p>LiteLLM auto-reports via <code>success_callback: ["langfuse"]</code> (<code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code> / <code>LANGFUSE_HOST</code> in <code>.env</code>).</p>
-<p>Log into Langfuse: <code>http://&lt;server-IP&gt;:3010</code>, account <code>ai_all_in_one_admin@chxia.lab</code> / unified password. First start auto-creates the org <code>AI All In One</code> and project <code>AI Platform</code> via headless init.</p>
+<p>Log into Langfuse: <code>http://&lt;server-IP&gt;:3010</code>, account <code>ai_all_in_one_admin@&lt;company-domain&gt;</code> / unified password. First start auto-creates the org <code>AI All In One</code> and project <code>AI Platform</code> via headless init.</p>
 <div class="note">⚠️ <b>Key pitfall</b>: Langfuse v4 defaults <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=events_only</code>, so old clients (LiteLLM's langfuse SDK) fail reporting <code>trace-create</code>. You must set <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code> (both web and worker), otherwise no trace data appears.</div>
-<div class="note">⚠️ <b>SSO login sees no data pitfall</b>: the headless-initialized org <code>AI All In One</code> only binds the init account (the old misused <code>ai_all_in_one_admin@company.com</code>). If you log in via Keycloak SSO (AD email <code>ai_all_in_one_admin@chxia.lab</code>), Langfuse <b>auto-creates a separate account not in any org</b>, so you see no trace data. Fix: add the SSO user to the org — (emails are now unified as <code>ai_all_in_one_admin@chxia.lab</code>, so this pitfall no longer occurs)</p>
+<div class="note">⚠️ <b>SSO login sees no data pitfall</b>: the headless-initialized org <code>AI All In One</code> only binds the init account (the old misused <code>ai_all_in_one_admin@company.com</code>). If you log in via Keycloak SSO (AD email <code>ai_all_in_one_admin@&lt;company-domain&gt;</code>), Langfuse <b>auto-creates a separate account not in any org</b>, so you see no trace data. Fix: add the SSO user to the org — (emails are now unified as <code>ai_all_in_one_admin@&lt;company-domain&gt;</code>, so this pitfall no longer occurs)</p>
 <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
 "INSERT INTO organization_memberships (id, org_id, user_id, role) \
-SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@&lt;company-domain&gt;' \
 ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
 </div>
 
@@ -2420,8 +2420,8 @@ ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
   <tr><th>Product</th><th>Integration</th><th>Keycloak Client</th><th>Login method</th></tr>
   <tr><td>AI Admin Center</td><td>keycloak-connect (OIDC)</td><td>AI-all-in-one-admin-portal</td><td>Forced SSO (auto-redirect to Keycloak when not logged in)</td></tr>
   <tr><td>NewAPI</td><td>OIDC</td><td>newapi</td><td>Click "OIDC login" on the login page</td></tr>
-  <tr><td>Ghost</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
-  <tr><td>Dify</td><td>OIDC (optional)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
+  <tr><td>Ghost</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@&lt;company-domain&gt;</code></td></tr>
+  <tr><td>Dify</td><td>OIDC (optional)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@&lt;company-domain&gt;</code></td></tr>
   <tr><td>Gitea</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin</code></td></tr>
   <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td>grafana</td><td>Auto-login (<code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>, click link to enter directly, no button)</td></tr>
   <tr><td>Langfuse</td><td>Keycloak provider</td><td>langfuse</td><td>Auto-login (AI Admin Center entry points to <code>/auth/sso-initiate?provider=KEYCLOAK</code>, IdP-initiated SSO)</td></tr>

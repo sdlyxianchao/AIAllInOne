@@ -1097,7 +1097,7 @@ docker compose up -d web</code></pre>
   <li>
     输入 AD 域用户凭证：
     <ul>
-      <li>用户名：<code>aitest1</code>（sAMAccountName）或 <code>aitest1@chxia.lab</code>（UPN），两种格式均可</li>
+      <li>用户名：<code>aitest1</code>（sAMAccountName）或 <code>aitest1@&lt;公司域名&gt;</code>（UPN），两种格式均可</li>
       <li>密码：域用户 AD 密码</li>
     </ul>
   </li>
@@ -1525,7 +1525,7 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
   <strong>⚠️ 踩坑 2：Gitea 的 <code>ROOT_URL</code> 要设成内网地址：</strong>docker-compose 里 <code>GITEA__server__ROOT_URL</code> 若还是 <code>http://localhost:3002/</code>，则 Gitea 生成的仓库链接、API 返回的 <code>html_url</code> 都会是 <code>localhost</code>/容器地址（内网员工点开失效）。改为 <code>http://&lt;服务器IP&gt;:3002/</code> 后 <code>docker compose up -d gitea</code> 重建生效。
 </div>
 <div class="callout callout-info">
-  <strong>🔐 Gitea Keycloak SSO 自动注册（v0.91）：</strong>Gitea 已接 Keycloak OIDC（<code>/user/login</code> 页有「Sign in with keycloak」按钮）。为让新 SSO 用户首次登录<b>自动建号、不再跳 <code>link_account</code></b>（关联账号）页，需在 <code>app.ini</code> 追加 <code>[oauth2_client]</code> 段（docker-compose 已配 <code>GITEA__oauth2_client__*</code> 环境变量）：<code>ENABLE_AUTO_REGISTRATION=true</code>、<code>ACCOUNT_LINKING=auto</code>、<code>USERNAME=preferred_username</code>。⚠️ Gitea 本地管理员邮箱必须与 Keycloak/AD 一致（<code>@chxia.lab</code>），否则 SSO 按邮箱匹配不到会「串号」或生成重复账号。
+  <strong>🔐 Gitea Keycloak SSO 自动注册（v0.91）：</strong>Gitea 已接 Keycloak OIDC（<code>/user/login</code> 页有「Sign in with keycloak」按钮）。为让新 SSO 用户首次登录<b>自动建号、不再跳 <code>link_account</code></b>（关联账号）页，需在 <code>app.ini</code> 追加 <code>[oauth2_client]</code> 段（docker-compose 已配 <code>GITEA__oauth2_client__*</code> 环境变量）：<code>ENABLE_AUTO_REGISTRATION=true</code>、<code>ACCOUNT_LINKING=auto</code>、<code>USERNAME=preferred_username</code>。⚠️ Gitea 本地管理员邮箱必须与 Keycloak/AD 一致（<code>@&lt;公司域名&gt;</code>），否则 SSO 按邮箱匹配不到会「串号」或生成重复账号。
 </div>
 
 <!-- ==================== 7. DeepChat ==================== -->
@@ -1747,12 +1747,12 @@ if (name === 'platform_health') {
 { "market_url": "http://&lt;市场主机名&gt;:3100" }</code></pre>
 
 <div class="callout callout-warn">
-  <strong>⚠️ 重要：<code>market_url</code> 用主机名，且 <code>&lt;市场主机名&gt;</code> 是<b>部署参数，必须替换</b>。</strong>DeepChat 的 agent 环境会把 IP 地址脱敏成 <code>[IP_ADDRESS_REDACTED]</code>，导致「技能管家」读不到真实 IP、无法请求 <code>/skills</code> 清单；主机名不受脱敏影响。但主机名是<b>每套部署都不同的本地值</b>，不能照抄（本环境当前填 <code>skillmarket.chxia.lab</code>，其中 <code>chxia.lab</code> 是本公司的 AD 域，别人部署必须换成自己的）。
+  <strong>⚠️ 重要：<code>market_url</code> 用主机名，且 <code>&lt;市场主机名&gt;</code> 是<b>部署参数，必须替换</b>。</strong>DeepChat 的 agent 环境会把 IP 地址脱敏成 <code>[IP_ADDRESS_REDACTED]</code>，导致「技能管家」读不到真实 IP、无法请求 <code>/skills</code> 清单；主机名不受脱敏影响。但主机名是<b>每套部署都不同的本地值</b>，不能照抄（每套部署换成自己的域名，例如 <code>skillmarket.&lt;公司域名&gt;</code>）。
   <ul>
     <li><b>自动（推荐，用 Agent 部署）：</b>Agent 会在「第 0 章 · 第一步收集参数」时问你「Skill 市场主机名（域名）」，然后自动把 <code>mcp-gateway/skills/skill-market/config.json</code> 和同目录 <code>SKILL.md</code> 里的 <code>&lt;市场主机名&gt;</code> 全部替换成你的值。</li>
     <li><b>手动：</b>编辑 <code>mcp-gateway/skills/skill-market/config.json</code>（及 <code>SKILL.md</code> 兜底地址），把 <code>&lt;市场主机名&gt;</code> 换成你的主机名；再让该主机名可解析——单机在 <code>C:\Windows\System32\drivers\etc\hosts</code> 加一行 <code>&lt;服务器IP&gt;  &lt;你的主机名&gt;</code>（本机调试也可用 <code>127.0.0.1</code>），公司内网则在 DNS 加 A 记录。</li>
   </ul>
-  <p><b>主机名取值建议</b>：用「服务名 + 公司域」的 FQDN，如 <code>skillmarket.你的公司域名</code>（本环境为 <code>skillmarket.chxia.lab</code>）。DNS 加 A 记录：域控「服务器管理器 → DNS → 正向查找区域 → 你的域 → 新建主机(A) → 名称 <code>skillmarket</code>、IP <code>&lt;服务器IP&gt;</code>」；或 PowerShell：<code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "你的域" -IPv4Address "&lt;服务器IP&gt;"</code>。</p>
+  <p><b>主机名取值建议</b>：用「服务名 + 公司域」的 FQDN，如 <code>skillmarket.&lt;公司域名&gt;</code>。DNS 加 A 记录：域控「服务器管理器 → DNS → 正向查找区域 → 你的域 → 新建主机(A) → 名称 <code>skillmarket</code>、IP <code>&lt;服务器IP&gt;</code>」；或 PowerShell：<code>Add-DnsServerResourceRecordA -Name "skillmarket" -ZoneName "你的域" -IPv4Address "&lt;服务器IP&gt;"</code>。</p>
 </div>
 
 <h3>8.8 管理 API（供 AI 管理中心增删改）</h3>
@@ -2092,12 +2092,12 @@ Claim: name                →  User Attribute: firstName</code></pre>
 <pre><code># .env 中新增：
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=见账号密码清单
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;公司域名&gt;</code></pre>
 <p>启动后自动在 Keycloak 中创建 <code>ai_all_in_one_admin</code> 用户（如有则跳过），并分配 <code>ai-platform-admin</code> Realm Role。所有接入 Keycloak SSO 的产品（Dify、NewAPI、Ghost）可通过此角色识别管理员。</p>
 <div class="tip"><strong>核心理念：</strong>一个 Global Admin 账号管理所有平台。每个产品的管理员角色通过 Keycloak Realm Role <code>ai-platform-admin</code> 统一控制。</div>
 
 <div class="callout callout-info">
-  <strong>统一管理员账号（全局约定）：</strong>所有平台的应用管理员统一用用户名 <code>ai_all_in_one_admin</code>（Keycloak / NewAPI / AI 管理中心 / Ghost / Gitea / Dify），AD 域控的 LDAP 绑定服务账号也叫 <code>ai_all_in_one_admin</code>。<strong>⚠️ 邮箱也必须与 AD 中定义的全局管理员邮箱<b>完全一致</b>，统一为 <code>ai_all_in_one_admin@chxia.lab</code></strong>——各产品本地管理员账号若邮箱与 Keycloak/AD 不一致，SSO 登录时按邮箱匹配不到，就会「串号」或生成重复账号。因此建号、配 <code>ADMIN_EMAIL</code>、初始化各产品时，务必都填同一个邮箱。<strong>具体密码见独立的账号密码清单文档</strong>（<code>credentials.html</code>，内部机密，不随本部署指南外传）。
+  <strong>统一管理员账号（全局约定）：</strong>所有平台的应用管理员统一用用户名 <code>ai_all_in_one_admin</code>（Keycloak / NewAPI / AI 管理中心 / Ghost / Gitea / Dify），AD 域控的 LDAP 绑定服务账号也叫 <code>ai_all_in_one_admin</code>。<strong>⚠️ 邮箱也必须与 AD 中定义的全局管理员邮箱<b>完全一致</b>，统一为 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code></strong>——各产品本地管理员账号若邮箱与 Keycloak/AD 不一致，SSO 登录时按邮箱匹配不到，就会「串号」或生成重复账号。因此建号、配 <code>ADMIN_EMAIL</code>、初始化各产品时，务必都填同一个邮箱。<strong>具体密码见独立的账号密码清单文档</strong>（<code>credentials.html</code>，内部机密，不随本部署指南外传）。
 </div>
 
 <h3>11.4 Docker Compose 部署</h3>
@@ -2123,7 +2123,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;公司域名&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;服务器IP&gt;:4001
@@ -2157,7 +2157,7 @@ cd ..</code></pre>
   <ul>
     <li>admin-portal 会话存 <b>Redis</b>（<code>admin-session-redis</code>，Keycloak 同款），重启容器不再清空登录会话；临时密码等敏感状态也存同一 Redis（<code>pcred:*</code> key）。</li>
     <li>首页 <code>/</code> 必须走 Keycloak 保护：<code>express.static(..., { index:false })</code> 不放行 index.html + 显式 <code>app.get('/', keycloak.protect(), ...)</code>，否则未登录会直接渲染空看板、接口全 401（表现为「打开没有登录界面、各页大量失败」）。</li>
-    <li>统计 Dify 数据时邮箱必须用 Dify 实际管理员邮箱（<code>ai_all_in_one_admin@chxia.lab</code>，与 AD 全局管理员一致），不要用旧的 <code>@company.com</code> 域名邮箱。</li>
+    <li>统计 Dify 数据时邮箱必须用 Dify 实际管理员邮箱（<code>ai_all_in_one_admin@&lt;公司域名&gt;</code>，与 AD 全局管理员一致），不要用旧的 <code>@company.com</code> 域名邮箱。</li>
   </ul>
 </div>
 
@@ -2380,12 +2380,12 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
   <tr><td>langfuse-redis</td><td>队列</td></tr>
 </table>
 <p>LiteLLM 通过 <code>success_callback: ["langfuse"]</code> 自动上报（<code>.env</code> 里的 <code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code> / <code>LANGFUSE_HOST</code>）。</p>
-<p>登录 Langfuse：<code>http://&lt;服务器IP&gt;:3010</code>，账号 <code>ai_all_in_one_admin@chxia.lab</code> / 统一密码。首次启动已通过 headless 初始化自动创建组织 <code>AI All In One</code> 和项目 <code>AI Platform</code>。</p>
+<p>登录 Langfuse：<code>http://&lt;服务器IP&gt;:3010</code>，账号 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code> / 统一密码。首次启动已通过 headless 初始化自动创建组织 <code>AI All In One</code> 和项目 <code>AI Platform</code>。</p>
 <div class="note">⚠️ <b>关键坑</b>：Langfuse v4 默认 <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=events_only</code>，旧客户端（LiteLLM 的 langfuse SDK）会上报 <code>trace-create</code> 失败。必须设 <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code>（web 和 worker 都要设），否则看不到任何追踪数据。</div>
-<div class="note">⚠️ <b>SSO 登录看不到数据的坑</b>：headless 初始化的组织 <code>AI All In One</code> 只绑定了初始化账号（早期误用的 <code>ai_all_in_one_admin@company.com</code>）。若用 Keycloak SSO 登录（AD 邮箱为 <code>ai_all_in_one_admin@chxia.lab</code>），Langfuse 会<b>自动新建一个独立账号且不属于任何组织</b>，导致进去后看不到任何 trace 数据。修复：把 SSO 用户加进组织——（现已统一邮箱为 <code>ai_all_in_one_admin@chxia.lab</code>，此坑不再发生）</p>
+<div class="note">⚠️ <b>SSO 登录看不到数据的坑</b>：headless 初始化的组织 <code>AI All In One</code> 只绑定了初始化账号（早期误用的 <code>ai_all_in_one_admin@company.com</code>）。若用 Keycloak SSO 登录（AD 邮箱为 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code>），Langfuse 会<b>自动新建一个独立账号且不属于任何组织</b>，导致进去后看不到任何 trace 数据。修复：把 SSO 用户加进组织——（现已统一邮箱为 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code>，此坑不再发生）</p>
 <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
 "INSERT INTO organization_memberships (id, org_id, user_id, role) \
-SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@&lt;公司域名&gt;' \
 ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
 </div>
 
@@ -2416,8 +2416,8 @@ ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
   <tr><th>产品</th><th>接入方式</th><th>Keycloak Client</th><th>登录方式</th></tr>
   <tr><td>AI 管理中心</td><td>keycloak-connect (OIDC)</td><td>AI-all-in-one-admin-portal</td><td>强制 SSO（未登录自动跳 Keycloak）</td></tr>
   <tr><td>NewAPI</td><td>OIDC</td><td>newapi</td><td>登录页点「OIDC 登录」</td></tr>
-  <tr><td>Ghost</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
-  <tr><td>Dify</td><td>OIDC（可选）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
+  <tr><td>Ghost</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code></td></tr>
+  <tr><td>Dify</td><td>OIDC（可选）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@&lt;公司域名&gt;</code></td></tr>
   <tr><td>Gitea</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin</code></td></tr>
   <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td>grafana</td><td>自动登录（<code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>，点链接直进，无需点按钮）</td></tr>
   <tr><td>Langfuse</td><td>Keycloak provider</td><td>langfuse</td><td>自动登录（AI 管理中心入口指向 <code>/auth/sso-initiate?provider=KEYCLOAK</code>，IdP 发起式 SSO）</td></tr>

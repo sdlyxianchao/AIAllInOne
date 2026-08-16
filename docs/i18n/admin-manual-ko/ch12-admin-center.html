@@ -37,7 +37,7 @@
     <pre><code># .env에 설정
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=계정 비밀번호 목록 참조
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;회사-도메인&gt;</code></pre>
     <p>시작 후 자동으로 Keycloak에 <code>ai_all_in_one_admin</code> 사용자를 생성하고 (이미 있으면 건너뜀) <code>ai-platform-admin</code> Realm Role을 할당합니다. 핵심 이념: <b>하나의 Global Admin 계정으로 모든 플랫폼 관리</b>.</p>
 
     <h2>12.3 Docker Compose 배포</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;회사-도메인&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;서버-IP&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>admin-portal 세션은 메모리에 저장되어 <code>up -d</code>로 컨테이너 재생성 시 <b>로그인 세션이 초기화</b>됩니다 (재로그인 필요);</li>
         <li>홈 <code>/</code>은 반드시 Keycloak 보호를 거쳐야 합니다 (<code>express.static(..., {index:false})</code> + 명시적 <code>app.get('/', keycloak.protect())</code>), 아니면 미로그인 시 빈 대시보드가 바로 렌더링됩니다;</li>
-        <li>Dify 통계는 실제 관리자 이메일 (<code>ai_all_in_one_admin@chxia.lab</code>, AD 전역 관리자와 동일) 사용;</li>
+        <li>Dify 통계는 실제 관리자 이메일 (<code>ai_all_in_one_admin@&lt;회사-도메인&gt;</code>, AD 전역 관리자와 동일) 사용;</li>
         <li><b>server.js 수정 후 반드시 <code>docker restart admin-portal</code></b>, <code>up -d</code> 사용 금지 (volume 파일 내용 변경은 재빌드를 트리거하지 않음).</li>
       </ul>
     </div>

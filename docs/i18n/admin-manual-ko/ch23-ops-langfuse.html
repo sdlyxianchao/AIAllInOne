@@ -46,7 +46,7 @@
     </div>
     <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
 "INSERT INTO organization_memberships (id, org_id, user_id, role) \
-SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
+SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@&lt;회사-도메인&gt;' \
 ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
 
     <div class="docbox"><span class="label">📖 원문 문서:</span>Langfuse 공식 문서 <span class="url">https://langfuse.com/docs</span> · 자체 호스팅 <span class="url">https://langfuse.com/self-hosting</span></div>

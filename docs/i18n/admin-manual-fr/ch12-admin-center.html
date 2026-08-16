@@ -37,7 +37,7 @@
     <pre><code># Configuration dans .env
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=voir la liste des comptes et mots de passe
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;domaine-entreprise&gt;</code></pre>
     <p>Au démarrage, l'utilisateur <code>ai_all_in_one_admin</code> est créé automatiquement dans Keycloak (ignoré s'il existe déjà), avec le rôle Realm <code>ai-platform-admin</code>. Principe fondamental : <b>un seul compte Global Admin pour gérer toute la plateforme</b>.</p>
 
     <h2>12.3 Déploiement Docker Compose</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;domaine-entreprise&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;IP-du-serveur&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>La session d'admin-portal est stockée en mémoire ; <code>up -d</code> reconstruisant le conteneur <b>vide la session de connexion</b> (reconnexion nécessaire) ;</li>
         <li>La page d'accueil <code>/</code> doit être protégée par Keycloak (<code>express.static(..., {index:false})</code> + <code>app.get('/', keycloak.protect())</code> explicite), sinon un tableau de bord vide est rendu sans connexion ;</li>
-        <li>Pour les statistiques Dify, utilisez l'e-mail administrateur réel (<code>ai_all_in_one_admin@chxia.lab</code>, identique à l'admin global AD) ;</li>
+        <li>Pour les statistiques Dify, utilisez l'e-mail administrateur réel (<code>ai_all_in_one_admin@&lt;domaine-entreprise&gt;</code>, identique à l'admin global AD) ;</li>
         <li><b>Après modification de server.js, faites impérativement <code>docker restart admin-portal</code></b>, pas <code>up -d</code> (le changement de contenu du volume ne déclenche pas la reconstruction).</li>
       </ul>
     </div>

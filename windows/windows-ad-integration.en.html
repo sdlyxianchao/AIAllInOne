@@ -264,7 +264,7 @@ docker exec keycloak sh -c "microdnf install -y openldap-clients 2>/dev/null; ld
   <li>Go to <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code></li>
   <li>On the login page, enter the AD domain user's credentials:
     <ul>
-      <li>Username: <code>aitest1</code> (sAMAccountName) or <code>aitest1@chxia.lab</code> (UPN) — both formats work</li>
+      <li>Username: <code>aitest1</code> (sAMAccountName) or <code>aitest1@&lt;company-domain&gt;</code> (UPN) — both formats work</li>
       <li>Password: the domain user's password set in AD</li>
     </ul>
   </li>

@@ -37,7 +37,7 @@
     <pre><code># Configuración en .env
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=ver la lista de cuentas y contraseñas
-ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@&lt;dominio-empresa&gt;</code></pre>
     <p>Tras arrancar, crea automáticamente el usuario <code>ai_all_in_one_admin</code> en Keycloak (si ya existe lo omite) y le asigna el Realm Role <code>ai-platform-admin</code>. Idea central: <b>una sola cuenta de Global Admin administra toda la plataforma</b>.</p>
 
     <h2>12.3 Implementación con Docker Compose</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@&lt;dominio-empresa&gt;}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;IP-del-servidor&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>La sesión del admin-portal se guarda en memoria; reconstruir el contenedor con <code>up -d</code> <b>borra la sesión de inicio</b> (hay que volver a iniciar sesión);</li>
         <li>La portada <code>/</code> debe estar protegida por Keycloak (<code>express.static(..., {index:false})</code> + <code>app.get('/', keycloak.protect())</code> explícito); de lo contrario, sin iniciar sesión se renderiza un panel vacío;</li>
-        <li>Para las estadísticas de Dify usa el correo real del administrador (<code>ai_all_in_one_admin@chxia.lab</code>, igual al admin global de AD);</li>
+        <li>Para las estadísticas de Dify usa el correo real del administrador (<code>ai_all_in_one_admin@&lt;dominio-empresa&gt;</code>, igual al admin global de AD);</li>
         <li><b>Tras modificar server.js debes ejecutar <code>docker restart admin-portal</code></b>, no <code>up -d</code> (el cambio de contenido del archivo del volumen no dispara la reconstrucción).</li>
       </ul>
     </div>
