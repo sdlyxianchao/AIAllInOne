@@ -30,7 +30,7 @@
 | 源码 / CI | Gitea + Runner | 内部 Git + Actions 自动化 |
 | 客户端 | DeepChat | 本地 AI 桌面客户端（Windows / macOS / Linux） |
 | 客户端分发 | Update Server | DeepChat 安装包托管与自动更新 |
-| 统一管理 | AI 管理中心 | 唯一入口：Dashboard + 各产品内嵌 + 审计/成本/报告 + RAG 检索 |
+| 统一管理 | AI 管理中心 | 唯一入口：Dashboard + 各产品内嵌 + 审计/成本/报告 + RAG 检索 + 分模块管理员授权 + Keycloak 同步/角色管理 |
 | 网关 | MCP Gateway | Skill / MCP 市场管理 + Dify 知识库检索（RAG） |
 | 监控告警 | Prometheus + Grafana + Alertmanager | 容器资源监控 + 告警通知 |
 | LLM 可观测 | Langfuse | 每次模型调用的 trace / 延迟 / token / 成本 |

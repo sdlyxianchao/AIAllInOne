@@ -28,7 +28,7 @@ Le dépôt prend en charge trois plateformes de déploiement :
 | Source / CI | Gitea + Runner | Git interne + automatisation Actions |
 | Client | DeepChat | Client IA de bureau local (Windows / macOS / Linux) |
 | Distribution client | Update Server | Hébergement et mise à jour auto de l'installeur DeepChat |
-| Administration unifiée | AI Admin Center | Point d'entrée unique : tableau de bord + produits intégrés + audit/coût/rapports + recherche RAG |
+| Administration unifiée | AI Admin Center | Point d'entrée unique : tableau de bord + produits intégrés + audit/coût/rapports + recherche RAG + autorisation d'admin par module + synchronisation/rôles Keycloak |
 | Passerelle | MCP Gateway | Gestion du marché Skill / MCP + recherche de connaissances Dify (RAG) |
 | Supervision | Prometheus + Grafana + Alertmanager | Supervision des ressources conteneurs + notifications d'alerte |
 | Observabilité LLM | Langfuse | Trace / latence / tokens / coût de chaque appel modèle |

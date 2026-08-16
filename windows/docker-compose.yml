@@ -273,6 +273,9 @@ services:
       - GITEA__server__SSH_PORT=2222
       - GITEA__database__DB_TYPE=sqlite3
       - GITEA__actions__ENABLED=true
+      - GITEA__oauth2_client__ENABLE_AUTO_REGISTRATION=true
+      - GITEA__oauth2_client__ACCOUNT_LINKING=auto
+      - GITEA__oauth2_client__USERNAME=preferred_username
     volumes:
       - gitea-data:/data
       - /var/run/docker.sock:/var/run/docker.sock

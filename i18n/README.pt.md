@@ -28,7 +28,7 @@ O repositório oferece suporte a três plataformas de implantação:
 | Código / CI | Gitea + Runner | Git interno + automação Actions |
 | Cliente | DeepChat | Cliente de IA para desktop local (Windows / macOS / Linux) |
 | Distribuição de clientes | Update Server | Hospedagem e atualização automática do instalador do DeepChat |
-| Administração unificada | AI Admin Center | Entrada única: painel + produtos integrados + auditoria/custo/relatórios + busca RAG |
+| Administração unificada | AI Admin Center | Entrada única: painel + produtos integrados + auditoria/custo/relatórios + busca RAG + autorização de admin por módulo + sincronização/funções Keycloak |
 | Gateway | MCP Gateway | Gerenciamento do mercado Skill / MCP + busca de conhecimento Dify (RAG) |
 | Monitoramento | Prometheus + Grafana + Alertmanager | Monitoramento de recursos de contêineres + notificações de alerta |
 | Observabilidade LLM | Langfuse | Rastreamento / latência / tokens / custo de cada chamada ao modelo |

@@ -37,7 +37,7 @@
     <pre><code># .env 中配置
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=见账号密码清单
-ADMIN_EMAIL=admin@company.com</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
     <p>启动后自动在 Keycloak 建 <code>ai_all_in_one_admin</code> 用户（已有则跳过），分配 <code>ai-platform-admin</code> Realm Role。核心理念：<b>一个 Global Admin 账号管理所有平台</b>。</p>
 
     <h2>12.3 Docker Compose 部署</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;服务器IP&gt;:4001
@@ -80,9 +80,9 @@ cd ..</code></pre>
 
     <div class="warn">⚠️ 部署/排错要点：
       <ul>
-        <li>admin-portal 会话存内存，<code>up -d</code> 重建容器会<b>清空登录会话</b>（需重登）；</li>
+        <li>admin-portal 会话存 Redis（<code>admin-session-redis</code>），重启容器不再清空登录会话；</li>
         <li>首页 <code>/</code> 必须走 Keycloak 保护（<code>express.static(..., {index:false})</code> + 显式 <code>app.get('/', keycloak.protect())</code>），否则未登录直接渲染空看板；</li>
-        <li>统计 Dify 用实际管理员邮箱（<code>ai_all_in_one_admin@&lt;公司域名&gt;</code>），不是旧 <code>ADMIN_EMAIL=admin@company.com</code>；</li>
+        <li>统计 Dify 用实际管理员邮箱（<code>ai_all_in_one_admin@chxia.lab</code>，须与 AD 全局管理员一致）；</li>
         <li><b>改 server.js 后必须 <code>docker restart admin-portal</code></b>，不能用 <code>up -d</code>（volume 文件内容变化不会触发重建）。</li>
       </ul>
     </div>
@@ -95,6 +95,14 @@ cd ..</code></pre>
       <li>点各产品先看统计、点「打开后台」才跳转；</li>
       <li>系统设置可切 9 种语言。</li>
     </ol>
+
+    <h2>12.6 管理员分模块授权 + Keycloak 认证页管理（v0.91）</h2>
+    <p>全局管理员可在 AI 管理中心直接管理其他管理员和 Keycloak：</p>
+    <ul>
+      <li><b>管理员账号管理</b>：从 Keycloak 关联的 IdP 搜索已有账号（AD/LDAP 用户，无需新建、无需密码）→ 勾选模块 → 确定。系统分配 <code>admin:&lt;产品&gt;</code> Realm Role，并<b>真实开通到产品</b>（SSO 优先、API 兜底）：Gitea / NewAPI / Dify / Ghost / Grafana / LiteLLM / Keycloak / Langfuse。撤销模块或删除管理员会<b>从产品删除该账号</b>。无 SSO 产品建号生成临时密码，🔑 图标可回看（仅全局管理员）。非管理员登录弹「你不是管理员」并退出。</li>
+      <li><b>Keycloak 认证页</b>：「全部同步 / 增量同步」按钮一键拉取 AD 属性变更；每行用户有「编辑」（跳 Keycloak 控制台）和「删除」；角色区块可新建/删除角色、查看成员。同步/删除/角色操作仅全局管理员。</li>
+    </ul>
+    <div class="warn">⚠️ 注意：Keycloak 无「单用户同步」端点，增量同步会同步 AD 里所有有变更的账号；AD 联邦用户删除后下次全量同步或再次 SSO 登录会重新出现，彻底移除请在 AD 里禁用/删除该账号。</div>
 
     <nav class="pager" id="pager"></nav>
   </main>

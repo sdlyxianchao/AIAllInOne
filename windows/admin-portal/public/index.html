@@ -35,6 +35,8 @@
   .main{flex:1;padding:24px;overflow-y:auto}
   .topbar{display:flex;justify-content:flex-start;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
   .topbar h1{font-size:1.4em;color:var(--title)}
+  .open-btn-wrap{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .open-hint{font-size:0.72em;color:var(--textdim);max-width:220px;line-height:1.3}
   /* ── Cards ── */
   .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
   .card h3{color:var(--accent);font-size:1.05em;margin-bottom:12px}
@@ -83,42 +85,42 @@
   <div class="nav-group collapsed" data-group="apps">
     <div class="nav-group-head" onclick="toggleGroup('apps')"><span class="group-arrow">▾</span><span data-i18n="group_apps">产品应用</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8090</span></a>
-      <a class="nav-item" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:80</span></a>
-      <a class="nav-item" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002</span></a>
-      <a class="nav-item" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3000</span></a>
-      <a class="nav-item" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:9090</span></a>
+      <a class="nav-item" data-product="ghost" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8090</span></a>
+      <a class="nav-item" data-product="dify" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:80</span></a>
+      <a class="nav-item" data-product="gitea" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002</span></a>
+      <a class="nav-item" data-product="newapi" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3000</span></a>
+      <a class="nav-item" data-product="keycloak" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:9090</span></a>
     </div>
   </div>
 
   <div class="nav-group collapsed" data-group="ai">
     <div class="nav-group-head" onclick="toggleGroup('ai')"><span class="group-arrow">▾</span><span data-i18n="group_ai">AI 网关与集成</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3100</span></a>
-      <a class="nav-item" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:4001</span></a>
-      <a class="nav-item" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8091</span></a>
+      <a class="nav-item" data-product="mcp-gateway" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3100</span></a>
+      <a class="nav-item" data-product="litellm" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:4001</span></a>
+      <a class="nav-item" data-product="update-server" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8091</span></a>
     </div>
   </div>
 
   <div class="nav-group collapsed" data-group="ops">
     <div class="nav-group-head" onclick="toggleGroup('ops')"><span class="group-arrow">▾</span><span data-i18n="group_ops">系统运维</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadAvailability(this)">🩺 <span data-i18n="availability">可用性测试</span></a>
-      <a class="nav-item" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
-      <a class="nav-item" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3010</span></a>
-      <a class="nav-item" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:5001/:5002</span></a>
-      <a class="nav-item" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">Loki</span></a>
-      <a class="nav-item" onclick="loadBackup(this)">💾 <span data-i18n="backup">备份与恢复</span></a>
-      <a class="nav-item" onclick="loadReport(this)">📄 <span data-i18n="report">报告生成</span></a>
+      <a class="nav-item" data-product="availability" onclick="loadAvailability(this)">🩺 <span data-i18n="availability">可用性测试</span></a>
+      <a class="nav-item" data-product="monitoring" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
+      <a class="nav-item" data-product="observability" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3010</span></a>
+      <a class="nav-item" data-product="pii" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:5001/:5002</span></a>
+      <a class="nav-item" data-product="logs" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">Loki</span></a>
+      <a class="nav-item" data-product="backup" onclick="loadBackup(this)">💾 <span data-i18n="backup">备份与恢复</span></a>
+      <a class="nav-item" data-product="report" onclick="loadReport(this)">📄 <span data-i18n="report">报告生成</span></a>
     </div>
   </div>
 
   <div class="nav-group collapsed" data-group="admin">
     <div class="nav-group-head" onclick="toggleGroup('admin')"><span class="group-arrow">▾</span><span data-i18n="group_admin">系统管理</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" onclick="loadAuthOverview(this)">🔐 <span data-i18n="auth">集中认证</span></a>
-      <a class="nav-item" onclick="loadAdmins(this)">👥 <span data-i18n="admins">管理员管理</span></a>
-      <a class="nav-item" onclick="loadSettings(this)">⚙️ <span data-i18n="settings">系统设置</span></a>
+      <a class="nav-item" data-global-only onclick="loadAuthOverview(this)">🔐 <span data-i18n="auth">集中认证</span></a>
+      <a class="nav-item" data-global-only onclick="loadAdmins(this)">👥 <span data-i18n="admins">管理员管理</span></a>
+      <a class="nav-item" data-global-only onclick="loadSettings(this)">⚙️ <span data-i18n="settings">系统设置</span></a>
     </div>
   </div>
 
@@ -184,7 +186,7 @@ const I18N = {
     brand: 'AI 管理中心', dashboard: '总览仪表板', ghost: 'Ghost 后台', dify: 'Dify AI 平台', gitea: 'Gitea 源码管理',
     group_apps: '产品应用', group_ai: 'AI 网关与集成', group_ops: '系统运维', group_admin: '系统管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 认证', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新服务器',
-    auth: '集中认证', admins: '管理员管理', settings: '系统设置', logout: '退出登录',
+    auth: '集中认证', admins: '管理员管理', settings: '系统设置', logout: '退出登录', not_admin_title: '你不是管理员', not_admin_desc: '该账号没有平台管理员权限，无法使用本系统。', not_admin_hint: '如需访问，请联系全局管理员（ai_all_in_one_admin）为你分配权限。', not_admin_ok: '确定',
     loading_services: '正在获取服务状态...', loading: '加载中...',
     metrics: '产品业务指标', loading_metrics: '正在获取产品指标...', docker_error: '无法连接 Docker：', metrics_error: '无法获取产品指标：',
     channels: '渠道', users: '用户', keys: '密钥', not_connected: '未接入', pending: '待初始化', ports: '端口:',
@@ -224,20 +226,23 @@ const I18N = {
     ad_account: '🏢 AD 域账号（LDAP 绑定）', bind_account: '绑定账号', bind_dn: '绑定 DN', password: '密码',
     ad_note: '⚠️ 注意：AD 账号的 CN 带空格（"ai all in one admin"），不是下划线。改域控显示名后需同步更新 Keycloak LDAP 组件的 bindDn。',
     admins_title: '管理员账号管理', admins_list: '平台管理员列表 (ai-platform-admin)', no_admins: '未找到管理员用户', name2: '姓名', email: '邮箱',
-    admins_desc: '管理员通过 Keycloak 管理，角色: ai-platform-admin。可在此直接启用/禁用、添加/移除管理员、重置密码（不能操作自己）。',
+    admins_desc: '全局管理员（ai-platform-admin）可管理所有模块与管理员；分模块管理员仅管理被授权的模块。账号来自 Keycloak 关联的 IdP，搜索添加、无需密码。',
     admins_add: '添加管理员', admins_add_ph: '输入用户名', admins_add_btn: '添加', admins_enable: '启用', admins_disable: '禁用', admins_reset_pwd: '重置密码', admins_demote: '移除管理员', admins_open_kc: 'Keycloak', admins_self_err: '不能操作自己的账号',
     admins_cf_disable: '确定要禁用该管理员账号？', admins_cf_enable: '确定要启用该管理员账号？', admins_cf_demote: '确定要移除该用户的管理员角色（降级为普通用户）？', admins_cf_reset: '确定要重置该管理员的密码？将生成临时密码并强制首次登录改密。',
     admins_new_pwd: '新的临时密码', admins_pwd_hint: '已强制该用户首次登录时修改密码。请立即将密码发给本人（仅显示这一次）。', admins_add_ok: '已添加', admins_add_err: '添加失败', admins_actions: '操作',
     admins_need_admin: '需要 ai-platform-admin 角色才能查看管理员列表', admins_need_admin2: '请确保当前用户已分配 ai-platform-admin Realm Role。',
+    admins_role: '角色', admins_grants: '已授权模块', admins_global: '全局管理员', admins_scoped: '分模块管理员', admins_all_products: '所有模块', admins_search_ph: '搜索用户名 / 邮箱 / 姓名', admins_search_hint: '只能从 Keycloak 关联的 IdP 中搜索已有账号（不支持新建、无需密码）', admins_products: '授权模块', admins_select_products: '选择要授权的模块（默认全选）', admins_select_all: '全选', admins_clear_all: '清空', admins_no_product: '请至少选择一个模块', admins_select_user_first: '请先搜索并选择用户', admins_searching: '搜索中…', admins_no_match: '未找到匹配的 IdP 用户', admins_edit_grants: '编辑权限', admins_delete: '删除账号', admins_cf_delete: '确定删除该管理员账号？将移除其所有模块权限关系（不影响 Keycloak 账号本身）', admins_save: '保存', admins_cancel: '取消', admins_session_expired: '登录已过期或会话失效', admins_session_hint: '请退出后重新登录（或清除浏览器缓存），再进入本页。', admins_load_failed: '加载失败', admins_selected: '已选择用户', admins_provision_title: '产品授权开通结果', admins_temp_pwd: '临时密码', admins_pwd_icon_desc: '带 🔑 图标的模块表示用 API 创建了本地账号，点击图标可查看其临时密码（首次登录请修改）。', admins_pwd_show_hint: '请将该密码发给对应管理员，首次登录后请修改。', admins_pwd_not_found: '未找到该模块的临时密码',
+    admins_close: '关闭', admins_ok: '确定', admins_delete_confirm_desc: '将移除该用户与所有模块的权限关系（不影响 Keycloak 账号本身）。', admins_delete_confirm_btn: '确定删除', admins_delete_final_title: '再次确认删除', admins_delete_final_desc: '此操作不可撤销。确定要删除该管理员的所有模块权限吗？', admins_delete_final_btn: '确认删除',
     settings_title: '系统设置', language: '界面语言', language_desc: '选择管理中心界面的显示语言，保存后立即生效。',
     env_config: '环境变量配置', env_desc: '所有配置通过 .env 文件或 docker-compose.yml 的 environment 传入。修改后需重启容器生效。',
     product_urls: '产品入口 URL', prod_note: '生产环境请将以上 URL 替换为实际域名（参见 docker-deploy-guide.html）。',
     open_admin: '打开后台 ↗', open_hint: '点击进入对应产品的管理后台进行详细配置', overview_fail: '无法获取数据：',
-    open_ghost: '打开 Ghost 后台', open_dify: '打开 Dify 平台', open_gitea: '打开 Gitea', open_keycloak: '打开 Keycloak 后台',
+    open_ghost: '打开 Ghost 后台', open_dify: '打开 Dify 平台', open_gitea: '打开 Gitea', open_keycloak: '打开 Keycloak 后台', open_sso_hint: '提示：打开后可能不是当前账号',
     ghost_posts: '文章', ghost_pages: '页面', ghost_members: '订阅者', ghost_tags: '标签', ghost_logging_in: '正在免登录进入，稍候…', ghost_login_fail: 'Ghost 免登录失败：',
     dify_apps: '应用', dify_workspaces: '工作空间', dify_version: '版本',
     gitea_repos: '仓库', gitea_users: '用户', gitea_orgs: '组织', gitea_issues: '工单', gitea_version: '版本',
     kc_users: '用户', kc_clients: '客户端', kc_roles: '角色', kc_idps: '身份源',
+    kc_sync_all: '全部同步', kc_sync_changed: '增量同步', kc_sync_hint: 'AD 里改了账号属性（如邮箱）后，点「全部同步」或「增量同步」把变更拉取到 Keycloak。', kc_sync_done: '同步完成', kc_sync_added: '新增', kc_sync_updated: '更新', kc_sync_removed: '移除', kc_sync_failed: '失败', kc_sync_err: '同步失败', kc_syncing: '正在同步', kc_edit_user: '编辑', kc_delete_user: '删除', kc_actions: '操作', kc_del_title: '删除 Keycloak 账号', kc_del_confirm: '确定要从 Keycloak 删除账号 {u} 吗？', kc_del_ldap_warn: '此账号来自 AD 域控（LDAP 联邦）。删除后，下次全量同步或该用户再次 SSO 登录时会重新出现；要彻底移除，请在 AD 里禁用或删除该账号。', kc_del_local_warn: '将永久从 Keycloak 删除此本地账号，不可撤销。', kc_del_done: '已删除账号', kc_del_err: '删除失败', kc_role_desc: '描述', kc_role_members: '成员', kc_role_name: '角色名', kc_role_name_empty: '请填写角色名', kc_role_create_err: '新建角色失败', kc_role_del_title: '删除角色', kc_role_del_confirm: '确定要删除角色 {r} 吗？删除后，拥有该角色的用户将失去对应权限。', kc_role_del_err: '删除角色失败',
     mcp_srv_count: 'MCP 服务', skill_count: '技能', litellm_models: '模型', update_version: 'DeepChat 版本',
     docker_services: 'Docker 服务', docker_desc: '以下服务均运行在 Docker 容器中，按产品分组展示',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新服务器', svc_presidio: 'PII 脱敏', svc_monitoring: '监控', svc_langfuse: 'LLM 可观测', svc_session: '会话存储', svc_other: '其他',
@@ -320,7 +325,7 @@ const I18N = {
     brand: 'AI Admin Center', dashboard: 'Dashboard', ghost: 'Ghost Admin', dify: 'Dify AI Platform', gitea: 'Gitea Source',
     group_apps: 'Applications', group_ai: 'AI Gateway & Integrations', group_ops: 'Operations', group_admin: 'System Admin',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Update Server',
-    auth: 'Central Auth', admins: 'Admins', settings: 'Settings', logout: 'Log out',
+    auth: 'Central Auth', admins: 'Admins', settings: 'Settings', logout: 'Log out', not_admin_title: 'You are not an administrator', not_admin_desc: 'This account has no platform admin privileges and cannot use this system.', not_admin_hint: 'Contact the global admin (ai_all_in_one_admin) to grant you access.', not_admin_ok: 'OK',
     loading_services: 'Loading services...', loading: 'Loading...',
     metrics: 'Product Metrics', loading_metrics: 'Loading metrics...', docker_error: 'Cannot connect to Docker: ', metrics_error: 'Cannot get metrics: ',
     channels: 'Channels', users: 'Users', keys: 'Keys', not_connected: 'Not connected', pending: 'Pending', ports: 'Ports: ',
@@ -360,20 +365,23 @@ const I18N = {
     ad_account: '🏢 AD Domain Account (LDAP)', bind_account: 'Bind account', bind_dn: 'Bind DN', password: 'Password',
     ad_note: '⚠️ The AD account CN has spaces ("ai all in one admin"), not underscores. Update Keycloak LDAP bindDn after renaming the DC display name.',
     admins_title: 'Admin Accounts', admins_list: 'Platform Admins (ai-platform-admin)', no_admins: 'No admin users found', name2: 'Name', email: 'Email',
-    admins_desc: 'Admins are managed via Keycloak, role: ai-platform-admin. Enable/disable, add/remove, and reset passwords right here (you cannot modify your own account).',
+    admins_desc: 'Global admins (ai-platform-admin) manage all modules and other admins; scoped admins manage only granted modules. Accounts come from the Keycloak IdP - search to add, no password needed.',
     admins_add: 'Add Admin', admins_add_ph: 'Enter username', admins_add_btn: 'Add', admins_enable: 'Enable', admins_disable: 'Disable', admins_reset_pwd: 'Reset Password', admins_demote: 'Remove Admin', admins_open_kc: 'Keycloak', admins_self_err: 'Cannot modify your own account',
     admins_cf_disable: 'Disable this admin account?', admins_cf_enable: 'Enable this admin account?', admins_cf_demote: 'Remove the admin role from this user (demote to regular user)?', admins_cf_reset: 'Reset this admin\u2019s password? A temporary password will be generated and they must change it at first login.',
     admins_new_pwd: 'New temporary password', admins_pwd_hint: 'The user must change the password at first login. Send it to them immediately (shown only once).', admins_add_ok: 'Added', admins_add_err: 'Add failed', admins_actions: 'Actions',
     admins_need_admin: 'Requires ai-platform-admin role to view admins', admins_need_admin2: 'Assign the ai-platform-admin Realm Role to the current user.',
+    admins_role: 'Role', admins_grants: 'Granted modules', admins_global: 'Global admin', admins_scoped: 'Scoped admin', admins_all_products: 'All modules', admins_search_ph: 'Search username / email / name', admins_search_hint: 'Only search existing accounts from the Keycloak IdP (no new account, no password)', admins_products: 'Grant modules', admins_select_products: 'Select modules to grant (all selected by default)', admins_select_all: 'Select all', admins_clear_all: 'Clear', admins_no_product: 'Select at least one module', admins_select_user_first: 'Search and select a user first', admins_searching: 'Searching...', admins_no_match: 'No matching IdP user found', admins_edit_grants: 'Edit access', admins_delete: 'Delete account', admins_cf_delete: 'Delete this admin? All its module grants will be removed (the Keycloak account itself is untouched).', admins_save: 'Save', admins_cancel: 'Cancel', admins_session_expired: 'Session expired or invalid', admins_session_hint: 'Log out and log in again (or clear the browser cache), then reopen this page.', admins_load_failed: 'Failed to load', admins_selected: 'Selected user', admins_provision_title: 'Provisioning results', admins_temp_pwd: 'Temp password', admins_pwd_icon_desc: 'Modules with a 🔑 icon were provisioned with a local account via API; click it to view the temp password (change after first login).', admins_pwd_show_hint: 'Send this password to the admin; they should change it after first login.', admins_pwd_not_found: 'Temp password not found for this module',
+    admins_close: 'Close', admins_ok: 'OK', admins_delete_confirm_desc: 'This removes the user from all module grants (the Keycloak account itself is untouched).', admins_delete_confirm_btn: 'Delete', admins_delete_final_title: 'Confirm deletion', admins_delete_final_desc: 'This action cannot be undone. Remove all module grants from this admin?', admins_delete_final_btn: 'Yes, delete',
     settings_title: 'Settings', language: 'Language', language_desc: 'Choose the Admin Center interface language. Takes effect immediately.',
     env_config: 'Environment Variables', env_desc: 'All config is passed via .env or docker-compose.yml environment. Restart the container after changes.',
     product_urls: 'Product URLs', prod_note: 'For production, replace these URLs with your actual domain (see docker-deploy-guide.html).',
     open_admin: 'Open Admin ↗', open_hint: 'Click to open the product admin console for detailed configuration', overview_fail: 'Failed to load: ',
-    open_ghost: 'Open Ghost Admin', open_dify: 'Open Dify', open_gitea: 'Open Gitea', open_keycloak: 'Open Keycloak',
+    open_ghost: 'Open Ghost Admin', open_dify: 'Open Dify', open_gitea: 'Open Gitea', open_keycloak: 'Open Keycloak', open_sso_hint: 'Note: may open with a different account',
     ghost_posts: 'Posts', ghost_pages: 'Pages', ghost_members: 'Members', ghost_tags: 'Tags', ghost_logging_in: 'Signing in automatically…', ghost_login_fail: 'Ghost auto sign-in failed: ',
     dify_apps: 'Apps', dify_workspaces: 'Workspaces', dify_version: 'Version',
     gitea_repos: 'Repos', gitea_users: 'Users', gitea_orgs: 'Orgs', gitea_issues: 'Issues', gitea_version: 'Version',
     kc_users: 'Users', kc_clients: 'Clients', kc_roles: 'Roles', kc_idps: 'IdPs',
+    kc_sync_all: 'Sync All', kc_sync_changed: 'Sync Changed', kc_sync_hint: 'After changing account attributes in AD (e.g. email), click "Sync All" or "Sync Changed" to pull the changes into Keycloak.', kc_sync_done: 'Sync complete', kc_sync_added: 'Added', kc_sync_updated: 'Updated', kc_sync_removed: 'Removed', kc_sync_failed: 'Failed', kc_sync_err: 'Sync failed', kc_syncing: 'Syncing', kc_edit_user: 'Edit', kc_delete_user: 'Delete', kc_actions: 'Actions', kc_del_title: 'Delete Keycloak Account', kc_del_confirm: 'Delete account {u} from Keycloak?', kc_del_ldap_warn: 'This account comes from AD (LDAP federation). It will reappear after the next full sync or its next SSO login; to remove it permanently, disable or delete the account in AD.', kc_del_local_warn: 'This local account will be permanently deleted from Keycloak.', kc_del_done: 'Account deleted', kc_del_err: 'Delete failed', kc_role_desc: 'Description', kc_role_members: 'Members', kc_role_name: 'Role name', kc_role_name_empty: 'Please enter a role name', kc_role_create_err: 'Failed to create role', kc_role_del_title: 'Delete Role', kc_role_del_confirm: 'Delete role {r}? Users with this role will lose its permissions.', kc_role_del_err: 'Failed to delete role',
     mcp_srv_count: 'MCP Servers', skill_count: 'Skills', litellm_models: 'Models', update_version: 'DeepChat Version',
     docker_services: 'Docker Services', docker_desc: 'All services below run in Docker containers, grouped by product',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Update Server', svc_presidio: 'PII Redaction', svc_monitoring: 'Monitoring', svc_langfuse: 'LLM Observability', svc_session: 'Session Store', svc_other: 'Other',
@@ -456,7 +464,7 @@ const I18N = {
     brand: 'AI 管理中心', dashboard: '總覽儀表板', ghost: 'Ghost 後台', dify: 'Dify AI 平台', gitea: 'Gitea 原始碼管理',
     group_apps: '產品應用', group_ai: 'AI 閘道與整合', group_ops: '系統維運', group_admin: '系統管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 認證', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新伺服器',
-    auth: '集中認證', admins: '管理員管理', settings: '系統設定', logout: '登出',
+    auth: '集中認證', admins: '管理員管理', settings: '系統設定', logout: '登出', not_admin_title: '你不是管理員', not_admin_desc: '該帳號沒有平台管理員權限，無法使用本系統。', not_admin_hint: '如需存取，請聯絡全域管理員（ai_all_in_one_admin）為你指派權限。', not_admin_ok: '確定',
     loading_services: '正在取得服務狀態...', loading: '載入中...',
     metrics: '產品業務指標', loading_metrics: '正在取得產品指標...', docker_error: '無法連線 Docker：', metrics_error: '無法取得產品指標：',
     channels: '管道', users: '使用者', keys: '金鑰', not_connected: '未接入', pending: '待初始化', ports: '連接埠:',
@@ -493,17 +501,20 @@ const I18N = {
     ad_account: '🏢 AD 網域帳號（LDAP 繫結）', bind_account: '繫結帳號', bind_dn: '繫結 DN', password: '密碼',
     ad_note: '⚠️ 注意：AD 帳號的 CN 帶空格（"ai all in one admin"），不是底線。改網域控制站顯示名稱後需同步更新 Keycloak LDAP 元件的 bindDn。',
     admins_title: '管理員帳號管理', admins_list: '平台管理員列表 (ai-platform-admin)', no_admins: '未找到管理員使用者', name2: '姓名', email: '電子郵件',
-    admins_desc: '管理員透過 Keycloak 管理，角色: ai-platform-admin。如需新增/移除管理員，請在 Keycloak 管理後台操作或透過 Entra ID 群組對應。',
+    admins_desc: '全域管理員（ai-platform-admin）可管理所有模組與管理員；分模組管理員僅管理被授權的模組。帳號來自 Keycloak 關聯的 IdP，搜尋新增、無需密碼。',
     admins_need_admin: '需要 ai-platform-admin 角色才能查看管理員列表', admins_need_admin2: '請確保目前使用者已指派 ai-platform-admin Realm Role。',
+    admins_role: '角色', admins_grants: '已授權模組', admins_global: '全域管理員', admins_scoped: '分模組管理員', admins_all_products: '所有模組', admins_search_ph: '搜尋使用者名稱 / 信箱 / 姓名', admins_search_hint: '只能從 Keycloak 關聯的 IdP 中搜尋既有帳號（不支援新建、無需密碼）', admins_products: '授權模組', admins_select_products: '選擇要授權的模組（預設全選）', admins_select_all: '全選', admins_clear_all: '清空', admins_no_product: '請至少選擇一個模組', admins_select_user_first: '請先搜尋並選擇使用者', admins_searching: '搜尋中…', admins_no_match: '找不到符合的 IdP 使用者', admins_edit_grants: '編輯權限', admins_delete: '刪除帳號', admins_cf_delete: '確定刪除該管理員帳號？將移除其所有模組權限關係（不影響 Keycloak 帳號本身）', admins_save: '儲存', admins_cancel: '取消', admins_session_expired: '登入已過期或工作階段失效', admins_session_hint: '請登出後重新登入（或清除瀏覽器快取），再進入本頁。', admins_load_failed: '載入失敗', admins_selected: '已選擇使用者', admins_provision_title: '產品授權開通結果', admins_temp_pwd: '臨時密碼', admins_pwd_icon_desc: '帶 🔑 圖示的模組表示用 API 建立了本機帳號，點擊圖示可查看其臨時密碼（首次登入請修改）。', admins_pwd_show_hint: '請將該密碼發給對應管理員，首次登入後請修改。', admins_pwd_not_found: '找不到該模組的臨時密碼',
+    admins_close: '關閉', admins_ok: '確定', admins_delete_confirm_desc: '將移除該使用者與所有模組的權限關係（不影響 Keycloak 帳號本身）。', admins_delete_confirm_btn: '確定刪除', admins_delete_final_title: '再次確認刪除', admins_delete_final_desc: '此操作無法復原。確定要刪除該管理員的所有模組權限嗎？', admins_delete_final_btn: '確認刪除',
     settings_title: '系統設定', language: '介面語言', language_desc: '選擇管理中心介面的顯示語言，儲存後立即生效。',
     env_config: '環境變數設定', env_desc: '所有設定透過 .env 檔案或 docker-compose.yml 的 environment 傳入。修改後需重啟容器生效。',
     product_urls: '產品入口 URL', prod_note: '正式環境請將以上 URL 替換為實際網域（參見 docker-deploy-guide.html）。',
     open_admin: '開啟後台 ↗', open_hint: '點擊進入對應產品的管理後台進行詳細設定', overview_fail: '無法取得資料：',
-    open_ghost: '開啟 Ghost 後台', open_dify: '開啟 Dify 平台', open_gitea: '開啟 Gitea', open_keycloak: '開啟 Keycloak 後台',
+    open_ghost: '開啟 Ghost 後台', open_dify: '開啟 Dify 平台', open_gitea: '開啟 Gitea', open_keycloak: '開啟 Keycloak 後台', open_sso_hint: '提示：開啟後可能不是目前帳號',
     ghost_posts: '文章', ghost_pages: '頁面', ghost_members: '訂閱者', ghost_tags: '標籤',
     dify_apps: '應用', dify_workspaces: '工作區', dify_version: '版本',
     gitea_repos: '儲存庫', gitea_users: '使用者', gitea_orgs: '組織', gitea_issues: '議題', gitea_version: '版本',
     kc_users: '使用者', kc_clients: '用戶端', kc_roles: '角色', kc_idps: '身份來源',
+    kc_sync_all: '全部同步', kc_sync_changed: '增量同步', kc_sync_hint: '在 AD 改了帳號屬性（如信箱）後，點「全部同步」或「增量同步」把變更拉取到 Keycloak。', kc_sync_done: '同步完成', kc_sync_added: '新增', kc_sync_updated: '更新', kc_sync_removed: '移除', kc_sync_failed: '失敗', kc_sync_err: '同步失敗', kc_syncing: '正在同步', kc_edit_user: '編輯', kc_delete_user: '刪除', kc_actions: '操作', kc_del_title: '刪除 Keycloak 帳號', kc_del_confirm: '確定要從 Keycloak 刪除帳號 {u} 嗎？', kc_del_ldap_warn: '此帳號來自 AD 網域控制站（LDAP 同盟）。刪除後，下次全量同步或該使用者再次 SSO 登入時會重新出現；要徹底移除，請在 AD 停用或刪除該帳號。', kc_del_local_warn: '將永久從 Keycloak 刪除此本機帳號，不可復原。', kc_del_done: '已刪除帳號', kc_del_err: '刪除失敗', kc_role_desc: '描述', kc_role_members: '成員', kc_role_name: '角色名稱', kc_role_name_empty: '請填寫角色名稱', kc_role_create_err: '建立角色失敗', kc_role_del_title: '刪除角色', kc_role_del_confirm: '確定要刪除角色 {r} 嗎？刪除後，擁有該角色的使用者將失去對應權限。', kc_role_del_err: '刪除角色失敗',
     mcp_srv_count: 'MCP 服務', skill_count: '技能', litellm_models: '模型', update_version: 'DeepChat 版本',
     docker_services: 'Docker 服務', docker_desc: '以下服務均運行在 Docker 容器中，按產品分組展示',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新伺服器', svc_presidio: 'PII 脫敏', svc_monitoring: '監控', svc_langfuse: 'LLM 可觀測', svc_session: '工作階段儲存', svc_other: '其他',
@@ -545,7 +556,7 @@ const I18N = {
     brand: 'Centre d’administration IA', dashboard: 'Tableau de bord', ghost: 'Administration Ghost', dify: 'Plateforme Dify', gitea: 'Source Gitea',
     group_apps: 'Applications', group_ai: 'Passerelle IA & intégrations', group_ops: 'Opérations', group_admin: 'Administration système',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Serveur de mise à jour',
-    auth: 'Authentification centralisée', admins: 'Administrateurs', settings: 'Paramètres', logout: 'Déconnexion',
+    auth: 'Authentification centralisée', admins: 'Administrateurs', settings: 'Paramètres', logout: 'Déconnexion', not_admin_title: 'Vous n’êtes pas administrateur', not_admin_desc: 'Ce compte ne dispose pas de droits d’administrateur et ne peut pas utiliser ce système.', not_admin_hint: 'Contactez l’administrateur global (ai_all_in_one_admin) pour obtenir un accès.', not_admin_ok: 'OK',
     loading_services: 'Chargement des services...', loading: 'Chargement...',
     metrics: 'Métriques produits', loading_metrics: 'Chargement des métriques...', docker_error: 'Impossible de se connecter à Docker : ', metrics_error: 'Impossible de récupérer les métriques : ',
     channels: 'Canaux', users: 'Utilisateurs', keys: 'Clés', not_connected: 'Non connecté', pending: 'En attente', ports: 'Ports : ',
@@ -582,17 +593,20 @@ const I18N = {
     ad_account: '🏢 Compte de domaine AD (LDAP)', bind_account: 'Compte de liaison', bind_dn: 'DN de liaison', password: 'Mot de passe',
     ad_note: '⚠️ Le CN du compte AD contient des espaces (« ai all in one admin »), pas de tirets bas. Mettez à jour bindDn après renommage.',
     admins_title: 'Comptes administrateurs', admins_list: 'Administrateurs de la plateforme (ai-platform-admin)', no_admins: 'Aucun administrateur trouvé', name2: 'Nom', email: 'E-mail',
-    admins_desc: 'Les administrateurs sont gérés via Keycloak, rôle : ai-platform-admin. Pour ajouter/retirer, utilisez la console Keycloak ou le mapping de groupe Entra ID.',
+    admins_desc: 'Les admins globaux (ai-platform-admin) gèrent tous les modules et les autres admins ; les admins par module ne gèrent que les modules accordés. Les comptes proviennent de l’IdP Keycloak — rechercher pour ajouter, sans mot de passe.',
     admins_need_admin: 'Rôle ai-platform-admin requis pour voir les administrateurs', admins_need_admin2: 'Attribuez le rôle ai-platform-admin à l’utilisateur actuel.',
+    admins_role: 'Rôle', admins_grants: 'Modules accordés', admins_global: 'Admin global', admins_scoped: 'Admin par module', admins_all_products: 'Tous les modules', admins_search_ph: 'Rechercher nom d’utilisateur / e-mail / nom', admins_search_hint: 'Rechercher uniquement les comptes existants de l’IdP Keycloak (pas de création, pas de mot de passe)', admins_products: 'Modules à accorder', admins_select_products: 'Sélectionner les modules à accorder (tous par défaut)', admins_select_all: 'Tout sélectionner', admins_clear_all: 'Effacer', admins_no_product: 'Sélectionnez au moins un module', admins_select_user_first: 'Recherchez puis sélectionnez d’abord un utilisateur', admins_searching: 'Recherche…', admins_no_match: 'Aucun utilisateur IdP correspondant', admins_edit_grants: 'Modifier les accès', admins_delete: 'Supprimer le compte', admins_cf_delete: 'Supprimer cet administrateur ? Tous ses droits de module seront retirés (le compte Keycloak reste intact).', admins_save: 'Enregistrer', admins_cancel: 'Annuler', admins_session_expired: 'Session expirée ou invalide', admins_session_hint: 'Déconnectez-vous puis reconnectez-vous (ou videz le cache du navigateur), puis rouvrez cette page.', admins_load_failed: 'Échec du chargement', admins_selected: 'Utilisateur sélectionné', admins_provision_title: 'Résultats de provisionnement', admins_temp_pwd: 'Mot de passe temporaire', admins_pwd_icon_desc: 'Les modules avec une icône 🔑 ont reçu un compte local via API ; cliquez pour voir le mot de passe temporaire.', admins_pwd_show_hint: 'Envoyez ce mot de passe à l’administrateur concerné.', admins_pwd_not_found: 'Mot de passe temporaire introuvable pour ce module',
+    admins_close: 'Fermer', admins_ok: 'OK', admins_delete_confirm_desc: 'Retire l’utilisateur de tous les accès aux modules (le compte Keycloak reste intact).', admins_delete_confirm_btn: 'Supprimer', admins_delete_final_title: 'Confirmer la suppression', admins_delete_final_desc: 'Cette action est irréversible. Retirer tous les droits de module de cet administrateur ?', admins_delete_final_btn: 'Oui, supprimer',
     settings_title: 'Paramètres', language: 'Langue', language_desc: 'Choisissez la langue de l’interface. Prend effet immédiatement.',
     env_config: 'Variables d’environnement', env_desc: 'Toute la configuration passe par .env ou docker-compose.yml. Redémarrez le conteneur après modification.',
     product_urls: 'URL des produits', prod_note: 'En production, remplacez ces URL par votre domaine réel (voir docker-deploy-guide.html).',
     open_admin: 'Ouvrir l’admin ↗', open_hint: 'Cliquez pour ouvrir la console d’administration du produit', overview_fail: 'Échec du chargement : ',
-    open_ghost: 'Ouvrir l’admin Ghost', open_dify: 'Ouvrir Dify', open_gitea: 'Ouvrir Gitea', open_keycloak: 'Ouvrir Keycloak',
+    open_ghost: 'Ouvrir l’admin Ghost', open_dify: 'Ouvrir Dify', open_gitea: 'Ouvrir Gitea', open_keycloak: 'Ouvrir Keycloak', open_sso_hint: 'Note : peut s’ouvrir avec un autre compte',
     ghost_posts: 'Articles', ghost_pages: 'Pages', ghost_members: 'Membres', ghost_tags: 'Étiquettes',
     dify_apps: 'Applications', dify_workspaces: 'Espaces de travail', dify_version: 'Version',
     gitea_repos: 'Dépôts', gitea_users: 'Utilisateurs', gitea_orgs: 'Organisations', gitea_issues: 'Tickets', gitea_version: 'Version',
     kc_users: 'Utilisateurs', kc_clients: 'Clients', kc_roles: 'Rôles', kc_idps: 'IdP',
+    kc_sync_all: 'Tout synchroniser', kc_sync_changed: 'Sync. modifiés', kc_sync_hint: 'Après avoir modifié des attributs dans AD (ex. e-mail), cliquez sur « Tout synchroniser » ou « Sync. modifiés » pour récupérer les changements dans Keycloak.', kc_sync_done: 'Synchronisation terminée', kc_sync_added: 'Ajoutés', kc_sync_updated: 'Mis à jour', kc_sync_removed: 'Supprimés', kc_sync_failed: 'Échecs', kc_sync_err: 'Échec de la synchronisation', kc_syncing: 'Synchronisation…', kc_edit_user: 'Modifier', kc_delete_user: 'Supprimer', kc_actions: 'Actions', kc_del_title: 'Supprimer le compte Keycloak', kc_del_confirm: 'Supprimer le compte {u} de Keycloak ?', kc_del_ldap_warn: 'Ce compte provient d’AD (fédération LDAP). Il réapparaîtra après la prochaine synchronisation complète ou sa prochaine connexion SSO ; pour le supprimer définitivement, désactivez ou supprimez le compte dans AD.', kc_del_local_warn: 'Ce compte local sera définitivement supprimé de Keycloak.', kc_del_done: 'Compte supprimé', kc_del_err: 'Échec de la suppression', kc_role_desc: 'Description', kc_role_members: 'Membres', kc_role_name: 'Nom du rôle', kc_role_name_empty: 'Veuillez saisir un nom de rôle', kc_role_create_err: 'Échec de la création du rôle', kc_role_del_title: 'Supprimer le rôle', kc_role_del_confirm: 'Supprimer le rôle {r} ? Les utilisateurs ayant ce rôle perdront ses permissions.', kc_role_del_err: 'Échec de la suppression du rôle',
     mcp_srv_count: 'Serveurs MCP', skill_count: 'Skills', litellm_models: 'Modèles', update_version: 'Version DeepChat',
     docker_services: 'Services Docker', docker_desc: 'Tous les services ci-dessous s’exécutent dans des conteneurs Docker, groupés par produit',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Serveur de mise à jour', svc_presidio: 'Anonymisation PII', svc_monitoring: 'Supervision', svc_langfuse: 'Observabilité LLM', svc_session: 'Stockage de session',     svc_other: 'Autre',
@@ -634,7 +648,7 @@ const I18N = {
     brand: 'Centro de administración de IA', dashboard: 'Panel de control', ghost: 'Administración de Ghost', dify: 'Plataforma Dify', gitea: 'Código Gitea',
     group_apps: 'Aplicaciones', group_ai: 'Puerta de enlace IA e integraciones', group_ops: 'Operaciones', group_admin: 'Administración del sistema',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Servidor de actualizaciones',
-    auth: 'Autenticación central', admins: 'Administradores', settings: 'Ajustes', logout: 'Cerrar sesión',
+    auth: 'Autenticación central', admins: 'Administradores', settings: 'Ajustes', logout: 'Cerrar sesión', not_admin_title: 'No eres administrador', not_admin_desc: 'Esta cuenta no tiene privilegios de administrador y no puede usar este sistema.', not_admin_hint: 'Contacta con el administrador global (ai_all_in_one_admin) para obtener acceso.', not_admin_ok: 'Aceptar',
     loading_services: 'Cargando servicios...', loading: 'Cargando...',
     metrics: 'Métricas de productos', loading_metrics: 'Cargando métricas...', docker_error: 'No se pudo conectar a Docker: ', metrics_error: 'No se pudieron obtener las métricas: ',
     channels: 'Canales', users: 'Usuarios', keys: 'Claves', not_connected: 'No conectado', pending: 'Pendiente', ports: 'Puertos: ',
@@ -671,17 +685,20 @@ const I18N = {
     ad_account: '🏢 Cuenta de dominio AD (LDAP)', bind_account: 'Cuenta de enlace', bind_dn: 'DN de enlace', password: 'Contraseña',
     ad_note: '⚠️ El CN de la cuenta AD tiene espacios («ai all in one admin»), no guiones bajos. Actualice bindDn tras renombrar.',
     admins_title: 'Cuentas de administrador', admins_list: 'Administradores de la plataforma (ai-platform-admin)', no_admins: 'No se encontraron administradores', name2: 'Nombre', email: 'Correo',
-    admins_desc: 'Los administradores se gestionan vía Keycloak, rol: ai-platform-admin. Para añadir/retirar, use la consola de Keycloak o el mapeo de grupos Entra ID.',
+    admins_desc: 'Los admins globales (ai-platform-admin) gestionan todos los módulos y otros admins; los admins por módulo solo gestionan los módulos concedidos. Las cuentas provienen del IdP de Keycloak: buscar para añadir, sin contraseña.',
     admins_need_admin: 'Se requiere rol ai-platform-admin para ver administradores', admins_need_admin2: 'Asigne el rol ai-platform-admin al usuario actual.',
+    admins_role: 'Rol', admins_grants: 'Módulos concedidos', admins_global: 'Admin global', admins_scoped: 'Admin por módulo', admins_all_products: 'Todos los módulos', admins_search_ph: 'Buscar usuario / correo / nombre', admins_search_hint: 'Solo buscar cuentas existentes del IdP de Keycloak (sin creación, sin contraseña)', admins_products: 'Módulos a conceder', admins_select_products: 'Selecciona los módulos a conceder (todos por defecto)', admins_select_all: 'Seleccionar todo', admins_clear_all: 'Limpiar', admins_no_product: 'Selecciona al menos un módulo', admins_select_user_first: 'Primero busca y selecciona un usuario', admins_searching: 'Buscando…', admins_no_match: 'No se encontró usuario IdP coincidente', admins_edit_grants: 'Editar accesos', admins_delete: 'Eliminar cuenta', admins_cf_delete: '¿Eliminar este administrador? Se retirarán todos sus permisos de módulo (la cuenta de Keycloak no se modifica).', admins_save: 'Guardar', admins_cancel: 'Cancelar', admins_session_expired: 'Sesión caducada o no válida', admins_session_hint: 'Cierra sesión y vuelve a iniciarla (o borra la caché del navegador), luego vuelve a abrir esta página.', admins_load_failed: 'Error al cargar', admins_selected: 'Usuario seleccionado', admins_provision_title: 'Resultados de aprovisionamiento', admins_temp_pwd: 'Contraseña temporal', admins_pwd_icon_desc: 'Los módulos con un icono 🔑 se aprovisionaron con una cuenta local por API; haz clic para ver la contraseña temporal.', admins_pwd_show_hint: 'Envía esta contraseña al administrador correspondiente.', admins_pwd_not_found: 'No se encontró la contraseña temporal de este módulo',
+    admins_close: 'Cerrar', admins_ok: 'Aceptar', admins_delete_confirm_desc: 'Elimina al usuario de todos los accesos a módulos (la cuenta de Keycloak no se modifica).', admins_delete_confirm_btn: 'Eliminar', admins_delete_final_title: 'Confirmar eliminación', admins_delete_final_desc: 'Esta acción no se puede deshacer. ¿Retirar todos los permisos de módulo de este administrador?', admins_delete_final_btn: 'Sí, eliminar',
     settings_title: 'Ajustes', language: 'Idioma', language_desc: 'Elija el idioma de la interfaz. Tiene efecto de inmediato.',
     env_config: 'Variables de entorno', env_desc: 'Toda la configuración se pasa por .env o docker-compose.yml. Reinicie el contenedor tras los cambios.',
     product_urls: 'URL de productos', prod_note: 'En producción, reemplace estas URL por su dominio real (ver docker-deploy-guide.html).',
     open_admin: 'Abrir admin ↗', open_hint: 'Haga clic para abrir la consola de administración del producto', overview_fail: 'Error al cargar: ',
-    open_ghost: 'Abrir admin de Ghost', open_dify: 'Abrir Dify', open_gitea: 'Abrir Gitea', open_keycloak: 'Abrir Keycloak',
+    open_ghost: 'Abrir admin de Ghost', open_dify: 'Abrir Dify', open_gitea: 'Abrir Gitea', open_keycloak: 'Abrir Keycloak', open_sso_hint: 'Nota: puede abrirse con otra cuenta',
     ghost_posts: 'Artículos', ghost_pages: 'Páginas', ghost_members: 'Miembros', ghost_tags: 'Etiquetas',
     dify_apps: 'Aplicaciones', dify_workspaces: 'Espacios de trabajo', dify_version: 'Versión',
     gitea_repos: 'Repositorios', gitea_users: 'Usuarios', gitea_orgs: 'Organizaciones', gitea_issues: 'Incidencias', gitea_version: 'Versión',
     kc_users: 'Usuarios', kc_clients: 'Clientes', kc_roles: 'Roles', kc_idps: 'IdP',
+    kc_sync_all: 'Sincronizar todo', kc_sync_changed: 'Sinc. cambios', kc_sync_hint: 'Tras cambiar atributos en AD (p. ej. email), pulsa « Sincronizar todo » o « Sinc. cambios » para traer los cambios a Keycloak.', kc_sync_done: 'Sincronización completada', kc_sync_added: 'Añadidos', kc_sync_updated: 'Actualizados', kc_sync_removed: 'Eliminados', kc_sync_failed: 'Fallos', kc_sync_err: 'Error de sincronización', kc_syncing: 'Sincronizando…', kc_edit_user: 'Editar', kc_delete_user: 'Eliminar', kc_actions: 'Acciones', kc_del_title: 'Eliminar cuenta de Keycloak', kc_del_confirm: '¿Eliminar la cuenta {u} de Keycloak?', kc_del_ldap_warn: 'Esta cuenta proviene de AD (federación LDAP). Reaparecerá tras la próxima sincronización completa o su próximo inicio de sesión SSO; para eliminarla de forma permanente, deshabilita o elimina la cuenta en AD.', kc_del_local_warn: 'Esta cuenta local se eliminará permanentemente de Keycloak.', kc_del_done: 'Cuenta eliminada', kc_del_err: 'Error al eliminar', kc_role_desc: 'Descripción', kc_role_members: 'Miembros', kc_role_name: 'Nombre del rol', kc_role_name_empty: 'Introduce un nombre de rol', kc_role_create_err: 'Error al crear el rol', kc_role_del_title: 'Eliminar rol', kc_role_del_confirm: '¿Eliminar el rol {r}? Los usuarios con este rol perderán sus permisos.', kc_role_del_err: 'Error al eliminar el rol',
     mcp_srv_count: 'Servidores MCP', skill_count: 'Skills', litellm_models: 'Modelos', update_version: 'Versión de DeepChat',
     docker_services: 'Servicios Docker', docker_desc: 'Todos los servicios siguientes se ejecutan en contenedores Docker, agrupados por producto',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Servidor de actualizaciones', svc_presidio: 'Anonimización PII', svc_monitoring: 'Monitoreo', svc_langfuse: 'Observabilidad LLM', svc_session: 'Almacén de sesión', svc_other: 'Otro',
@@ -723,7 +740,7 @@ const I18N = {
     brand: 'Central de Administração de IA', dashboard: 'Painel', ghost: 'Administração Ghost', dify: 'Plataforma Dify', gitea: 'Código Gitea',
     group_apps: 'Aplicações', group_ai: 'Gateway de IA e integrações', group_ops: 'Operações', group_admin: 'Administração do sistema',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Servidor de atualização',
-    auth: 'Autenticação central', admins: 'Administradores', settings: 'Configurações', logout: 'Sair',
+    auth: 'Autenticação central', admins: 'Administradores', settings: 'Configurações', logout: 'Sair', not_admin_title: 'Você não é administrador', not_admin_desc: 'Esta conta não tem privilégios de administrador e não pode usar este sistema.', not_admin_hint: 'Entre em contato com o administrador global (ai_all_in_one_admin) para obter acesso.', not_admin_ok: 'OK',
     loading_services: 'Carregando serviços...', loading: 'Carregando...',
     metrics: 'Métricas de produtos', loading_metrics: 'Carregando métricas...', docker_error: 'Não foi possível conectar ao Docker: ', metrics_error: 'Não foi possível obter as métricas: ',
     channels: 'Canais', users: 'Usuários', keys: 'Chaves', not_connected: 'Não conectado', pending: 'Pendente', ports: 'Portas: ',
@@ -760,17 +777,20 @@ const I18N = {
     ad_account: '🏢 Conta de domínio AD (LDAP)', bind_account: 'Conta de vínculo', bind_dn: 'DN de vínculo', password: 'Senha',
     ad_note: '⚠️ O CN da conta AD tem espaços («ai all in one admin»), não sublinhados. Atualize o bindDn após renomear.',
     admins_title: 'Contas de administrador', admins_list: 'Administradores da plataforma (ai-platform-admin)', no_admins: 'Nenhum administrador encontrado', name2: 'Nome', email: 'E-mail',
-    admins_desc: 'Os administradores são gerenciados via Keycloak, função: ai-platform-admin. Para adicionar/remover, use o console do Keycloak ou o mapeamento de grupos Entra ID.',
+    admins_desc: 'Admins globais (ai-platform-admin) gerenciam todos os módulos e outros admins; admins por módulo gerenciam apenas os módulos concedidos. As contas vêm do IdP do Keycloak — buscar para adicionar, sem senha.',
     admins_need_admin: 'Requer função ai-platform-admin para ver administradores', admins_need_admin2: 'Atribua a função ai-platform-admin ao usuário atual.',
+    admins_role: 'Função', admins_grants: 'Módulos concedidos', admins_global: 'Admin global', admins_scoped: 'Admin por módulo', admins_all_products: 'Todos os módulos', admins_search_ph: 'Buscar usuário / e-mail / nome', admins_search_hint: 'Buscar apenas contas existentes do IdP do Keycloak (sem criação, sem senha)', admins_products: 'Módulos a conceder', admins_select_products: 'Selecione os módulos a conceder (todos por padrão)', admins_select_all: 'Selecionar tudo', admins_clear_all: 'Limpar', admins_no_product: 'Selecione pelo menos um módulo', admins_select_user_first: 'Primeiro pesquise e selecione um usuário', admins_searching: 'Pesquisando…', admins_no_match: 'Nenhum usuário IdP correspondente', admins_edit_grants: 'Editar acessos', admins_delete: 'Excluir conta', admins_cf_delete: 'Excluir este administrador? Todos os seus acessos a módulos serão removidos (a conta do Keycloak permanece intacta).', admins_save: 'Salvar', admins_cancel: 'Cancelar', admins_session_expired: 'Sessão expirada ou inválida', admins_session_hint: 'Saia e entre novamente (ou limpe o cache do navegador) e reabra esta página.', admins_load_failed: 'Falha ao carregar', admins_selected: 'Usuário selecionado', admins_provision_title: 'Resultados do provisionamento', admins_temp_pwd: 'Senha temporária', admins_pwd_icon_desc: 'Módulos com ícone 🔑 foram provisionados com conta local via API; clique para ver a senha temporária.', admins_pwd_show_hint: 'Envie esta senha ao administrador correspondente.', admins_pwd_not_found: 'Senha temporária não encontrada para este módulo',
+    admins_close: 'Fechar', admins_ok: 'OK', admins_delete_confirm_desc: 'Remove o usuário de todos os acessos a módulos (a conta do Keycloak permanece intacta).', admins_delete_confirm_btn: 'Excluir', admins_delete_final_title: 'Confirmar exclusão', admins_delete_final_desc: 'Esta ação não pode ser desfeita. Remover todos os acessos a módulos deste administrador?', admins_delete_final_btn: 'Sim, excluir',
     settings_title: 'Configurações', language: 'Idioma', language_desc: 'Escolha o idioma da interface. Tem efeito imediato.',
     env_config: 'Variáveis de ambiente', env_desc: 'Toda a configuração é passada via .env ou docker-compose.yml. Reinicie o contêiner após as alterações.',
     product_urls: 'URLs dos produtos', prod_note: 'Em produção, substitua essas URLs pelo seu domínio real (veja docker-deploy-guide.html).',
     open_admin: 'Abrir admin ↗', open_hint: 'Clique para abrir o console de administração do produto', overview_fail: 'Falha ao carregar: ',
-    open_ghost: 'Abrir admin do Ghost', open_dify: 'Abrir Dify', open_gitea: 'Abrir Gitea', open_keycloak: 'Abrir Keycloak',
+    open_ghost: 'Abrir admin do Ghost', open_dify: 'Abrir Dify', open_gitea: 'Abrir Gitea', open_keycloak: 'Abrir Keycloak', open_sso_hint: 'Nota: pode abrir com outra conta',
     ghost_posts: 'Artigos', ghost_pages: 'Páginas', ghost_members: 'Membros', ghost_tags: 'Etiquetas',
     dify_apps: 'Aplicativos', dify_workspaces: 'Espaços de trabalho', dify_version: 'Versão',
     gitea_repos: 'Repositórios', gitea_users: 'Usuários', gitea_orgs: 'Organizações', gitea_issues: 'Problemas', gitea_version: 'Versão',
     kc_users: 'Usuários', kc_clients: 'Clientes', kc_roles: 'Funções', kc_idps: 'IdP',
+    kc_sync_all: 'Sincronizar tudo', kc_sync_changed: 'Sinc. alterados', kc_sync_hint: 'Depois de alterar atributos no AD (ex.: e-mail), clique em « Sincronizar tudo » ou « Sinc. alterados » para trazer as alterações para o Keycloak.', kc_sync_done: 'Sincronização concluída', kc_sync_added: 'Adicionados', kc_sync_updated: 'Atualizados', kc_sync_removed: 'Removidos', kc_sync_failed: 'Falhas', kc_sync_err: 'Falha na sincronização', kc_syncing: 'Sincronizando…', kc_edit_user: 'Editar', kc_delete_user: 'Excluir', kc_actions: 'Ações', kc_del_title: 'Excluir conta do Keycloak', kc_del_confirm: 'Excluir a conta {u} do Keycloak?', kc_del_ldap_warn: 'Esta conta vem do AD (federação LDAP). Ela reaparecerá após a próxima sincronização completa ou no próximo login SSO; para removê-la permanentemente, desative ou exclua a conta no AD.', kc_del_local_warn: 'Esta conta local será excluída permanentemente do Keycloak.', kc_del_done: 'Conta excluída', kc_del_err: 'Falha ao excluir', kc_role_desc: 'Descrição', kc_role_members: 'Membros', kc_role_name: 'Nome do papel', kc_role_name_empty: 'Digite um nome de papel', kc_role_create_err: 'Falha ao criar o papel', kc_role_del_title: 'Excluir papel', kc_role_del_confirm: 'Excluir o papel {r}? Usuários com este papel perderão suas permissões.', kc_role_del_err: 'Falha ao excluir o papel',
     mcp_srv_count: 'Servidores MCP', skill_count: 'Skills', litellm_models: 'Modelos', update_version: 'Versão do DeepChat',
     docker_services: 'Serviços Docker', docker_desc: 'Todos os serviços abaixo são executados em contêineres Docker, agrupados por produto',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'Servidor de atualização', svc_presidio: 'Anonimização PII', svc_monitoring: 'Monitoramento', svc_langfuse: 'Observabilidade LLM', svc_session: 'Armazenamento de sessão',     svc_other: 'Outro',
@@ -812,7 +832,7 @@ const I18N = {
     brand: 'AI管理センター', dashboard: 'ダッシュボード', ghost: 'Ghost 管理', dify: 'Dify AI プラットフォーム', gitea: 'Gitea ソース管理',
     group_apps: 'アプリケーション', group_ai: 'AI ゲートウェイと統合', group_ops: '運用管理', group_admin: 'システム管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 認証', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新サーバー',
-    auth: '集中認証', admins: '管理者管理', settings: 'システム設定', logout: 'ログアウト',
+    auth: '集中認証', admins: '管理者管理', settings: 'システム設定', logout: 'ログアウト', not_admin_title: '管理者ではありません', not_admin_desc: 'このアカウントには管理者権限がなく、本システムを利用できません。', not_admin_hint: 'アクセスが必要な場合は、グローバル管理者（ai_all_in_one_admin）に権限付与を依頼してください。', not_admin_ok: 'OK',
     loading_services: 'サービス状態を取得中...', loading: '読み込み中...',
     metrics: '製品メトリクス', loading_metrics: 'メトリクスを取得中...', docker_error: 'Docker に接続できません：', metrics_error: 'メトリクスを取得できません：',
     channels: 'チャネル', users: 'ユーザー', keys: 'キー', not_connected: '未接続', pending: '初期化待ち', ports: 'ポート：',
@@ -849,17 +869,20 @@ const I18N = {
     ad_account: '🏢 AD ドメインアカウント（LDAP バインド）', bind_account: 'バインドアカウント', bind_dn: 'バインド DN', password: 'パスワード',
     ad_note: '⚠️ 注意：AD アカウントの CN にはスペース（"ai all in one admin"）が含まれ、下線ではありません。ドメインコントローラー表示名を変更後は Keycloak LDAP の bindDn を更新してください。',
     admins_title: '管理者アカウント管理', admins_list: 'プラットフォーム管理者リスト (ai-platform-admin)', no_admins: '管理者が見つかりません', name2: '氏名', email: 'メール',
-    admins_desc: '管理者は Keycloak で管理（ロール: ai-platform-admin）。追加/削除は Keycloak 管理画面または Entra ID グループマッピングで行います。',
+    admins_desc: 'グローバル管理者（ai-platform-admin）はすべてのモジュールと管理者を管理；モジュール別管理者は付与されたモジュールのみ管理。アカウントは Keycloak 連携 IdP 由来 — 検索して追加、パスワード不要。',
     admins_need_admin: '管理者リストの表示には ai-platform-admin ロールが必要です', admins_need_admin2: '現在のユーザーに ai-platform-admin Realm Role を割り当ててください。',
+    admins_role: 'ロール', admins_grants: '付与済みモジュール', admins_global: 'グローバル管理者', admins_scoped: 'モジュール別管理者', admins_all_products: 'すべてのモジュール', admins_search_ph: 'ユーザー名 / メール / 氏名を検索', admins_search_hint: 'Keycloak 連携 IdP の既存アカウントのみ検索（新規作成不可・パスワード不要）', admins_products: '付与するモジュール', admins_select_products: '付与するモジュールを選択（既定は全選択）', admins_select_all: 'すべて選択', admins_clear_all: 'クリア', admins_no_product: 'モジュールを 1 つ以上選択してください', admins_select_user_first: '先にユーザーを検索して選択してください', admins_searching: '検索中…', admins_no_match: '一致する IdP ユーザーが見つかりません', admins_edit_grants: '権限を編集', admins_delete: 'アカウント削除', admins_cf_delete: 'この管理者を削除しますか？すべてのモジュール権限が削除されます（Keycloak アカウント自体は残ります）', admins_save: '保存', admins_cancel: 'キャンセル', admins_session_expired: 'ログインの有効期限が切れているか、セッションが無効です', admins_session_hint: 'ログアウトして再度ログイン（またはブラウザのキャッシュを削除）してから、このページを開き直してください。', admins_load_failed: '読み込みに失敗', admins_selected: '選択中のユーザー', admins_provision_title: 'プロビジョニング結果', admins_temp_pwd: '仮パスワード', admins_pwd_icon_desc: '🔑 アイコン付きのモジュールは API でローカルアカウントを作成済み。クリックすると仮パスワードを表示します。', admins_pwd_show_hint: 'このパスワードを該当の管理者に送ってください。', admins_pwd_not_found: 'このモジュールの仮パスワードが見つかりません',
+    admins_close: '閉じる', admins_ok: 'OK', admins_delete_confirm_desc: 'このユーザーをすべてのモジュール権限から削除します（Keycloak アカウント自体は残ります）。', admins_delete_confirm_btn: '削除する', admins_delete_final_title: '削除の再確認', admins_delete_final_desc: 'この操作は元に戻せません。この管理者のすべてのモジュール権限を削除しますか？', admins_delete_final_btn: '削除を確定',
     settings_title: 'システム設定', language: '表示言語', language_desc: '管理センターの表示言語を選択します。保存後すぐに反映されます。',
     env_config: '環境変数設定', env_desc: 'すべての設定は .env ファイルまたは docker-compose.yml の environment で渡します。変更後はコンテナ再起動が必要です。',
     product_urls: '製品入口 URL', prod_note: '本番環境では上記 URL を実際のドメインに置き換えてください（docker-deploy-guide.html 参照）。',
     open_admin: '管理画面を開く ↗', open_hint: 'クリックして製品の管理画面を開き、詳細設定を行います', overview_fail: 'データを取得できません：',
-    open_ghost: 'Ghost 管理を開く', open_dify: 'Dify プラットフォームを開く', open_gitea: 'Gitea を開く', open_keycloak: 'Keycloak 管理を開く',
+    open_ghost: 'Ghost 管理を開く', open_dify: 'Dify プラットフォームを開く', open_gitea: 'Gitea を開く', open_keycloak: 'Keycloak 管理を開く', open_sso_hint: '注：別のアカウントで開く場合があります',
     ghost_posts: '記事', ghost_pages: 'ページ', ghost_members: '購読者', ghost_tags: 'タグ',
     dify_apps: 'アプリ', dify_workspaces: 'ワークスペース', dify_version: 'バージョン',
     gitea_repos: 'リポジトリ', gitea_users: 'ユーザー', gitea_orgs: '組織', gitea_issues: '課題', gitea_version: 'バージョン',
     kc_users: 'ユーザー', kc_clients: 'クライアント', kc_roles: 'ロール', kc_idps: 'ID ソース',
+    kc_sync_all: 'すべて同期', kc_sync_changed: '変更を同期', kc_sync_hint: 'AD でアカウント属性（メールなど）を変更したら、「すべて同期」または「変更を同期」をクリックして Keycloak に反映します。', kc_sync_done: '同期完了', kc_sync_added: '追加', kc_sync_updated: '更新', kc_sync_removed: '削除', kc_sync_failed: '失敗', kc_sync_err: '同期に失敗', kc_syncing: '同期中', kc_edit_user: '編集', kc_delete_user: '削除', kc_actions: '操作', kc_del_title: 'Keycloak アカウントを削除', kc_del_confirm: 'Keycloak からアカウント {u} を削除しますか？', kc_del_ldap_warn: 'このアカウントは AD（LDAP フェデレーション）由来です。次回の全量同期または次回の SSO ログインで再び現れます。完全に削除するには AD でアカウントを無効化または削除してください。', kc_del_local_warn: 'このローカルアカウントは Keycloak から完全に削除されます。', kc_del_done: 'アカウントを削除しました', kc_del_err: '削除に失敗', kc_role_desc: '説明', kc_role_members: 'メンバー', kc_role_name: 'ロール名', kc_role_name_empty: 'ロール名を入力してください', kc_role_create_err: 'ロールの作成に失敗', kc_role_del_title: 'ロールを削除', kc_role_del_confirm: 'ロール {r} を削除しますか？このロールを持つユーザーは対応する権限を失います。', kc_role_del_err: 'ロールの削除に失敗',
     mcp_srv_count: 'MCP サービス', skill_count: 'スキル', litellm_models: 'モデル', update_version: 'DeepChat バージョン',
     docker_services: 'Docker サービス', docker_desc: '以下のサービスはすべて Docker コンテナで動作し、製品別にグループ化して表示しています',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '更新サーバー', svc_presidio: 'PII 匿名化', svc_monitoring: '監視', svc_langfuse: 'LLM 可観測性', svc_session: 'セッションストア', svc_other: 'その他',
@@ -901,7 +924,7 @@ const I18N = {
     brand: 'AI 관리 센터', dashboard: '대시보드', ghost: 'Ghost 관리', dify: 'Dify AI 플랫폼', gitea: 'Gitea 소스 관리',
     group_apps: '애플리케이션', group_ai: 'AI 게이트웨이 및 통합', group_ops: '운영 관리', group_admin: '시스템 관리',
     newapi: 'NewAPI 관리', keycloak: 'Keycloak 인증', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '업데이트 서버',
-    auth: '통합 인증', admins: '관리자 관리', settings: '시스템 설정', logout: '로그아웃',
+    auth: '통합 인증', admins: '관리자 관리', settings: '시스템 설정', logout: '로그아웃', not_admin_title: '관리자가 아닙니다', not_admin_desc: '이 계정에는 관리자 권한이 없어 이 시스템을 사용할 수 없습니다.', not_admin_hint: '액세스가 필요하면 전역 관리자(ai_all_in_one_admin)에게 권한 부여를 요청하세요.', not_admin_ok: '확인',
     loading_services: '서비스 상태 가져오는 중...', loading: '로딩 중...',
     metrics: '제품 지표', loading_metrics: '지표 가져오는 중...', docker_error: 'Docker에 연결할 수 없습니다: ', metrics_error: '지표를 가져올 수 없습니다: ',
     channels: '채널', users: '사용자', keys: '키', not_connected: '미연결', pending: '초기화 대기', ports: '포트: ',
@@ -938,17 +961,20 @@ const I18N = {
     ad_account: '🏢 AD 도메인 계정(LDAP 바인딩)', bind_account: '바인딩 계정', bind_dn: '바인딩 DN', password: '비밀번호',
     ad_note: '⚠️ AD 계정의 CN에는 공백("ai all in one admin")이 있고 밑줄이 아닙니다. 도메인 컨트롤러 표시 이름 변경 후 Keycloak LDAP bindDn을 업데이트하세요.',
     admins_title: '관리자 계정 관리', admins_list: '플랫폼 관리자 목록 (ai-platform-admin)', no_admins: '관리자를 찾을 수 없음', name2: '이름', email: '이메일',
-    admins_desc: '관리자는 Keycloak으로 관리(역할: ai-platform-admin). 추가/제거는 Keycloak 관리 콘솔 또는 Entra ID 그룹 매핑에서 수행.',
+    admins_desc: '전역 관리자(ai-platform-admin)는 모든 모듈과 관리자를 관리하며, 모듈별 관리자는 부여된 모듈만 관리합니다. 계정은 Keycloak 연동 IdP에서 제공되며 검색하여 추가하고 비밀번호가 필요하지 않습니다.',
     admins_need_admin: '관리자 목록을 보려면 ai-platform-admin 역할이 필요합니다', admins_need_admin2: '현재 사용자에게 ai-platform-admin Realm Role을 할당하세요.',
+    admins_role: '역할', admins_grants: '부여된 모듈', admins_global: '전역 관리자', admins_scoped: '모듈별 관리자', admins_all_products: '모든 모듈', admins_search_ph: '사용자명 / 이메일 / 이름 검색', admins_search_hint: 'Keycloak 연동 IdP의 기존 계정만 검색 (신규 생성 불가, 비밀번호 불필요)', admins_products: '부여할 모듈', admins_select_products: '부여할 모듈 선택 (기본 전체 선택)', admins_select_all: '전체 선택', admins_clear_all: '지우기', admins_no_product: '모듈을 하나 이상 선택하세요', admins_select_user_first: '먼저 사용자를 검색하여 선택하세요', admins_searching: '검색 중…', admins_no_match: '일치하는 IdP 사용자를 찾을 수 없음', admins_edit_grants: '권한 편집', admins_delete: '계정 삭제', admins_cf_delete: '이 관리자를 삭제하시겠습니까? 모든 모듈 권한이 제거됩니다 (Keycloak 계정 자체는 유지됨)', admins_save: '저장', admins_cancel: '취소', admins_session_expired: '로그인이 만료되었거나 세션이 유효하지 않습니다', admins_session_hint: '로그아웃 후 다시 로그인(또는 브라우저 캐시 삭제)한 다음 이 페이지를 다시 여세요.', admins_load_failed: '불러오기 실패', admins_selected: '선택된 사용자', admins_provision_title: '프로비저닝 결과', admins_temp_pwd: '임시 비밀번호', admins_pwd_icon_desc: '🔑 아이콘이 있는 모듈은 API로 로컬 계정이 생성된 것으로, 클릭하면 임시 비밀번호를 볼 수 있습니다.', admins_pwd_show_hint: '이 비밀번호를 해당 관리자에게 전달하세요.', admins_pwd_not_found: '이 모듈의 임시 비밀번호를 찾을 수 없습니다',
+    admins_close: '닫기', admins_ok: '확인', admins_delete_confirm_desc: '이 사용자를 모든 모듈 권한에서 제거합니다 (Keycloak 계정 자체는 유지됨).', admins_delete_confirm_btn: '삭제', admins_delete_final_title: '삭제 재확인', admins_delete_final_desc: '이 작업은 되돌릴 수 없습니다. 이 관리자의 모든 모듈 권한을 제거하시겠습니까?', admins_delete_final_btn: '삭제 확정',
     settings_title: '시스템 설정', language: '인터페이스 언어', language_desc: '관리 센터 인터페이스 언어를 선택합니다. 저장 즉시 적용됩니다.',
     env_config: '환경 변수 설정', env_desc: '모든 설정은 .env 파일 또는 docker-compose.yml의 environment로 전달됩니다. 변경 후 컨테이너 재시작 필요.',
     product_urls: '제품 입구 URL', prod_note: '프로덕션에서는 위 URL을 실제 도메인으로 교체하세요(docker-deploy-guide.html 참조).',
     open_admin: '관리 화면 열기 ↗', open_hint: '클릭하여 제품 관리 화면을 열어 상세 설정', overview_fail: '데이터를 가져올 수 없습니다: ',
-    open_ghost: 'Ghost 관리 열기', open_dify: 'Dify 플랫폼 열기', open_gitea: 'Gitea 열기', open_keycloak: 'Keycloak 관리 열기',
+    open_ghost: 'Ghost 관리 열기', open_dify: 'Dify 플랫폼 열기', open_gitea: 'Gitea 열기', open_keycloak: 'Keycloak 관리 열기', open_sso_hint: '참고: 다른 계정으로 열릴 수 있습니다',
     ghost_posts: '게시글', ghost_pages: '페이지', ghost_members: '구독자', ghost_tags: '태그',
     dify_apps: '앱', dify_workspaces: '워크스페이스', dify_version: '버전',
     gitea_repos: '저장소', gitea_users: '사용자', gitea_orgs: '조직', gitea_issues: '이슈', gitea_version: '버전',
     kc_users: '사용자', kc_clients: '클라이언트', kc_roles: '역할', kc_idps: 'ID 소스',
+    kc_sync_all: '전체 동기화', kc_sync_changed: '변경 동기화', kc_sync_hint: 'AD에서 계정 속성(예: 이메일)을 변경한 후 「전체 동기화」 또는 「변경 동기화」를 클릭해 Keycloak으로 반영하세요.', kc_sync_done: '동기화 완료', kc_sync_added: '추가', kc_sync_updated: '업데이트', kc_sync_removed: '제거', kc_sync_failed: '실패', kc_sync_err: '동기화 실패', kc_syncing: '동기화 중', kc_edit_user: '편집', kc_delete_user: '삭제', kc_actions: '작업', kc_del_title: 'Keycloak 계정 삭제', kc_del_confirm: 'Keycloak에서 계정 {u}을(를) 삭제하시겠습니까?', kc_del_ldap_warn: '이 계정은 AD(LDAP 페더레이션)에서 가져온 것입니다. 다음 전체 동기화 또는 다음 SSO 로그인 시 다시 나타납니다. 영구적으로 제거하려면 AD에서 계정을 비활성화하거나 삭제하세요.', kc_del_local_warn: '이 로컬 계정은 Keycloak에서 영구적으로 삭제됩니다.', kc_del_done: '계정 삭제됨', kc_del_err: '삭제 실패', kc_role_desc: '설명', kc_role_members: '멤버', kc_role_name: '역할 이름', kc_role_name_empty: '역할 이름을 입력하세요', kc_role_create_err: '역할 생성 실패', kc_role_del_title: '역할 삭제', kc_role_del_confirm: '역할 {r}을(를) 삭제하시겠습니까? 이 역할을 가진 사용자는 해당 권한을 잃게 됩니다.', kc_role_del_err: '역할 삭제 실패',
     mcp_srv_count: 'MCP 서비스', skill_count: '스킬', litellm_models: '모델', update_version: 'DeepChat 버전',
     docker_services: 'Docker 서비스', docker_desc: '아래 서비스는 모두 Docker 컨테이너에서 실행되며 제품별로 그룹화되어 표시됩니다',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: '업데이트 서버', svc_presidio: 'PII 익명화', svc_monitoring: '모니터링', svc_langfuse: 'LLM 관측', svc_session: '세션 저장소',     svc_other: '기타',
@@ -990,7 +1016,7 @@ const I18N = {
     brand: 'مركز إدارة الذكاء الاصطناعي', dashboard: 'لوحة التحكم', ghost: 'إدارة Ghost', dify: 'منصة Dify AI', gitea: 'إدارة مصدر Gitea',
     group_apps: 'التطبيقات', group_ai: 'بوابة الذكاء الاصطناعي والتكاملات', group_ops: 'العمليات', group_admin: 'إدارة النظام',
     newapi: 'إدارة NewAPI', keycloak: 'مصادقة Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'خادم التحديث',
-    auth: 'المصادقة المركزية', admins: 'إدارة المشرفين', settings: 'إعدادات النظام', logout: 'تسجيل الخروج',
+    auth: 'المصادقة المركزية', admins: 'إدارة المشرفين', settings: 'إعدادات النظام', logout: 'تسجيل الخروج', not_admin_title: 'لست مشرفًا', not_admin_desc: 'لا يملك هذا الحساب صلاحيات مشرف ولا يمكنه استخدام هذا النظام.', not_admin_hint: 'للحصول على الوصول، اتصل بالمشرف العام (ai_all_in_one_admin) لمنحك الصلاحية.', not_admin_ok: 'موافق',
     loading_services: 'جارٍ جلب حالة الخدمات...', loading: 'جارٍ التحميل...',
     metrics: 'مؤشرات المنتجات', loading_metrics: 'جارٍ جلب المؤشرات...', docker_error: 'تعذر الاتصال بـ Docker: ', metrics_error: 'تعذر جلب المؤشرات: ',
     channels: 'القنوات', users: 'المستخدمون', keys: 'المفاتيح', not_connected: 'غير متصل', pending: 'قيد التهيئة', ports: 'المنافذ: ',
@@ -1027,17 +1053,20 @@ const I18N = {
     ad_account: '🏢 حساب نطاق AD (LDAP)', bind_account: 'حساب الربط', bind_dn: 'DN الربط', password: 'كلمة المرور',
     ad_note: '⚠️ ملاحظة: CN لحساب AD يحتوي على مسافات ("ai all in one admin") وليس شرطة سفلية. حدّث bindDn بعد تغيير اسم العرض.',
     admins_title: 'إدارة حسابات المشرفين', admins_list: 'قائمة مشرفي المنصة (ai-platform-admin)', no_admins: 'لم يتم العثور على مشرفين', name2: 'الاسم', email: 'البريد الإلكتروني',
-    admins_desc: 'تتم إدارة المشرفين عبر Keycloak، الدور: ai-platform-admin. للإضافة/الإزالة استخدم وحدة تحكم Keycloak أو تعيين مجموعات Entra ID.',
+    admins_desc: 'يدير المشرفون العامون (ai-platform-admin) جميع الوحدات والمشرفين الآخرين؛ ويدير مشرفو الوحدات الوحدات الممنوحة فقط. تأتي الحسابات من IdP الخاص بـ Keycloak — ابحث للإضافة دون كلمة مرور.',
     admins_need_admin: 'يتطلب دور ai-platform-admin لعرض المشرفين', admins_need_admin2: 'قم بتعيين دور ai-platform-admin للمستخدم الحالي.',
+    admins_role: 'الدور', admins_grants: 'الوحدات الممنوحة', admins_global: 'مشرف عام', admins_scoped: 'مشرف بالوحدة', admins_all_products: 'جميع الوحدات', admins_search_ph: 'ابحث بالاسم / البريد / الاسم الكامل', admins_search_hint: 'ابحث فقط في الحسابات الموجودة من IdP الخاص بـ Keycloak (بدون إنشاء جديد، بدون كلمة مرور)', admins_products: 'وحدات المنح', admins_select_products: 'اختر الوحدات المراد منحها (الكل محدد افتراضيًا)', admins_select_all: 'تحديد الكل', admins_clear_all: 'مسح', admins_no_product: 'اختر وحدة واحدة على الأقل', admins_select_user_first: 'ابحث وحدد مستخدمًا أولًا', admins_searching: 'جارٍ البحث…', admins_no_match: 'لا يوجد مستخدم IdP مطابق', admins_edit_grants: 'تعديل الصلاحيات', admins_delete: 'حذف الحساب', admins_cf_delete: 'حذف هذا المشرف؟ ستُزال جميع صلاحيات وحداته (يبقى حساب Keycloak نفسه كما هو)', admins_save: 'حفظ', admins_cancel: 'إلغاء', admins_session_expired: 'انتهت الجلسة أو أصبحت غير صالحة', admins_session_hint: 'سجّل الخروج ثم سجّل الدخول مرة أخرى (أو امسح ذاكرة التخزين المؤقت للمتصفح)، ثم أعد فتح هذه الصفحة.', admins_load_failed: 'فشل التحميل', admins_selected: 'المستخدم المحدد', admins_provision_title: 'نتائج التوفير', admins_temp_pwd: 'كلمة مرور مؤقتة', admins_pwd_icon_desc: 'الوحدات التي تحمل أيقونة 🔑 تم إنشاء حساب محلي لها عبر API؛ انقر لعرض كلمة المرور المؤقتة.', admins_pwd_show_hint: 'أرسل كلمة المرور هذه إلى المشرف المعني.', admins_pwd_not_found: 'لم يتم العثور على كلمة مرور مؤقتة لهذه الوحدة',
+    admins_close: 'إغلاق', admins_ok: 'موافق', admins_delete_confirm_desc: 'يؤدي هذا إلى إزالة المستخدم من جميع صلاحيات الوحدات (يبقى حساب Keycloak نفسه كما هو).', admins_delete_confirm_btn: 'حذف', admins_delete_final_title: 'تأكيد الحذف', admins_delete_final_desc: 'لا يمكن التراجع عن هذا الإجراء. هل تريد إزالة جميع صلاحيات الوحدات من هذا المشرف؟', admins_delete_final_btn: 'نعم، احذف',
     settings_title: 'إعدادات النظام', language: 'لغة الواجهة', language_desc: 'اختر لغة واجهة مركز الإدارة. تسري فورًا.',
     env_config: 'متغيرات البيئة', env_desc: 'تمرر جميع الإعدادات عبر .env أو docker-compose.yml. أعد تشغيل الحاوية بعد التعديل.',
     product_urls: 'روابط المنتجات', prod_note: 'في الإنتاج، استبدل هذه الروابط بنطاقك الفعلي (راجع docker-deploy-guide.html).',
     open_admin: 'فتح الإدارة ↗', open_hint: 'انقر لفتح وحدة تحكم إدارة المنتج للإعداد التفصيلي', overview_fail: 'تعذر التحميل: ',
-    open_ghost: 'فتح إدارة Ghost', open_dify: 'فتح Dify', open_gitea: 'فتح Gitea', open_keycloak: 'فتح إدارة Keycloak',
+    open_ghost: 'فتح إدارة Ghost', open_dify: 'فتح Dify', open_gitea: 'فتح Gitea', open_keycloak: 'فتح إدارة Keycloak', open_sso_hint: 'ملاحظة: قد يُفتح بحساب مختلف',
     ghost_posts: 'المقالات', ghost_pages: 'الصفحات', ghost_members: 'الأعضاء', ghost_tags: 'الوسوم',
     dify_apps: 'التطبيقات', dify_workspaces: 'مساحات العمل', dify_version: 'الإصدار',
     gitea_repos: 'المستودعات', gitea_users: 'المستخدمون', gitea_orgs: 'المنظمات', gitea_issues: 'المشكلات', gitea_version: 'الإصدار',
     kc_users: 'المستخدمون', kc_clients: 'العملاء', kc_roles: 'الأدوار', kc_idps: 'مصادر الهوية',
+    kc_sync_all: 'مزامنة الكل', kc_sync_changed: 'مزامنة التغييرات', kc_sync_hint: 'بعد تغيير خصائص الحساب في AD (مثل البريد الإلكتروني)، انقر على «مزامنة الكل» أو «مزامنة التغييرات» لجلب التغييرات إلى Keycloak.', kc_sync_done: 'اكتملت المزامنة', kc_sync_added: 'أُضيف', kc_sync_updated: 'حُدِّث', kc_sync_removed: 'أُزيل', kc_sync_failed: 'فشل', kc_sync_err: 'فشلت المزامنة', kc_syncing: 'جارٍ المزامنة', kc_edit_user: 'تعديل', kc_delete_user: 'حذف', kc_actions: 'إجراءات', kc_del_title: 'حذف حساب Keycloak', kc_del_confirm: 'هل تريد حذف الحساب {u} من Keycloak؟', kc_del_ldap_warn: 'هذا الحساب مصدره AD (ربط LDAP). سيظهر مجددًا بعد المزامنة الكاملة التالية أو تسجيل الدخول التالي عبر SSO؛ ولإزالته نهائيًا، عطّل الحساب أو احذفه في AD.', kc_del_local_warn: 'سيتم حذف هذا الحساب المحلي نهائيًا من Keycloak.', kc_del_done: 'تم حذف الحساب', kc_del_err: 'فشل الحذف', kc_role_desc: 'الوصف', kc_role_members: 'الأعضاء', kc_role_name: 'اسم الدور', kc_role_name_empty: 'يرجى إدخال اسم الدور', kc_role_create_err: 'فشل إنشاء الدور', kc_role_del_title: 'حذف الدور', kc_role_del_confirm: 'هل تريد حذف الدور {r}؟ سيفقد المستخدمون الذين لديهم هذا الدور الصلاحيات المرتبطة به.', kc_role_del_err: 'فشل حذف الدور',
     mcp_srv_count: 'خوادم MCP', skill_count: 'المهارات', litellm_models: 'النماذج', update_version: 'إصدار DeepChat',
     docker_services: 'خدمات Docker', docker_desc: 'جميع الخدمات أدناه تعمل في حاويات Docker، مجمّعة حسب المنتج',
     svc_dify: 'Dify', svc_keycloak: 'Keycloak', svc_newapi: 'NewAPI', svc_litellm: 'LiteLLM', svc_ghost: 'Ghost', svc_gitea: 'Gitea', svc_mcp: 'MCP Gateway', svc_update: 'خادم التحديث', svc_presidio: 'إخفاء PII', svc_monitoring: 'المراقبة', svc_langfuse: 'مراقبة LLM', svc_session: 'مخزن الجلسة', svc_other: 'أخرى',
@@ -1558,7 +1587,7 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
   const byUserTable = pagedTable('newapi_cost_user', costData.by_user || [], `<tr><th>${t('username')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, r => `<tr><td><span class="admin-badge">${r.username}</span></td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:var(--accent)">$${r.cost_usd}</td></tr>`);
   const byModelTable = pagedTable('newapi_cost_model', costData.by_model || [], `<tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, r => `<tr><td>${r.model || '—'}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:var(--accent)">$${r.cost_usd}</td></tr>`);
   const byDayTable = pagedTable('newapi_cost_day', costData.by_day || [], `<tr><th>${t('date')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, r => `<tr><td>${r.date}</td><td>${r.calls}</td><td>${r.tokens}</td><td style="color:var(--accent)">$${r.cost_usd}</td></tr>`);
-  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔀 ${t('newapi_title')}</h1>${openAdminBtn(P('newapi'), t('open_newapi'))}</div>`
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔀 ${t('newapi_title')}</h1>${openAdminBtn(P('newapi'), t('open_newapi'), t('open_sso_hint'))}</div>`
     + aboutCard(t('newapi_about'))
     + metricsCard([
         { value: overview.channels, label: t('channels') },
@@ -1741,7 +1770,7 @@ function renderAuthOverview(data) {
       <h3>${t('litellm_exception')}</h3>
       <p style="color:var(--textdim)">${t('litellm_exception_desc')}</p>
       <div style="display:flex;gap:12px;margin:16px 0;flex-wrap:wrap">
-        <a href="${l.url}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a>
+        <a href="${l.url}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${t('open_litellm')}</a><span class="open-hint">${t('open_sso_hint')}</span>
         <button onclick="copyMasterKey()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:10px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('copy_master_key')}</button>
       </div>
     </div>
@@ -1773,45 +1802,179 @@ function copyText(text, label) {
 }
 
 // ═══ Admin Management ═══
+let ADMIN_CATALOG = null;          // { categories, products, globalRole }
+let _adminsCache = [];            // 当前管理员列表缓存（用于按钮按 id 回查）
+let _selAdmin = null;             // { id, username } 当前搜索选中的用户
+let _editAdminId = null;          // 编辑权限弹窗中的用户 id
+let _editCurrent = [];            // 编辑权限弹窗中的当前授权产品
+
+function adminBtn(onclick, label, cls) {
+  return `<button onclick="${onclick}" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8em;white-space:nowrap;${cls||''}">${label}</button>`;
+}
+
+// 通用对话框：返回 overlay 元素，支持点击遮罩 / ESC 关闭
+function adminModal(innerHtml, opts) {
+  opts = opts || {};
+  const overlay = document.createElement('div');
+  overlay.id = opts.id || ('adminModal_' + Date.now());
+  // 弹新框前先移除同 id 的旧弹窗，防止同 id 弹窗叠加（导致要点多次确定才能关）
+  const prev = document.getElementById(overlay.id);
+  if (prev) prev.remove();
+  overlay.className = 'admin-modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px';
+  overlay.innerHTML = `<div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;max-width:${opts.width || '560px'};width:100%;max-height:88vh;overflow:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px">
+      <div style="font-weight:700;color:var(--textstrong);font-size:1.08em;line-height:1.4">${opts.title || ''}</div>
+      <button onclick="document.getElementById('${overlay.id}').remove()" style="background:transparent;border:none;color:var(--textdim);font-size:1.3em;cursor:pointer;line-height:1;padding:0 2px" title="${t('admins_close')}">×</button>
+    </div>
+    ${innerHtml}
+  </div>`;
+  if (opts.dismissable !== false) {
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  }
+  document.body.appendChild(overlay);
+  return overlay;
+}
+function adminCloseModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function adminProdLabel(key) {
+  const p = (ADMIN_CATALOG && ADMIN_CATALOG.products || []).find(x => x.key === key);
+  return p ? t(p.labelKey) : key;
+}
+
+// 展示产品侧开通/撤销结果（含无 SSO 产品的临时密码）。带「确定」按钮，只能点确定关闭。
+function adminShowProvisionResults(list) {
+  if (!Array.isArray(list) || !list.length) return;
+  const rows = list.map(p => {
+    const label = adminProdLabel(p.key);
+    if (p.skipped) return `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:0.86em;color:var(--text)">✅ <b>${label}</b> — ${p.detail || ''}</div>`;
+    if (p.ok) return `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:0.86em;color:var(--text)">✅ <b>${label}</b> — ${p.detail || ''}${p.tempPassword ? ` <span style="color:var(--accent);font-weight:700">[${t('admins_temp_pwd')}: ${p.tempPassword}]</span>` : ''}</div>`;
+    return `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:0.86em;color:var(--red)">⚠️ <b>${label}</b> — ${p.error || ''}</div>`;
+  }).join('');
+  adminModal(`<div>${rows}</div>
+    <div style="margin-top:18px;display:flex;justify-content:flex-end">
+      <button onclick="adminCloseModal('adminsProvisionOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 22px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9em">${t('admins_ok')}</button>
+    </div>`, { id: 'adminsProvisionOverlay', width: '560px', title: '📋 ' + t('admins_provision_title'), dismissable: false });
+}
+
+// 查看某管理员某模块的本地账号临时密码（🔑 图标点击）
+async function adminShowCred(adminId, productKey) {
+  try {
+    const r = await fetch(API + `/admins/${adminId}/credentials`);
+    if (r.status === 401 || r.status === 403) { alert(t('admins_session_expired')); return; }
+    const d = await r.json();
+    const pwd = d && d[productKey];
+    if (!pwd) { alert(t('admins_pwd_not_found')); return; }
+    adminModal(`
+      <div style="margin-bottom:10px"><b>${adminProdLabel(productKey)}</b> · ${t('admins_temp_pwd')}</div>
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:1.05em;color:var(--textstrong);margin-bottom:10px;user-select:all">${pwd}</div>
+      <p style="color:var(--textdim);font-size:0.82em;margin:0">${t('admins_pwd_show_hint')}</p>`, { id: 'adminsCredOverlay', width: '420px', title: '🔑 ' + t('admins_temp_pwd') });
+  } catch (e) { alert(e.message); }
+}
+
+// 产品勾选器（按 3 分类，选中集 selectedSet，id 前缀 idPrefix）
+function renderAdminPicker(selectedSet, idPrefix, showToolbar) {
+  const cats = ADMIN_CATALOG.categories || [];
+  const prods = ADMIN_CATALOG.products || [];
+  const toolbar = showToolbar
+    ? `<div style="margin-bottom:10px;display:flex;gap:8px">
+        <button onclick="adminPickerSetAll('${idPrefix}', true)" style="background:var(--panel2);color:var(--accent);border:1px solid var(--border);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:0.8em">${t('admins_select_all')}</button>
+        <button onclick="adminPickerSetAll('${idPrefix}', false)" style="background:var(--panel2);color:var(--textdim);border:1px solid var(--border);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:0.8em">${t('admins_clear_all')}</button>
+      </div>` : '';
+  const body = cats.map(cat => {
+    const items = prods.filter(p => p.category === cat.key);
+    if (!items.length) return '';
+    return `<div style="margin-bottom:12px">
+      <div style="font-weight:700;color:var(--textstrong);margin-bottom:6px;font-size:0.9em">${t(cat.labelKey)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${items.map(p => {
+          const checked = selectedSet.has(p.key) ? 'checked' : '';
+          return `<label style="display:inline-flex;align-items:center;gap:6px;font-size:0.85em;color:var(--text);cursor:pointer;background:var(--panel2);padding:5px 12px;border-radius:8px;border:1px solid var(--border)">
+            <input type="checkbox" id="${idPrefix}_${p.key}" value="${p.key}" ${checked}> ${t(p.labelKey)}
+          </label>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  return toolbar + body;
+}
+
+function adminPickerChecked(idPrefix) {
+  const keys = [];
+  document.querySelectorAll('input[id^="' + idPrefix + '_"]:checked').forEach(cb => keys.push(cb.value));
+  return keys;
+}
+function adminPickerSetAll(idPrefix, on) {
+  document.querySelectorAll('input[id^="' + idPrefix + '_"]').forEach(cb => { cb.checked = on; });
+}
+
 async function loadAdmins(el) {
   setActive(el);
   document.querySelector('.topbar h1').textContent = '👥 ' + t('admins_title');
   try {
-    const resp = await fetch(API + '/admins');
-    const admins = await resp.json();
-    if (!Array.isArray(admins)) throw new Error(admins.error || 'error');
-    const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/realms/enterprise-ai/users';
-    const btn = (onclick, label, color) => `<button onclick="${onclick}" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;white-space:nowrap">${label}</button>`;
-    const adminsTable = pagedTable('admins', admins, `<tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('status')}</th><th>${t('admins_actions')}</th></tr>`, a => `<tr>
-      <td><span class="admin-badge">${a.username}</span></td>
-      <td>${a.firstName || ''} ${a.lastName || ''}</td>
-      <td>${a.email || '—'}</td>
-      <td style="color:${a.enabled ? 'var(--green)' : 'var(--red)'}">${a.enabled ? t('enabled') : t('disabled')}</td>
-      <td style="white-space:nowrap">
-        <div style="display:flex;gap:6px;align-items:center">
-          ${btn(`adminToggle('${a.id}')`, a.enabled ? t('admins_disable') : t('admins_enable'))}
-          ${btn(`adminResetPwd('${a.id}')`, t('admins_reset_pwd'))}
-          ${btn(`adminDemote('${a.id}')`, t('admins_demote'))}
-          <a href="${kcBase}/${a.id}" target="_blank" style="color:var(--accent);font-size:0.78em;text-decoration:none;white-space:nowrap">${t('admins_open_kc')} ↗</a>
-        </div>
-      </td>
-    </tr>`);
+    const [catResp, adminsResp] = await Promise.all([fetch(API + '/admin-products'), fetch(API + '/admins')]);
+    if (catResp.status === 401 || catResp.status === 403) throw { session: true, msg: t('admins_session_expired') };
+    if (adminsResp.status === 401 || adminsResp.status === 403) throw { session: true, msg: t('admins_session_expired') };
+    const cat = await catResp.json();
+    const admins = await adminsResp.json();
+    if (!cat.products || !Array.isArray(admins)) throw new Error('error');
+    ADMIN_CATALOG = cat;
+    _adminsCache = admins;
+    _selAdmin = null;
+    const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/enterprise-ai/users';
+
+    const allKeys = cat.products.map(p => p.key);
+    const roleBadge = a => a.global
+      ? `<span style="background:rgba(201,162,39,0.18);color:#c9a227;padding:1px 8px;border-radius:999px;font-size:0.75em;font-weight:700">${t('admins_global')}</span>`
+      : `<span style="background:rgba(88,166,255,0.16);color:var(--accent);padding:1px 8px;border-radius:999px;font-size:0.75em;font-weight:700">${t('admins_scoped')}</span>`;
+    const prodChips = (a) => {
+      const keys = a.products || [];
+      const creds = a.credProducts || [];
+      if (!keys.length) return `<span style="color:var(--textdim);font-size:0.78em">—</span>`;
+      return keys.map(k => {
+        const icon = creds.includes(k)
+          ? `<span onclick="adminShowCred('${a.id}','${k}')" title="${t('admins_temp_pwd')}" style="cursor:pointer;margin-left:3px;color:var(--accent);font-weight:700">🔑</span>`
+          : '';
+        return `<span style="background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:1px 7px;border-radius:6px;font-size:0.72em;white-space:nowrap">${adminProdLabel(k)}${icon}</span>`;
+      }).join(' ');
+    };
+
+    const adminsTable = pagedTable('admins', admins, `<tr><th>${t('username')}</th><th>${t('name2')}</th><th>${t('email')}</th><th>${t('admins_role')}</th><th>${t('admins_grants')}</th><th>${t('admins_actions')}</th></tr>`, a => {
+      const actions = a.global
+        ? `<a href="${kcBase}/${a.id}" target="_blank" style="color:var(--accent);font-size:0.78em;text-decoration:none;white-space:nowrap">${t('admins_open_kc')} ↗</a>`
+        : `<div style="display:flex;gap:6px;align-items:center">
+            ${adminBtn(`adminEditGrants('${a.id}')`, t('admins_edit_grants'))}
+            ${adminBtn(`adminDelete('${a.id}')`, t('admins_delete'), 'color:var(--red);border-color:rgba(255,80,80,0.4)')}
+            <a href="${kcBase}/${a.id}" target="_blank" style="color:var(--accent);font-size:0.78em;text-decoration:none;white-space:nowrap">${t('admins_open_kc')} ↗</a>
+          </div>`;
+      return `<tr>
+        <td><span class="admin-badge">${a.username}</span></td>
+        <td>${a.firstName || ''} ${a.lastName || ''}</td>
+        <td>${a.email || '—'}</td>
+        <td>${roleBadge(a)}</td>
+        <td>${a.global ? `<span style="color:var(--textdim);font-size:0.78em">${t('admins_all_products')}</span>` : prodChips(a)}</td>
+        <td style="white-space:nowrap">${actions}</td>
+      </tr>`;
+    });
+
     document.getElementById('main').innerHTML = `
       <div class="topbar"><h1>👥 ${t('admins_title')}</h1></div>
       <div class="card"><h3>➕ ${t('admins_add')}</h3>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input id="adminsAddUser" placeholder="${t('admins_add_ph')}" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:0.9em;min-width:200px" onkeydown="if(event.key==='Enter')adminAdd()">
-          <button onclick="adminAdd()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('admins_add_btn')}</button>
-          <span id="adminsAddMsg" style="color:var(--textdim);font-size:0.85em"></span>
-        </div>
-        <p style="margin-top:8px;color:var(--textdim);font-size:0.82em">${t('admins_add_hint')}</p>
+        <p style="color:var(--textdim);font-size:0.85em;margin-bottom:12px">${t('admins_search_hint')}</p>
+        <button onclick="adminAddDialog()" style="background:var(--accentbtn);color:#fff;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-weight:600">➕ ${t('admins_add')}</button>
       </div>
       <div class="card"><h3>${t('admins_list')}（${admins.length}）</h3>
         ${admins.length === 0 ? `<p class="loading">${t('no_admins')}</p>` : adminsTable}
         <p style="margin-top:12px;color:var(--textdim);font-size:0.85em">${t('admins_desc')}</p>
+        <p style="margin-top:6px;color:var(--textdim);font-size:0.8em">🔑 ${t('admins_pwd_icon_desc')}</p>
       </div>`;
   } catch (e) {
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>👥 ${t('admins_title')}</h1></div><div class="card"><p class="error">${t('admins_need_admin')}</p><p style="margin-top:8px;color:var(--textdim)">${t('admins_need_admin2')}</p></div>`;
+    const isSession = e && e.session;
+    const msg = isSession ? t('admins_session_expired') : (t('admins_need_admin') + ' / ' + t('admins_load_failed'));
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>👥 ${t('admins_title')}</h1></div><div class="card"><p class="error">${isSession ? t('admins_session_expired') : t('admins_need_admin')}</p><p style="margin-top:8px;color:var(--textdim)">${isSession ? t('admins_session_hint') : t('admins_need_admin2')}</p></div>`;
   }
 }
 
@@ -1821,47 +1984,156 @@ async function adminPost(path, body) {
   if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
   return d;
 }
-
-async function adminToggle(id) {
-  try {
-    const list = await (await fetch(API + '/admins')).json();
-    const u = (list || []).find(x => x.id === id);
-    const enabled = u && u.enabled;
-    if (!confirm(enabled ? t('admins_cf_disable') : t('admins_cf_enable'))) return;
-    await adminPost(`/admins/${id}/toggle`);
-    loadAdmins();
-  } catch (e) { alert(e.message); }
+async function adminDel(path) {
+  const r = await fetch(API + path, { method: 'DELETE' });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
 }
 
-async function adminDemote(id) {
-  try {
-    if (!confirm(t('admins_cf_demote'))) return;
-    await adminPost(`/admins/${id}/demote`);
-    loadAdmins();
-  } catch (e) { alert(e.message); }
+// ── 搜索添加（typeahead）──
+let _adminSearchTimer = null;
+function adminSearchDebounced(q) {
+  clearTimeout(_adminSearchTimer);
+  _adminSearchTimer = setTimeout(() => adminSearch(q), 250);
 }
-
-async function adminResetPwd(id) {
+async function adminSearch(q) {
+  const box = document.getElementById('adminsSearchResults');
+  if (!box) return;
+  q = (q || '').trim();
+  if (!q) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--textdim);font-size:0.85em">${t('admins_searching')}</div>`;
   try {
-    if (!confirm(t('admins_cf_reset'))) return;
-    const d = await adminPost(`/admins/${id}/reset-password`);
-    alert(`${t('admins_new_pwd')}: ${d.tempPassword}\n\n${t('admins_pwd_hint')}`);
-  } catch (e) { alert(e.message); }
-}
-
-async function adminAdd() {
-  const input = document.getElementById('adminsAddUser');
-  const msg = document.getElementById('adminsAddMsg');
-  const uname = (input && input.value || '').trim();
-  if (!uname) return;
-  try {
-    await adminPost('/admins', { username: uname });
-    if (input) input.value = '';
-    if (msg) { msg.textContent = `${t('admins_add_ok')}: ${uname}`; msg.style.color = 'var(--green)'; }
-    loadAdmins();
+    const r = await fetch(API + '/admins/search?q=' + encodeURIComponent(q));
+    const users = await r.json();
+    if (!Array.isArray(users)) throw new Error('error');
+    if (!users.length) {
+      box.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--textdim);font-size:0.85em">${t('admins_no_match')}</div>`;
+      return;
+    }
+    box.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      ${users.map(u => `<div onclick="adminSelectUser('${u.id}', '${(u.username||'').replace(/'/g,"\\'")}')" style="padding:9px 12px;cursor:pointer;font-size:0.88em;border-bottom:1px solid var(--border)">
+        <span style="color:var(--textstrong);font-weight:600">${u.username}</span>
+        <span style="color:var(--textdim);margin-left:8px">${u.email || ''}</span>
+        ${u.firstName || u.lastName ? `<span style="color:var(--textdim);margin-left:8px">${u.firstName || ''} ${u.lastName || ''}</span>` : ''}
+      </div>`).join('')}
+    </div>`;
   } catch (e) {
-    if (msg) { msg.textContent = `${t('admins_add_err')}: ${e.message}`; msg.style.color = 'var(--red)'; }
+    box.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--red);font-size:0.85em">${e.message}</div>`;
   }
+}
+function adminSelectUser(id, username) {
+  _selAdmin = { id, username };
+  const sel = document.getElementById('adminsSelected');
+  if (sel) sel.innerHTML = `${t('admins_selected')}：<span style="font-weight:700;color:var(--accent)">${username}</span>`;
+  const box = document.getElementById('adminsSearchResults');
+  if (box) box.style.display = 'none';
+  const inp = document.getElementById('adminsSearchInput');
+  if (inp) inp.value = username;
+}
+
+// ── 添加管理员（对话框）──
+function adminAddDialog() {
+  _selAdmin = null;
+  const allKeys = (ADMIN_CATALOG && ADMIN_CATALOG.products || []).map(p => p.key);
+  adminModal(`
+      <p style="color:var(--textdim);font-size:0.85em;margin-bottom:12px">${t('admins_search_hint')}</p>
+      <div style="position:relative">
+        <input id="adminsSearchInput" placeholder="${t('admins_search_ph')}" autocomplete="off"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:0.9em"
+          oninput="adminSearchDebounced(this.value)">
+        <div id="adminsSearchResults" style="position:absolute;top:100%;left:0;right:0;z-index:50;display:none"></div>
+      </div>
+      <div id="adminsSelected" style="margin-top:10px;color:var(--textstrong);font-size:0.9em"></div>
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-weight:700;color:var(--textstrong);margin-bottom:8px">${t('admins_products')}</div>
+        <p style="color:var(--textdim);font-size:0.82em;margin-bottom:10px">${t('admins_select_products')}</p>
+        ${renderAdminPicker(new Set(allKeys), 'adminsAdd', true)}
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;align-items:center">
+        <span id="adminsAddMsg" style="color:var(--textdim);font-size:0.85em;margin-right:auto"></span>
+        <button onclick="adminCloseModal('adminsAddOverlay')" style="background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.88em">${t('admins_cancel')}</button>
+        <button onclick="adminAddSubmit()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88em">${t('admins_add_btn')}</button>
+      </div>
+    `, { id: 'adminsAddOverlay', width: '620px', title: '➕ ' + t('admins_add') });
+}
+async function adminAddSubmit() {
+  const msg = document.getElementById('adminsAddMsg');
+  const ok = (txt, c) => { if (msg) { msg.textContent = txt; msg.style.color = c; } };
+  if (!_selAdmin) { ok(t('admins_select_user_first'), 'var(--red)'); return; }
+  const products = adminPickerChecked('adminsAdd');
+  if (!products.length) { ok(t('admins_no_product'), 'var(--red)'); return; }
+  try {
+    const d = await adminPost('/admins', { userId: _selAdmin.id, products });
+    adminCloseModal('adminsAddOverlay');
+    loadAdmins();
+    adminShowProvisionResults(d.provisioning);
+  } catch (e) { ok(`${t('admins_add_err')}: ${e.message}`, 'var(--red)'); }
+}
+
+// ── 编辑权限（对话框）──
+function adminEditGrants(id) {
+  const a = (_adminsCache || []).find(x => x.id === id) || {};
+  _editAdminId = id;
+  _editCurrent = a.products || [];
+  const username = a.username || id;
+  adminModal(`
+      <p style="color:var(--textdim);font-size:0.85em;margin-bottom:14px">${t('admins_select_products')}</p>
+      ${renderAdminPicker(new Set(_editCurrent), 'adminsEdit', true)}
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">
+        <button onclick="adminCloseModal('adminsEditOverlay')" style="background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.88em">${t('admins_cancel')}</button>
+        <button onclick="adminSaveGrants()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88em">${t('admins_save')}</button>
+      </div>
+    `, { id: 'adminsEditOverlay', width: '560px', title: t('admins_edit_grants') + ' — ' + username });
+}
+async function adminSaveGrants() {
+  try {
+    const target = adminPickerChecked('adminsEdit');
+    const add = target.filter(k => !_editCurrent.includes(k));
+    const remove = _editCurrent.filter(k => !target.includes(k));
+    const results = [];
+    for (const k of add) { const d = await adminPost(`/admins/${_editAdminId}/products`, { product: k }); if (d.provisioning) results.push(d.provisioning); }
+    for (const k of remove) { const d = await adminDel(`/admins/${_editAdminId}/products/${k}`); if (d.deprovisioning) results.push(d.deprovisioning); }
+    adminCloseModal('adminsEditOverlay');
+    loadAdmins();
+    adminShowProvisionResults(results);
+  } catch (e) { alert(e.message); }
+}
+
+// ── 删除账号（二次确认对话框）──
+function adminDelete(id) {
+  const a = (_adminsCache || []).find(x => x.id === id) || {};
+  const username = a.username || id;
+  adminModal(`
+      <p style="color:var(--textdim);font-size:0.9em;margin-bottom:8px">${t('admins_delete_confirm_desc')}</p>
+      <p style="color:var(--textstrong);font-weight:700;margin-bottom:16px">${username}</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button onclick="adminCloseModal('adminsDelOverlay')" style="background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.88em">${t('admins_cancel')}</button>
+        <button onclick="adminDeleteFinal('${id}')" style="background:var(--red);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88em">${t('admins_delete_confirm_btn')}</button>
+      </div>
+    `, { id: 'adminsDelOverlay', width: '460px', title: '⚠️ ' + t('admins_delete'), dismissable: false });
+}
+function adminDeleteFinal(id) {
+  adminCloseModal('adminsDelOverlay'); // 先关掉第一次确认框，避免两个框叠加
+  const a = (_adminsCache || []).find(x => x.id === id) || {};
+  const username = a.username || id;
+  adminModal(`
+      <p style="color:var(--red);font-size:0.92em;margin-bottom:8px">${t('admins_delete_final_desc')}</p>
+      <p style="color:var(--textstrong);font-weight:700;margin-bottom:16px">${username}</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button onclick="adminCloseModal('adminsDelFinalOverlay')" style="background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.88em">${t('admins_cancel')}</button>
+        <button onclick="adminDeleteConfirm('${id}')" style="background:var(--red);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.88em">${t('admins_delete_final_btn')}</button>
+      </div>
+    `, { id: 'adminsDelFinalOverlay', width: '460px', title: '🚨 ' + t('admins_delete_final_title'), dismissable: false });
+}
+async function adminDeleteConfirm(id) {
+  try {
+    const d = await adminDel(`/admins/${id}`);
+    adminCloseModal('adminsDelFinalOverlay');
+    loadAdmins();
+    adminShowProvisionResults(d.deprovisioning);
+  } catch (e) { alert(e.message); }
 }
 
 // ═══ Settings ═══
@@ -1953,9 +2225,12 @@ async function renderProductUrls() {
 }
 
 // ═══ 产品概览（Ghost / Dify / Gitea / Keycloak）═══
-function openAdminBtn(url, label) {
+function openAdminBtn(url, label, hint) {
   const txt = label || t('open_admin');
-  return `<a href="${url}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">${txt} ↗</a>`;
+  const h = hint ? `<span class="open-hint">${hint}</span>` : '';
+  return `<span class="open-btn-wrap">` +
+    `<a href="${url}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:6px 14px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.82em;white-space:nowrap">${txt} ↗</a>` +
+    h + `</span>`;
 }
 
 function renderProductOverview(icon, title, url, stats, openLabel) {
@@ -2003,7 +2278,7 @@ async function loadMonitoring(el) {
       { value: d.grafana === 'up' ? t('running') : t('stopped'), label: 'Grafana' },
       { value: d.cadvisor === 'up' ? t('running') : t('stopped'), label: 'cadvisor' },
     ];
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📈 ${title}</h1>${openAdminBtn(url, t('open_monitoring'))}</div>`
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📈 ${title}</h1>${openAdminBtn(url, t('open_monitoring'), t('open_sso_hint'))}</div>`
       + aboutCard(t('monitoring_about'))
       + metricsCard(stats)
       + entriesCard([
@@ -2039,7 +2314,7 @@ async function loadObservability(el) {
     ];
     const traceTable = pagedTable('obs_traces', d.recent_traces || [], `<tr><th>${t('name')}</th><th>${t('time')}</th><th>${t('username')}</th></tr>`, r => `<tr><td style="color:var(--textstrong)">${r.name || '—'}</td><td style="color:var(--textdim)">${r.ts ? new Date(r.ts.replace(' ', 'T') + 'Z').toLocaleString() : '—'}</td><td style="color:var(--textdim)">${r.userId || '—'}</td></tr>`);
     const modelTable = pagedTable('obs_models', d.model_stats || [], `<tr><th>${t('model')}</th><th>${t('calls')}</th><th>${t('tokens')}</th><th>${t('cost')}</th></tr>`, m => `<tr><td style="color:var(--textstrong)"><code>${m.model}</code></td><td>${m.calls}</td><td>${m.tokens.toLocaleString()}</td><td>$${m.cost.toFixed(4)}</td></tr>`);
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${title}</h1>${openAdminBtn(url, t('open_observability'))}</div>`
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔍 ${title}</h1>${openAdminBtn(url, t('open_observability'), t('open_sso_hint'))}</div>`
       + aboutCard(t('obs_about'))
       + metricsCard(stats)
       + entriesCard([
@@ -2509,7 +2784,7 @@ async function loadGhost(el) {
     const ghostBase = P('ghost');
     const postTable = pagedTable('ghost_posts', d.recent_posts || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td>${p.id ? `<a class="namelink" href="${ghostBase}/ghost/#/editor/post/${p.id}" target="_blank">${p.title || '—'}</a>` : (p.title || '—')}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
     const pageTable = pagedTable('ghost_pages', d.recent_pages || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td>${p.id ? `<a class="namelink" href="${ghostBase}/ghost/#/editor/page/${p.id}" target="_blank">${p.title || '—'}</a>` : (p.title || '—')}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1><button onclick="ghostAutoLogin(this)" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;white-space:nowrap">${t('open_ghost')} ↗</button></div>`
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1><span class="open-btn-wrap"><button onclick="ghostAutoLogin(this)" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;white-space:nowrap">${t('open_ghost')} ↗</button><span class="open-hint">${t('open_sso_hint')}</span></span></div>`
       + aboutCard(t('ghost_about'))
       + metricsCard(stats)
       + entriesCard([
@@ -2560,7 +2835,7 @@ async function loadDify(el) {
       ? `<p class="loading">暂无知识库（<a href="${url}/datasets/create" target="_blank" style="color:var(--accent)">去 Dify 创建</a>）</p>`
       : `<table><tr><th>${t('name')}</th><th>文档数</th><th>索引方式</th></tr>${kbList.map(k => `<tr><td>${k.id ? `<a class="namelink" href="${url}/datasets/${k.id}/documents" target="_blank">${k.name || '—'}</a>` : (k.name || '—')}</td><td>${k.docs ?? 0}</td><td style="color:var(--textdim)">${k.indexing === 'high_quality' ? '高质量' : (k.indexing || '—')}</td></tr>`).join('')}</table>`;
     const ragStatus = d.rag_ready ? '<span style="color:var(--green)">● 已就绪</span>' : '<span style="color:var(--yellow)">● 未配置</span>';
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1>${openAdminBtn(url, t('open_dify'))}</div>`
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1>${openAdminBtn(url, t('open_dify'), t('open_sso_hint'))}</div>`
       + aboutCard(t('dify_about'))
       + metricsCard(stats)
       + entriesCard([
@@ -2716,7 +2991,8 @@ function updateSyncTriggerBtn(running) {
 
 async function loadGitea(el) {
   setActive(el);
-  const url = P('gitea') + '/user/oauth2/keycloak';
+  const url = P('gitea') + '/user/login';
+  const openUrl = '/api/gitea/open'; // 强制清旧会话 + 走 SSO，保证打开的是当前账号
   const title = t('gitea');
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
@@ -2738,7 +3014,7 @@ async function loadGitea(el) {
     });
     // deepchat-sync 上次执行
     const syncHtml = giteaSyncCard(d.sync_last_run, d.sync_progress);
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1>${openAdminBtn(url, t('open_gitea'))}</div>`
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1>${openAdminBtn(openUrl, t('open_gitea'), t('open_sso_hint'))}</div>`
       + aboutCard(t('gitea_about'))
       + metricsCard([
         { value: d.repos ?? '—', label: t('gitea_repos') },
@@ -2797,7 +3073,7 @@ async function loadGitea(el) {
       _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
     }
   } catch (e) {
-    document.getElementById('main').innerHTML = productError('📦', title, url, e.message, t('open_gitea'));
+    document.getElementById('main').innerHTML = productError('📦', title, openUrl, e.message, t('open_gitea'));
   }
 }
 
@@ -3003,8 +3279,19 @@ async function kcLoad(kind) {
     let body;
     if (kind === 'users') {
       const kcBase = window._kcBase || '';
-      const rows = (d.items || []).map(u => `<tr><td>${u.id && kcBase ? `<a class="namelink" href="${kcBase}/users/${u.id}/settings" target="_blank">${u.username || '—'}</a>` : (u.username || '—')}</td><td style="color:var(--textdim)">${u.email || '—'}</td><td style="color:${u.enabled ? 'var(--green)' : 'var(--red)'}">${u.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
-      body = (d.items && d.items.length) ? `<table><tr><th>${t('username')}</th><th>${t('email')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
+      const isGA = !!(window.ME && window.ME.globalAdmin);
+      window._kcUsersCache = window._kcUsersCache || {};
+      (d.items || []).forEach(u => { window._kcUsersCache[u.id] = u; });
+      const opCol = isGA ? `<th>${t('kc_actions')}</th>` : '';
+      const rows = (d.items || []).map(u => {
+        const nameCell = u.id && kcBase ? `<a class="namelink" href="${kcBase}/users/${u.id}/settings" target="_blank">${u.username || '—'}</a>` : (u.username || '—');
+        let ops = '';
+        if (isGA) {
+          ops = `<td style="white-space:nowrap"><a href="${kcBase}/users/${u.id}/settings" target="_blank" style="color:var(--accentbtn);text-decoration:none;font-size:0.82em;margin-right:10px">${t('kc_edit_user')}</a><button onclick="kcDeleteUser('${u.id}')" style="background:transparent;color:var(--red);border:none;cursor:pointer;font-size:0.82em;text-decoration:underline">${t('kc_delete_user')}</button></td>`;
+        }
+        return `<tr><td>${nameCell}</td><td style="color:var(--textdim)">${u.email || '—'}</td><td style="color:${u.enabled ? 'var(--green)' : 'var(--red)'}">${u.enabled ? t('enabled') : t('disabled')}</td>${ops}</tr>`;
+      }).join('');
+      body = (d.items && d.items.length) ? `<table><tr><th>${t('username')}</th><th>${t('email')}</th><th>${t('status')}</th>${opCol}</tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
     } else {
       const kcBase = window._kcBase || '';
       const rows = (d.items || []).map(c => `<tr><td>${c.id && kcBase ? `<a class="namelink" href="${kcBase}/clients/${c.id}/settings" target="_blank">${c.clientId || '—'}</a>` : (c.clientId || '—')}</td><td style="color:${c.enabled ? 'var(--green)' : 'var(--red)'}">${c.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
@@ -3040,6 +3327,139 @@ function kcSize(kind) {
   kcLoad(kind);
 }
 
+// Keycloak 认证：触发 LDAP 全量/增量同步（仅全局管理员）
+async function kcSync(action) {
+  const title = action === 'full' ? t('kc_sync_all') : t('kc_sync_changed');
+  adminModal(`<p class="loading">${t('kc_syncing')}…</p>`, { id: 'kcSyncOverlay', width: '440px', title: title, dismissable: false });
+  try {
+    const r = await fetch(API + '/keycloak/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    const failed = d.failed || 0;
+    const lines = [
+      `<div style="padding:6px 0;font-weight:700;color:var(--textstrong)">✅ ${t('kc_sync_done')}</div>`,
+      `<div style="padding:5px 0;color:var(--text)">${t('kc_sync_added')}: <b>${d.added ?? 0}</b></div>`,
+      `<div style="padding:5px 0;color:var(--text)">${t('kc_sync_updated')}: <b>${d.updated ?? 0}</b></div>`,
+      `<div style="padding:5px 0;color:var(--text)">${t('kc_sync_removed')}: <b>${d.removed ?? 0}</b></div>`,
+      `<div style="padding:5px 0;color:${failed > 0 ? 'var(--red)' : 'var(--text)'}">${t('kc_sync_failed')}: <b>${failed}</b></div>`,
+    ].join('');
+    adminModal(`<div>${lines}</div><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('kcSyncOverlay');kcLoad('users')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'kcSyncOverlay', width: '440px', title: title, dismissable: false });
+  } catch (e) {
+    adminModal(`<p class="error">${t('kc_sync_err')}: ${e.message}</p><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('kcSyncOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'kcSyncOverlay', width: '440px', title: title });
+  }
+}
+
+// Keycloak 认证：删除用户（二次确认；AD 用户提示会重新同步回来）
+function kcDeleteUser(id) {
+  const u = (window._kcUsersCache || {})[id] || {};
+  const username = u.username || id;
+  const warn = u.ldap ? t('kc_del_ldap_warn') : t('kc_del_local_warn');
+  adminModal(`<div>
+    <p style="color:var(--text);margin:0 0 8px">${t('kc_del_confirm').replace('{u}', '<b>' + username + '</b>')}</p>
+    <p style="color:${u.ldap ? 'var(--red)' : 'var(--textdim)'};margin:0;font-size:0.88em">${warn}</p>
+  </div>
+  <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px">
+    <button onclick="adminCloseModal('kcDelOverlay')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_cancel')}</button>
+    <button onclick="kcDeleteUserConfirm('${id}')" style="background:var(--red);color:#fff;border:none;padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:600">${t('kc_delete_user')}</button>
+  </div>`, { id: 'kcDelOverlay', width: '460px', title: '⚠️ ' + t('kc_del_title'), dismissable: false });
+}
+
+async function kcDeleteUserConfirm(id) {
+  const u = (window._kcUsersCache || {})[id] || {};
+  try {
+    const r = await fetch(API + '/keycloak/users/' + encodeURIComponent(id), { method: 'DELETE' });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    const note = d.ldap ? t('kc_del_ldap_warn') : '';
+    adminModal(`<div><p style="color:var(--text)">✅ ${t('kc_del_done')}: <b>${d.username || u.username || id}</b></p>${note ? `<p style="color:var(--red);margin-top:8px;font-size:0.86em">${note}</p>` : ''}</div><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('kcDelOverlay');kcLoad('users')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'kcDelOverlay', width: '460px', title: '⚠️ ' + t('kc_del_title'), dismissable: false });
+  } catch (e) {
+    adminModal(`<p class="error">${t('kc_del_err')}: ${e.message}</p><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('kcDelOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'kcDelOverlay', width: '460px', title: '⚠️ ' + t('kc_del_title') });
+  }
+}
+
+// Keycloak 认证：角色管理（列表/新建/删除/成员，仅全局管理员）
+function kcEsc(s) {
+  return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+async function kcLoadRoles() {
+  const el = document.getElementById('kcTable_roles');
+  if (!el) return;
+  el.innerHTML = `<p class="loading">${t('loading')}</p>`;
+  try {
+    const d = await (await fetch(API + '/keycloak/roles')).json();
+    if (d.error) throw new Error(d.error);
+    const isGA = !!(window.ME && window.ME.globalAdmin);
+    const rows = (d.items || []).map(r => `<tr>
+      <td><b>${r.name}</b></td>
+      <td style="color:var(--textdim)">${r.description || '—'}</td>
+      <td>${r.users ?? 0}</td>
+      ${isGA ? `<td style="white-space:nowrap"><a href="javascript:void(0)" onclick="kcRoleMembers('${kcEsc(r.name)}')" style="color:var(--accentbtn);text-decoration:none;font-size:0.82em;margin-right:10px">${t('kc_role_members')}</a><button onclick="kcDeleteRole('${kcEsc(r.name)}')" style="background:transparent;color:var(--red);border:none;cursor:pointer;font-size:0.82em;text-decoration:underline">${t('kc_delete_user')}</button></td>` : ''}
+    </tr>`).join('');
+    el.innerHTML = (d.items && d.items.length) ? `<table><tr><th>${t('kc_roles')}</th><th>${t('kc_role_desc')}</th><th>${t('kc_users')}</th>${isGA ? `<th>${t('kc_actions')}</th>` : ''}</tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
+  } catch (e) {
+    el.innerHTML = `<p class="error">${e.message}</p>`;
+  }
+}
+
+function kcNewRole() {
+  adminModal(`<div>
+    <label style="display:block;margin:0 0 6px;color:var(--text);font-size:0.88em;font-weight:600">${t('kc_role_name')}</label>
+    <input id="kcRoleName" type="text" style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:8px 10px;border-radius:6px" placeholder="${t('kc_role_name')}">
+    <label style="display:block;margin:14px 0 6px;color:var(--text);font-size:0.88em;font-weight:600">${t('kc_role_desc')}</label>
+    <input id="kcRoleDesc" type="text" style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:8px 10px;border-radius:6px" placeholder="${t('kc_role_desc')}">
+  </div>
+  <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px">
+    <button onclick="adminCloseModal('kcRoleOverlay')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_cancel')}</button>
+    <button onclick="kcNewRoleSubmit()" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_save')}</button>
+  </div>`, { id: 'kcRoleOverlay', width: '440px', title: '🎭 ' + t('kc_new_role'), dismissable: false });
+}
+
+async function kcNewRoleSubmit() {
+  const name = (document.getElementById('kcRoleName').value || '').trim();
+  const description = (document.getElementById('kcRoleDesc').value || '').trim();
+  if (!name) { alert(t('kc_role_name_empty')); return; }
+  try {
+    const r = await fetch(API + '/keycloak/roles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, description }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    adminCloseModal('kcRoleOverlay');
+    kcLoadRoles();
+  } catch (e) { alert(t('kc_role_create_err') + ': ' + e.message); }
+}
+
+function kcDeleteRole(name) {
+  adminModal(`<div>
+    <p style="color:var(--text);margin:0">${t('kc_role_del_confirm').replace('{r}', '<b>' + name + '</b>')}</p>
+  </div>
+  <div style="margin-top:18px;display:flex;justify-content:flex-end;gap:10px">
+    <button onclick="adminCloseModal('kcRoleDelOverlay')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_cancel')}</button>
+    <button onclick="kcDeleteRoleConfirm('${kcEsc(name)}')" style="background:var(--red);color:#fff;border:none;padding:7px 18px;border-radius:7px;cursor:pointer;font-weight:600">${t('kc_delete_user')}</button>
+  </div>`, { id: 'kcRoleDelOverlay', width: '440px', title: '⚠️ ' + t('kc_role_del_title'), dismissable: false });
+}
+
+async function kcDeleteRoleConfirm(name) {
+  try {
+    const r = await fetch(API + '/keycloak/roles/' + encodeURIComponent(name), { method: 'DELETE' });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    adminCloseModal('kcRoleDelOverlay');
+    kcLoadRoles();
+  } catch (e) { alert(t('kc_role_del_err') + ': ' + e.message); }
+}
+
+async function kcRoleMembers(name) {
+  adminModal(`<p class="loading">${t('loading')}</p>`, { id: 'kcRoleMembersOverlay', width: '480px', title: '👥 ' + t('kc_role_members') + ': ' + name });
+  try {
+    const d = await (await fetch(API + '/keycloak/roles/' + encodeURIComponent(name) + '/users')).json();
+    if (d.error) throw new Error(d.error);
+    const rows = (d.items || []).map(u => `<tr><td>${u.username || '—'}</td><td style="color:var(--textdim)">${u.email || '—'}</td></tr>`).join('');
+    adminModal(`<div>${(d.items && d.items.length) ? `<table><tr><th>${t('username')}</th><th>${t('email')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`}</div><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('kcRoleMembersOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'kcRoleMembersOverlay', width: '480px', title: '👥 ' + t('kc_role_members') + ': ' + name });
+  } catch (e) {
+    adminModal(`<p class="error">${e.message}</p><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('kcRoleMembersOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'kcRoleMembersOverlay', width: '480px', title: name });
+  }
+}
+
 async function loadKeycloak(el) {
   setActive(el);
   const url = P('keycloak');
@@ -3054,19 +3474,21 @@ async function loadKeycloak(el) {
       { value: d.roles ?? '—', label: t('kc_roles') },
       { value: (d.idps || []).length, label: t('kc_idps') },
     ];
-    const roleBadges = (d.role_list || []).map(r => `<span class="admin-badge">${r}</span>`).join(' ');
     const newBtn = (href, label) => `<a href="${href}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${label} ↗</a>`;
+    const isGA = !!(window.ME && window.ME.globalAdmin);
+    const syncBtn = (action, label) => `<button onclick="kcSync('${action}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em;font-weight:600;white-space:nowrap">${label}</button>`;
     const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/enterprise-ai';
     window._kcBase = kcBase;
     window._kcPaging = {
       users: { page: 0, pageSize: 10, search: '', total: 0 },
       clients: { page: 0, pageSize: 10, search: '', total: 0 },
     };
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${title}</h1>${openAdminBtn(url, t('open_keycloak'))}</div>`
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔐 ${title}</h1>${openAdminBtn(url, t('open_keycloak'), t('open_sso_hint'))}</div>`
       + aboutCard(t('kc_about'))
       + metricsCard(stats)
       + keyInfoCard(`
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px"><span style="color:var(--textdim)">👤 ${t('kc_users')}（${d.users ?? 0}）</span>${newBtn(kcBase + '/users/add-user', t('kc_new_user'))}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 8px"><span style="color:var(--textdim)">👤 ${t('kc_users')}（${d.users ?? 0}）</span><div style="display:flex;gap:6px;flex-wrap:wrap">${isGA ? syncBtn('full', t('kc_sync_all')) + syncBtn('changed', t('kc_sync_changed')) : ''}${newBtn(kcBase + '/users/add-user', t('kc_new_user'))}</div></div>
+        ${isGA ? `<p style="margin:0 0 8px;color:var(--textdim);font-size:0.8em">${t('kc_sync_hint')}</p>` : ''}
         ${kcToolbar('users')}
         <div id="kcTable_users"></div>
         <div id="kcPager_users"></div>
@@ -3074,11 +3496,12 @@ async function loadKeycloak(el) {
         ${kcToolbar('clients')}
         <div id="kcTable_clients"></div>
         <div id="kcPager_clients"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px"><span style="color:var(--textdim)">🎭 ${t('kc_roles')}（${(d.role_list || []).length}）</span>${newBtn(kcBase + '/roles', t('kc_new_role'))}</div>
-        ${roleBadges ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${roleBadges}</div>` : `<p class="loading">${t('no_data')}</p>`}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:14px 0 8px"><span style="color:var(--textdim)">🎭 ${t('kc_roles')}（${(d.role_list || []).length}）</span>${isGA ? `<button onclick="kcNewRole()" style="background:var(--accentbtn);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8em;white-space:nowrap">${t('kc_new_role')}</button>` : newBtn(kcBase + '/roles', t('kc_new_role'))}</div>
+        <div id="kcTable_roles"></div>
       `, t('identity_resources'));
     kcLoad('users');
     kcLoad('clients');
+    kcLoadRoles();
   } catch (e) {
     document.getElementById('main').innerHTML = productError('🔐', title, url, e.message, t('open_keycloak'));
   }
@@ -3145,10 +3568,57 @@ async function loadUserInfo() {
     const resp = await fetch(API + '/me');
     if (resp.ok) {
       const data = await resp.json();
+      window.ME = data;
       const el = document.getElementById('username');
       if (el) el.textContent = data.username || '—';
+      applyPermissions(data);
     }
   } catch(e) {}
+}
+
+// 按权限隐藏导航项：全局管理员看全部；分模块管理员只看到被授权的产品，并隐藏全局专属项；
+// 若某分类下没有任何可见菜单项，则整个分类分组也隐藏；非管理员（普通用户）弹窗提示无权限并退出。
+function applyPermissions(me) {
+  if (!me) return;
+  if (me.globalAdmin) return;
+  const isScoped = Array.isArray(me.grants) && me.grants.length > 0;
+  if (!isScoped) {
+    showNotAdmin();
+    return;
+  }
+  document.querySelectorAll('[data-global-only]').forEach(el => { el.style.display = 'none'; });
+  const grants = new Set(me.grants);
+  document.querySelectorAll('[data-product]').forEach(el => {
+    const p = el.getAttribute('data-product');
+    if (!grants.has(p)) el.style.display = 'none';
+  });
+  // 隐藏没有任何可见子菜单项的分类分组
+  document.querySelectorAll('.nav-group').forEach(group => {
+    const items = group.querySelectorAll('.nav-group-body .nav-item');
+    let visible = false;
+    items.forEach(it => { if (it.style.display !== 'none') visible = true; });
+    if (!visible) group.style.display = 'none';
+  });
+}
+
+// 非管理员（普通用户）：清空导航与主区为空白，居中弹窗提示无权限，点击「确定」后退出
+function showNotAdmin() {
+  window._blocked = true;
+  document.querySelectorAll('.nav-item, .nav-group, .sidebar .divider').forEach(el => { el.style.display = 'none'; });
+  const main = document.getElementById('main');
+  if (main) main.innerHTML = '';
+  const overlay = document.createElement('div');
+  overlay.id = 'notAdminOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.62);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;max-width:440px;width:100%;padding:30px 26px;box-shadow:0 24px 70px rgba(0,0,0,.55);text-align:center">
+      <div style="font-size:3.2em;line-height:1;margin-bottom:14px">⛔</div>
+      <div style="font-weight:700;color:var(--textstrong);font-size:1.18em;margin-bottom:10px">${t('not_admin_title')}</div>
+      <p style="color:var(--text);margin:0 0 6px;font-size:0.95em">${t('not_admin_desc')}</p>
+      <p style="color:var(--textdim);margin:0 0 24px;font-size:0.88em">${t('not_admin_hint')}</p>
+      <button onclick="location.href='/logout'" style="background:var(--accentbtn);color:#fff;border:none;padding:10px 36px;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.95em">${t('not_admin_ok')}</button>
+    </div>`;
+  document.body.appendChild(overlay);
 }
 
 // ═══ Init ═══
@@ -3165,6 +3635,8 @@ initNavGroups();
       PRODUCT_URLS = d.products || {};
     }
   } catch (e) {}
+  await loadUserInfo();
+  if (window._blocked) return;  // 非管理员：已弹窗提示无权限，主区保持空白、不加载任何内容
   const savedPage = localStorage.getItem(PAGE_KEY);
   const navEl = savedPage ? document.querySelector('.nav-item[onclick^="' + savedPage + '"]') : null;
   if (savedPage && navEl && typeof window[savedPage] === 'function') {
@@ -3173,7 +3645,6 @@ initNavGroups();
     loadDashboard();
   }
 })();
-loadUserInfo();
 </script>
 </body>
 </html>

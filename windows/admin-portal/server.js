@@ -29,7 +29,7 @@ const KC_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID || 'admin-portal';
 const KC_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET || '';
 const ADMIN_USER = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@company.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ai_all_in_one_admin@chxia.lab';
 const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY || '';
 // 服务器对外地址（浏览器访问用）：IP 或域名，不含端口、不含尾斜杠。
 // 所有产品入口 URL 都由它派生，将来换成域名（如 https://ai.example.com）只需改 SERVER_PUBLIC_URL 一处。
@@ -52,7 +52,7 @@ const DIFY_DEFAULT_DATASET_ID = process.env.DIFY_DEFAULT_DATASET_ID || '';
 const GHOST_CONTAINER = process.env.GHOST_CONTAINER || 'ghost';
 const GHOST_INTERNAL_URL = process.env.GHOST_INTERNAL_URL || 'http://ghost:2368';
 const GHOST_EXTERNAL_URL = process.env.GHOST_EXTERNAL_URL || extUrl(8090);
-const GHOST_ADMIN_EMAIL = process.env.GHOST_ADMIN_EMAIL || 'ai_all_in_one_admin@company.com';
+const GHOST_ADMIN_EMAIL = process.env.GHOST_ADMIN_EMAIL || 'ai_all_in_one_admin@chxia.lab';
 const LITELLM_INTERNAL_URL = process.env.LITELLM_INTERNAL_URL || 'http://litellm:4000';
 const UPDATE_CONTAINER = process.env.UPDATE_CONTAINER || 'update-server';
 const REDIS_URL = process.env.REDIS_URL || 'redis://admin-session-redis:6379';
@@ -72,6 +72,41 @@ const DEPLOY_DIR = process.env.DEPLOY_DIR || '/deploy';            // 部署目�
 const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';       // Loki 统一日志
 const DIFY_DB_CONTAINER = process.env.DIFY_DB_CONTAINER || 'docker-db_postgres-1';
 const GITEA_CONTAINER = process.env.GITEA_CONTAINER || 'gitea';
+
+// ═══════════════════════════════════════════
+// 管理员权限模型：产品目录 + 分模块授权
+// ═══════════════════════════════════════════
+// 全局管理员：ai-platform-admin（realm role），可管理所有模块 + 管理员管理。
+// 分模块管理员：admin:<key>（realm role，SSO 原生，令牌 realm_access.roles 可读），
+//   仅管理被授权的模块。授权即添加/移除对应 Keycloak realm 角色。
+const ADMIN_CATEGORIES = [
+  { key: 'apps', labelKey: 'group_apps' },
+  { key: 'ai',   labelKey: 'group_ai'   },
+  { key: 'ops',  labelKey: 'group_ops'  },
+];
+const ADMIN_PRODUCTS = [
+  // 产品应用
+  { key: 'ghost',         labelKey: 'ghost',         category: 'apps', sso: false },
+  { key: 'dify',          labelKey: 'dify',          category: 'apps', sso: false },
+  { key: 'gitea',         labelKey: 'gitea',         category: 'apps', sso: true  },
+  { key: 'newapi',        labelKey: 'newapi',        category: 'apps', sso: true  },
+  { key: 'keycloak',      labelKey: 'keycloak',      category: 'apps', sso: true  },
+  // AI 网关与集成
+  { key: 'mcp-gateway',   labelKey: 'mcp',           category: 'ai',   sso: false },
+  { key: 'litellm',       labelKey: 'litellm',       category: 'ai',   sso: true  },
+  { key: 'update-server', labelKey: 'update',        category: 'ai',   sso: false },
+  // 系统运维
+  { key: 'availability',  labelKey: 'availability',  category: 'ops',  sso: false },
+  { key: 'monitoring',    labelKey: 'monitoring',    category: 'ops',  sso: true  },
+  { key: 'observability', labelKey: 'observability', category: 'ops',  sso: true  },
+  { key: 'pii',           labelKey: 'pii',           category: 'ops',  sso: false },
+  { key: 'logs',          labelKey: 'logs',          category: 'ops',  sso: false },
+  { key: 'backup',        labelKey: 'backup',        category: 'ops',  sso: false },
+  { key: 'report',        labelKey: 'report',        category: 'ops',  sso: false },
+];
+const GLOBAL_ADMIN_ROLE = 'ai-platform-admin';
+const productRole = (key) => `admin:${key}`;
+const isProductKey = (key) => ADMIN_PRODUCTS.some(p => p.key === key);
 
 // ═══════════════════════════════════════════
 // Keycloak OIDC Setup
@@ -105,6 +140,22 @@ if (KC_CLIENT_SECRET) {
 const keycloak = new Keycloak({ store: redisStore }, kcConfig);
 app.use(keycloak.middleware());
 app.use(express.json({ limit: '2mb' }));
+
+// ═══════════════════════════════════════════
+// 管理员守卫：AI Admin 仅允许「全局管理员」或「分模块管理员」访问业务接口。
+// 普通登录用户（非管理员）只能访问 /api/me、/api/urls（供前端判断并展示「非管理员」提示）。
+// ═══════════════════════════════════════════
+app.use((req, res, next) => {
+  const p = req.path;
+  if (!p.startsWith('/api/')) return next();                       // 静态资源等不受影响
+  if (p === '/api/me' || p === '/api/urls') return next();         // 前端判断/基础 UI 用
+  if (p === '/api/alert-webhook') return next();                   // 外部告警回调（无认证）
+  if (!req.kauth || !req.kauth.grant) return next();               // 未登录 → 交给后续 protect 重定向登录
+  const roles = userRoles(req);
+  const isAdmin = roles.includes(GLOBAL_ADMIN_ROLE) || roles.some(r => r.startsWith('admin:'));
+  if (isAdmin) return next();
+  return res.status(403).json({ error: '你不是平台管理员', message: '该账号没有管理员权限，无权访问此系统' });
+});
 
 // ═══════════════════════════════════════════
 // Docker API
@@ -210,16 +261,25 @@ app.get('/api/health/:name', keycloak.protect(), async (req, res) => {
   }
 });
 
-// Admin users list (requires ai-platform-admin role)
+// 产品目录（供前端渲染授权选择器；全局管理员可见）
+app.get('/api/admin-products', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+  res.json({ categories: ADMIN_CATEGORIES, products: ADMIN_PRODUCTS, globalRole: GLOBAL_ADMIN_ROLE });
+});
+
+// 管理员列表：全局管理员 + 分模块管理员（含各自授权的产品）
 app.get('/api/admins', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
   try {
     const kc = await getKcAdmin();
-    const users = await kc.users.find({ realm: KC_REALM, max: 200 });
+    const users = await kc.users.find({ realm: KC_REALM, max: 500 });
     const admins = [];
     for (const u of users) {
       try {
-        const roles = await kc.users.listRealmRoleMappings({ id: u.id });
-        if (roles.some(r => r.name === 'ai-platform-admin')) {
+        const roles = await kc.users.listRealmRoleMappings({ id: u.id, realm: KC_REALM });
+        const names = roles.map(r => r.name);
+        const global = names.includes(GLOBAL_ADMIN_ROLE);
+        const products = ADMIN_PRODUCTS.filter(p => names.includes(productRole(p.key))).map(p => p.key);
+        if (global || products.length > 0) {
+          const creds = await getProductCreds(u.id); // 有本地账号临时密码的产品
           admins.push({
             id: u.id,
             username: u.username,
@@ -228,6 +288,9 @@ app.get('/api/admins', keycloak.protect('realm:ai-platform-admin'), async (req, 
             lastName: u.lastName,
             enabled: u.enabled,
             createdTimestamp: u.createdTimestamp,
+            global,
+            products,
+            credProducts: Object.keys(creds),
           });
         }
       } catch (e) { /* skip users we can't read roles for */ }
@@ -238,6 +301,32 @@ app.get('/api/admins', keycloak.protect('realm:ai-platform-admin'), async (req, 
   }
 });
 
+// 搜索 IdP 用户（供「搜索添加」使用；只返回已有账号，不新建、不涉密码）
+app.get('/api/admins/search', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json([]);
+    const kc = await getKcAdmin();
+    const users = await kc.users.find({ realm: KC_REALM, search: q, max: 50 });
+    const out = users
+      .filter(u => u.username && u.username !== 'krbtgt')
+      .map(u => ({ id: u.id, username: u.username, email: u.email, firstName: u.firstName, lastName: u.lastName, enabled: u.enabled }))
+      .slice(0, 20);
+    res.json(out);
+  } catch (err) {
+    res.status(500).json({ error: 'Keycloak API error', message: err.message });
+  }
+});
+
+// 查看某管理员的本地账号临时密码（仅全局管理员；按产品 key 返回 { product: password }）
+app.get('/api/admins/:id/credentials', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const uid = req.params.id;
+    const creds = await getProductCreds(uid);
+    res.json(creds);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // 当前登录用户的 Keycloak sub（用于防止管理员操作自己）
 function currentUserId(req) {
   try {
@@ -246,60 +335,563 @@ function currentUserId(req) {
   } catch (e) { return ''; }
 }
 
-// 启用/禁用管理员账号（禁止操作自己）
-app.post('/api/admins/:id/toggle', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+// 读取当前登录用户的 realm roles（来自访问令牌 realm_access.roles）
+function userRoles(req) {
   try {
-    const uid = req.params.id;
-    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能禁用自己的账号' });
-    const kc = await getKcAdmin();
-    const u = await kc.users.findOne({ id: uid });
-    if (!u) return res.status(404).json({ error: '用户不存在' });
-    await kc.users.update({ id: uid }, { enabled: !u.enabled });
-    res.json({ ok: true, enabled: !u.enabled });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
+    const c = (req.kauth && req.kauth.grant && req.kauth.grant.access_token && req.kauth.grant.access_token.content) || {};
+    return (c.realm_access && c.realm_access.roles) || [];
+  } catch (e) { return []; }
+}
 
-// 移除管理员角色（降级为普通用户，禁止操作自己）
-app.post('/api/admins/:id/demote', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+function isGlobalAdmin(req) {
+  return userRoles(req).includes(GLOBAL_ADMIN_ROLE);
+}
+
+// 分模块访问控制：全局管理员放行；分模块管理员需拥有对应 admin:<key> 角色。
+// 用法：app.get('/api/xxx', keycloak.protect(), protectAdmin('xxx'), handler)
+function protectAdmin(productKey) {
+  return (req, res, next) => {
+    const roles = userRoles(req);
+    if (roles.includes(GLOBAL_ADMIN_ROLE)) return next();
+    if (productKey && roles.includes(productRole(productKey))) return next();
+    return res.status(403).json({ error: '无权限访问此模块', message: '需要全局管理员或该模块的管理员权限' });
+  };
+}
+
+// 确保各产品 admin:<key> 角色存在（幂等，启动时调用）
+async function ensureProductRoles() {
   try {
-    const uid = req.params.id;
-    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能移除自己的管理员角色' });
     const kc = await getKcAdmin();
-    const role = await kc.roles.findOneByName({ name: 'ai-platform-admin' });
-    if (!role) return res.status(404).json({ error: '角色不存在' });
-    await kc.users.delRealmRoleMappings({ id: uid, roles: [{ id: role.id, name: 'ai-platform-admin' }] });
-    res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
+    for (const p of ADMIN_PRODUCTS) {
+      const name = productRole(p.key);
+      const existing = await kc.roles.findOneByName({ name, realm: KC_REALM });
+      if (!existing) {
+        await kc.roles.create({ name, realm: KC_REALM });
+        console.log(`[init] Created product role: ${name}`);
+      }
+    }
+  } catch (err) {
+    console.warn('[init] Could not ensure product roles (Keycloak may not be ready):', err.message);
+  }
+}
 
-// 添加管理员（按用户名，加入 ai-platform-admin 角色）
+// 给用户授予某产品管理权（添加 admin:<key> realm 角色）
+async function grantProduct(kc, uid, productKey) {
+  const name = productRole(productKey);
+  const role = await kc.roles.findOneByName({ name, realm: KC_REALM });
+  if (!role) throw new Error(`角色不存在：${name}`);
+  await kc.users.addRealmRoleMappings({ id: uid, realm: KC_REALM, roles: [{ id: role.id, name }] });
+}
+
+// 撤销用户某产品管理权（移除 admin:<key> realm 角色）
+async function revokeProduct(kc, uid, productKey) {
+  const name = productRole(productKey);
+  const role = await kc.roles.findOneByName({ name, realm: KC_REALM });
+  if (!role) return;
+  await kc.users.delRealmRoleMappings({ id: uid, realm: KC_REALM, roles: [{ id: role.id, name }] });
+}
+
+// 添加分模块管理员：从 IdP 已有用户中选择，授予若干产品管理权（添加 admin:<key> 角色）
 app.post('/api/admins', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
   try {
-    const username = (req.body && req.body.username || '').trim();
-    if (!username) return res.status(400).json({ error: '请输入用户名' });
+    const userId = (req.body && req.body.userId || '').trim();
+    const products = Array.isArray(req.body && req.body.products) ? req.body.products.map(s => String(s).trim()).filter(Boolean) : [];
+    if (!userId) return res.status(400).json({ error: '请选择用户' });
+    if (!products.length) return res.status(400).json({ error: '请至少选择一个模块' });
+    for (const k of products) if (!isProductKey(k)) return res.status(400).json({ error: `未知模块：${k}` });
+    if (userId === currentUserId(req)) return res.status(400).json({ error: '不能操作自己的账号' });
     const kc = await getKcAdmin();
-    const users = await kc.users.find({ username, realm: KC_REALM, exact: true });
-    if (!users || !users.length) return res.status(404).json({ error: `未找到用户「${username}」` });
-    const u = users[0];
-    const role = await kc.roles.findOneByName({ name: 'ai-platform-admin' });
-    if (!role) return res.status(404).json({ error: '角色不存在' });
-    await kc.users.addRealmRoleMappings({ id: u.id, roles: [{ id: role.id, name: 'ai-platform-admin' }] });
-    res.json({ ok: true, username: u.username });
+    const u = await kc.users.findOne({ id: userId, realm: KC_REALM });
+    if (!u) return res.status(404).json({ error: '用户不存在（请从 IdP 用户中搜索添加）' });
+    const existingRoles = await kc.users.listRealmRoleMappings({ id: userId, realm: KC_REALM });
+    if (existingRoles.some(r => r.name === GLOBAL_ADMIN_ROLE)) {
+      return res.status(400).json({ error: '该用户是全局管理员，无需分模块授权' });
+    }
+    for (const k of products) await grantProduct(kc, userId, k);
+    // 真正开到各产品：SSO 优先，API 兜底（逐个独立，失败不阻塞）
+    const provisioning = [];
+    for (const k of products) provisioning.push(await provisionProduct(k, { id: userId, username: u.username, email: u.email }));
+    res.json({ ok: true, username: u.username, products, provisioning });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 重置管理员密码（生成临时随机密码，强制首次登录改密）
-app.post('/api/admins/:id/reset-password', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+// 给某管理员追加一个产品授权
+app.post('/api/admins/:id/products', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
   try {
     const uid = req.params.id;
+    const product = (req.body && req.body.product || '').trim();
+    if (!product) return res.status(400).json({ error: '请指定模块' });
+    if (!isProductKey(product)) return res.status(400).json({ error: `未知模块：${product}` });
+    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能操作自己的账号' });
     const kc = await getKcAdmin();
-    const u = await kc.users.findOne({ id: uid });
+    const u = await kc.users.findOne({ id: uid, realm: KC_REALM });
     if (!u) return res.status(404).json({ error: '用户不存在' });
-    const tmp = require('crypto').randomBytes(9).toString('base64url') + 'A1';
-    await kc.users.resetPassword({ id: uid, credential: { type: 'password', value: tmp, temporary: true } });
-    res.json({ ok: true, username: u.username, tempPassword: tmp });
+    await grantProduct(kc, uid, product);
+    const provisioning = await provisionProduct(product, { id: uid, username: u.username, email: u.email });
+    res.json({ ok: true, username: u.username, product, provisioning });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// 撤销某管理员的单个产品授权
+app.delete('/api/admins/:id/products/:product', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const uid = req.params.id;
+    const product = req.params.product;
+    if (!isProductKey(product)) return res.status(400).json({ error: `未知模块：${product}` });
+    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能操作自己的账号' });
+    const kc = await getKcAdmin();
+    await revokeProduct(kc, uid, product);
+    const u = await kc.users.findOne({ id: uid, realm: KC_REALM });
+    const deprovisioning = await deprovisionProduct(product, { id: uid, username: u && u.username, email: u && u.email });
+    res.json({ ok: true, product, deprovisioning });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 删除管理员账号：移除其所有产品授权关系（admin:<key> 角色），不影响 Keycloak 账号本身
+app.delete('/api/admins/:id', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const uid = req.params.id;
+    if (uid === currentUserId(req)) return res.status(400).json({ error: '不能删除自己的账号' });
+    const kc = await getKcAdmin();
+    const u = await kc.users.findOne({ id: uid, realm: KC_REALM });
+    if (!u) return res.status(404).json({ error: '用户不存在' });
+    const existingRoles = await kc.users.listRealmRoleMappings({ id: uid, realm: KC_REALM });
+    if (existingRoles.some(r => r.name === GLOBAL_ADMIN_ROLE)) {
+      return res.status(400).json({ error: '不能删除全局管理员' });
+    }
+    const toRemove = existingRoles.filter(r => r.name.startsWith('admin:'));
+    const removedKeys = toRemove.map(r => r.name.slice('admin:'.length));
+    if (toRemove.length) {
+      await kc.users.delRealmRoleMappings({ id: uid, realm: KC_REALM, roles: toRemove.map(r => ({ id: r.id, name: r.name })) });
+    }
+    // 撤销各产品的管理员权限（删除产品账号）
+    const deprovisioning = [];
+    for (const k of removedKeys) deprovisioning.push(await deprovisionProduct(k, { id: uid, username: u.username, email: u.email }));
+    await delProductCreds(uid); // 清理该用户所有记录的临时密码
+    res.json({ ok: true, username: u.username, removed: toRemove.length, deprovisioning });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ═══════════════════════════════════════════
+// 产品侧账号开通 / 撤销（SSO 优先，API 兜底）
+// ═══════════════════════════════════════════
+// 目的：把「管理员管理」的分模块授权真正开到各产品里，而不只是门户 Keycloak 角色。
+//  - 有 SSO 的产品：用户已在 Keycloak，产品端登录时自动建号；这里用产品 API/DB 把角色设为管理员。
+//  - 无 SSO 的产品：用产品 API 建号（临时密码）并设为管理员，临时密码随结果返回给操作者。
+//  - 删除 = 从产品中删除该账号：SSO 产品撤销授权（移出产品）、直接授权产品删除账号。
+//  - 内部功能（mcp-gateway/update-server/availability/pii/logs/backup/report）无独立产品账号，
+//    Keycloak 的 admin:<key> 角色本身就是权限 → 返回 skipped。
+const GRAFANA_INTERNAL_URL = process.env.GRAFANA_INTERNAL_URL || 'http://grafana:3000';
+const GRAFANA_ADMIN_USER = process.env.GRAFANA_ADMIN_USER || ADMIN_USER;
+const GRAFANA_ADMIN_PASS = process.env.GRAFANA_ADMIN_PASSWORD || ADMIN_PASS;
+const GHOST_ADMIN_ROLE_ID = '6a7b481a3a1f3a0001fdbc59'; // Administrator（Ghost 固定 ObjectId）
+// Langfuse（可观测）：OSS 版无组织级 API key，成员角色靠直接写 Postgres（同 NewAPI 的 DB 提权思路）
+const LANGFUSE_DB_CONTAINER = process.env.LANGFUSE_DB_CONTAINER || 'langfuse-postgres';
+const LANGFUSE_ORG_ID = process.env.LANGFUSE_ORG_ID || 'ai-all-in-one';
+
+// Langfuse Postgres 查询（psql 走容器内 trust 认证，无需密码）
+async function langfuseDbQuery(sql) {
+  const { stdout, stderr } = await dockerExec(LANGFUSE_DB_CONTAINER, ['psql', '-U', 'langfuse', '-d', 'langfuse', '-t', '-A', '-c', sql]);
+  if (stderr && stderr.trim() && !/NOTICE|WARNING/i.test(stderr)) throw new Error(stderr.trim());
+  const rows = [];
+  for (const line of stdout.split('\n')) {
+    if (!line.trim()) continue;
+    rows.push(line.split('|'));
+  }
+  return rows;
+}
+// cuid 风格唯一 ID（Langfuse Prisma text 主键，任意唯一串即可）
+function cuidLike() {
+  return 'cm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 14);
+}
+
+function genTempPassword() {
+  return 'Ai' + Math.random().toString(36).slice(2, 8) + '!' + Math.floor(Math.random() * 90 + 10);
+}
+function cleanLogin(username) {
+  const s = String(username || '').toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 39);
+  return s || ('u' + Math.random().toString(36).slice(2, 10));
+}
+
+// Gitea 请求（Basic auth）
+async function giteaReq(method, path, body) {
+  const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+  const opts = { method, headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const resp = await fetch(`${GITEA_URL}${path}`, opts);
+  let data = null; try { data = await resp.json(); } catch (e) {}
+  return { status: resp.status, data };
+}
+
+// NewAPI：按 email 或 username 找本地用户（SSO 用户用 email 对齐；API 建号用户 email 为空、按 username 对齐）
+async function newapiFindUser(u) {
+  const email = (u && u.email) || '';
+  const login = (u && u.username) ? cleanLogin(u.username) : '';
+  let rows = [];
+  if (email) rows = await newapiDbQuery(`SELECT id, username FROM users WHERE email='${String(email).replace(/'/g, "''")}' LIMIT 1`);
+  if (!rows.length && login) rows = await newapiDbQuery(`SELECT id, username FROM users WHERE username='${login.replace(/'/g, "''")}' LIMIT 1`);
+  return rows.length ? { id: +rows[0][0], username: rows[0][1] } : null;
+}
+
+// Dify 请求（复用 difyLogin 的 cookie + CSRF，支持 POST/PATCH/DELETE）
+async function difyReq(method, path, body) {
+  const { token, csrf, refreshToken } = await difyLogin();
+  const cookie = `access_token=${token}; csrf_token=${csrf}` + (refreshToken ? `; refresh_token=${refreshToken}` : '');
+  const opts = { method, headers: { 'Cookie': cookie, 'X-CSRF-Token': csrf } };
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const resp = await fetch(`${DIFY_URL}${path}`, opts);
+  let data = null; try { data = await resp.json(); } catch (e) {}
+  return { status: resp.status, data };
+}
+
+// Ghost 已验证会话 cookie（密码登录 + 本地算 TOTP，复用 /api/ghost/auto-login 的流程）
+// 会话有频率限制（登录端点 429），故缓存复用，避免连续操作时被限流。
+let ghostSessionCache = { cookie: '', exp: 0 };
+async function ghostSession() {
+  if (ghostSessionCache.cookie && Date.now() < ghostSessionCache.exp) return ghostSessionCache.cookie;
+  const { stdout } = await dockerExec(GHOST_CONTAINER, ['node', '-e', GHOST_AUTH_SCRIPT(GHOST_ADMIN_EMAIL)]);
+  const authInfo = JSON.parse((stdout.match(/\{.*\}/s) || ['{}'])[0]);
+  if (!authInfo.secret) throw new Error('未读取到 Ghost admin_session_secret');
+  const loginRes = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/session/`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: GHOST_ADMIN_EMAIL, password: ADMIN_PASS }),
+  });
+  const cm = (loginRes.headers.get('set-cookie') || '').match(/ghost-admin-api-session=([^;]+)/);
+  if (!cm) throw new Error('Ghost 登录失败（HTTP ' + loginRes.status + '）');
+  const code = ghostTotp(authInfo.secret, authInfo.userId);
+  const verifyRes = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/session/verify`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Cookie': `ghost-admin-api-session=${cm[1]}` },
+    body: JSON.stringify({ token: code }),
+  });
+  if (verifyRes.status !== 200) throw new Error('Ghost 会话验证失败（HTTP ' + verifyRes.status + '）');
+  ghostSessionCache = { cookie: cm[1], exp: Date.now() + 24 * 60 * 60 * 1000 }; // 缓存 24 小时
+  return cm[1];
+}
+
+const PRODUCT_PROVISIONERS = {
+  // ---- Gitea（Keycloak OIDC SSO；预建号仅为立即授管理员，随机密码占位、不对外暴露）----
+  gitea: {
+    async provision(u) {
+      const login = cleanLogin(u.username);
+      const email = u.email || `${login}@company.com`;
+      let r = await giteaReq('GET', `/api/v1/users/${encodeURIComponent(login)}`);
+      if (r.status === 404) {
+        const cr = await giteaReq('POST', '/api/v1/admin/users', {
+          username: login, login_name: login, email,
+          password: genTempPassword(), must_change_password: false, send_notify: false,
+        });
+        if (cr.status !== 201 && cr.status !== 200) throw new Error('Gitea 建号失败: ' + JSON.stringify(cr.data));
+      } else if (r.status !== 200) {
+        throw new Error('Gitea 查询失败: HTTP ' + r.status);
+      }
+      const ar = await giteaReq('PATCH', `/api/v1/admin/users/${encodeURIComponent(login)}`, { login_name: login, admin: true });
+      if (ar.status !== 200) throw new Error('Gitea 设管理员失败: ' + JSON.stringify(ar.data));
+      return { method: 'sso', detail: '已确保账号存在并设为管理员（用 Keycloak SSO 登录，无需密码）' };
+    },
+    async deprovision(u) {
+      const login = cleanLogin(u.username);
+      const r = await giteaReq('DELETE', `/api/v1/admin/users/${encodeURIComponent(login)}`);
+      if (r.status === 404) return { detail: '账号不存在，无需删除' };
+      if (r.status !== 204 && r.status !== 200) throw new Error('Gitea 删除账号失败: ' + JSON.stringify(r.data));
+      return { detail: '已删除 Gitea 账号' };
+    },
+  },
+
+  // ---- NewAPI（SSO 建号，角色靠 DB 提权/降权）----
+  newapi: {
+    async provision(u) {
+      let user = await newapiFindUser(u);
+      if (!user) {
+        const pwd = genTempPassword();
+        const token = await newapiGetToken();
+        const login = cleanLogin(u.username);
+        const resp = await fetch(`${NEWAPI_URL}/api/user/`, {
+          method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: login, password: pwd, display_name: u.username, role: 10, group: 'default' }),
+        });
+        const data = await resp.json();
+        if (!data || data.success === false) throw new Error('NewAPI 建号失败: ' + ((data && data.message) || JSON.stringify(data)));
+        // NewAPI 创建 API 不存 email，回填以便后续按 email 匹配
+        if (u.email) await newapiDbQuery(`UPDATE users SET email='${String(u.email).replace(/'/g, "''")}' WHERE username='${login.replace(/'/g, "''")}'`);
+        return { method: 'api', detail: '已建号并设为管理员', tempPassword: pwd };
+      }
+      await newapiDbQuery(`UPDATE users SET role=10 WHERE id=${user.id}`);
+      return { method: 'sso', detail: '账号已存在，已提升为管理员' };
+    },
+    async deprovision(u) {
+      const user = await newapiFindUser(u);
+      if (!user) return { detail: '账号不存在，无需删除' };
+      const token = await newapiGetToken();
+      const resp = await fetch(`${NEWAPI_URL}/api/user/${user.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await resp.json().catch(() => null);
+      if (resp.status !== 200 && resp.status !== 204) throw new Error('NewAPI 删除账号失败: ' + JSON.stringify(data));
+      return { detail: '已删除 NewAPI 账号' };
+    },
+  },
+
+  // ---- Keycloak（本身就是 SSO：授 realm-management 客户端的 realm-admin 复合角色）----
+  keycloak: {
+    async _role() {
+      const kc = await getKcAdmin();
+      const clients = await kc.clients.find({ realm: KC_REALM, clientId: 'realm-management' });
+      if (!clients || !clients.length) throw new Error('Keycloak 缺少 realm-management 客户端');
+      const clientId = clients[0].id;
+      const role = await kc.clients.findRole({ realm: KC_REALM, id: clientId, roleName: 'realm-admin' });
+      if (!role) throw new Error('Keycloak 缺少 realm-management 的 realm-admin 角色');
+      return { clientId, role };
+    },
+    async provision(u) {
+      const { clientId, role } = await this._role();
+      const kc = await getKcAdmin();
+      await kc.users.addClientRoleMappings({ id: u.id, realm: KC_REALM, clientUniqueId: clientId, roles: [{ id: role.id, name: 'realm-admin' }] });
+      return { method: 'sso', detail: '已授予 realm-management 的 realm-admin（Keycloak 管理）' };
+    },
+    async deprovision(u) {
+      const { clientId, role } = await this._role();
+      const kc = await getKcAdmin();
+      await kc.users.delClientRoleMappings({ id: u.id, realm: KC_REALM, clientUniqueId: clientId, roles: [{ id: role.id, name: 'realm-admin' }] });
+      return { detail: '已撤销 Keycloak realm-admin 授权' };
+    },
+  },
+
+  // ---- Grafana（监控模块；SSO，org API 设角色；建号走 /api/admin/users）----
+  monitoring: {
+    async _auth() { return 'Basic ' + Buffer.from(`${GRAFANA_ADMIN_USER}:${GRAFANA_ADMIN_PASS}`).toString('base64'); },
+    async _users() {
+      const resp = await fetch(`${GRAFANA_INTERNAL_URL}/api/orgs/1/users`, { headers: { 'Authorization': await this._auth() } });
+      const data = await resp.json();
+      if (!Array.isArray(data)) throw new Error('Grafana 查询失败: ' + JSON.stringify(data).slice(0, 200));
+      return data;
+    },
+    async provision(u) {
+      const email = (u.email || '').toLowerCase();
+      if (!email) throw new Error('缺少邮箱，无法在 Grafana 定位账号');
+      const auth = await this._auth();
+      let users = await this._users();
+      let ex = users.find(x => (x.email && x.email.toLowerCase() === email) || (x.login && x.login.toLowerCase() === email));
+      if (!ex) {
+        // 创建全局用户（自动加入默认 org，角色 Viewer）
+        const login = cleanLogin(u.username);
+        const cr = await fetch(`${GRAFANA_INTERNAL_URL}/api/admin/users`, {
+          method: 'POST', headers: { 'Authorization': auth, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: u.username || login, email: email, login: login, password: genTempPassword() }),
+        });
+        if (cr.status !== 200 && cr.status !== 201) {
+          let msg = 'HTTP ' + cr.status; try { msg += ' ' + JSON.stringify(await cr.json()); } catch (e) {}
+          throw new Error('Grafana 建号失败: ' + msg);
+        }
+        users = await this._users();
+        ex = users.find(x => (x.email && x.email.toLowerCase() === email));
+        if (!ex) throw new Error('Grafana 建号后未在组织中找到该用户');
+      }
+      if (ex.role === 'Admin') return { method: 'sso', detail: '已是管理员' };
+      const r = await fetch(`${GRAFANA_INTERNAL_URL}/api/orgs/1/users/${ex.userId}`, { method: 'PATCH', headers: { 'Authorization': auth, 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'Admin' }) });
+      if (r.status !== 200) throw new Error('Grafana 设管理员失败: HTTP ' + r.status);
+      return { method: 'sso', detail: '已设为管理员（SSO 登录生效）' };
+    },
+    async deprovision(u) {
+      const email = (u.email || '').toLowerCase();
+      const auth = await this._auth();
+      const resp = await fetch(`${GRAFANA_INTERNAL_URL}/api/users`, { headers: { 'Authorization': auth } });
+      const gusers = await resp.json();
+      if (!Array.isArray(gusers)) throw new Error('Grafana 查询全局用户失败: ' + JSON.stringify(gusers).slice(0, 200));
+      const gu = gusers.find(x => (x.email && x.email.toLowerCase() === email) || (x.login && x.login.toLowerCase() === email));
+      if (!gu) return { detail: '账号不存在，无需删除' };
+      const r = await fetch(`${GRAFANA_INTERNAL_URL}/api/admin/users/${gu.id}`, { method: 'DELETE', headers: { 'Authorization': auth } });
+      if (r.status !== 200 && r.status !== 204) throw new Error('Grafana 删除账号失败: HTTP ' + r.status);
+      return { detail: '已删除 Grafana 账号（撤销 SSO 授权）' };
+    },
+  },
+
+  // ---- LiteLLM（SSO / master key 用户管理）----
+  litellm: {
+    async provision(u) {
+      const email = u.email || '';
+      if (!email) throw new Error('缺少邮箱，无法在 LiteLLM 定位账号');
+      const info = await fetch(`${LITELLM_INTERNAL_URL}/user/info?user_id=${encodeURIComponent(email)}`, { headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}` } });
+      if (info.status === 200) {
+        const r = await fetch(`${LITELLM_INTERNAL_URL}/user/update`, { method: 'POST', headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: email, user_role: 'proxy_admin' }) });
+        if (r.status !== 200) throw new Error('LiteLLM 设管理员失败: HTTP ' + r.status);
+        return { method: 'sso', detail: '已提升为管理员' };
+      }
+      const r = await fetch(`${LITELLM_INTERNAL_URL}/user/new`, { method: 'POST', headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: email, user_email: email, user_role: 'proxy_admin' }) });
+      const data = await r.json().catch(() => null);
+      if (r.status !== 200) throw new Error('LiteLLM 建号失败: ' + JSON.stringify(data || r.status));
+      return { method: 'sso', detail: '已建号并设为管理员' };
+    },
+    async deprovision(u) {
+      const email = u.email || '';
+      if (!email) return { detail: '缺少邮箱，无法定位' };
+      const r = await fetch(`${LITELLM_INTERNAL_URL}/user/delete`, { method: 'POST', headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ user_ids: [email] }) });
+      const t = await r.text().catch(() => '');
+      if (r.status !== 200) throw new Error('LiteLLM 删除账号失败: HTTP ' + r.status + ' ' + t.slice(0, 120));
+      return { detail: '已删除 LiteLLM 账号' };
+    },
+  },
+
+  // ---- Dify（无 SSO，console 成员管理 API）----
+  dify: {
+    async provision(u) {
+      const email = u.email || '';
+      if (!email) throw new Error('缺少邮箱，无法在 Dify 定位账号');
+      const list = await difyReq('GET', '/console/api/workspaces/current/members');
+      const accounts = (list.data && list.data.accounts) ? list.data.accounts : [];
+      const ex = accounts.find(m => (m.email || '').toLowerCase() === email.toLowerCase());
+      if (ex) {
+        const r = await difyReq('PUT', `/console/api/workspaces/current/members/${ex.id}/update-role`, { role: 'admin' });
+        if (r.status !== 200 && r.status !== 201) throw new Error('Dify 设管理员失败: ' + JSON.stringify(r.data));
+        return { method: 'api', detail: '账号已存在，已设为管理员' };
+      }
+      const r = await difyReq('POST', '/console/api/workspaces/current/members/invite-email', { emails: [email], role: 'admin', language: 'zh-Hans' });
+      if (r.status !== 200 && r.status !== 201) throw new Error('Dify 邀请失败: ' + JSON.stringify(r.data));
+      return { method: 'api', detail: '已发送管理员邀请（对方需在邮件确认）' };
+    },
+    async deprovision(u) {
+      const email = u.email || '';
+      const list = await difyReq('GET', '/console/api/workspaces/current/members');
+      const accounts = (list.data && list.data.accounts) ? list.data.accounts : [];
+      const ex = accounts.find(m => (m.email || '').toLowerCase() === email.toLowerCase());
+      if (!ex) return { detail: '账号不存在，无需删除' };
+      const r = await difyReq('DELETE', `/console/api/workspaces/current/members/${ex.id}`);
+      if (r.status !== 200 && r.status !== 204) throw new Error('Dify 删除成员失败: ' + JSON.stringify(r.data));
+      return { detail: '已删除 Dify 成员账号' };
+    },
+  },
+
+  // ---- Ghost（无 SSO，Admin API 邀请 staff）----
+  ghost: {
+    async provision(u) {
+      const email = u.email || '';
+      if (!email) throw new Error('缺少邮箱，无法在 Ghost 定位账号');
+      const session = await ghostSession();
+      const usersRes = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/users/?limit=all`, { headers: { 'Cookie': `ghost-admin-api-session=${session}` } });
+      const usersData = await usersRes.json().catch(() => null);
+      const staff = (usersData && usersData.users) ? usersData.users : [];
+      const ex = staff.find(s => (s.email || '').toLowerCase() === email.toLowerCase());
+      if (ex) return { method: 'api', detail: '已是 Ghost staff（如需提权请在后台调整角色）' };
+      const inv = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/invites/`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Cookie': `ghost-admin-api-session=${session}` },
+        body: JSON.stringify({ invites: [{ email, role_id: GHOST_ADMIN_ROLE_ID }] }),
+      });
+      if (inv.status !== 200 && inv.status !== 201) throw new Error('Ghost 邀请失败: HTTP ' + inv.status);
+      return { method: 'api', detail: '已发送管理员邀请（对方需在邮箱确认）' };
+    },
+    async deprovision(u) {
+      const email = u.email || '';
+      const session = await ghostSession();
+      // 1. 已接受的 staff → 删除账号
+      const usersRes = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/users/?limit=all`, { headers: { 'Cookie': `ghost-admin-api-session=${session}` } });
+      const usersData = await usersRes.json().catch(() => null);
+      const staff = (usersData && usersData.users) ? usersData.users : [];
+      const ex = staff.find(s => (s.email || '').toLowerCase() === email.toLowerCase());
+      if (ex) {
+        const r = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/users/${ex.id}/`, { method: 'DELETE', headers: { 'Cookie': `ghost-admin-api-session=${session}` } });
+        if (r.status !== 200 && r.status !== 204) throw new Error('Ghost 删除账号失败: HTTP ' + r.status);
+        return { detail: '已删除 Ghost staff 账号' };
+      }
+      // 2. 未接受的邀请 → 撤销邀请
+      const invRes = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/invites/?limit=all`, { headers: { 'Cookie': `ghost-admin-api-session=${session}` } });
+      const invData = await invRes.json().catch(() => null);
+      const invites = (invData && invData.invites) ? invData.invites : [];
+      const inv = invites.find(i => (i.email || '').toLowerCase() === email.toLowerCase());
+      if (inv) {
+        const r = await fetch(`${GHOST_INTERNAL_URL}/ghost/api/admin/invites/${inv.id}/`, { method: 'DELETE', headers: { 'Cookie': `ghost-admin-api-session=${session}` } });
+        if (r.status !== 200 && r.status !== 204) throw new Error('Ghost 撤销邀请失败: HTTP ' + r.status);
+        return { detail: '已撤销 Ghost 邀请' };
+      }
+      return { detail: '账号不存在，无需删除' };
+    },
+  },
+
+  // ---- Langfuse（可观测模块；OSS 无组织级 API key → 直接写 Postgres 成员表）----
+  observability: {
+    async provision(u) {
+      const email = u.email || '';
+      if (!email) throw new Error('缺少邮箱，无法在 Langfuse 定位账号');
+      const eq = String(email).replace(/'/g, "''");
+      const users = await langfuseDbQuery(`SELECT id FROM users WHERE email='${eq}' LIMIT 1`);
+      if (users.length) {
+        const userId = users[0][0];
+        const m = await langfuseDbQuery(`SELECT id FROM organization_memberships WHERE org_id='${LANGFUSE_ORG_ID}' AND user_id='${userId}' LIMIT 1`);
+        if (m.length) {
+          await langfuseDbQuery(`UPDATE organization_memberships SET role='ADMIN', updated_at=NOW() WHERE id='${m[0][0]}'`);
+        } else {
+          await langfuseDbQuery(`INSERT INTO organization_memberships (id, org_id, user_id, role) VALUES ('${cuidLike()}', '${LANGFUSE_ORG_ID}', '${userId}', 'ADMIN')`);
+        }
+        return { method: 'sso', detail: '已设为 ADMIN' };
+      }
+      // 用户尚未登录过 → 插入邀请，SSO 首次登录后自动授予
+      await langfuseDbQuery(`INSERT INTO membership_invitations (id, email, org_id, org_role) VALUES ('${cuidLike()}', '${eq}', '${LANGFUSE_ORG_ID}', 'ADMIN') ON CONFLICT (email, org_id) DO UPDATE SET org_role='ADMIN'`);
+      return { method: 'sso', detail: '已发出邀请，SSO 登录后自动授予 ADMIN' };
+    },
+    async deprovision(u) {
+      const email = u.email || '';
+      const eq = String(email).replace(/'/g, "''");
+      const users = await langfuseDbQuery(`SELECT id FROM users WHERE email='${eq}' LIMIT 1`);
+      if (users.length) {
+        const userId = users[0][0];
+        // 删除项目成员关系（org membership 删除会级联 project_memberships，这里先显式删更稳）
+        await langfuseDbQuery(`DELETE FROM project_memberships WHERE user_id='${userId}'`);
+        await langfuseDbQuery(`DELETE FROM organization_memberships WHERE org_id='${LANGFUSE_ORG_ID}' AND user_id='${userId}'`);
+      }
+      await langfuseDbQuery(`DELETE FROM membership_invitations WHERE email='${eq}' AND org_id='${LANGFUSE_ORG_ID}'`);
+      return { detail: '已撤销 Langfuse 授权（移出组织）' };
+    },
+  },
+};
+
+// 产品本地账号临时密码存取（Redis，供管理员列表里的 🔑 图标回看）
+const pcredKey = (uid, product) => `pcred:${uid}:${product}`;
+async function setProductCred(uid, product, pwd) {
+  try { await redisClient.set(pcredKey(uid, product), pwd); } catch (e) { console.warn('[cred] 保存失败:', e.message); }
+}
+async function getProductCreds(uid) {
+  try {
+    const prefix = `pcred:${uid}:`;
+    const keys = await redisClient.keys(prefix + '*');
+    const out = {};
+    for (const k of keys) {
+      const v = await redisClient.get(k);
+      if (v) out[k.slice(prefix.length)] = v;
+    }
+    return out;
+  } catch (e) { return {}; }
+}
+async function delProductCred(uid, product) {
+  try { await redisClient.del(pcredKey(uid, product)); } catch (e) {}
+}
+async function delProductCreds(uid) {
+  try {
+    const keys = await redisClient.keys(`pcred:${uid}:*`);
+    if (keys.length) await redisClient.del(keys);
+  } catch (e) {}
+}
+
+// 统一分发：开通某产品的管理员权限
+async function provisionProduct(key, u) {
+  const p = PRODUCT_PROVISIONERS[key];
+  if (!p) return { key, ok: true, skipped: true, detail: '门户内置模块（Keycloak 角色即权限）' };
+  try {
+    const r = await p.provision(u);
+    if (r.tempPassword && u && u.id) await setProductCred(u.id, key, r.tempPassword); // 记录临时密码供回看
+    return { key, ok: true, method: r.method, detail: r.detail, tempPassword: r.tempPassword };
+  } catch (e) {
+    return { key, ok: false, error: e.message };
+  }
+}
+
+// 统一分发：撤销某产品的管理员权限（删除产品账号）
+async function deprovisionProduct(key, u) {
+  const p = PRODUCT_PROVISIONERS[key];
+  if (!p) return { key, ok: true, skipped: true, detail: '门户内置模块' };
+  try {
+    const r = await p.deprovision(u);
+    if (u && u.id) await delProductCred(u.id, key); // 账号已删，清除记录的临时密码
+    return { key, ok: true, detail: r.detail };
+  } catch (e) {
+    return { key, ok: false, error: e.message };
+  }
+}
 
 // System info
 app.get('/api/system', keycloak.protect(), async (req, res) => {
@@ -339,7 +931,15 @@ app.get('/api/litellm/models', keycloak.protect(), async (req, res) => {
 // 当前登录用户信息（左下角账号名用）
 app.get('/api/me', keycloak.protect(), (req, res) => {
   const c = (req.kauth && req.kauth.grant && req.kauth.grant.access_token && req.kauth.grant.access_token.content) || {};
-  res.json({ username: c.preferred_username || c.name || '—', email: c.email || '', name: c.name || '' });
+  const roles = userRoles(req);
+  const grants = ADMIN_PRODUCTS.filter(p => roles.includes(productRole(p.key))).map(p => p.key);
+  res.json({
+    username: c.preferred_username || c.name || '—',
+    email: c.email || '',
+    name: c.name || '',
+    globalAdmin: roles.includes(GLOBAL_ADMIN_ROLE),
+    grants,
+  });
 });
 
 // 产品入口 URL（由 SERVER_PUBLIC_URL 派生，供前端动态渲染与跳转）
@@ -362,6 +962,15 @@ app.get('/api/urls', keycloak.protect(), (req, res) => {
       mailhog: extUrl(8025),
     },
   });
+});
+
+// 「打开 Gitea」：清掉浏览器里遗留的 Gitea 会话，再走 Keycloak SSO 登录（顺滑优先）。
+// 说明：Gitea 会话 cookie 按域名共享（与端口无关），故可从管理中心直接清掉；
+// 保留 Keycloak SSO，正常情况（未用其它账号登录过）会免密直达当前账号；
+// 若之前用别的账号登过 Gitea，则可能打开成那个旧账号（前端按钮旁已加小字提示）。
+app.get('/api/gitea/open', keycloak.protect(), (req, res) => {
+  res.setHeader('Set-Cookie', 'i_like_gitea=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax');
+  res.redirect(302, `${GITEA_URL}/user/oauth2/keycloak`);
 });
 
 // Unified authentication overview (admin only — contains credentials)
@@ -420,22 +1029,22 @@ async function newapiApi(path) {
 }
 
 // NewAPI 管理端点（仅 ai-platform-admin 角色可见）
-app.get('/api/newapi/channels', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/newapi/channels', keycloak.protect(), protectAdmin('newapi'), async (req, res) => {
   try { res.json(await newapiApi('/api/channel/')); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/newapi/users', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/newapi/users', keycloak.protect(), protectAdmin('newapi'), async (req, res) => {
   try { res.json(await newapiApi('/api/user/?p=0&page_size=100')); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/newapi/tokens', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/newapi/tokens', keycloak.protect(), protectAdmin('newapi'), async (req, res) => {
   try { res.json(await newapiApi('/api/token/?p=0&page_size=100')); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/api/newapi/overview', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/newapi/overview', keycloak.protect(), protectAdmin('newapi'), async (req, res) => {
   try {
     const [channels, users, tokens] = await Promise.all([
       newapiApi('/api/channel/'),
@@ -471,7 +1080,7 @@ async function newapiDbQuery(sql) {
 }
 
 // 审计日志：最近 N 条对话（type=2）
-app.get('/api/newapi/audit', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/newapi/audit', keycloak.protect(), protectAdmin('newapi'), async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 200, 500);
     const user = (req.query.user || '').replace(/[^a-zA-Z0-9_@.\-]/g, '');
@@ -492,7 +1101,7 @@ app.get('/api/newapi/audit', keycloak.protect('realm:ai-platform-admin'), async 
 });
 
 // 成本报表：总计 + 按用户 + 按模型 + 按天趋势
-app.get('/api/newapi/cost', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/newapi/cost', keycloak.protect(), protectAdmin('newapi'), async (req, res) => {
   try {
     const days = Math.min(parseInt(req.query.days) || 30, 365);
     const since = `created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL ${days} DAY))`;
@@ -616,7 +1225,7 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
 });
 
 // 手动触发 deepchat-sync 工作流（workflow_dispatch）
-app.post('/api/gitea/sync/trigger', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/gitea/sync/trigger', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
     const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/workflows/sync.yml/dispatches`, {
@@ -634,7 +1243,7 @@ app.post('/api/gitea/sync/trigger', keycloak.protect('realm:ai-platform-admin'),
 });
 
 // 读取 deepchat-sync 的自动同步计划（sync.yml 里的 cron）
-app.get('/api/gitea/sync/schedule', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync.yml' });
@@ -645,7 +1254,7 @@ app.get('/api/gitea/sync/schedule', keycloak.protect('realm:ai-platform-admin'),
 });
 
 // 更新 deepchat-sync 的自动同步计划（改 sync.yml 里的 cron）
-app.post('/api/gitea/sync/schedule', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const cron = ((req.body && req.body.cron) || '').trim();
     if (!cron) return res.status(400).json({ error: '请提供 cron 表达式' });
@@ -679,7 +1288,7 @@ app.post('/api/gitea/sync/schedule', keycloak.protect('realm:ai-platform-admin')
 });
 
 // 读取 sync-config.json（targets / keep_releases 等）
-app.get('/api/gitea/sync/config', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync-config.json' });
@@ -689,7 +1298,7 @@ app.get('/api/gitea/sync/config', keycloak.protect('realm:ai-platform-admin'), a
 });
 
 // 更新 sync-config.json（targets / keep_releases）
-app.post('/api/gitea/sync/config', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync-config.json' });
@@ -739,7 +1348,7 @@ async function appendSyncHistory(status, detail) {
 }
 
 // 读取 update-server 上的版本清单（versions.json）
-app.get('/api/gitea/sync/versions', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/gitea/sync/versions', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/versions.json']);
     const d = JSON.parse(stdout || '{"versions":[]}');
@@ -748,7 +1357,7 @@ app.get('/api/gitea/sync/versions', keycloak.protect('realm:ai-platform-admin'),
 });
 
 // 读取同步历史（sync-history.json，由同步脚本维护）
-app.get('/api/gitea/sync/history', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/gitea/sync/history', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-history.json']);
     const d = JSON.parse(stdout || '{"history":[]}');
@@ -759,7 +1368,7 @@ app.get('/api/gitea/sync/history', keycloak.protect('realm:ai-platform-admin'), 
 });
 
 // 删除某个版本（删目录 + 更新 versions.json + 触发重建页面）
-app.delete('/api/gitea/sync/version/:ver', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const ver = (req.params.ver || '').replace(/[^a-zA-Z0-9.\-]/g, '');
     if (!ver) return res.status(400).json({ error: '无效版本号' });
@@ -825,7 +1434,7 @@ app.get('/api/keycloak/users', keycloak.protect(), async (req, res) => {
       total,
       page,
       pageSize,
-      items: (list || []).map(u => ({ id: u.id, username: u.username, email: u.email, firstName: u.firstName, lastName: u.lastName, enabled: u.enabled })),
+      items: (list || []).map(u => ({ id: u.id, username: u.username, email: u.email, firstName: u.firstName, lastName: u.lastName, enabled: u.enabled, ldap: !!u.federationLink })),
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -844,6 +1453,87 @@ app.get('/api/keycloak/clients', keycloak.protect(), async (req, res) => {
     const total = filtered.length;
     const items = filtered.slice(page * pageSize, (page + 1) * pageSize).map(c => ({ id: c.id, clientId: c.clientId, enabled: c.enabled }));
     res.json({ total, page, pageSize, items });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Keycloak 认证：LDAP 全量/增量同步（全局管理员）----
+// 动态定位 LDAP 用户存储提供程序（Company AD），避免硬编码组件 id。
+async function getLdapProviderId(kc) {
+  try {
+    const comps = await kc.components.find({ realm: KC_REALM, type: 'org.keycloak.storage.UserStorageProvider' });
+    const ldap = (comps || []).find(c => c.providerId === 'ldap');
+    return ldap ? ldap.id : null;
+  } catch (e) { return null; }
+}
+
+// action: 'full' = triggerFullSync（全量），'changed' = triggerChangedUsersSync（增量）。
+// 说明：Keycloak 没有「单用户同步」端点，AD 里改了某个账号属性后，增量同步会同步所有有变更的账号。
+app.post('/api/keycloak/sync', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const action = (req.body && req.body.action === 'changed') ? 'triggerChangedUsersSync' : 'triggerFullSync';
+    const kc = await getKcAdmin();
+    const providerId = await getLdapProviderId(kc);
+    if (!providerId) throw new Error('未找到 LDAP 用户存储提供程序（Company AD）');
+    const result = await kc.userStorageProvider.sync({ id: providerId, realm: KC_REALM, action });
+    res.json({ ok: true, action: action === 'triggerFullSync' ? 'full' : 'changed', ...(result || {}) });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Keycloak 认证：删除用户（全局管理员）----
+// 注意：AD 联邦（READ_ONLY + import）用户删除后，下次全量同步或该用户再次 SSO 登录会重新出现；
+// 要彻底移除需在 AD 里禁用/删除该账号。返回 ldap 标志供前端提示。
+app.delete('/api/keycloak/users/:id', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const kc = await getKcAdmin();
+    const u = await kc.users.findOne({ id: req.params.id, realm: KC_REALM });
+    if (!u) return res.status(404).json({ error: '用户不存在' });
+    await kc.users.del({ id: req.params.id, realm: KC_REALM });
+    res.json({ ok: true, username: u.username, ldap: !!u.federationLink });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Keycloak 认证：角色管理（全局管理员）----
+// 列表（带各角色用户数）
+app.get('/api/keycloak/roles', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const kc = await getKcAdmin();
+    const roles = await kc.roles.find({ realm: KC_REALM });
+    const items = await Promise.all((roles || []).map(async r => {
+      let users = 0;
+      try { users = ((await kc.roles.findUsersWithRole({ name: r.name, realm: KC_REALM })) || []).length; } catch (e) {}
+      return { name: r.name, description: r.description || '', composite: !!r.composite, users };
+    }));
+    res.json({ items });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 新建 realm 角色
+app.post('/api/keycloak/roles', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const name = ((req.body && req.body.name) || '').trim();
+    const description = ((req.body && req.body.description) || '').trim();
+    if (!name) return res.status(400).json({ error: '角色名不能为空' });
+    const kc = await getKcAdmin();
+    await kc.roles.create({ realm: KC_REALM, name, description });
+    res.json({ ok: true, name });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 删除 realm 角色
+app.delete('/api/keycloak/roles/:name', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const kc = await getKcAdmin();
+    await kc.roles.delByName({ name: req.params.name, realm: KC_REALM });
+    res.json({ ok: true, name: req.params.name });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 角色成员列表
+app.get('/api/keycloak/roles/:name/users', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const kc = await getKcAdmin();
+    const users = (await kc.roles.findUsersWithRole({ name: req.params.name, realm: KC_REALM })) || [];
+    res.json({ items: users.map(u => ({ id: u.id, username: u.username, email: u.email, firstName: u.firstName, lastName: u.lastName })) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -1116,44 +1806,44 @@ async function gwFetch(path, opts = {}) {
   return { status: resp.status, data };
 }
 
-app.get('/api/mcp-gateway/servers', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/mcp-gateway/servers', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch('/api/servers');
   res.status(r.status).json(r.data);
 });
 
-app.post('/api/mcp-gateway/servers', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/mcp-gateway/servers', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch('/api/servers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body || {}) });
   res.status(r.status).json(r.data);
 });
 
-app.put('/api/mcp-gateway/servers/:name', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.put('/api/mcp-gateway/servers/:name', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch(`/api/servers/${req.params.name}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req.body || {}) });
   res.status(r.status).json(r.data);
 });
 
-app.delete('/api/mcp-gateway/servers/:name', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.delete('/api/mcp-gateway/servers/:name', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch(`/api/servers/${req.params.name}`, { method: 'DELETE' });
   res.status(r.status).json(r.data);
 });
 
-app.get('/api/mcp-gateway/skills', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/mcp-gateway/skills', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch('/skills');
   res.status(r.status).json(r.data);
 });
 
-app.get('/api/mcp-gateway/tools', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/mcp-gateway/tools', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch('/api/tools');
   res.status(r.status).json(r.data);
 });
 
-app.post('/api/mcp-gateway/skills/upload', keycloak.protect('realm:ai-platform-admin'), express.raw({ type: ['application/zip', 'application/octet-stream'], limit: '200mb' }), async (req, res) => {
+app.post('/api/mcp-gateway/skills/upload', keycloak.protect(), protectAdmin('mcp-gateway'), express.raw({ type: ['application/zip', 'application/octet-stream'], limit: '200mb' }), async (req, res) => {
   const buf = req.body;
   if (!buf || !buf.length) return res.status(400).json({ error: '空文件' });
   const r = await gwFetch('/api/skills/upload', { method: 'POST', headers: { 'Content-Type': 'application/zip' }, body: buf });
   res.status(r.status).json(r.data);
 });
 
-app.delete('/api/mcp-gateway/skills/:name', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.delete('/api/mcp-gateway/skills/:name', keycloak.protect(), protectAdmin('mcp-gateway'), async (req, res) => {
   const r = await gwFetch(`/api/skills/${req.params.name}`, { method: 'DELETE' });
   res.status(r.status).json(r.data);
 });
@@ -1494,7 +2184,7 @@ async function performRestore(dirName) {
 }
 
 // 备份列表
-app.get('/api/backup/list', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/backup/list', keycloak.protect(), protectAdmin('backup'), async (req, res) => {
   try {
     const dirs = [];
     if (fs.existsSync(BACKUP_DIR)) {
@@ -1518,7 +2208,7 @@ app.get('/api/backup/list', keycloak.protect('realm:ai-platform-admin'), async (
 });
 
 // 触发备份
-app.post('/api/backup/run', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/backup/run', keycloak.protect(), protectAdmin('backup'), async (req, res) => {
   try {
     const r = await performBackup();
     res.json(r);
@@ -1526,7 +2216,7 @@ app.post('/api/backup/run', keycloak.protect('realm:ai-platform-admin'), async (
 });
 
 // 触发恢复
-app.post('/api/backup/restore', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/backup/restore', keycloak.protect(), protectAdmin('backup'), async (req, res) => {
   try {
     const dirName = (req.body && req.body.dir) || '';
     if (!dirName) return res.status(400).json({ error: '缺少备份目录名' });
@@ -1809,12 +2499,12 @@ app.get('/api/availability', keycloak.protect(), async (req, res) => {
 });
 
 // 全测
-app.post('/api/availability/run', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/availability/run', keycloak.protect(), protectAdmin('availability'), async (req, res) => {
   res.json(await refreshAvailability());
 });
 
 // 单测
-app.post('/api/availability/test/:id', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/availability/test/:id', keycloak.protect(), protectAdmin('availability'), async (req, res) => {
   const def = availabilityTestDefs.find(d => d.id === req.params.id);
   if (!def) return res.status(404).json({ error: '未知测试项 ' + req.params.id });
   const r = await runAvailabilityTest(def.id, def.name, def.run);
@@ -2232,7 +2922,7 @@ function cleanupReports() {
 }
 
 // 生成报告（数据 + markdown，保存到历史）
-app.get('/api/report', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.get('/api/report', keycloak.protect(), protectAdmin('report'), async (req, res) => {
   try {
     const days = Math.min(Math.max(parseInt(req.query.days) || 7, 1), 365);
     const lang = (req.query.lang || 'zh').slice(0, 8).replace(/[^a-zA-Z-]/g, '');
@@ -2252,7 +2942,7 @@ app.get('/api/report', keycloak.protect('realm:ai-platform-admin'), async (req, 
 });
 
 // 历史报告列表 + 当前保留设置
-app.get('/api/report/list', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+app.get('/api/report/list', keycloak.protect(), protectAdmin('report'), (req, res) => {
   try {
     ensureReportDir();
     const items = fs.readdirSync(REPORT_DIR)
@@ -2264,12 +2954,12 @@ app.get('/api/report/list', keycloak.protect('realm:ai-platform-admin'), (req, r
 });
 
 // 读取保留设置
-app.get('/api/report/settings', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+app.get('/api/report/settings', keycloak.protect(), protectAdmin('report'), (req, res) => {
   res.json(getReportSettings());
 });
 
 // 更新保留设置
-app.post('/api/report/settings', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+app.post('/api/report/settings', keycloak.protect(), protectAdmin('report'), (req, res) => {
   try {
     const settings = saveReportSettings(req.body || {});
     const removed = cleanupReports();
@@ -2278,7 +2968,7 @@ app.post('/api/report/settings', keycloak.protect('realm:ai-platform-admin'), (r
 });
 
 // 查看单个历史报告内容
-app.get('/api/report/file/:name', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+app.get('/api/report/file/:name', keycloak.protect(), protectAdmin('report'), (req, res) => {
   try {
     const name = path.basename(req.params.name);
     if (!name.endsWith('.md')) return res.status(400).json({ error: 'invalid name' });
@@ -2289,7 +2979,7 @@ app.get('/api/report/file/:name', keycloak.protect('realm:ai-platform-admin'), (
 });
 
 // 下载单个历史报告
-app.get('/api/report/file/:name/download', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+app.get('/api/report/file/:name/download', keycloak.protect(), protectAdmin('report'), (req, res) => {
   try {
     const name = path.basename(req.params.name);
     if (!name.endsWith('.md')) return res.status(400).json({ error: 'invalid name' });
@@ -2302,7 +2992,7 @@ app.get('/api/report/file/:name/download', keycloak.protect('realm:ai-platform-a
 });
 
 // 删除单个历史报告
-app.delete('/api/report/file/:name', keycloak.protect('realm:ai-platform-admin'), (req, res) => {
+app.delete('/api/report/file/:name', keycloak.protect(), protectAdmin('report'), (req, res) => {
   try {
     const name = path.basename(req.params.name);
     if (!name.endsWith('.md')) return res.status(400).json({ error: 'invalid name' });
@@ -2343,7 +3033,7 @@ app.get('/api/alerts', keycloak.protect(), (req, res) => {
 // ═══════════════════════════════════════════
 // Ghost 免登录：密码登录 + 本地算 TOTP 验证码，把已验证会话 cookie 写进浏览器
 // ═══════════════════════════════════════════
-app.post('/api/ghost/auto-login', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+app.post('/api/ghost/auto-login', keycloak.protect(), protectAdmin('ghost'), async (req, res) => {
   try {
     // 1. 读 admin_session_secret + userId
     const { stdout: authOut, stderr: authErr } = await dockerExec(GHOST_CONTAINER, ['node', '-e', GHOST_AUTH_SCRIPT(GHOST_ADMIN_EMAIL)]);
@@ -2410,5 +3100,6 @@ app.listen(PORT, async () => {
   console.log(`[server] AI Admin Center running on port ${PORT}`);
   console.log(`[server] Keycloak: ${KC_URL}/realms/${KC_REALM}`);
   await ensureGlobalAdmin();
+  await ensureProductRoles();
   startAvailabilityScheduler();
 });

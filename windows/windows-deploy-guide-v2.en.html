@@ -1528,6 +1528,9 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
 <div class="callout callout-warn">
   <strong>⚠️ Pitfall 2: Gitea's <code>ROOT_URL</code> must be set to the intranet address:</strong> if <code>GITEA__server__ROOT_URL</code> in docker-compose is still <code>http://localhost:3002/</code>, Gitea generates repo links and API <code>html_url</code> with <code>localhost</code>/container addresses (intranet employees can't open them). Change to <code>http://&lt;server-IP&gt;:3002/</code> then <code>docker compose up -d gitea</code> to rebuild.
 </div>
+<div class="callout callout-info">
+  <strong>🔐 Gitea Keycloak SSO auto-registration (v0.91):</strong> Gitea is connected to Keycloak OIDC (the <code>/user/login</code> page shows a "Sign in with keycloak" button). To auto-create new SSO users on first login and stop redirecting to the <code>link_account</code> page, append an <code>[oauth2_client]</code> section to <code>app.ini</code> (docker-compose already sets the <code>GITEA__oauth2_client__*</code> env vars): <code>ENABLE_AUTO_REGISTRATION=true</code>, <code>ACCOUNT_LINKING=auto</code>, <code>USERNAME=preferred_username</code>. ⚠️ The local Gitea admin email must match Keycloak/AD (<code>@chxia.lab</code>), otherwise SSO can't match by email and will "cross-link" accounts or create duplicates.
+</div>
 
 <!-- ==================== 7. DeepChat ==================== -->
 
@@ -2093,12 +2096,12 @@ User browser → AI Admin Center (&lt;server-IP&gt;:10086)
 <pre><code># Add to .env:
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=see-credentials-list
-ADMIN_EMAIL=admin@company.com</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
 <p>On startup it auto-creates the <code>ai_all_in_one_admin</code> user in Keycloak (skips if exists) and assigns the <code>ai-platform-admin</code> realm role. All Keycloak SSO-connected products (Dify, NewAPI, Ghost) can identify admins via this role.</p>
 <div class="tip"><strong>Core idea:</strong> one Global Admin account manages all platforms. Each product's admin role is uniformly controlled via the Keycloak realm role <code>ai-platform-admin</code>.</div>
 
 <div class="callout callout-info">
-  <strong>Unified admin account (global convention):</strong> all platforms use username <code>ai_all_in_one_admin</code> (Keycloak / NewAPI / AI Admin Center / Ghost / Gitea / Dify), and the AD DC's LDAP bind service account is also named <code>ai_all_in_one_admin</code>.<strong>The concrete passwords are in the separate credentials list</strong> (<code>credentials.html</code>, internal confidential, not distributed with this guide).
+  <strong>Unified admin account (global convention):</strong> all platforms use username <code>ai_all_in_one_admin</code> (Keycloak / NewAPI / AI Admin Center / Ghost / Gitea / Dify), and the AD DC's LDAP bind service account is also named <code>ai_all_in_one_admin</code>.<strong>⚠️ The email must also <b>exactly match</b> the global admin email defined in AD, unified as <code>ai_all_in_one_admin@chxia.lab</code></strong> — if a product's local admin account email differs from Keycloak/AD, SSO login can't match it by email, causing account cross-link or duplicate accounts. Always use the same email when creating accounts / setting <code>ADMIN_EMAIL</code> / initializing each product.<strong>The concrete passwords are in the separate credentials list</strong> (<code>credentials.html</code>, internal confidential, not distributed with this guide).
 </div>
 
 <h3>11.4 Docker Compose deployment</h3>
@@ -2124,7 +2127,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;server-IP&gt;:4001
@@ -2141,7 +2144,9 @@ cd ..</code></pre>
   <li><b>Product stats pages</b>: Ghost/Dify/Gitea/Keycloak/update server show key stats first + an "Open admin" button (see 11.2 menu table). Data sources: Gitea REST API (Basic Auth + X-Total-Count), Keycloak Admin API, Dify console API (base64 password + cookie/CSRF), Ghost in-container sqlite (docker exec), Update Server version.txt + stat.</li>
   <li><b>MCP Gateway management</b>: add/remove MCP servers, upload/delete skills (proxy the gateway <code>/api/*</code> management endpoints, inject <code>X-Admin-Token</code>).</li>
   <li><b>🔍 Dify RAG retrieval</b>: the Dify page has a built-in "RAG knowledge retrieval" card — shows the knowledge-base list (<code>/api/dify/overview</code> returns <code>dataset_list</code> + <code>rag_ready</code>) + search chunks by query (backend <code>POST /api/dify/retrieve</code>, calls the Dify Knowledge API <code>hit-testing</code>, see 8.9).</li>
-  <li><b>Central auth / admin management</b>: unified accounts, SSO mechanism, per-platform login methods (ai-platform-admin only).</li>
+  <li><b>👥 Scoped admin authorization</b>: the global admin <code>ai_all_in_one_admin</code> can, in "Admin Accounts", search and add other admins from the Keycloak IdP, granting access per module (<code>admin:&lt;product&gt;</code> Realm Role); the global admin (<code>ai-platform-admin</code>) sees everything. Adding/appending a module <b>really provisions the product</b> (SSO first, API fallback) for Gitea / NewAPI / Dify / Ghost / Grafana / LiteLLM / Keycloak / Langfuse, each independently (one failure doesn't block the rest); revoking a module or deleting an admin <b>removes the account from the product</b> (SSO products revoke auth, API products delete the account). No-SSO products generate a temp password on creation, viewable via the 🔑 icon (global admin only). Non-admin users get a "You are not an admin" dialog and are signed out.</li>
+  <li><b>🔐 Keycloak page management</b>: the user list supports <b>LDAP full/incremental sync</b> (pull AD attribute changes into Keycloak in one click), <b>delete account</b> (AD-federated users reappear after the next sync/SSO login — disable in AD to remove permanently), and <b>role management</b> (list with user counts / create / delete / view members). Sync/delete/role actions are global-admin only.</li>
+  <li><b>Central auth / SSO mechanism</b>: unified accounts, per-platform login methods (ai-platform-admin only).</li>
   <li><b>System settings</b>: env var documentation + product entry URLs + <b>UI language (9: zh-CN/zh-TW/en/fr/es/pt/ja/ko/ar, Arabic supports RTL)</b>.</li>
   <li><b>🧬 PII masking</b>: shows Presidio analyzer/anonymizer health + LiteLLM guardrails (content-safety-filter / presidio-pii-mask) rule list + connected models.</li>
   <li><b>📜 Unified logs</b>: query Loki aggregated logs by container dropdown + keyword + time range (backend <code>/api/logs/query</code>).</li>
@@ -2154,9 +2159,9 @@ cd ..</code></pre>
 <div class="callout callout-warn">
   <strong>⚠️ Deployment / troubleshooting points:</strong>
   <ul>
-    <li>admin-portal sessions are in-memory (MemoryStore); <code>docker compose up -d</code> rebuilds the container and <b>clears login sessions</b> (re-login needed). For multi-replica / persistent sessions, switch to Redis storage.</li>
+    <li>admin-portal sessions are stored in <b>Redis</b> (<code>admin-session-redis</code>, same as Keycloak); restarting the container no longer clears login sessions. Sensitive state such as temp passwords is also stored in the same Redis (<code>pcred:*</code> keys).</li>
     <li>The homepage <code>/</code> must be Keycloak-protected: <code>express.static(..., { index:false })</code> must not serve index.html + explicit <code>app.get('/', keycloak.protect(), ...)</code>, otherwise unauthenticated users see an empty dashboard and all APIs return 401 (symptoms: "no login page opens, pages fail massively").</li>
-    <li>When aggregating Dify stats, the email must be Dify's actual admin email (<code>ai_all_in_one_admin@&lt;company-domain&gt;</code>), not the old <code>ADMIN_EMAIL=admin@company.com</code> in <code>.env</code>.</li>
+    <li>When aggregating Dify stats, the email must be Dify's actual admin email (<code>ai_all_in_one_admin@chxia.lab</code>, matching the AD global admin), not the old <code>@company.com</code> domain email.</li>
   </ul>
 </div>
 
@@ -2188,6 +2193,28 @@ cd ..</code></pre>
 </ol>
 
 <div class="tip"><strong>Compare with the old approach:</strong> earlier architecture diagrams used 1Panel/Portainer as the "unified management platform". But those are only Docker container management tools, unable to do application-layer unified auth and management. The AI Admin Center fills this gap: a unified external entry, internally controlling all products' admin permissions via Keycloak.</div>
+
+<h3>11.8 Scoped admin authorization + Keycloak page management (new in v0.91)</h3>
+<p>In "Admin Accounts" (left menu), the global admin can:</p>
+<ul>
+  <li><b>Add admin</b>: search an existing account from the Keycloak IdP (AD/LDAP users, no new account, no password) → pick modules → confirm. The system: ① assigns the <code>admin:&lt;product&gt;</code> Realm Role (controls which modules this admin sees/operates in the AI Admin Center); ② really provisions the product (see table).</li>
+  <li><b>Edit access</b>: append / revoke a single module.</li>
+  <li><b>Delete admin</b>: after double confirmation, revoke all module roles and remove the account from every product.</li>
+</ul>
+<table>
+  <tr><th>Product</th><th>Grant</th><th>Revoke (on delete)</th></tr>
+  <tr><td>Gitea</td><td>Keycloak SSO (<code>ENABLE_AUTO_REGISTRATION=true</code>; auto-created + admin on first SSO login)</td><td>delete Gitea account</td></tr>
+  <tr><td>NewAPI</td><td>Keycloak SSO auto-created + DB promote <code>role=10</code></td><td>delete NewAPI account</td></tr>
+  <tr><td>Dify</td><td>Console API invite as admin (no SSO)</td><td>delete Dify member</td></tr>
+  <tr><td>Ghost</td><td>Admin API invite staff (Administrator, no SSO)</td><td>delete Ghost staff / cancel invite</td></tr>
+  <tr><td>Grafana (monitoring)</td><td>create global user + set org Admin (SSO)</td><td>delete Grafana account</td></tr>
+  <tr><td>LiteLLM</td><td>master key create <code>proxy_admin</code> (SSO)</td><td>delete LiteLLM account</td></tr>
+  <tr><td>Keycloak</td><td>grant <code>realm-management</code> <code>realm-admin</code> composite role</td><td>revoke the role (Keycloak is the identity source; the account is kept)</td></tr>
+  <tr><td>Langfuse (observability)</td><td>direct Postgres write (<code>organization_memberships</code>=ADMIN; if never logged in, insert an invitation)</td><td>delete membership / invitation</td></tr>
+</table>
+<div class="callout callout-info">
+  <strong>🔐 Keycloak page (left menu → Keycloak):</strong> the user list has "Sync All / Sync Changed" buttons (pull AD attribute changes into Keycloak in one click); each user row has "Edit" (jump to Keycloak admin console) and "Delete"; the role section supports create/delete roles and view role members. Sync/delete/role actions are global-admin only. <b>Note</b>: Keycloak has no "sync single user" endpoint — incremental sync pulls all changed AD accounts; AD-federated users reappear after the next full sync or their next SSO login, so to remove permanently, disable/delete the account in AD.
+</div>
 
 <!-- ==================== 8. Operations ==================== -->
 <h2 id="ops">12. Operations — Health Checks &amp; Startup Self-Check</h2>
@@ -2357,9 +2384,9 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
   <tr><td>langfuse-redis</td><td>Queue</td></tr>
 </table>
 <p>LiteLLM auto-reports via <code>success_callback: ["langfuse"]</code> (<code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code> / <code>LANGFUSE_HOST</code> in <code>.env</code>).</p>
-<p>Log into Langfuse: <code>http://&lt;server-IP&gt;:3010</code>, account <code>ai_all_in_one_admin@company.com</code> / unified password. First start auto-creates the org <code>AI All In One</code> and project <code>AI Platform</code> via headless init.</p>
+<p>Log into Langfuse: <code>http://&lt;server-IP&gt;:3010</code>, account <code>ai_all_in_one_admin@chxia.lab</code> / unified password. First start auto-creates the org <code>AI All In One</code> and project <code>AI Platform</code> via headless init.</p>
 <div class="note">⚠️ <b>Key pitfall</b>: Langfuse v4 defaults <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=events_only</code>, so old clients (LiteLLM's langfuse SDK) fail reporting <code>trace-create</code>. You must set <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code> (both web and worker), otherwise no trace data appears.</div>
-<div class="note">⚠️ <b>SSO login sees no data pitfall</b>: the headless-initialized org <code>AI All In One</code> only binds the init account <code>ai_all_in_one_admin@company.com</code>. If you log in via Keycloak SSO (AD email <code>ai_all_in_one_admin@chxia.lab</code>), Langfuse <b>auto-creates a separate account not in any org</b>, so you see no trace data. Fix: add the SSO user to the org —</p>
+<div class="note">⚠️ <b>SSO login sees no data pitfall</b>: the headless-initialized org <code>AI All In One</code> only binds the init account (the old misused <code>ai_all_in_one_admin@company.com</code>). If you log in via Keycloak SSO (AD email <code>ai_all_in_one_admin@chxia.lab</code>), Langfuse <b>auto-creates a separate account not in any org</b>, so you see no trace data. Fix: add the SSO user to the org — (emails are now unified as <code>ai_all_in_one_admin@chxia.lab</code>, so this pitfall no longer occurs)</p>
 <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
 "INSERT INTO organization_memberships (id, org_id, user_id, role) \
 SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
@@ -2393,8 +2420,8 @@ ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
   <tr><th>Product</th><th>Integration</th><th>Keycloak Client</th><th>Login method</th></tr>
   <tr><td>AI Admin Center</td><td>keycloak-connect (OIDC)</td><td>AI-all-in-one-admin-portal</td><td>Forced SSO (auto-redirect to Keycloak when not logged in)</td></tr>
   <tr><td>NewAPI</td><td>OIDC</td><td>newapi</td><td>Click "OIDC login" on the login page</td></tr>
-  <tr><td>Ghost</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@company.com</code></td></tr>
-  <tr><td>Dify</td><td>OIDC (optional)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@company.com</code></td></tr>
+  <tr><td>Ghost</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
+  <tr><td>Dify</td><td>OIDC (optional)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
   <tr><td>Gitea</td><td>— (local account)</td><td>—</td><td>Unified account <code>ai_all_in_one_admin</code></td></tr>
   <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td>grafana</td><td>Auto-login (<code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>, click link to enter directly, no button)</td></tr>
   <tr><td>Langfuse</td><td>Keycloak provider</td><td>langfuse</td><td>Auto-login (AI Admin Center entry points to <code>/auth/sso-initiate?provider=KEYCLOAK</code>, IdP-initiated SSO)</td></tr>

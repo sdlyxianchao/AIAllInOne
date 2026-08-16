@@ -28,7 +28,7 @@
 | 소스 / CI | Gitea + Runner | 내부 Git + Actions 자동화 |
 | 클라이언트 | DeepChat | 로컬 AI 데스크톱 클라이언트 (Windows / macOS / Linux) |
 | 클라이언트 배포 | Update Server | DeepChat 설치 프로그램 호스팅 및 자동 업데이트 |
-| 통합 관리 | AI 관리 센터 | 단일 진입점: 대시보드 + 제품 임베드 + 감사/비용/보고서 + RAG 검색 |
+| 통합 관리 | AI 관리 센터 | 단일 진입점: 대시보드 + 제품 임베드 + 감사/비용/보고서 + RAG 검색 + 모듈별 관리자 권한 + Keycloak 동기화/역할 관리 |
 | 게이트웨이 | MCP Gateway | 스킬 / MCP 마켓 관리 + Dify 지식 검색(RAG) |
 | 모니터링 | Prometheus + Grafana + Alertmanager | 컨테이너 리소스 모니터링 + 알림 통지 |
 | LLM 옵저버빌리티 | Langfuse | 모든 모델 호출의 트레이스 / 지연 / 토큰 / 비용 |

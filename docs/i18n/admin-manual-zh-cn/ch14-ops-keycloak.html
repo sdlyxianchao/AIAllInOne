@@ -18,6 +18,8 @@
 
     <p><span class="logo"><img src="../../images/keycloak-logo.svg" alt="Keycloak"></span><b>入口</b>：<span class="entry">http://&lt;服务器IP&gt;:9090</span> → Administration Console → 管理员登录。</p>
 
+    <div class="note">📌 很多操作也可在 AI 管理中心 → Keycloak 认证页完成（仅全局管理员）：LDAP 全量/增量同步、删除用户、角色管理（列表/新建/删除/查看成员）。见第 12.6 章。</div>
+
     <h2>14.1 管理用户</h2>
     <ol>
       <li><b>新建用户</b>：Users → Add user → 填用户名 → Create；</li>
@@ -29,7 +31,7 @@
 
     <h2>14.2 角色与权限</h2>
     <ul>
-      <li><b>Realm Role</b>：Realm roles → Create role 建角色（如 <code>ai-platform-admin</code>）；</li>
+      <li><b>Realm Role</b>：Realm roles → Create role 建角色（如 <code>ai-platform-admin</code>）；也可在 AI 管理中心 → Keycloak 认证页新建/删除角色、查看成员；</li>
       <li><b>分配角色</b>：用户 → Role mapping → Assign role；</li>
       <li><b>组</b>：Groups → 建组（<code>ai-admin</code> / <code>ai-user</code>）→ 组内加用户，角色赋给组，用户随组继承权限。</li>
     </ul>
@@ -46,7 +48,7 @@
     <h2>14.4 AD / LDAP 联邦维护</h2>
     <ul>
       <li><b>改域控/密码</b>：User Federation → 点 LDAP Provider → 改 Connection URL / Bind credentials → Save；</li>
-      <li><b>手动同步</b>：Synchronize all users；</li>
+      <li><b>手动同步</b>：Synchronize all users；或在 AI 管理中心 → Keycloak 认证页点「全部同步 / 增量同步」（增量只同步 AD 里有变更的账号）。</li>
       <li><b>组映射</b>：Mappers 标签 → group-ldap-mapper → Groups DN 设 AD 组所在容器，把 AD 组映射成 Keycloak 角色。</li>
     </ul>
 

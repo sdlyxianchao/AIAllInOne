@@ -457,9 +457,9 @@ app.get('/market', (req, res) => {
   .page-name { font-size: 14px; color: #6b7280; }
 
   /* 英雄区（深藏青渐变，左对齐） */
-  .hero { position: relative; padding: 64px 0 72px; background: radial-gradient(1200px 500px at 80% -10%, rgba(201,162,39,.14), transparent 60%), linear-gradient(160deg, var(--navy-deep), var(--navy) 55%, var(--navy-soft)); color: #fff; overflow: hidden; }
+  .hero { position: relative; padding: 88px 0 96px; min-height: 484px; display: flex; align-items: center; background: radial-gradient(1200px 500px at 80% -10%, rgba(201,162,39,.14), transparent 60%), linear-gradient(160deg, var(--navy-deep), var(--navy) 55%, var(--navy-soft)); color: #fff; overflow: hidden; }
   .hero::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 44px 44px; pointer-events: none; }
-  .hero-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  .hero-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 24px; width: 100%; }
   .hero-eyebrow { display: inline-block; font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold-soft); margin-bottom: 18px; border: 1px solid rgba(230,201,106,.35); padding: 5px 14px; border-radius: 999px; }
   .hero-title { font-family: var(--serif); font-size: clamp(30px, 5vw, 44px); font-weight: 700; line-height: 1.25; margin: 0 0 14px; }
   .hero-sub { font-size: 16px; color: rgba(255,255,255,.82); margin: 0; }
@@ -553,7 +553,7 @@ app.get('/market', (req, res) => {
   .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .pg-info { color: #8b949e; font-size: 12px; }
   @media (max-width: 640px) {
-    .hero { padding: 40px 0 48px; }
+    .hero { padding: 40px 0 48px; min-height: 0; }
     .hero-title { font-size: 28px; }
     .section-head .hint { display: none; }
   }

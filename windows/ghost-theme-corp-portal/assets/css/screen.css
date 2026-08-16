@@ -164,6 +164,9 @@ a:hover { color: var(--color-gold); }
 .hero {
     position: relative;
     padding: 88px 0 96px;
+    min-height: 484px;
+    display: flex;
+    align-items: center;
     background:
         radial-gradient(1200px 500px at 80% -10%, rgba(201,162,39,.14), transparent 60%),
         linear-gradient(160deg, var(--color-navy-deep), var(--color-navy) 55%, var(--color-navy-soft));
@@ -181,7 +184,7 @@ a:hover { color: var(--color-gold); }
     pointer-events: none;
 }
 
-.hero-inner { position: relative; z-index: 1; }
+.hero-inner { position: relative; z-index: 1; width: 100%; }
 
 .hero-eyebrow {
     display: inline-block;
@@ -475,7 +478,6 @@ a:hover { color: var(--color-gold); }
 .page-deepchat .post-container { max-width: var(--container); }
 .page-deepchat .post-header { display: none; }
 .page-deepchat .dc-hero { display: none !important; }
-.hero--page { padding: 72px 0 64px; }
 
 .post-header { margin-bottom: 32px; }
 
@@ -760,7 +762,7 @@ a:hover { color: var(--color-gold); }
 
     .nav-toggle { display: flex; }
 
-    .hero { padding: 56px 0 64px; }
+    .hero { padding: 56px 0 64px; min-height: 0; }
     .hero-title { font-size: 28px; }
     .hero-sub { font-size: 15px; }
     .hero-actions { flex-direction: column; align-items: stretch; }

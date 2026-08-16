@@ -30,7 +30,7 @@ The repository supports three deployment platforms:
 | Source / CI | Gitea + Runner | Internal Git + Actions automation |
 | Client | DeepChat | Local AI desktop client (Windows / macOS / Linux) |
 | Client distribution | Update Server | DeepChat installer hosting & auto-update |
-| Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports + RAG retrieval |
+| Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports + RAG retrieval + scoped admin authorization + Keycloak sync/roles |
 | Gateway | MCP Gateway | Skill / MCP market management + Dify knowledge retrieval (RAG) |
 | Monitoring | Prometheus + Grafana + Alertmanager | Container resource monitoring + alert notifications |
 | LLM observability | Langfuse | Trace / latency / tokens / cost of every model call |

@@ -98,7 +98,7 @@ arp -a | findstr "DC-MAC-address"</code></pre>
 <p>至少需要以下账号，Keycloak 导入时用服务账号做 LDAP 绑定：</p>
 <table>
   <tr><th>账号</th><th>类型</th><th>说明</th></tr>
-  <tr><td><code>svc_keycloak</code></td><td><b>服务账号（必须）</b></td><td>Keycloak LDAP 绑定用的只读账号，密码见 <code>.env.example</code></td></tr>
+  <tr><td><code>svc_keycloak</code></td><td><b>服务账号（必须）</b></td><td>Keycloak LDAP 绑定用的只读账号，密码见 <code>.env.windows</code></td></tr>
   <tr><td>2 个普通域用户</td><td>测试用</td><td>任意域账号（如 <code>zhangsan</code> / <code>lisi</code>），用于验证 Keycloak 同步和域账号登录</td></tr>
 </table>
 <div class="warn"><strong>密码策略：</strong>服务账号 <code>svc_keycloak</code> 应设为"密码永不过期"，避免 LDAP 绑定中断。生产环境建议用 Group Managed Service Account (gMSA)。</div>
@@ -178,7 +178,7 @@ docker exec keycloak sh -c "microdnf install -y openldap-clients 2>/dev/null; ld
   <tr><td>Connection timeout</td><td><i>留空</i></td><td>使用 Keycloak 默认超时值</td></tr>
   <tr><td>Bind type</td><td><b>simple</b></td><td>标准用户名+密码认证</td></tr>
   <tr><td>Bind DN</td><td><code>CN=svc_keycloak,CN=Users,DC=testcompany,DC=local</code></td><td><b>必须是 LDAP Distinguished Name 格式！</b>不要用 NetBIOS 格式（<s>DOMAIN\用户</s>）。完整路径见下方说明</td></tr>
-  <tr><td>Bind credentials</td><td><code>服务账号密码</code></td><td>svc_keycloak 的密码，见 <code>.env.example</code></td></tr>
+  <tr><td>Bind credentials</td><td><code>服务账号密码</code></td><td>svc_keycloak 的密码，见 <code>.env.windows</code></td></tr>
 </table>
 
 <h4>LDAP searching and updating（搜索与更新）</h4>
@@ -264,7 +264,7 @@ docker exec keycloak sh -c "microdnf install -y openldap-clients 2>/dev/null; ld
   <li>访问 <code>http://127.0.0.1:9090/realms/enterprise-ai/account</code></li>
   <li>在登录页面输入 AD 域用户的凭证：
     <ul>
-      <li>用户名：<code>&lt;测试用户名&gt;</code>（sAMAccountName）或 <code>&lt;测试用户名&gt;@company.lab</code>（UPN），两种格式均可</li>
+      <li>用户名：<code>aitest1</code>（sAMAccountName）或 <code>aitest1@chxia.lab</code>（UPN），两种格式均可</li>
       <li>密码：该域用户在 AD 中设置的密码</li>
     </ul>
   </li>
@@ -283,13 +283,13 @@ docker exec keycloak sh -c "microdnf install -y openldap-clients 2>/dev/null; ld
 <h4>方式 B：通过 Keycloak Admin Console 验证用户状态</h4>
 <ol>
   <li>Keycloak 管理后台 → <b>Users</b></li>
-  <li>搜索域用户名（如 <code>&lt;测试用户名&gt;</code>）</li>
+  <li>搜索域用户名（如 <code>aitest1</code>）</li>
   <li>点击用户 → <b>Attributes</b> 标签：应能看到 <code>LDAP_ID</code>、<code>LDAP_ENTRY_DN</code> 等属性，说明用户来源是 LDAP 同步而非本地创建</li>
   <li><b>Sessions</b> 标签：如果已用方式 A 登录成功，这里会有一条活跃会话记录</li>
 </ol>
 
 <h4>方式 C：接入下游应用后测试（后续步骤）</h4>
-<p>Keycloak AD 登录链路打通后，任何接入 Keycloak OIDC SSO 的应用都会在登录页展示 Keycloak 登录表单，直接输入域账号即可。例如 Dify 配置完 SSO 后，浏览器打开 <code>http://127.0.0.1/apps</code> → 自动跳转到 Keycloak 登录页 → 输入 <code>&lt;测试用户名&gt;</code> + 域密码 → 登录成功进入 Dify 工作台。</p>
+<p>Keycloak AD 登录链路打通后，任何接入 Keycloak OIDC SSO 的应用都会在登录页展示 Keycloak 登录表单，直接输入域账号即可。例如 Dify 配置完 SSO 后，浏览器打开 <code>http://127.0.0.1/apps</code> → 自动跳转到 Keycloak 登录页 → 输入 <code>aitest1</code> + 域密码 → 登录成功进入 Dify 工作台。</p>
 <div class="verify">三种验证方式任一通过即表示 AD → Keycloak 链路正常。方式 A 最直接，推荐优先使用。</div>
 
 <!-- ═══════════════════════════════════════════════════════════ -->

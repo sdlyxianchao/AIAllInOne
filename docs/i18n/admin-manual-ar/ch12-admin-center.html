@@ -37,7 +37,7 @@
     <pre><code># الإعداد في .env
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=انظر قائمة أسماء المستخدمين وكلمات المرور
-ADMIN_EMAIL=admin@company.com</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
     <p>بعد التشغيل يُنشأ المستخدم <code>ai_all_in_one_admin</code> تلقائيًا في Keycloak (ويتخطى الإنشاء إن كان موجودًا)، ويُمنح دور Realm <code>ai-platform-admin</code>. الفكرة الأساسية: <b>حساب Global Admin واحد يدير المنصة كلها</b>.</p>
 
     <h2>12.3 النشر عبر Docker Compose</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;عنوان-IP-الخادم&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>تُخزَّن جلسات admin-portal في الذاكرة، وإعادة بناء الحاوية عبر <code>up -d</code> ستؤدي إلى <b>مسح جلسات تسجيل الدخول</b> (ويلزم إعادة الدخول)؛</li>
         <li>يجب حماية الصفحة الرئيسية <code>/</code> بواسطة Keycloak (<code>express.static(..., {index:false})</code> + <code>app.get('/', keycloak.protect())</code> صراحةً)، وإلا ستُعرض لوحة فارغة عند عدم تسجيل الدخول؛</li>
-        <li>استخدم البريد الإلكتروني الفعلي للمدير (<code>ai_all_in_one_admin@&lt;نطاق-الشركة&gt;</code>) في إحصاءات Dify، وليس القديم <code>ADMIN_EMAIL=admin@company.com</code>؛</li>
+        <li>استخدم البريد الإلكتروني الفعلي للمدير (<code>ai_all_in_one_admin@chxia.lab</code>، المطابق للمسؤول العام في AD) في إحصاءات Dify؛</li>
         <li><b>بعد تعديل server.js يجب تنفيذ <code>docker restart admin-portal</code></b>، ولا تستخدم <code>up -d</code> (لأن تغيير محتوى ملف الحجم لا يؤدي إلى إعادة البناء).</li>
       </ul>
     </div>
@@ -95,6 +95,14 @@ cd ..</code></pre>
       <li>عند النقر على أي منتج تُعرض الإحصاءات أولًا، ولا يُنقَل إلا عند النقر على «فتح اللوحة»؛</li>
       <li>يمكن التبديل بين 9 لغات من إعدادات النظام.</li>
     </ol>
+
+    <h2>12.6 تفويض المسؤول لكل وحدة + إدارة صفحة Keycloak (v0.91)</h2>
+    <p>يمكن للمسؤول العام إدارة المسؤولين الآخرين و Keycloak من مركز إدارة AI:</p>
+    <ul>
+      <li><b>حسابات المسؤولين</b>: ابحث عن حساب موجود في موفّر الهوية Keycloak (مستخدمو AD/LDAP، لا إنشاء حساب جديد ولا كلمة مرور) → اختر الوحدات → تأكيد. يمنح النظام دور Realm <code>admin:&lt;المنتج&gt;</code> و<b>يفعّل المنتج فعلياً</b> (SSO أولاً ثم API): Gitea / NewAPI / Dify / Ghost / Grafana / LiteLLM / Keycloak / Langfuse. إلغاء وحدة أو حذف مسؤول <b>يحذف الحساب من المنتج</b>. المنتجات بدون SSO تولّد كلمة مرور مؤقتة تُعرض عبر أيقونة 🔑 (للمسؤول العام فقط). يرى غير المسؤولين رسالة «لست مسؤولاً» ويُسجّل خروجهم.</li>
+      <li><b>صفحة Keycloak</b>: زرّا «مزامنة الكل / مزامنة التغييرات» لجلب تغييرات AD بنقرة واحدة؛ كل صف مستخدم فيه «تعديل» (إلى وحدة تحكم Keycloak) و«حذف»؛ قسم الأدوار يدعم إنشاء/حذف الأدوار وعرض الأعضاء. عمليات المزامنة/الحذف/الأدوار للمسؤول العام فقط.</li>
+    </ul>
+    <div class="warn">⚠️ ملاحظة: لا يوجد في Keycloak نقطة نهاية «لمزامنة مستخدم واحد» — المزامنة التزايدية تجلب كل حسابات AD المتغيّرة. يظهر المستخدمون المربوطون بـ AD مجدداً بعد المزامنة الكاملة التالية أو تسجيل الدخول التالي عبر SSO؛ ولإزالتهم نهائياً، عطّل/احذف الحساب في AD.</div>
 
     <nav class="pager" id="pager"></nav>
   </main>

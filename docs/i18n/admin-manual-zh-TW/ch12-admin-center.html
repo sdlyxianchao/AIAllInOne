@@ -37,7 +37,7 @@
     <pre><code># .env 中配置
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=見帳號密碼清單
-ADMIN_EMAIL=admin@company.com</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
     <p>啟動後自動在 Keycloak 建 <code>ai_all_in_one_admin</code> 使用者（已有則跳過），分配 <code>ai-platform-admin</code> Realm Role。核心理念：<b>一個 Global Admin 帳號管理所有平台</b>。</p>
 
     <h2>12.3 Docker Compose 部署</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;伺服器IP&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>admin-portal 會話存記憶體，<code>up -d</code> 重建容器會<b>清空登入會話</b>（需重登）；</li>
         <li>首頁 <code>/</code> 必須走 Keycloak 保護（<code>express.static(..., {index:false})</code> + 顯式 <code>app.get('/', keycloak.protect())</code>），否則未登入直接渲染空看板；</li>
-        <li>統計 Dify 用實際管理員郵箱（<code>ai_all_in_one_admin@&lt;公司網域&gt;</code>），不是舊 <code>ADMIN_EMAIL=admin@company.com</code>；</li>
+        <li>統計 Dify 用實際管理員郵箱（<code>ai_all_in_one_admin@chxia.lab</code>，須與 AD 全域管理員一致）；</li>
         <li><b>改 server.js 後必須 <code>docker restart admin-portal</code></b>，不能用 <code>up -d</code>（volume 檔案內容變化不會觸發重建）。</li>
       </ul>
     </div>
@@ -95,6 +95,14 @@ cd ..</code></pre>
       <li>點各產品先看統計、點「開啟後臺」才跳轉；</li>
       <li>系統設定可切 9 種語言。</li>
     </ol>
+
+    <h2>12.6 管理員分模組授權 + Keycloak 認證頁管理（v0.91）</h2>
+    <p>全域管理員可在 AI 管理中心直接管理其他管理員和 Keycloak：</p>
+    <ul>
+      <li><b>管理員帳號管理</b>：從 Keycloak 關聯的 IdP 搜尋既有帳號（AD/LDAP 使用者，無需新建、無需密碼）→ 勾選模組 → 確定。系統分配 <code>admin:&lt;產品&gt;</code> Realm Role，並<b>真實開通到產品</b>（SSO 優先、API 兜底）：Gitea / NewAPI / Dify / Ghost / Grafana / LiteLLM / Keycloak / Langfuse。撤銷模組或刪除管理員會<b>從產品刪除該帳號</b>。無 SSO 產品建號產生臨時密碼，🔑 圖示可回看（僅全域管理員）。非管理員登入彈「你不是管理員」並退出。</li>
+      <li><b>Keycloak 認證頁</b>：「全部同步 / 增量同步」按鈕一鍵拉取 AD 屬性變更；每列使用者有「編輯」（跳 Keycloak 控制台）和「刪除」；角色區塊可新建/刪除角色、查看成員。同步/刪除/角色操作僅全域管理員。</li>
+    </ul>
+    <div class="warn">⚠️ 注意：Keycloak 無「單一使用者同步」端點，增量同步會同步 AD 裡所有有變更的帳號；AD 同盟使用者刪除後下次全量同步或再次 SSO 登入會重新出現，徹底移除請在 AD 停用/刪除該帳號。</div>
 
     <nav class="pager" id="pager"></nav>
   </main>

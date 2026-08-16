@@ -1524,6 +1524,9 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
 <div class="callout callout-warn">
   <strong>⚠️ 踩坑 2：Gitea 的 <code>ROOT_URL</code> 要设成内网地址：</strong>docker-compose 里 <code>GITEA__server__ROOT_URL</code> 若还是 <code>http://localhost:3002/</code>，则 Gitea 生成的仓库链接、API 返回的 <code>html_url</code> 都会是 <code>localhost</code>/容器地址（内网员工点开失效）。改为 <code>http://&lt;服务器IP&gt;:3002/</code> 后 <code>docker compose up -d gitea</code> 重建生效。
 </div>
+<div class="callout callout-info">
+  <strong>🔐 Gitea Keycloak SSO 自动注册（v0.91）：</strong>Gitea 已接 Keycloak OIDC（<code>/user/login</code> 页有「Sign in with keycloak」按钮）。为让新 SSO 用户首次登录<b>自动建号、不再跳 <code>link_account</code></b>（关联账号）页，需在 <code>app.ini</code> 追加 <code>[oauth2_client]</code> 段（docker-compose 已配 <code>GITEA__oauth2_client__*</code> 环境变量）：<code>ENABLE_AUTO_REGISTRATION=true</code>、<code>ACCOUNT_LINKING=auto</code>、<code>USERNAME=preferred_username</code>。⚠️ Gitea 本地管理员邮箱必须与 Keycloak/AD 一致（<code>@chxia.lab</code>），否则 SSO 按邮箱匹配不到会「串号」或生成重复账号。
+</div>
 
 <!-- ==================== 7. DeepChat ==================== -->
 
@@ -2089,12 +2092,12 @@ Claim: name                →  User Attribute: firstName</code></pre>
 <pre><code># .env 中新增：
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=见账号密码清单
-ADMIN_EMAIL=admin@company.com</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
 <p>启动后自动在 Keycloak 中创建 <code>ai_all_in_one_admin</code> 用户（如有则跳过），并分配 <code>ai-platform-admin</code> Realm Role。所有接入 Keycloak SSO 的产品（Dify、NewAPI、Ghost）可通过此角色识别管理员。</p>
 <div class="tip"><strong>核心理念：</strong>一个 Global Admin 账号管理所有平台。每个产品的管理员角色通过 Keycloak Realm Role <code>ai-platform-admin</code> 统一控制。</div>
 
 <div class="callout callout-info">
-  <strong>统一管理员账号（全局约定）：</strong>所有平台的应用管理员统一用用户名 <code>ai_all_in_one_admin</code>（Keycloak / NewAPI / AI 管理中心 / Ghost / Gitea / Dify），AD 域控的 LDAP 绑定服务账号也叫 <code>ai_all_in_one_admin</code>。<strong>具体密码见独立的账号密码清单文档</strong>（<code>credentials.html</code>，内部机密，不随本部署指南外传）。
+  <strong>统一管理员账号（全局约定）：</strong>所有平台的应用管理员统一用用户名 <code>ai_all_in_one_admin</code>（Keycloak / NewAPI / AI 管理中心 / Ghost / Gitea / Dify），AD 域控的 LDAP 绑定服务账号也叫 <code>ai_all_in_one_admin</code>。<strong>⚠️ 邮箱也必须与 AD 中定义的全局管理员邮箱<b>完全一致</b>，统一为 <code>ai_all_in_one_admin@chxia.lab</code></strong>——各产品本地管理员账号若邮箱与 Keycloak/AD 不一致，SSO 登录时按邮箱匹配不到，就会「串号」或生成重复账号。因此建号、配 <code>ADMIN_EMAIL</code>、初始化各产品时，务必都填同一个邮箱。<strong>具体密码见独立的账号密码清单文档</strong>（<code>credentials.html</code>，内部机密，不随本部署指南外传）。
 </div>
 
 <h3>11.4 Docker Compose 部署</h3>
@@ -2120,7 +2123,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;服务器IP&gt;:4001
@@ -2137,7 +2140,9 @@ cd ..</code></pre>
   <li><b>产品统计页</b>：Ghost/Dify/Gitea/Keycloak/更新服务器点击后先展示关键统计 + 「打开后台」按钮（见 11.2 菜单表）。数据来源：Gitea REST API（Basic Auth + X-Total-Count）、Keycloak Admin API、Dify console API（base64 密码 + cookie/CSRF）、Ghost 容器内 sqlite（docker exec）、Update Server 的 version.txt + stat。</li>
   <li><b>MCP Gateway 管理</b>：增删 MCP Server、上传/删除 Skill（代理网关 <code>/api/*</code> 管理端点，注入 <code>X-Admin-Token</code>）。</li>
   <li><b>🔍 Dify RAG 检索</b>：Dify 页内置「RAG 知识库检索」卡片——展示知识库列表（<code>/api/dify/overview</code> 返回 <code>dataset_list</code> + <code>rag_ready</code>）+ 输入查询词检索片段（后端 <code>POST /api/dify/retrieve</code>，调 Dify Knowledge API <code>hit-testing</code>，见 8.9）。</li>
-  <li><b>集中认证 / 管理员管理</b>：统一账号、SSO 机制、各平台登录方式（仅 ai-platform-admin 可见）。</li>
+  <li><b>👥 管理员分模块授权</b>：全局管理员 <code>ai_all_in_one_admin</code> 在「管理员账号管理」里，从 Keycloak 关联的 IdP 中搜索添加其他管理员，按 15 个模块（<code>admin:&lt;产品&gt;</code> Realm Role）分模块授权；全局管理员（<code>ai-platform-admin</code>）看全部。添加/追加模块时会<b>真实开通到对应产品</b>（SSO 优先、API 兜底）：Gitea / NewAPI / Dify / Ghost / Grafana / LiteLLM / Keycloak / Langfuse 逐个 provision，失败不阻塞其它产品；撤销模块或删除管理员时从产品<b>删除该账号</b>（SSO 产品撤销授权、API 产品删账号）。无 SSO 产品建号时生成临时密码，列表 🔑 图标可回看（仅全局管理员）。非管理员登录直接弹「你不是管理员」并退出。</li>
+  <li><b>🔐 Keycloak 认证页管理</b>：用户列表支持 <b>LDAP 全量/增量同步</b>（AD 改了账号属性后一键拉取到 Keycloak）、<b>删除账号</b>（AD 联邦用户删除后下次同步/SSO 登录会重新出现，彻底移除需在 AD 禁用）、<b>角色管理</b>（列表带用户数 / 新建 / 删除 / 查看成员）。同步/删除/角色操作仅全局管理员可见。</li>
+  <li><b>集中认证 / SSO 机制</b>：统一账号、各平台登录方式说明（仅 ai-platform-admin 可见）。</li>
   <li><b>系统设置</b>：环境变量说明 + 产品入口 URL + <b>界面语言（9 种：简中/繁中/英/法/西/葡/日/韩/阿，阿拉伯语支持 RTL 从右到左）</b>。</li>
   <li><b>🧬 PII 脱敏</b>：展示 Presidio analyzer/anonymizer 健康状态 + LiteLLM guardrails（content-safety-filter / presidio-pii-mask）规则清单 + 已接入模型。</li>
   <li><b>📜 统一日志</b>：按容器下拉 + 关键字 + 时间范围查 Loki 聚合日志（后端 <code>/api/logs/query</code>）。</li>
@@ -2150,9 +2155,9 @@ cd ..</code></pre>
 <div class="callout callout-warn">
   <strong>⚠️ 部署/排错要点：</strong>
   <ul>
-    <li>admin-portal 会话存内存（MemoryStore），<code>docker compose up -d</code> 重建容器会<b>清空登录会话</b>（需重新登录）。要多副本/持久会话需换 Redis 存储。</li>
+    <li>admin-portal 会话存 <b>Redis</b>（<code>admin-session-redis</code>，Keycloak 同款），重启容器不再清空登录会话；临时密码等敏感状态也存同一 Redis（<code>pcred:*</code> key）。</li>
     <li>首页 <code>/</code> 必须走 Keycloak 保护：<code>express.static(..., { index:false })</code> 不放行 index.html + 显式 <code>app.get('/', keycloak.protect(), ...)</code>，否则未登录会直接渲染空看板、接口全 401（表现为「打开没有登录界面、各页大量失败」）。</li>
-    <li>统计 Dify 数据时邮箱必须用 Dify 实际管理员邮箱（<code>ai_all_in_one_admin@&lt;公司域名&gt;</code>），不是 <code>.env</code> 里那个旧的 <code>ADMIN_EMAIL=admin@company.com</code>。</li>
+    <li>统计 Dify 数据时邮箱必须用 Dify 实际管理员邮箱（<code>ai_all_in_one_admin@chxia.lab</code>，与 AD 全局管理员一致），不要用旧的 <code>@company.com</code> 域名邮箱。</li>
   </ul>
 </div>
 
@@ -2184,6 +2189,28 @@ cd ..</code></pre>
 </ol>
 
 <div class="tip"><strong>对比旧方案：</strong>之前在架构图中用了 1Panel/Portainer 作为"统一管理平台"。但它们只是 Docker 容器管理工具，不能做应用层的统一鉴权和管理。AI 管理中心填补了这个空缺：对外提供统一入口，对内通过 Keycloak 控制所有产品的管理员权限。</div>
+
+<h3>11.8 管理员分模块授权 + Keycloak 认证页管理（v0.91 新增）</h3>
+<p>进入「管理员账号管理」页（左侧菜单），全局管理员可完成以下操作：</p>
+<ul>
+  <li><b>添加管理员</b>：从 Keycloak 关联的 IdP 搜索已有账号（AD/LDAP 用户，无需新建、无需密码）→ 勾选要授权的模块 → 确定。系统会：①给该账号加 <code>admin:&lt;产品&gt;</code> Realm Role（控制其在 AI 管理中心能看到/操作哪些模块）；②真实开通到产品侧（见下表）。</li>
+  <li><b>编辑权限</b>：追加 / 撤销单个模块。</li>
+  <li><b>删除管理员</b>：二次确认后，撤销所有模块角色，并从各产品删除该账号。</li>
+</ul>
+<table>
+  <tr><th>产品</th><th>授权方式</th><th>撤销（删除管理员时）</th></tr>
+  <tr><td>Gitea</td><td>Keycloak SSO（<code>ENABLE_AUTO_REGISTRATION=true</code>，SSO 首登自动建号并设为管理员）</td><td>删 Gitea 账号</td></tr>
+  <tr><td>NewAPI</td><td>Keycloak SSO 自动建号 + DB 提权 <code>role=10</code></td><td>删 NewAPI 账号</td></tr>
+  <tr><td>Dify</td><td>Console API 邀请为 admin（无 SSO）</td><td>删 Dify 成员</td></tr>
+  <tr><td>Ghost</td><td>Admin API 邀请 staff（Administrator，无 SSO）</td><td>删 Ghost staff / 撤销邀请</td></tr>
+  <tr><td>Grafana（监控）</td><td>建全局号 + org 设 Admin（SSO）</td><td>删 Grafana 账号</td></tr>
+  <tr><td>LiteLLM</td><td>master key 建号 <code>proxy_admin</code>（SSO）</td><td>删 LiteLLM 账号</td></tr>
+  <tr><td>Keycloak</td><td>授 <code>realm-management</code> 的 <code>realm-admin</code> 复合角色</td><td>撤销该角色（Keycloak 是身份源，不删账号）</td></tr>
+  <tr><td>Langfuse（可观测）</td><td>直接写 Postgres（<code>organization_memberships</code>=ADMIN；未登录过则插邀请）</td><td>删 membership / 邀请</td></tr>
+</table>
+<div class="callout callout-info">
+  <strong>🔐 Keycloak 认证页（左侧菜单 → Keycloak）：</strong>用户列表上方有「全部同步 / 增量同步」按钮（AD 里改了账号属性后一键拉取到 Keycloak）；每行用户有「编辑」（跳 Keycloak 管理中心）和「删除」；角色区块可新建 / 删除角色、查看角色成员。同步 / 删除 / 角色操作仅全局管理员可见。<b>注意</b>：Keycloak 无「单用户同步」端点，增量同步会同步 AD 里所有有变更的账号；AD 联邦用户从 Keycloak 删除后，下次全量同步或该用户再次 SSO 登录会重新出现，彻底移除请在 AD 里禁用 / 删除该账号。
+</div>
 
 <!-- ==================== 8. 运维 ==================== -->
 <h2 id="ops">12. 运维 — 健康检查与开机自检</h2>
@@ -2353,9 +2380,9 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
   <tr><td>langfuse-redis</td><td>队列</td></tr>
 </table>
 <p>LiteLLM 通过 <code>success_callback: ["langfuse"]</code> 自动上报（<code>.env</code> 里的 <code>LANGFUSE_PUBLIC_KEY</code> / <code>LANGFUSE_SECRET_KEY</code> / <code>LANGFUSE_HOST</code>）。</p>
-<p>登录 Langfuse：<code>http://&lt;服务器IP&gt;:3010</code>，账号 <code>ai_all_in_one_admin@company.com</code> / 统一密码。首次启动已通过 headless 初始化自动创建组织 <code>AI All In One</code> 和项目 <code>AI Platform</code>。</p>
+<p>登录 Langfuse：<code>http://&lt;服务器IP&gt;:3010</code>，账号 <code>ai_all_in_one_admin@chxia.lab</code> / 统一密码。首次启动已通过 headless 初始化自动创建组织 <code>AI All In One</code> 和项目 <code>AI Platform</code>。</p>
 <div class="note">⚠️ <b>关键坑</b>：Langfuse v4 默认 <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=events_only</code>，旧客户端（LiteLLM 的 langfuse SDK）会上报 <code>trace-create</code> 失败。必须设 <code>LANGFUSE_MIGRATION_V4_WRITE_MODE=dual</code>（web 和 worker 都要设），否则看不到任何追踪数据。</div>
-<div class="note">⚠️ <b>SSO 登录看不到数据的坑</b>：headless 初始化的组织 <code>AI All In One</code> 只绑定了初始化账号 <code>ai_all_in_one_admin@company.com</code>。若用 Keycloak SSO 登录（AD 邮箱为 <code>ai_all_in_one_admin@chxia.lab</code>），Langfuse 会<b>自动新建一个独立账号且不属于任何组织</b>，导致进去后看不到任何 trace 数据。修复：把 SSO 用户加进组织——</p>
+<div class="note">⚠️ <b>SSO 登录看不到数据的坑</b>：headless 初始化的组织 <code>AI All In One</code> 只绑定了初始化账号（早期误用的 <code>ai_all_in_one_admin@company.com</code>）。若用 Keycloak SSO 登录（AD 邮箱为 <code>ai_all_in_one_admin@chxia.lab</code>），Langfuse 会<b>自动新建一个独立账号且不属于任何组织</b>，导致进去后看不到任何 trace 数据。修复：把 SSO 用户加进组织——（现已统一邮箱为 <code>ai_all_in_one_admin@chxia.lab</code>，此坑不再发生）</p>
 <pre><code>docker exec langfuse-postgres psql -U langfuse -d langfuse -c \
 "INSERT INTO organization_memberships (id, org_id, user_id, role) \
 SELECT gen_random_uuid()::text, 'ai-all-in-one', id, 'ADMIN' FROM users WHERE email='ai_all_in_one_admin@chxia.lab' \
@@ -2389,8 +2416,8 @@ ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
   <tr><th>产品</th><th>接入方式</th><th>Keycloak Client</th><th>登录方式</th></tr>
   <tr><td>AI 管理中心</td><td>keycloak-connect (OIDC)</td><td>AI-all-in-one-admin-portal</td><td>强制 SSO（未登录自动跳 Keycloak）</td></tr>
   <tr><td>NewAPI</td><td>OIDC</td><td>newapi</td><td>登录页点「OIDC 登录」</td></tr>
-  <tr><td>Ghost</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@company.com</code></td></tr>
-  <tr><td>Dify</td><td>OIDC（可选）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@company.com</code></td></tr>
+  <tr><td>Ghost</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
+  <tr><td>Dify</td><td>OIDC（可选）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin@chxia.lab</code></td></tr>
   <tr><td>Gitea</td><td>—（本地账号）</td><td>—</td><td>统一账号 <code>ai_all_in_one_admin</code></td></tr>
   <tr><td>Grafana</td><td>OAuth2 generic OIDC</td><td>grafana</td><td>自动登录（<code>GF_AUTH_OAUTH_AUTO_LOGIN=true</code>，点链接直进，无需点按钮）</td></tr>
   <tr><td>Langfuse</td><td>Keycloak provider</td><td>langfuse</td><td>自动登录（AI 管理中心入口指向 <code>/auth/sso-initiate?provider=KEYCLOAK</code>，IdP 发起式 SSO）</td></tr>

@@ -37,7 +37,7 @@
     <pre><code># configurar no .env
 ADMIN_USERNAME=ai_all_in_one_admin
 ADMIN_PASSWORD=ver lista de contas e senhas
-ADMIN_EMAIL=admin@company.com</code></pre>
+ADMIN_EMAIL=ai_all_in_one_admin@chxia.lab</code></pre>
     <p>Após iniciar, cria automaticamente o usuário <code>ai_all_in_one_admin</code> no Keycloak (pula se já existir) e atribui a Realm Role <code>ai-platform-admin</code>. Conceito central: <b>uma única conta Global Admin para gerenciar toda a plataforma</b>.</p>
 
     <h2>12.3 Implantação com Docker Compose</h2>
@@ -60,7 +60,7 @@ cd ..</code></pre>
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME:-ai_all_in_one_admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@company.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ai_all_in_one_admin@chxia.lab}
       - SESSION_SECRET=${SESSION_SECRET:-random-secret-change-me}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - LITELLM_URL=http://&lt;IP-do-servidor&gt;:4001
@@ -82,7 +82,7 @@ cd ..</code></pre>
       <ul>
         <li>A sessão do admin-portal fica em memória; reconstruir o contêiner com <code>up -d</code> <b>limpa as sessões de login</b> (precisa logar de novo);</li>
         <li>A página inicial <code>/</code> deve ser protegida pelo Keycloak (<code>express.static(..., {index:false})</code> + <code>app.get('/', keycloak.protect())</code> explícito), senão renderiza um painel vazio sem login;</li>
-        <li>Para estatísticas do Dify, use o e-mail real do administrador (<code>ai_all_in_one_admin@&lt;domínio-empresa&gt;</code>), não o antigo <code>ADMIN_EMAIL=admin@company.com</code>;</li>
+        <li>Para estatísticas do Dify, use o e-mail real do administrador (<code>ai_all_in_one_admin@chxia.lab</code>, igual ao admin global do AD);</li>
         <li><b>Após alterar o server.js, é obrigatório <code>docker restart admin-portal</code></b>, não pode usar <code>up -d</code> (a mudança do conteúdo do arquivo no volume não dispara reconstrução).</li>
       </ul>
     </div>
@@ -95,6 +95,14 @@ cd ..</code></pre>
       <li>Ao clicar em cada produto, veja as estatísticas primeiro; clicar em «Abrir painel» é que redireciona;</li>
       <li>As configurações do sistema permitem alternar entre 9 idiomas.</li>
     </ol>
+
+    <h2>12.6 Autorização de admin por módulo + gerenciamento da página Keycloak (v0.91)</h2>
+    <p>O administrador global pode gerenciar outros administradores e o Keycloak pelo AI Admin Center:</p>
+    <ul>
+      <li><b>Contas de administrador</b>: pesquise uma conta existente no IdP do Keycloak (usuários AD/LDAP, sem nova conta, sem senha) → escolha módulos → confirme. O sistema atribui o Realm Role <code>admin:&lt;produto&gt;</code> e <b>provisiona de fato o produto</b> (SSO primeiro, API de reserva): Gitea / NewAPI / Dify / Ghost / Grafana / LiteLLM / Keycloak / Langfuse. Revogar um módulo ou excluir um admin <b>remove a conta do produto</b>. Produtos sem SSO geram senha temporária, visível pelo ícone 🔑 (somente admin global). Não-admins veem o diálogo «Você não é administrador» e são desconectados.</li>
+      <li><b>Página Keycloak</b>: botões «Sincronizar tudo / Sinc. alterados» para trazer mudanças do AD em um clique; cada linha tem «Editar» (para o console Keycloak) e «Excluir»; a seção de funções permite criar/excluir funções e ver membros. Ações de sincronização/exclusão/funções somente para admin global.</li>
+    </ul>
+    <div class="warn">⚠️ Nota: o Keycloak não tem endpoint de «sincronizar usuário único» — a sincronização incremental traz todas as contas AD alteradas. Usuários federados AD reaparecem após a próxima sincronização completa ou o próximo login SSO; para removê-los permanentemente, desative/exclua a conta no AD.</div>
 
     <nav class="pager" id="pager"></nav>
   </main>
