@@ -400,7 +400,9 @@ async function newapiLogin() {
     throw new Error('NewAPI 登录失败: ' + ((data && data.message) || '未知错误'));
   }
   newapiToken = data.data.access_token;
-  newapiTokenExp = Date.now() + 60 * 60 * 1000; // 60 分钟缓存（减少重复登录，避免会话堆积）
+  // NewAPI v1.0.0-rc.24 的 access_token 只有 15 分钟有效期，缓存必须短于 15 分钟，
+  // 否则 15~60 分钟之间会用过期 token 调 API 全部 401（看不到数据）。
+  newapiTokenExp = Date.now() + 10 * 60 * 1000; // 10 分钟缓存（留 5 分钟余量）
   return newapiToken;
 }
 
@@ -878,8 +880,8 @@ const qa=(sql)=>new Promise((res,rej)=>db.all(sql,(e,r)=>e?rej(e):res(r)));
   const pages=await q("SELECT COUNT(*) c FROM posts WHERE type='page'");
   const members=await q("SELECT COUNT(*) c FROM members");
   const tags=await q("SELECT COUNT(*) c FROM tags");
-  const recent_posts=await qa("SELECT title, status, updated_at FROM posts WHERE type='post' ORDER BY updated_at DESC LIMIT 5");
-  const recent_pages=await qa("SELECT title, status, updated_at FROM posts WHERE type='page' ORDER BY updated_at DESC LIMIT 5");
+  const recent_posts=await qa("SELECT id, title, slug, status, updated_at FROM posts WHERE type='post' ORDER BY updated_at DESC LIMIT 5");
+  const recent_pages=await qa("SELECT id, title, slug, status, updated_at FROM posts WHERE type='page' ORDER BY updated_at DESC LIMIT 5");
   console.log(JSON.stringify({posts:posts.c,pages:pages.c,members:members.c,tags:tags.c,recent_posts,recent_pages}));
   db.close();
 })();`;

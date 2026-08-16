@@ -67,6 +67,8 @@
   .error{color:var(--red);padding:12px;background:var(--errbg);border-radius:6px}
   a.ext-link{color:var(--accent);font-size:0.82em;text-decoration:none}
   a.ext-link:hover{text-decoration:underline}
+  a.namelink{color:var(--accent);text-decoration:none;font-weight:600}
+  a.namelink:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1427,7 +1429,7 @@ async function loadGwSkills() {
     const skills = d.skills || [];
     box.innerHTML = `
       ${skills.length === 0 ? `<p class="loading">${t('no_skills')}</p>` : pagedTable('mcp_skills', skills, `<tr><th>${t('name')}</th><th>${t('version')}</th><th>${t('desc')}</th><th>${t('size')}</th><th></th></tr>`, s => `<tr>
-        <td><code>${s.name}</code></td>
+        <td><a class="namelink" href="${P('mcp')}/market" target="_blank">${s.name}</a></td>
         <td>v${s.version || '—'}</td>
         <td style="color:var(--textdim)">${s.description || ''}</td>
         <td>${(s.size/1024).toFixed(1)} KB</td>
@@ -1542,9 +1544,10 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
   const us = (users?.data?.items || []);
   const tk = (tokens?.data?.items || []);
   const usd = q => (q >= 0 ? (q / 500000).toFixed(2) : '—');
-  const chTable = pagedTable('newapi_channels', ch, `<tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>`, c => `<tr><td>${c.name || '—'}</td><td>${c.models || '—'}</td><td style="color:${c.status===1?'var(--green)':'var(--red)'}">${c.status===1?t('enabled'):t('disabled')}</td><td>${c.used_quota ?? 0}</td></tr>`);
-  const usTable = pagedTable('newapi_users', us, `<tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>`, u => `<tr><td><span class="admin-badge">${u.username}</span></td><td>${u.role===100?t('admin_role'):(u.role===1?t('user_role'):t('other_role'))}</td><td>${u.group || 'default'}</td><td>${usd(u.quota)} ${t('usd')}</td><td>${usd(u.used_quota)} ${t('usd')}</td><td>${u.request_count ?? 0}</td></tr>`);
-  const tkTable = pagedTable('newapi_tokens', tk, `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>`, x => `<tr><td><span class="admin-badge">${x.name || '—'}</span></td><td style="color:${x.status===1?'var(--green)':'var(--red)'}">${x.status===1?t('enabled'):t('disabled')}</td><td>${x.used_quota ?? 0} ${t('quota_unit')}</td><td>${x.unlimited_quota ? t('unlimited') : ((x.remain_quota ?? 0) + ' ' + t('quota_unit'))}</td></tr>`);
+  const naBase = P('newapi');
+  const chTable = pagedTable('newapi_channels', ch, `<tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>`, c => `<tr><td><a class="namelink" href="${naBase}/channels/" target="_blank">${c.name || '—'}</a></td><td>${c.models || '—'}</td><td style="color:${c.status===1?'var(--green)':'var(--red)'}">${c.status===1?t('enabled'):t('disabled')}</td><td>${c.used_quota ?? 0}</td></tr>`);
+  const usTable = pagedTable('newapi_users', us, `<tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>`, u => `<tr><td><a class="namelink" href="${naBase}/users/" target="_blank">${u.username || '—'}</a></td><td>${u.role===100?t('admin_role'):(u.role===1?t('user_role'):t('other_role'))}</td><td>${u.group || 'default'}</td><td>${usd(u.quota)} ${t('usd')}</td><td>${usd(u.used_quota)} ${t('usd')}</td><td>${u.request_count ?? 0}</td></tr>`);
+  const tkTable = pagedTable('newapi_tokens', tk, `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>`, x => `<tr><td><a class="namelink" href="${naBase}/keys/" target="_blank">${x.name || '—'}</a></td><td style="color:${x.status===1?'var(--green)':'var(--red)'}">${x.status===1?t('enabled'):t('disabled')}</td><td>${x.used_quota ?? 0} ${t('quota_unit')}</td><td>${x.unlimited_quota ? t('unlimited') : ((x.remain_quota ?? 0) + ' ' + t('quota_unit'))}</td></tr>`);
 
   // 审计日志（客户端分页）
   _newapiAuditItems = audit?.items || [];
@@ -2503,8 +2506,9 @@ async function loadGhost(el) {
     ];
     const stTxt = s => ({ published: t('ghost_st_published'), draft: t('ghost_st_draft'), scheduled: t('ghost_st_scheduled') }[s] || s);
     const fmtDate = ts => ts ? new Date(ts).toLocaleDateString() : '—';
-    const postTable = pagedTable('ghost_posts', d.recent_posts || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td style="color:var(--textstrong)">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
-    const pageTable = pagedTable('ghost_pages', d.recent_pages || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td style="color:var(--textstrong)">${p.title || '—'}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
+    const ghostBase = P('ghost');
+    const postTable = pagedTable('ghost_posts', d.recent_posts || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td>${p.id ? `<a class="namelink" href="${ghostBase}/ghost/#/editor/post/${p.id}" target="_blank">${p.title || '—'}</a>` : (p.title || '—')}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
+    const pageTable = pagedTable('ghost_pages', d.recent_pages || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td>${p.id ? `<a class="namelink" href="${ghostBase}/ghost/#/editor/page/${p.id}" target="_blank">${p.title || '—'}</a>` : (p.title || '—')}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>📰 ${title}</h1><button onclick="ghostAutoLogin(this)" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;white-space:nowrap">${t('open_ghost')} ↗</button></div>`
       + aboutCard(t('ghost_about'))
       + metricsCard(stats)
@@ -2549,12 +2553,12 @@ async function loadDify(el) {
       { value: d.workspaces ?? '—', label: t('dify_workspaces') },
       { value: d.version ?? '—', label: t('dify_version') },
     ];
-    const appTable = pagedTable('dify_apps', d.app_list || [], `<tr><th>${t('name')}</th><th>${t('type')}</th></tr>`, a => `<tr><td style="color:var(--textstrong)">${a.name || '—'}</td><td style="color:var(--textdim)">${a.mode || '—'}</td></tr>`);
+    const appTable = pagedTable('dify_apps', d.app_list || [], `<tr><th>${t('name')}</th><th>${t('type')}</th></tr>`, a => `<tr><td>${a.id ? `<a class="namelink" href="${url}/app/${a.id}/overview" target="_blank">${a.name || '—'}</a>` : (a.name || '—')}</td><td style="color:var(--textdim)">${a.mode || '—'}</td></tr>`);
     const wsTable = pagedTable('dify_workspaces', d.workspace_list || [], `<tr><th>${t('name')}</th></tr>`, w => `<tr><td style="color:var(--textstrong)">${w.name || '—'}</td></tr>`);
     const kbList = d.dataset_list || [];
     const kbHtml = kbList.length === 0
       ? `<p class="loading">暂无知识库（<a href="${url}/datasets/create" target="_blank" style="color:var(--accent)">去 Dify 创建</a>）</p>`
-      : `<table><tr><th>${t('name')}</th><th>文档数</th><th>索引方式</th></tr>${kbList.map(k => `<tr><td style="color:var(--textstrong)">${k.name || '—'}</td><td>${k.docs ?? 0}</td><td style="color:var(--textdim)">${k.indexing === 'high_quality' ? '高质量' : (k.indexing || '—')}</td></tr>`).join('')}</table>`;
+      : `<table><tr><th>${t('name')}</th><th>文档数</th><th>索引方式</th></tr>${kbList.map(k => `<tr><td>${k.id ? `<a class="namelink" href="${url}/datasets/${k.id}/documents" target="_blank">${k.name || '—'}</a>` : (k.name || '—')}</td><td>${k.docs ?? 0}</td><td style="color:var(--textdim)">${k.indexing === 'high_quality' ? '高质量' : (k.indexing || '—')}</td></tr>`).join('')}</table>`;
     const ragStatus = d.rag_ready ? '<span style="color:var(--green)">● 已就绪</span>' : '<span style="color:var(--yellow)">● 未配置</span>';
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🤖 ${title}</h1>${openAdminBtn(url, t('open_dify'))}</div>`
       + aboutCard(t('dify_about'))
@@ -2998,10 +3002,12 @@ async function kcLoad(kind) {
     st.total = d.total || 0;
     let body;
     if (kind === 'users') {
-      const rows = (d.items || []).map(u => `<tr><td style="color:var(--textstrong)">${u.username || '—'}</td><td style="color:var(--textdim)">${u.email || '—'}</td><td style="color:${u.enabled ? 'var(--green)' : 'var(--red)'}">${u.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
+      const kcBase = window._kcBase || '';
+      const rows = (d.items || []).map(u => `<tr><td>${u.id && kcBase ? `<a class="namelink" href="${kcBase}/users/${u.id}/settings" target="_blank">${u.username || '—'}</a>` : (u.username || '—')}</td><td style="color:var(--textdim)">${u.email || '—'}</td><td style="color:${u.enabled ? 'var(--green)' : 'var(--red)'}">${u.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
       body = (d.items && d.items.length) ? `<table><tr><th>${t('username')}</th><th>${t('email')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
     } else {
-      const rows = (d.items || []).map(c => `<tr><td style="color:var(--textstrong)">${c.clientId || '—'}</td><td style="color:${c.enabled ? 'var(--green)' : 'var(--red)'}">${c.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
+      const kcBase = window._kcBase || '';
+      const rows = (d.items || []).map(c => `<tr><td>${c.id && kcBase ? `<a class="namelink" href="${kcBase}/clients/${c.id}/settings" target="_blank">${c.clientId || '—'}</a>` : (c.clientId || '—')}</td><td style="color:${c.enabled ? 'var(--green)' : 'var(--red)'}">${c.enabled ? t('enabled') : t('disabled')}</td></tr>`).join('');
       body = (d.items && d.items.length) ? `<table><tr><th>${t('kc_clients')}</th><th>${t('status')}</th></tr>${rows}</table>` : `<p class="loading">${t('no_results')}</p>`;
     }
     tableEl.innerHTML = body;
@@ -3050,7 +3056,8 @@ async function loadKeycloak(el) {
     ];
     const roleBadges = (d.role_list || []).map(r => `<span class="admin-badge">${r}</span>`).join(' ');
     const newBtn = (href, label) => `<a href="${href}" target="_blank" style="background:var(--accentbtn);color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.8em;white-space:nowrap">${label} ↗</a>`;
-    const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/realms/enterprise-ai';
+    const kcBase = P('keycloak') + '/admin/enterprise-ai/console/#/enterprise-ai';
+    window._kcBase = kcBase;
     window._kcPaging = {
       users: { page: 0, pageSize: 10, search: '', total: 0 },
       clients: { page: 0, pageSize: 10, search: '', total: 0 },
@@ -3059,7 +3066,7 @@ async function loadKeycloak(el) {
       + aboutCard(t('kc_about'))
       + metricsCard(stats)
       + keyInfoCard(`
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px"><span style="color:var(--textdim)">👤 ${t('kc_users')}（${d.users ?? 0}）</span>${newBtn(kcBase + '/users/add', t('kc_new_user'))}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px"><span style="color:var(--textdim)">👤 ${t('kc_users')}（${d.users ?? 0}）</span>${newBtn(kcBase + '/users/add-user', t('kc_new_user'))}</div>
         ${kcToolbar('users')}
         <div id="kcTable_users"></div>
         <div id="kcPager_users"></div>

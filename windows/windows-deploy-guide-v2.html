@@ -1337,6 +1337,15 @@ docker compose up -d web</code></pre>
 
 <div class="verify">AD 用户 <code>aitest1</code> 可以在 NewAPI 登录页通过 OIDC 按钮直接登录，无需在 NewAPI 中额外注册。</div>
 
+<div class="callout callout-warn" style="margin-top:12px;">
+  <strong>⚠️ SSO 登录的管理员默认是普通角色，访问管理页会 403：</strong>通过 OIDC 登录的用户在 NewAPI 里是 <b>common 角色（role=1）</b>，点开「渠道 / 用户 / 令牌」等管理页会报 403（前端要求 <code>role ≥ 10</code>）。<br><br>
+  <b>修复：</b>把 SSO 映射的本地用户提升为 root。先查出绑定关系，再改角色：<br>
+  <code>docker exec new-api-db mysql -uroot -p... new-api -e "SELECT user_id, provider_user_id FROM user_oauth_bindings;"</code><br>
+  找到管理员对应的 <code>user_id</code>（其 <code>provider_user_id</code> 即 Keycloak 用户的 sub）后：<br>
+  <code>docker exec new-api-db mysql -uroot -p... new-api -e "UPDATE users SET role=100 WHERE id=&lt;user_id&gt;;"</code><br>
+  然后 <code>docker restart new-api</code>。之后管理员用 Keycloak 账号登录即可访问全部管理页。
+</div>
+
 <div class="callout callout-danger" style="margin-top:12px;">
   <strong>排错：登录返回 429 (Too Many Requests)</strong><br>
   NewAPI 默认限流很严格，OIDC 调试期间连续失败容易触发。登录/OAuth 回调走的是 <b>CriticalRateLimit（关键接口限流）</b>，默认 <b>20 次 / 20 分钟</b>，与全局限流（GW/GA）是独立开关。环境变量：<code>CRITICAL_RATE_LIMIT_ENABLE</code> / <code>CRITICAL_RATE_LIMIT</code>（非系统设置里的"速率限制"页面）。<br><br>

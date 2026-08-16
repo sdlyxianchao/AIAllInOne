@@ -1338,6 +1338,15 @@ docker compose up -d web</code></pre>
 
 <div class="verify">AD user <code>aitest1</code> can log in directly via the OIDC button on the NewAPI login page, without extra registration in NewAPI.</div>
 
+<div class="callout callout-warn" style="margin-top:12px;">
+  <strong>⚠️ SSO-logged-in admins default to the common role and get 403 on admin pages:</strong> users who log in via OIDC are created as <b>common role (role=1)</b> in NewAPI; opening the Channel / User / Token pages then returns 403 (frontend requires <code>role ≥ 10</code>).<br><br>
+  <b>Fix:</b> promote the SSO-mapped local user to root. First find the binding:<br>
+  <code>docker exec new-api-db mysql -uroot -p... new-api -e "SELECT user_id, provider_user_id FROM user_oauth_bindings;"</code><br>
+  The admin's <code>provider_user_id</code> equals the Keycloak user's sub. Then promote:<br>
+  <code>docker exec new-api-db mysql -uroot -p... new-api -e "UPDATE users SET role=100 WHERE id=&lt;user_id&gt;;"</code><br>
+  Then <code>docker restart new-api</code>. After that the admin can access all admin pages with their Keycloak account.
+</div>
+
 <div class="callout callout-danger" style="margin-top:12px;">
   <strong>Troubleshooting: login returns 429 (Too Many Requests)</strong><br>
   NewAPI's default rate limit is strict; consecutive failures during OIDC debugging easily trigger it. Login/OAuth callback uses <b>CriticalRateLimit</b>, default <b>20 per 20 minutes</b>, independent from the global limit (GW/GA). Env vars: <code>CRITICAL_RATE_LIMIT_ENABLE</code> / <code>CRITICAL_RATE_LIMIT</code> (not the "Rate limit" page in system settings).<br><br>
@@ -1664,7 +1673,9 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
 <div class="note"><strong>Note:</strong> the MCP Gateway is a centralized management gateway for Skills and MCP tools, implemented on the official <code>@modelcontextprotocol/sdk</code>, exposing a standard Streamable HTTP <code>/mcp</code> endpoint. DeepChat and Dify connect to this single address to get all tools (built-in platform tools + aggregated external MCP servers). It's merged into the main docker-compose.yml and starts with the core services.</div>
 
 <h3>8.1 Deployment (merged into main docker-compose.yml)</h3>
-<p>The MCP Gateway is added as the <code>mcp-gateway</code> service in the main <code>docker-compose.yml</code>, port <code>3100</code>, starts with <code>docker compose up -d</code>, no separate deployment. Source in the <code>mcp-gateway/</code> directory (gateway.js + package.json + mcp-servers.json).</p>
+<p>The MCP Gateway is added as the <code>mcp-gateway</code> service in the main <code>docker-compose.yml</code>, port <code>3100</code>, starts with <code>docker compose up -d</code>. Source in the <code>mcp-gateway/</code> directory (gateway.js + package.json + mcp-servers.json).</p>
+<div class="callout callout-warn"><strong>⚠️ Prerequisite (one-time):</strong> the gateway depends on <code>@modelcontextprotocol/sdk</code> (<code>node_modules</code> is not published with the repo), so install dependencies before first deploy: <pre><code>cd mcp-gateway
+npm install</code></pre>Otherwise <code>node gateway.js</code> fails with <code>Cannot find module '@modelcontextprotocol/sdk'</code>.</div>
 
 <h3>8.2 Built-in platform tools</h3>
 <table>
