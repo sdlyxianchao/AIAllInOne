@@ -49,6 +49,15 @@ model_list:
       api_key: os.environ/DEEPSEEK_API_KEY   # Key from .env
       api_base: https://api.deepseek.com/v1  # DeepSeek API endpoint
 
+  # --- 本地 embedding：bge-m3（语义缓存 redis-semantic 的向量化模型）---
+  # HOW: 宿主机需安装 Ollama 并预拉 bge-m3（ollama pull bge-m3）。
+  #      容器经 host.docker.internal 访问宿主机 Ollama，完全本地、免费。
+  # 也可换成 NewAPI 上任意 embedding 渠道（model: openai/<模型名> + api_base: http://newapi:3000/v1）。
+  - model_name: bge-m3
+    litellm_params:
+      model: ollama/bge-m3
+      api_base: http://host.docker.internal:11434
+
 # ============================================================
 # Guardrails（内容安全 + PII 脱敏）
 # guardrails 是「顶层键」（不是 litellm_settings 的子键），较新 LiteLLM 版本格式。
@@ -131,19 +140,25 @@ general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
 
 # ============================================================
-# Response Caching — Redis exact-match (vanilla Redis)
-# Caches identical requests (hash of model + messages + params)
-# across ALL users. Any change = cache miss, so no stale replays.
-# Saves tokens on FAQ / template / repeated queries.
-# To disable: set cache: false or comment out this block.
+# Response Caching — Redis Semantic Cache（语义缓存，推荐）
+# 「意思相近」即命中（向量相似度 ≥ similarity_threshold），比 exact-match
+# 大幅提高命中率，直接省外部 LLM 费用。向量化用本地 bge-m3（免费），
+# 向量检索用 Redis RediSearch（redis-stack-server 镜像自带）。
+# 语义命中响应带 x-litellm-semantic-similarity 头，可据此调阈值。
+#   similarity_threshold：0.9+ 接近精确匹配；0.7~0.8 推荐平衡点；0.6~0.7 更激进省钱
+# 建议对确定性任务（知识库问答 / 固定模板 / temperature=0）开启效果最好；
+# 需实时/个性化内容可用请求头 no-cache 绕过。To disable: cache: false。
 # ============================================================
 litellm_settings:
   cache: true
   cache_params:
-    type: redis
+    type: redis-semantic
     host: litellm-redis
     port: 6379
     ttl: 3600
+    similarity_threshold: 0.8
+    redis_semantic_cache_embedding_model: bge-m3
+    redis_semantic_cache_index_name: litellm_semantic_cache_index
   # --- LLM 可观测（Langfuse）---
   # 每次调用（提示词/响应/模型/延迟/成本/token）上报到 Langfuse 做追踪分析。
   # 端点由环境变量 LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY / LANGFUSE_HOST 指定。

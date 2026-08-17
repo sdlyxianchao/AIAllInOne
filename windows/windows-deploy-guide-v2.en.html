@@ -680,6 +680,8 @@ docker network ls | findstr ai-platform</code></pre>
   <tr><th>Variable</th><th>Type</th><th>Notes</th></tr>
   <tr><td><code>DEEPSEEK_API_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>External LLM API key; the pipeline fails without it</td></tr>
   <tr><td><code>LITELLM_MASTER_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>LiteLLM internal auth key, needed by NewAPI</td></tr>
+  <tr><td><code>OLLAMA_API_BASE</code></td><td style="color:#8b949e">⚪ Default</td><td>Local embedding endpoint (semantic cache vectorization), default <code>http://host.docker.internal:11434</code> (host Ollama bge-m3)</td></tr>
+  <tr><td><code>LITELLM_REDIS_PASSWORD</code></td><td style="color:#8b949e">⚪ Default</td><td>litellm-redis password (semantic cache requires this var to exist; leave empty for the internal no-auth instance)</td></tr>
   <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>MySQL root password; avoid changing after initial creation</td></tr>
   <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>Keycloak admin password</td></tr>
   <tr><td><code>NEWAPI_SESSION_SECRET</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>NewAPI session encryption; any random string</td></tr>
@@ -1377,20 +1379,25 @@ curl -X POST http://&lt;server-IP&gt;:4001/v1/chat/completions ^
 </div>
 
 <div class="step">
-  <span class="step-num">2</span><strong>Enable exact-match response cache (built-in)</strong>
-  <p>LiteLLM has Redis exact-match cache enabled: identical requests (model + messages + params) return cached responses directly, no external model call, <b>shared across users, saving tokens</b>. Any parameter change misses the cache; no cache collisions.</p>
+  <span class="step-num">2</span><strong>Enable Redis semantic cache (redis-semantic, recommended)</strong>
+  <p>LiteLLM now uses the <b>Redis semantic cache</b> (<code>type: redis-semantic</code>): each request is vectorized by the local <code>bge-m3</code> model and compared against cached requests, so <b>semantically similar questions hit</b> (similarity ≥ <code>similarity_threshold</code>), shared across users — directly cutting external LLM cost (verified hit requests report <code>Key-Spend: 0.0</code>). A semantic hit returns the <code>x-litellm-semantic-similarity</code> header, handy for tuning the threshold.</p>
   <pre><code><span class="comment"># end of litellm-config.yaml</span>
 litellm_settings:
   cache: true
   cache_params:
-    type: redis
-    host: litellm-redis   <span class="comment"># dedicated cache Redis (compose added litellm-redis service)</span>
+    type: redis-semantic
+    host: litellm-redis   <span class="comment"># dedicated cache Redis (compose's litellm-redis now uses redis-stack-server, ships RediSearch vector search)</span>
     port: 6379
-    ttl: 3600            <span class="comment"># cache 1 hour, adjust per data update frequency</span></code></pre>
+    ttl: 3600            <span class="comment"># cache 1 hour, adjust per data update frequency</span>
+    similarity_threshold: 0.8
+    <span class="comment"># 0.9+ near exact match; 0.7~0.8 recommended balance; 0.6~0.7 more aggressive savings</span>
+    redis_semantic_cache_embedding_model: bge-m3  <span class="comment"># local embedding (registered in model_list, served by host Ollama)</span>
+    redis_semantic_cache_index_name: litellm_semantic_cache_index</code></pre>
   <div class="verify">
     <ul>
-      <li><b>Verify connectivity</b>: <code>curl http://&lt;server-IP&gt;:4001/cache/ping -H "Authorization: Bearer &lt;LITELLM_MASTER_KEY&gt;"</code> → returns <code>ping_response: true</code></li>
-      <li><b>Hit signature</b>: two identical consecutive requests; the second's response <code>id</code> equals the first, latency drops from seconds to milliseconds</li>
+      <li><b>Prerequisites (3 steps)</b>: ① change the <code>litellm-redis</code> image in <code>docker-compose.yml</code> to <code>redis/redis-stack-server</code> (fully Redis-compatible; RediSearch provides vector search); ② install Ollama on the host and <code>ollama pull bge-m3</code>, set <code>OLLAMA_API_BASE=http://host.docker.internal:11434</code> in <code>.env</code> (the container reaches the host via <code>host.docker.internal</code>, fully local and free); ③ add <code>REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}</code> to the litellm container environment — <b>RedisSemanticCache requires this variable (may be empty)</b>; without it startup fails with <code>Missing required Redis configuration: REDIS_PASSWORD</code></li>
+      <li><b>Verify a hit</b>: send two requests that are <b>semantically similar but worded differently</b> (e.g. "what features does the company AI platform have" vs "list the main capabilities of the platform"), the second returns <code>X-Litellm-Cache-Key</code> + <code>X-Litellm-Semantic-Similarity</code> (measured 0.92), latency drops from ~17s to &lt;0.5s</li>
+      <li><b>Best for</b>: deterministic tasks (knowledge-base Q&A / fixed templates / <code>temperature=0</code>); for real-time or personalized content, bypass with the <code>no-cache</code> request header</li>
       <li><b>Disable cache</b>: <code>cache: false</code> or comment the block, restart <code>litellm</code></li>
     </ul>
   </div>

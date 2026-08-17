@@ -46,7 +46,13 @@
 
 ## 16.4 项目相关配置
 
-- **响应缓存**：Redis exact match 缓存，完全相同请求跨用户共享；调 `cache_params.ttl`（默认 3600 秒）；关闭：`cache: false` 后重启；
+- **Redis 语义缓存（redis-semantic，v0.93 起默认）**：请求先由本地 `bge-m3` 向量化，与历史请求做相似度比对，**意思相近即命中**（相似度 ≥ `similarity_threshold`，默认 0.8），跨用户共享、直接省外部 LLM 费用（实测命中请求 `Key-Spend: 0.0`，耗时 17s → 0.4s）。配置在 `litellm-config.yaml`：
+  - `cache_params.type: redis-semantic`（替代原 exact-match）；`ttl` 默认 3600 秒，按数据更新频率调；
+  - `similarity_threshold`：0.9+ 接近精确匹配；0.7~0.8 推荐平衡；0.6~0.7 更激进省钱；
+  - `redis_semantic_cache_embedding_model: bge-m3`（model_list 已注册，走宿主机 Ollama，免费）；
+  - 依赖：① `litellm-redis` 镜像为 `redis/redis-stack-server`（RediSearch 向量检索）；② `.env` 的 `OLLAMA_API_BASE`（默认 `http://host.docker.internal:11434`）；③ litellm 容器 `REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}`（RedisSemanticCache 强制要求，可空）。
+  - **验证命中**：连续两次语义相近但措辞不同的请求，第二次响应带 `X-Litellm-Cache-Key` + `X-Litellm-Semantic-Similarity`（实测 0.92）即命中；
+  - **适用建议**：确定性任务（知识库问答 / 固定模板 / `temperature=0`）收益最大；实时/个性化内容用请求头 `no-cache` 绕过；关闭：`cache: false` 后重启。
 - **Langfuse 上报**：`success_callback: ["langfuse"]` + `.env` 的 `LANGFUSE_PUBLIC_KEY/SECRET_KEY/HOST` 自动上报每次调用（可观测链路依赖它）；
 - **PII 脱敏（Presidio）**：guardrails 要加 `default_on: true` 才全局生效；当前因上游 API 变更暂注释，仅做纯代理——需要启用时按第 25 章配置；
 - **重启与排错**：
