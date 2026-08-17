@@ -24,6 +24,16 @@
 | Stage 8 | DeepChat/Dify 登录前置条件 |
 | Stage 9 | 磁盘空间 |
 
+![可用性测试页](../../images/admin-manual/availability.png)
+
+*图 28-1：AI 管理中心「可用性测试」页（全链路测试结果）*
+
+![可用性测试执行结果](../../images/admin-manual/availability-run.png)
+
+*图 28-2：可用性测试执行结果（9 条链路）*
+
+
+
 ## 28.2 手动执行
 
 ```

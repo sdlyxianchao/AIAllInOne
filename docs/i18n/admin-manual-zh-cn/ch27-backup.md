@@ -21,6 +21,16 @@
 | Keycloak | **realm export（JSON）** |
 | 配置文件 | 文件复制 |
 
+![备份与恢复页](../../images/admin-manual/backup.png)
+
+*图 27-1：AI 管理中心「备份与恢复」页（列表 + 立即备份 + 恢复）*
+
+![立即备份确认](../../images/admin-manual/backup-run-dialog.png)
+
+*图 27-2：立即备份确认对话框*
+
+
+
 ## 27.2 手动备份
 
 ```

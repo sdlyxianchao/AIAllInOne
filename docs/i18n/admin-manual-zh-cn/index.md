@@ -19,25 +19,25 @@
 | 9 | [Dify / Ghost / Gitea 配置](ch09-products.md) | 三个产品各自的初始化与互连配置。 |
 | 10 | [DeepChat 分发与 CI/CD](ch10-deepchat.md) | 把 DeepChat 安装包分发给员工，以及用 Gitea Actions 自动同步官方新版本。 |
 | 11 | [MCP Gateway 与 Skill 市场](ch11-mcp.md) | 集中管理 Skill 和 MCP 工具的网关，DeepChat/Dify 连一个地址即可拿到所有工具。 |
-| 12 | [AI 管理中心](ch12-admin-center.md) | 统一管理员门户：Keycloak 鉴权、左侧菜单内嵌全部产品、Dashboard 集群状态。 |
+| 12 | [AI 管理中心](ch12-admin-center.md) | 统一管理员门户：Keycloak 鉴权、左侧菜单按「产品应用 / AI 网关与集成 / 系统运维 / 系统管理」分组、Dashboard 集群状态。 |
 | 13 | [互连验证清单](ch13-interconnect.md) | 部署完成后，逐项确认 12 条互连链路全部打通。 |
 
 ## 第二部分 · 管理篇（各产品日常操作）
 
 | # | 章节 | 说明 |
 | --- | --- | --- |
-| 14 | [Keycloak 日常管理](ch14-ops-keycloak.md) | 认证中枢：管用户、角色、OIDC 客户端、AD 联邦、会话。 |
-| 15 | [NewAPI 日常管理](ch15-ops-newapi.md) | LLM 网关：管渠道、令牌、额度、用户、日志、成本。 |
-| 16 | [LiteLLM 日常管理](ch16-ops-litellm.md) | PII 脱敏代理：模型列表、脱敏规则、缓存、Langfuse 上报。 |
-| 17 | [Dify 日常管理](ch17-ops-dify.md) | AI 应用平台：应用、知识库、模型供应商、成员权限、发布。 |
-| 18 | [Ghost 日常管理](ch18-ops-ghost.md) | 企业门户 / Hub：文章、页面、导航、主题、成员。 |
-| 19 | [Gitea 日常管理](ch19-ops-gitea.md) | 内部 Git + CI/CD：仓库、组织、Runner、Actions。 |
-| 20 | [MCP Gateway 日常管理](ch20-ops-mcp.md) | 增删 MCP Server、上传/删除 Skill、扩展内置工具。 |
-| 21 | [更新服务器管理](ch21-ops-update.md) | DeepChat 安装包托管与自动更新。 |
-| 22 | [监控告警管理](ch22-ops-monitoring.md) | Prometheus + Grafana + Alertmanager：容器资源监控与告警通知。 |
-| 23 | [LLM 可观测（Langfuse）](ch23-ops-langfuse.md) | 追踪每次模型调用的提示词、响应、延迟、token、成本。 |
-| 24 | [统一日志（Loki）](ch24-ops-loki.md) | 聚合所有容器日志，按容器 + 关键字 + 时间检索。 |
-| 25 | [PII 脱敏（Presidio）](ch25-ops-pii.md) | 敏感信息在出内网前自动脱敏。 |
+| 14 | [Keycloak 日常管理](ch14-ops-keycloak.md) | 认证中枢：管用户、角色、OIDC 客户端、AD 联邦、会话；大部分操作可在 AI 管理中心完成。 |
+| 15 | [NewAPI 日常管理](ch15-ops-newapi.md) | LLM 网关：管渠道、令牌、额度、用户、日志、成本；统计可在 AI 管理中心查看。 |
+| 16 | [LiteLLM 日常管理](ch16-ops-litellm.md) | PII 脱敏代理：模型列表、脱敏规则、缓存、Langfuse 上报；AI 管理中心可看概览。 |
+| 17 | [Dify 日常管理](ch17-ops-dify.md) | AI 应用平台：应用、知识库、模型供应商、成员权限、发布；AI 管理中心可看概览与检索测试。 |
+| 18 | [Ghost 日常管理](ch18-ops-ghost.md) | 企业门户 / Hub：文章、页面、导航、主题、成员；AI 管理中心可一键免密进入后台。 |
+| 19 | [Gitea 日常管理](ch19-ops-gitea.md) | 内部 Git + CI/CD：仓库、组织、Runner、Actions；deepchat-sync 同步管理可在 AI 管理中心完成。 |
+| 20 | [MCP Gateway 日常管理](ch20-ops-mcp.md) | 增删 MCP Server、上传/删除 Skill、扩展内置工具；管理操作在 AI 管理中心完成。 |
+| 21 | [更新服务器管理](ch21-ops-update.md) | DeepChat 安装包托管与自动更新；AI 管理中心可查看文件与版本。 |
+| 22 | [监控告警管理](ch22-ops-monitoring.md) | Prometheus + Grafana + Alertmanager：容器资源监控；企业 IM 告警配置在 AI 管理中心完成。 |
+| 23 | [LLM 可观测（Langfuse）](ch23-ops-langfuse.md) | 追踪每次模型调用的提示词、响应、延迟、token、成本；AI 管理中心可看概览。 |
+| 24 | [统一日志（Loki）](ch24-ops-loki.md) | 聚合所有容器日志，按容器 + 关键字 + 时间检索；在 AI 管理中心完成。 |
+| 25 | [PII 脱敏（Presidio）](ch25-ops-pii.md) | 敏感信息在出内网前自动脱敏；AI 管理中心可看服务状态。 |
 | 26 | [MailHog 邮件接收器](ch26-ops-mailhog.md) | 内网无 SMTP 时的「邮件出口」，承接 Ghost 验证码/通知邮件。 |
 
 ## 第三部分 · 运维篇

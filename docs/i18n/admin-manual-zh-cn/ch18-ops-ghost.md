@@ -2,55 +2,57 @@
 
 *第二部分 · 管理篇（各产品日常操作）*
 
-> 企业门户 / Hub：文章、页面、导航、主题、成员。
+> 企业门户 / Hub：文章、页面、导航、主题、成员；AI 管理中心可一键免密进入后台。
 
 [← 第17章：Dify 日常管理](ch17-ops-dify.md) · [📖 目录](index.md) · [第19章：Gitea 日常管理 →](ch19-ops-gitea.md)
 
 ---
 
-**入口**：前台 `http://<服务器IP>:8090`；后台 `http://<服务器IP>:8090/ghost/`（注意 /ghost/ 后缀）。
+## 18.1 AI 管理中心可执行的操作
 
-## 18.1 登录后台
+菜单：**产品应用 → 📰 Ghost 后台**。页面提供：
 
-Ghost 5 后台是**免密登录**：输入邮箱 → Ghost 发 6 位验证码到 MailHog（`:8025`）。更快的方式：在 AI 管理中心点「Ghost 后台」的「打开」按钮，自动完成登录（本地算 TOTP 码，免翻邮件）。
+- **概览指标**：文章数、页面数、标签数、成员数；
+- **「打开后台」按钮**：一键免密登录 Ghost 后台——服务端本地计算 TOTP 验证码（`ghostSession` 缓存 24 小时，避免触发 Ghost 429 限流），免去翻邮箱收验证码的步骤。
 
-## 18.2 发布内容
+> 📌 页面只读。发文章、改导航、换主题在 Ghost 后台里做（见 18.3/18.4）。
 
-1. **文章**：Posts → New post → 写内容（Markdown 编辑器）→ Publish；
+![AI 管理中心 Ghost 后台页](../../images/admin-manual/ghost.png)
 
-2. **页面**：Pages → New page（如「下载中心」slug `downloads`）；
+*图 18-1：AI 管理中心「Ghost 后台」页（概览 + 免密打开）*
 
+
+## 18.2 登录 Ghost 管理中心
+
+- **方式一（推荐）**：AI 管理中心 → Ghost 后台 → 「打开后台」→ 自动登录直达后台。
+- **方式二（直连）**：浏览器打开 `http://<服务器IP>:8090/ghost/`（注意 `/ghost/` 后缀）→ 输入邮箱 → Ghost 发 6 位验证码到 MailHog（`:8025`）→ 填码登录。
+
+> 📌 后台免密（无密码体系），靠邮箱验证码。验证码在 MailHog 收件箱查看（见第 26 章）。
+
+![Ghost 后台 Dashboard](../../images/admin-manual/product-ghost.png)
+
+*图 18-2：Ghost 后台 Dashboard（经 AI 管理中心一键免密进入）*
+
+![Ghost 编辑器](../../images/admin-manual/product-ghost-editor.png)
+
+*图 18-3：Ghost 文章编辑器*
+
+
+
+## 18.3 发布内容（项目相关）
+
+1. **文章**：Posts → New post → 写内容（Markdown 编辑器）→ Publish（门户首页即最新公告/新闻）；
+2. **页面**：Pages → New page——项目已用页面：「下载中心」（slug `downloads`）、「AI 工作台」（跳 Dify）、「帮助文档」；
 3. **标签/分类**：Tags → 建分类（如 `news` / `docs`），文章归到分类下。
 
-## 18.3 导航菜单
+## 18.4 导航与主题
 
-1. 后台 → 外观（Design）→ 菜单（Navigation）；
+1. **导航菜单**：后台 → 外观（Design）→ 菜单（Navigation）→ 编辑「Primary」主导航：首页 / 新闻 / 下载中心 / AI 工作台 / 帮助文档（与第 9 章菜单表一致）；
+2. **主题**：外观 → 主题 → 激活自带的 Casper / Source；上传新主题用「Upload theme」选 zip。
 
-2. 编辑「Primary」主导航，添加首页/新闻/下载中心/AI 工作台/帮助文档（见第 9 章菜单表）。
+> ⚠️ 关键坑：① 别从 GitHub 装最新版主题（可能适配 Ghost 6.x，5.x 报 incompatible），要装旧版 zip；② 修改导航/页面后员工端需刷新才能看到（Ghost 有缓存）。
 
-## 18.4 主题
-
-- **切换**：外观 → 主题，自带的 Casper / Source 直接激活；
-
-- **安装**：主题市场（Design → Change theme）或上传 zip。
-
-> ⚠️ 别从 GitHub 装最新版主题（可能适配 Ghost 6.x，5.x 报 incompatible），要装旧版 zip。
-
-## 18.5 成员与订阅（如需）
-
-- Members：管理订阅者；
-
-- 若不需要订阅，可忽略此模块（内网门户通常用不到）。
-
-## 18.6 集成（API Token）
-
-1. 后台 → Settings → Integrations → 添加自定义集成；
-
-2. 生成 Admin API Key（格式 `id:secret`），供 Gitea Actions 发布公告等自动化用。
-
-> ⚠️ 关键坑：① 别在首页 `/` 点「注册」（那是访客订阅者注册）；② 6 位验证码本质是 TOTP，AI 管理中心能本地算出；③ 即使本地算码，Ghost 仍会真发邮件，所以 MailHog 必须保留（否则 `Failed to send email`）。
-
-> 📖 原厂文档：Ghost 官方文档 https://ghost.org/docs/ · 管理后台 https://ghost.org/docs/admin/
+> 📖 原厂文档：Ghost 官方文档 https://ghost.org/docs/ · 后台管理 https://ghost.org/docs/admin/
 
 ---
 

@@ -2,42 +2,48 @@
 
 *第二部分 · 管理篇（各产品日常操作）*
 
-> 聚合所有容器日志，按容器 + 关键字 + 时间检索。
+> 聚合所有容器日志，按容器 + 关键字 + 时间检索；在 AI 管理中心完成。
 
 [← 第23章：LLM 可观测（Langfuse）](ch23-ops-langfuse.md) · [📖 目录](index.md) · [第25章：PII 脱敏（Presidio） →](ch25-ops-pii.md)
 
 ---
 
-**入口**：AI 管理中心「📜 统一日志」页（最方便），或 Loki `http://<服务器IP>:3110`。
+## 24.1 AI 管理中心可执行的操作
 
-## 24.1 组件
+菜单：**系统运维 → 📜 统一日志**。内嵌页，无需登录 Loki 本身：
 
-| 组件 | 端口 | 用途 |
+1. 选**容器**（下拉列出全部容器）→ 填**关键字**（可选）→ 选**时间范围**；
+2. 点查询，结果分页展示日志行（时间戳 + 内容），支持翻页加载更多。
+
+> 📌 这是查看容器日志的推荐入口——Loki 本身不暴露给用户（内部服务）。
+
+![AI 管理中心统一日志页](../../images/admin-manual/logs.png)
+
+*图 24-1：AI 管理中心「统一日志」页（容器 + 关键字 + 时间）*
+
+![统一日志查询结果](../../images/admin-manual/logs-results.png)
+
+*图 24-2：统一日志查询结果*
+
+
+
+## 24.2 Loki 服务信息
+
+- Loki `:3110`（内网，仅 AI 管理中心查询）；日志采集由 Promtail 从各容器抓取后推送。
+
+## 24.3 排查场景（项目相关）
+
+| 场景 | 查哪个容器 | 关键字示例 |
 | --- | --- | --- |
-| Loki | 3110 | 日志存储与查询（单机、本地文件系统） |
-| Promtail | —（内部） | 经 docker.sock 发现容器、采集 json 日志推给 Loki |
+| NewAPI 登录失败 | `new-api` | `error` / `invalid_grant` |
+| Dify 对话报错 | `docker-web-1` / `docker-api-1` | `exception` / `traceback` |
+| Ghost 邮件没收到 | `ghost` | `mail` / `error` |
+| 告警没推出去 | `admin-portal` | `imalert` / `forwardAlert` |
+| 同步任务失败 | `gitea-runner` / `gitea` | `sync` / `fail` |
 
-## 24.2 查询日志
+> 📌 告警排查小技巧：企业 IM 告警的发送记录在「企业 IM 告警 → 发送历史」里直接看，不用翻日志。
 
-1. AI 管理中心 → 统一日志；
-
-2. 选容器（下拉）→ 填关键字 → 选时间范围 → 查询；
-
-3. 后端 `/api/logs/query` 用 LogQL 查 Loki。
-
-## 24.3 LogQL 速查
-
-```
-{container="new-api"} |= "error"              # 某容器含 error 的行
-{container=~".+"} |~ "(?i)error|exception"      # 所有容器匹配
-{service="litellm"} |= "EMAIL"                  # 按服务查
-```
-
-> 📌 Loki 的 label 是 `container / project / service`，**没有 `job`**。查询用 `{container=~".+"}` 而非 `{job="docker"}`。
-
-> ⚠️ 关键坑（Docker Desktop 挂载）：Promtail 需挂载 `/var/run/docker.sock` 和 `/var/lib/docker/containers`（WSL2 下指向 Docker Desktop VM 内部，正好是日志所在）；别用宿主机 Windows 的 `C:\...\containers` 路径。Loki 单机用 `store: tsdb` + filesystem。
-
-> 📖 原厂文档：Loki 官方文档 https://grafana.com/docs/loki/latest/
+> 📖 原厂文档：Loki https://grafana.com/docs/loki/latest/
 
 ---
 

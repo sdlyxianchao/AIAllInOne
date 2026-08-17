@@ -2,49 +2,43 @@
 
 *第二部分 · 管理篇（各产品日常操作）*
 
-> 敏感信息在出内网前自动脱敏。
+> 敏感信息在离开内网前自动脱敏；AI 管理中心可看服务状态。
 
-[← 第24章：统一日志（Loki）](ch24-ops-loki.md) · [📖 目录](index.md) · [第26章：MailHog 邮件接收器 →](ch26-ops-mailhog.md)
+[← 第24章：统一日志（Loki）](ch24-ops-loki.md) · [📖 目录](index.md) · [第26章：MailHog 邮件捕获 →](ch26-ops-mailhog.md)
 
 ---
 
-## 25.1 两层脱敏
+## 25.1 AI 管理中心可执行的操作
 
-| 层 | 能力 |
-| --- | --- |
-| LiteLLM 内置正则（`litellm_content_filter`） | 手机号、身份证、银行卡、邮箱、统一社会信用代码、护照、IPv4 等，命中即替换 `[xxx_REDACTED]`；敏感词黑名单命中即 BLOCK 拒绝 |
-| Microsoft Presidio | 更细粒度实体（英文人名、邮箱等），`presidio-analyzer` 5002 / `presidio-anonymizer` 5001 |
+菜单：**系统运维 → 🧬 PII 脱敏**。页面显示 Presidio Analyzer / Anonymizer 两个服务的运行状态与版本。
 
-## 25.2 内置正则规则
+> 📌 页面只读。脱敏规则在 LiteLLM 的 guardrails 里配置（见 16.4）——当前因上游 API 变更暂注释，仅做纯代理；启用时按本节恢复。
 
-| 规则 | 正则 | 类型 |
-| --- | --- | --- |
-| 中国手机号 | `\b1[3-9]\d{9}\b` | cn_mobile |
-| 身份证号 | `\b\d{17}[\dXx]\b` | cn_id |
-| 银行卡号 | `\b\d{16,19}\b` | bank_card |
-| 邮箱 | prebuilt `email` | email |
-| 统一社会信用代码 | `\b[0-9A-HJ-NPQRTUWXY]{18}\b` | cn_credit_code |
-| 护照号 | `\b[EG]\d{8}\b` | cn_passport |
-| IPv4 | `\b\d{1,3}(\.\d{1,3}){3}\b` | ip_address |
+![AI 管理中心 PII 脱敏页](../../images/admin-manual/pii.png)
 
-敏感词黑名单在 `litellm-config.yaml` 的 `blocked_words` 按公司实际增删（`内部机密`、`商业机密` 等）。
+*图 25-1：AI 管理中心「PII 脱敏」页（Analyzer/Anonymizer 状态）*
 
-## 25.3 启用 Presidio（当前暂注释）
 
-新版 LiteLLM guardrail API 变更，Presidio 段当前注释。启用要点：
+## 25.2 Presidio 服务信息
 
-- guardrails 加 `default_on: true` 才全局生效；
+- Analyzer `:5001`、Anonymizer `:5002`（内网，由 LiteLLM guardrails 调用）。
 
-- 端点环境变量 `PRESIDIO_ANALYZER_API_BASE` / `PRESIDIO_ANONYMIZER_API_BASE` 必须填 base URL（LiteLLM 自动拼 `/analyze`、`/anonymize`，带路径会变 `/analyze/analyze` 404）。
+## 25.3 项目相关配置
 
-> ⚠️ 镜像约 965MB，国内拉取很慢（实测约 1 小时），拉不动可先用内置正则（已覆盖中文核心 PII）。
+数据流：**DeepChat/Dify → NewAPI → LiteLLM（Presidio 脱敏）→ 外部大模型**，响应回来后再还原 PII（见第 1 章数据流图）。
 
-## 25.4 验证
+启用/调整脱敏的步骤：
 
-发含手机号/邮箱的请求 → 模型回复中原始值被替换为 `[REDACTED]`；发含「内部机密」的请求 → 直接返回 `Content blocked`。
+1. `litellm-config.yaml` 启用 guardrails（`default_on: true` 全局生效）：
+   - Analyzer：`PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:5000`（容器网络内）；
+   - Anonymizer：`PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:5001`；
+2. 内置识别器：手机号 / 身份证号 / 邮箱 / 姓名等（正则 + Presidio NER）；
+3. `docker compose restart litellm` 生效。
+
+> ⚠️ 脱敏只对走 LiteLLM 的请求生效：不走 NewAPI→LiteLLM 链路的直连请求不会被脱敏；员工侧数据分级要求见用户手册第 6 章。
 
 > 📖 原厂文档：Microsoft Presidio https://microsoft.github.io/presidio/ · 源码 https://github.com/microsoft/presidio
 
 ---
 
-[← 第24章：统一日志（Loki）](ch24-ops-loki.md) · [📖 目录](index.md) · [第26章：MailHog 邮件接收器 →](ch26-ops-mailhog.md)
+[← 第24章：统一日志（Loki）](ch24-ops-loki.md) · [📖 目录](index.md) · [第26章：MailHog 邮件捕获 →](ch26-ops-mailhog.md)
