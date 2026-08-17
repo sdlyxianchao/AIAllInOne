@@ -1,185 +1,190 @@
-# AI AllInOne — 企業イントラネットAIプラットフォーム（マルチプラットフォーム・セルフホスト）
+# AI AllInOne — オープンソース・セルフホストの企業向け AI プラットフォーム
 
-> 📖 **言語**: [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
+> 📖 **言語**：[English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · **日本語** · [한국어](README.ko.md) · [العربية](README.ar.md)
 
-**すぐに使えるマルチプラットフォーム**の企業イントラネットAIスイートです。統合認証、LLMルーティング、PIIマスキング、AIアプリケーション、企業ポータル、ソース/CI、クライアント配布、統合管理、監視・アラート、可観測性、ログ、バックアップ/リストアをすべてDockerで統合し、**Keycloakの1つのアカウントで全プロダクトにシングルサインオン**を実現します。
+[![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
+[![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
+[![GitHub tag](https://img.shields.io/github/v/tag/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/tags)
+![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
 
-このリポジトリは3つのデプロイプラットフォームに対応しています。
+> **1 台のサーバー。1 つのアカウント。エンタープライズ向け AI オールインワン——オープンソースで無料、データはイントラネットの外に出ません。**
 
-| プラットフォーム | リポジトリのディレクトリ（GitHub上） | 主な用途 |
-|---|---|---|
-| Windows | `windows/` | Windows 11 + Docker Desktop（単一マシン） |
-| Linux / macOS | `linux/` | 自前のLinuxサーバー / macOS（Docker） |
-| オンラインサーバー | `docker/` | クラウド / ベアDockerホスト（本番） |
-
-> ローカルの作業ディレクトリでは、これらのフォルダは `windows-github/`、`linux-github/`、`docker-github/` という名前です。GitHubにアップロードすると `-github` の接尾辞が外れて `windows/`、`linux/`、`docker/` になります。今後の更新もすべて同じ対応関係に従います。
-
----
-
-## 1. 含まれるもの
-
-| レイヤー | コンポーネント | 役割 |
-|---|---|---|
-| 認証 | Keycloak | SSO / OIDC。AD/LDAPまたはローカルアカウントと連携可能 |
-| LLMルーティング | NewAPI | チャネル、キー、クォータ、監査、コスト |
-| PIIマスキング | LiteLLM + Presidio | モデル呼び出し前に電話番号/ID/メールなどを自動マスキング |
-| AIアプリケーション | Dify | ビジュアルAIアプリ / Agentプラットフォーム + 統合ナレッジベース（RAG） |
-| 企業ポータル | Ghost | 社内のお知らせ・ニュースポータル |
-| ソース / CI | Gitea + Runner | 社内Git + Actions自動化 |
-| クライアント | DeepChat | ローカルAIデスクトップクライアント（Windows / macOS / Linux） |
-| クライアント配布 | Update Server | DeepChatインストーラーのホスティングと自動更新 |
-| 統合管理 | AI管理センター | 単一入口：ダッシュボード + 各プロダクト埋め込み + 監査/コスト/レポート + RAG検索 + モジュール別管理者認可 + Keycloak同期/ロール管理 |
-| ゲートウェイ | MCP Gateway | Skill / MCPマーケットの管理 + Difyナレッジ検索（RAG） |
-| 監視 | Prometheus + Grafana + Alertmanager | コンテナリソース監視 + アラート通知 |
-| LLM可観測性 | Langfuse | 各モデル呼び出しのトレース / レイテンシ / トークン / コスト |
-| 統合ログ | Loki + Promtail | 全コンテナのログを集約・検索 |
-| バックアップ/リストア | backup / restoreスクリプト + 管理ページ | 毎日の完全バックアップ + ワンクリックリストア |
-
-各プラットフォームのディレクトリには、`docker-compose.yml`、`.env.example`、`*-deploy-guide*.html`（デプロイガイド）、`*-checklist*.html`（進捗チェックリスト）、IDプロバイダー連携ガイド、ワンクリックデプロイスクリプト、およびサニタイズ済みのソースコードと設定が含まれます。**実際のシークレットは一切コミットされません。**
-
-### アーキテクチャとデータフロー
-
-![アーキテクチャ](<../pics/Architecture.png>)
-
-![データフロー](<../pics/DataFlow.png>)
-
-### スクリーンショット
-
-**AI 管理センター** — 統合管理ポータル
+AI AllInOne は、**オープンソースで無料**、すぐに使える企業イントラネット向け AI プラットフォームです。統合 SSO、LLM ルーティング、AI アプリ、企業ポータル、ソースコード/CI、統合管理、監視・アラート、可観測性、ログ、バックアップと復元——すべて Docker で 1 つにオーケストレーションされています。**従業員は 1 つのアカウントで一度ログインするだけで、すべての AI ツールを利用できます。**
 
 ![AI 管理センター](<../pics/AI Admin.png>)
 
-**Dify** — AI アプリケーションプラットフォーム
-
-![Dify](<../pics/Dify.png>)
-
-**企業ポータル** — ホーム（Ghost）
-
-![企業ポータル ホーム](<../pics/AI All In One Hub.png>)
-
-**DeepChat** — デスクトップ AI クライアント
-
-![DeepChat](<../pics/DeepChat.png>)
-
-**MCP/SKILL マーケット** — MCP をワンクリックで接続 + スキルパックのダウンロード
-
-![MCP/SKILL マーケット](<../pics/Market.png>)
+![企業ポータル](<../pics/AI All In One Hub.png>)
 
 ---
 
-## 2. クイックスタート：Harness系ツールによる自動デプロイ（推奨）
+## ✨ AI AllInOne を選ぶ理由
 
-Harness系ツール（OpenClaw、Microsoft Scout、WorkBuddyなど）は、このプロジェクトのドキュメントと設定を読み取り、マシン上に環境全体を段階的に構築できます。以下が標準フローです。
+| | |
+|---|---|
+| 🧩 **オールインワン、組み立て不要** | 8+ のオープンソースコンポーネントをプリインテグレーション：認証、ゲートウェイ、アプリ、ポータル、Git、監視、ログ、バックアップ。自分で「組み立てる」必要はありません。 |
+| 🔐 **統合 SSO** | 1 つの Keycloak アカウント（AD/LDAP フェデレーション対応）ですべての製品に自動ログイン、パスワード入力不要。 |
+| 🔒 **データはイントラネットの外に出ない** | 完全セルフホスト——モデル呼び出し、プロンプト、ドキュメント、ユーザーデータはすべて社内に留まります。 |
+| ⚡ **約 30 分でデプロイ完了** | `docker compose` + 自動化スクリプト、または AI Agent に環境一式のデプロイを任せることもできます。 |
+| 🛡️ **PII 匿名化** | 電話番号 / 身分証番号 / メールアドレスなどの機密情報を、外部大規模モデルへの呼び出し前に自動で匿名化します（Presidio）。 |
+| 📊 **全チェーンの可観測性** | Prometheus + Grafana による監視、Langfuse による LLM トレーシング、Loki による統合ログ、企業 IM アラート（钉钉/企微/飞书）。 |
+| 💾 **バックアップと復元** | 管理コンソールからワンクリックで毎日のフルバックアップとワンクリック復元が可能。 |
+| 🌐 **9 言語対応** | マニュアルと管理画面の多言語対応（简中 / 繁中 / 英語 / フランス語 / スペイン語 / ポルトガル語 / 日本語 / 韓国語 / アラビア語）。 |
 
-### 5つの前提条件
+## 📦 コンポーネント一覧
 
-**1. Harness系ツールをインストールする**
-OpenClaw / Microsoft Scout / WorkBuddy（または同等品）のいずれかをインストールします。いずれもローカルファイルの読み書き、コマンド実行、Web検索が可能です。
+| レイヤー | コンポーネント | 用途 |
+|---|---|---|
+| 認証 | Keycloak | SSO / OIDC、AD/LDAP フェデレーションまたはローカルアカウント |
+| LLM ルーティング | NewAPI | チャネル、キー、割り当て、監査、コスト |
+| PII 匿名化 | LiteLLM + Presidio | モデル呼び出し前に機密情報を自動匿名化 |
+| AI アプリ | Dify | ビジュアル AI アプリ / Agent プラットフォーム + 統合ナレッジベース（RAG） |
+| 企業ポータル | Ghost | 社内のお知らせとニュースのポータル（カスタム Corp Portal テーマ内蔵） |
+| ソースコード / CI | Gitea + Runner | 社内 Git + Actions 自動化 |
+| クライアント | DeepChat | ローカル AI デスクトップクライアント（Windows / macOS / Linux） |
+| クライアント配布 | Update Server | DeepChat インストーラーのホスティングと自動更新 |
+| 統合管理 | AI Admin Center | 統合エントリ：ダッシュボード + 埋め込み製品 + 監査/コスト/レポート + 階層別管理者権限 + Keycloak 同期/ロール |
+| ゲートウェイ | MCP Gateway | スキル / MCP マーケット + Dify ナレッジ検索（RAG） |
+| 監視 | Prometheus + Grafana + Alertmanager | コンテナリソース監視 + アラート通知 |
+| LLM 可観測性 | Langfuse | モデル呼び出しごとのレイテンシ、token、コストを追跡 |
+| 統合ログ | Loki + Promtail | 全コンテナログを集約し、コンテナ/キーワード/時刻で検索可能 |
+| バックアップと復元 | スクリプト + 管理ページ | 毎日のフルバックアップ + ワンクリック復元 |
 
-**2. サブスクリプションを購入するか、自分のAPIを設定する**
-ツールでサブスクリプションを完了するか、自分のLLM APIキー（DeepSeek / OpenAI / Claude / Qwen / ERNIEなど）を入力して、ツールが正常に対話できるようにします。
+### アーキテクチャとデータフロー
 
-**3. ネットワーク環境を整える**
-最もつまずきやすいステップです。
-- **Dockerイメージレジストリ**（Docker Hub / quay.ioなど）にアクセスできることを確認します。直接アクセスできない場合は、あらかじめレジストリミラー（DaoCloudなど）を設定します。
-- **GitHub**（リポジトリのクローンや一部の公開依存関係の取得）にアクセスできることを確認します。直接アクセスできない場合は、プロキシを使用するか、あらかじめソースアーカイブをダウンロードします。
-- 公開予定のネットワークセグメントからターゲットマシンに到達できることを確認します。
+![アーキテクチャ概要](<../pics/Architecture.png>)
 
-**4. プロジェクトをローカルにクローンまたはダウンロードする**
+![データフロー](<../pics/DataFlow.png>)
+
+---
+
+## 🚀 クイックスタート
+
+**前提条件**：Docker がインストールされたマシン（Windows 11 + Docker Desktop、または Linux）と、Docker イメージレジストリへのアクセスが必要です。
+
 ```bash
 git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
-# またはアーカイブをダウンロードして任意のローカルディレクトリに展開
+cd AIAllInOne/windows
+# コアサービスを起動し、その後デプロイガイドに従って認証 / LLM チャネル / 各製品を初期化
+docker compose up -d
 ```
 
-**5. 下記のプロンプトをツールに貼り付けて自動デプロイを開始する**
+次に、2 つの方法があります：
 
-下記の**プロンプト全体**をHarnessツールの入力欄にコピーし、その質問に1つずつ答えるだけです。ツールは、プラットフォームの判定 → パラメータの収集 → ローカル進捗ファイルの生成 → デプロイガイドに沿った段階的な設定 → 問題のテストと修正の反復 → 進捗の継続的な更新 → 最後に完全なテストと結果の報告、を実行します。
+1. **自動デプロイ（推奨）**——デプロイを AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）に任せます。デプロイドキュメントと設定を読み取り、パラメータ（サーバー IP、アイデンティティプロバイダ、管理者アカウント、LLM キー）をあなたから収集し、ステップごとにすべての設定を完了します。[ワンクリックデプロイ用プロンプトを確認 →](../windows/windows-deploy-guide-v2.html)
 
-### ワンクリックデプロイプロンプト（ツールにコピー）
+<details>
+<summary>📋 ワンクリックデプロイ用プロンプト（クリックで展開）</summary>
 
 ````text
-あなたは企業イントラネットAIプラットフォームのデプロイエンジニアです。このプロジェクトのドキュメントと設定ファイルに基づき、現在のマシンに「AI AllInOne」プラットフォームを完全にデプロイして検証してください。全体を通じて日本語で私とコミュニケーションし、以下の手順を厳密に実行してください。
+あなたは企業イントラネット向け AI プラットフォームのデプロイエンジニアです。本プロジェクトのドキュメントと設定ファイルに基づき、現在のマシンに「AI AllInOne」プラットフォームを完全にデプロイし、検証してください。やり取りはすべて日本語で行い、以下の手順に厳密に従って実行してください。
 
-## 手順1：デプロイディレクトリとターゲットプラットフォームを確認する
+## ステップ 1：デプロイディレクトリと対象プラットフォームを確認
+1. まず私に尋ねる：本プロジェクトのローカルの解凍/クローン先パスはどこか？（例：C:\AIAllInOne または /opt/AIAllInOne）
+2. そのディレクトリに入ったら、現在のマシンの OS に基づいて対象プラットフォームのディレクトリを決定する：
+   - Windows → windows-github（または windows）ディレクトリを使用
+   - Linux / macOS → linux-github（または linux）ディレクトリを使用
+   - オンラインサーバー / 純 Docker 環境 → docker-github（または docker）ディレクトリを使用
+   不明な場合は、検出した OS を私に伝え、どのディレクトリを使うか私と確認する。
+3. 着手する前に、ルートの README.md とそのプラットフォームディレクトリ内の README を読み、アーキテクチャとデプロイ方法を理解する。
 
-1. まず私に聞いてください：このプロジェクトのローカルの展開/クローンパスは何ですか？（例：C:\AIAllInOne または /opt/AIAllInOne）
-2. そのディレクトリに入った後、現在のマシンのOSに基づいてターゲットプラットフォームのフォルダを判断します。
-   - Windows → `windows-github`（または `windows`）フォルダを使用
-   - Linux / macOS → `linux-github`（または `linux`）フォルダを使用
-   - オンラインサーバー / 純Docker環境 → `docker-github`（または `docker`）フォルダを使用
-   確信が持てない場合は、検出したOSを私に伝え、どのフォルダを使うべきか私に確認してください。
-3. ルートのREADME.mdとそのプラットフォームフォルダ内のREADME.mdを読み、行動する前に全体のアーキテクチャとデプロイ方法を理解してください。
+## ステップ 2：必要なパラメータを 1 つずつ収集（個別に私に尋ね、スキップや推測をしない）
+1. プラットフォームが外部に公開するイントラネット IP（またはドメイン）。つまり他のマシンがアクセスするアドレス（例：192.168.1.100 または portal.company.com）。
+2. アイデンティティプロバイダ（Identity Provider）：
+   - 会社の AD ドメインコントローラー：ドメイン名、DC IP、LDAP base DN、bind DN、bind アカウントのパスワード、sAMAccountName などを私に尋ねる。
+   - その他の IdP（LDAP/OpenLDAP/OIDC/飞书/企微/钉钉など）：対応する設定とアカウント情報を私に尋ねる。
+   - 外部アイデンティティプロバイダなし（ローカルアカウントのみ）：私と確認したうえでスキップする。
+3. 統合管理者アカウント：ユーザー名、パスワード、メールアドレス（Keycloak SSO と各製品の管理者ログインに使用）。
+4. LLM API キー：実際にどのモデルプロバイダとキーがあるか（DeepSeek / OpenAI / Claude / Qwen / 通义 / ERNIE など）；ないものはスキップ。
+5. Ghost ポータルのサンプルコンテンツの言語：日本語、または他の言語に翻訳してからインポート。
+6. その他必要に応じて尋ねる：MCP スキルマーケットのホスト名（Windows）、アラート通知チャネル（钉钉/企微/飞书 webhook）、HTTPS 証明書、バックアップ保持ポリシーなど。
 
-## 手順2：必要なパラメータを収集する（1つずつ私に聞く。飛ばしたり推測したりしない）
+## ステップ 3：ローカル進捗ファイルを生成
+1. プラットフォームディレクトリ内の「進捗チェックリスト」ドキュメント（*-checklist*.html）と「アイデンティティプロバイダ連携ガイド」（*-ad-integration*.html や IdP 関連ドキュメントなど）を探す。
+2. チェックリストの内容に基づき、プロジェクトディレクトリに進捗ファイルを生成し、"deployment-progress-<platform>-<date>.md" のような名前を付け、各チェックリスト項目を未完了（- [ ]）としてコピーする。
+3. 以降、1 項目完了するごと、または 1 つの問題を解決するごとに、その進捗ファイルをすぐに更新し、会話の中で私に進捗を簡潔に報告する。
 
-設定前に以下の情報を収集し、不足しているものは私に尋ね、各項目の用途を説明してください。
+## ステップ 4：デプロイガイドに従って順に設定
+1. プラットフォームの「デプロイガイド」ドキュメント（*-deploy-guide*.html など）をよく読み、厳密に従う。特に「⚠️ 重要な落とし穴」と注記された箇所に注意する。
+2. おおよその順序：環境変数の準備 → コンテナの起動 → 認証/IdP の初期化 → LLM ルーティングとモデルチャネルの設定 → 各製品の初期化（Ghost ポータル：内蔵の Corp Portal テーマをデプロイしサンプルコンテンツをインポート）→ 監視/可観測性/ログ/匿名化の設定 → バックアップと復元の設定。
+3. ディレクトリ内の自動化スクリプト（bootstrap.ps1、keycloak-realm-init.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、health-check.ps1 など）を優先的に使用し、スクリプト化できる手順は UI を手動で操作しない。
 
-1. プラットフォームを公開するために使うイントラネットIP（他マシンがアクセスするアドレス。例：192.168.1.100）。
-2. アイデンティティソース（Identity Provider）：
-   - 企業のADドメインコントローラー（Active Directory）：ドメイン名、DCのIP、LDAP base DN、bind DN、bindアカウントのパスワード、sAMAccountNameなどを私に尋ねてください。
-   - その他のIdP（LDAP/OpenLDAP/OIDC/Feishu/WeCom/DingTalkなど）：対応する設定とアカウント情報を私に尋ねてください。
-   - 外部アイデンティティソースなし（ローカルアカウントのみ）：私と確認してからスキップしてください。
-3. 統合管理者アカウント：ユーザー名、パスワード、メール（Keycloak SSOと各プロダクトの管理者ログイン用）。
-4. LLM APIキー：私が実際に持っているモデルプロバイダーとキー（DeepSeek / OpenAI / Claude / Qwen / ERNIEなど）。持っていないものはスキップ。
-5. 必要に応じて尋ねるその他の項目：アラート通知チャネル（DingTalk/WeCom/Feishuのwebhook URL）、HTTPS証明書、バックアップ保持ポリシーなど。
+## ステップ 5：私と一緒に反復テストを行い問題を解決
+1. ある手順が失敗した、または期待どおりでない場合、まずログ（docker logs、各サービスのヘルスエンドポイント、設定ファイル）を確認して根本原因を特定してから修正し、やみくもにリトライしない。
+2. 私の参加が必要な場合（例：管理者権限が必要なコマンドの実行、ログイン確認、情報の補足）、「何をするのか、なぜか」を明確に私に伝える。
+3. 解決後は根本原因と修正内容を進捗ファイルに記録し、私に簡潔に報告する。
 
-## 手順3：ローカル進捗ファイルを生成する
+## ステップ 6：完全なエンドツーエンド検証
+すべてのチェックリスト項目が完了したら、完全なエンドツーエンドテストを 1 回行い、少なくとも以下をカバーする：
+- サービスの健全性（すべてのコンテナが Up、ヘルスエンドポイントが正常）；
+- SSO 統合ログイン（Keycloak へのログイン → 各製品の SSO/自動ログイン）；
+- LLM 経路（NewAPI/LiteLLM 経由で実際の会話を 1 回送信し、応答と PII 匿名化が機能することを検証）；
+- アイデンティティプロバイダでのログイン（AD/他の IdP を連携済みの場合は、対応するアカウントでログインをテスト）；
+- 監視/可観測性/ログ/アラート（データが入っていること、アラートが発火できることを確認）；
+- バックアップと復元（バックアップを 1 回実行し、復元できることを検証）。
 
-1. プラットフォームフォルダ内の「進捗チェックリスト」ドキュメント（例：*-checklist*.html）と「アイデンティティソース連携ガイド」（例：*-ad-integration*.html またはIdP関連ドキュメント）を見つけます。
-2. チェックリストの内容に基づいて、プロジェクトディレクトリに新しい進捗ファイル（例：「deployment-progress-<プラットフォーム>-<日付>.md」）を生成し、チェックリストの全項目を未完了（- [ ]）としてコピーします。
-3. 以降、項目を完了したり問題を解決したりするたびに、この進捗ファイルを更新し、会話で進捗を簡潔に報告してください。
-
-## 手順4：デプロイガイドに沿って段階的に設定する
-
-1. プラットフォームの「デプロイガイド」ドキュメント（例：*-deploy-guide*.html）を注意深く読み、厳密に従い、記載されている「⚠️ 重要な落とし穴 / つまずきポイント」に特に注意してください。
-2. おおよその順序：環境変数の準備 → コンテナの起動 → 認証/IdPの初期化 → LLMルーティングとモデルチャネルの設定 → 各プロダクトの初期化 → 監視/可観測性/ログ/マスキングの設定 → バックアップとリストアの設定。
-3. ディレクトリに既にある自動化スクリプト（例：bootstrap.ps1、keycloak-realm-init.ps1、health-checkなど）を優先して使用し、自動化できる手順はUIを手動でクリックしないでください。
-
-## 手順5：私と反復して問題をテスト・修正する
-
-1. 手順が失敗した場合や期待と異なる場合は、まずログ（docker logs、各サービスのヘルスエンドポイント、設定ファイル）を調べて根本原因を特定してから修正してください。やみくもに再試行しないでください。
-2. 私の関与が必要な場合（管理者権限でのコマンド実行、ログイン確認、追加情報の提供など）は、「何を・なぜ」を明確に伝えてください。
-3. 解決後、根本原因と修正方法を進捗ファイルに記録し、簡潔に報告してください。
-
-## 手順6：完全なエンドツーエンド検証
-
-チェックリストの全項目が完了したら、少なくとも以下をカバーする完全なエンドツーエンドテストを実行します。
-- サービスの健全性（全コンテナがUp、ヘルスエンドポイントが正常）；
-- SSO統合ログイン（Keycloakログイン → 各プロダクトへのSSO/自動ログイン）；
-- LLMチェーン（NewAPI/LiteLLM経由で実際のチャットを1回送信し、応答 + PIIマスキングを検証）；
-- アイデンティティソースのログイン（AD/その他IdP接続時に、対応するアカウントでログインをテスト）；
-- 監視/可観測性/ログ/アラート（データが存在し、アラートが発火することを確認）；
-- バックアップとリストア（バックアップを1回実行し、リストアできることを検証）。
-
-最後に、テスト結果を項目ごとにまとめ、✅成功 / ❌失敗を明確に示し、失敗項目については根本原因とフォローアップの提案を示してください。
+最後にテスト結果を項目ごとにまとめ、✅ 合格 / ❌ 失敗を明確に記載する；失敗項目には根本原因と今後の提案を記載する。
 ````
 
----
+</details>
 
-## 3. 手動デプロイ（代替手段）
+2. **手動デプロイ**——[Windows デプロイガイド](../windows/windows-deploy-guide-v2.html) に従って順に操作します（`windows-checklist.html` 進捗チェックリストと併用）。
 
-Harness系ツールを使いたくない場合は、各プラットフォームの `README.md` と `*-deploy-guide*.html` に従って手動でデプロイできます。主な流れは同じです：コンテナの起動 → 認証/IdPの初期化 → LLMチャネルの設定 → 各プロダクトの初期化 → 監視/バックアップの設定。
+> **プラットフォームの状態**：Windows（Windows 11 + Docker Desktop）は**実測中**です。Linux/macOS（`linux/`）とオンラインサーバー（`docker/`）は計画中です——[ロードマップ](#roadmap)をご覧ください。
 
----
+## 🖼️ 画面スクリーンショット
 
-## 4. セキュリティと注意事項
+**Dify** — AI アプリプラットフォーム · **MCP/Skill マーケット** — ツールとスキルをワンクリックで接続 · **DeepChat** — デスクトップ AI クライアント
 
-- このリポジトリには**実際のシークレットは含まれません**。すべての実際の値は各実行環境の `.env` にあります（コミットされるのは `.env.example` テンプレートのみ）。
-- デフォルトはイントラネット上の平文HTTPです。HTTPSについては各プラットフォームのデプロイガイドの該当章を参照してください。
-- 各プラットフォームのつまずきポイント、アーキテクチャ図、ポート表、データフローは、対応する `*-deploy-guide*.html` ドキュメントにあります。
+![Dify](<../pics/Dify.png>) ![MCP/SKILL マーケット](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
 
----
+さらに多くのスクリーンショット（実際の画面 48 枚）は[管理者マニュアル](../docs/admin-manual/index.md)に埋め込まれています。
 
-## 5. AI エージェントによる運用
+## 📚 マニュアル（オンライン、9 言語）
 
-このプラットフォームは、AI エージェント（WorkBuddy、OpenClaw、Microsoft Scout など）で完全に運用・保守できます。ヘルスチェック、コンテナ管理、設定変更、Gitea 同期、Ghost ポータル、バックアップ、リリース、トラブルシューティング。
+| マニュアル | 言語 |
+|---|---|
+| **管理者マニュアル** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
+| **ユーザーマニュアル** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
 
-完全な手順は **[AI エージェント運用ガイド](AI-AGENT-OPS.ja.md)**（9 言語対応）をご覧ください。
+日常の AI Agent 運用については **[AI Agent 運用ガイド](../AI-AGENT-OPS.md)** を参照してください。
 
----
+## 👥 コミュニティ
 
-## 7. マニュアル（オンライン・全言語）
+> 微信グループ——交流、デプロイの疑問解消、フィードバック、**共創**のための場所です。QR コードをスキャンして友達に追加してください。グループに招待します。
 
-管理者マニュアル：[English](docs/admin-manual/index.md) · [简体中文](docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](docs/i18n/admin-manual-zh-TW/index.md) · [Français](docs/i18n/admin-manual-fr/index.md) · [Español](docs/i18n/admin-manual-es/index.md) · [Português](docs/i18n/admin-manual-pt/index.md) · [日本語](docs/i18n/admin-manual-ja/index.md) · [한국어](docs/i18n/admin-manual-ko/index.md) · [العربية](docs/i18n/admin-manual-ar/index.md)
+<img src="../pics/wechat.png" alt="微信グループのQRコード" width="200" />
 
-ユーザーマニュアル：[English](docs/user-manual/index.md) · [简体中文](docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](docs/i18n/user-manual-zh-TW/index.md) · [Français](docs/i18n/user-manual-fr/index.md) · [Español](docs/i18n/user-manual-es/index.md) · [Português](docs/i18n/user-manual-pt/index.md) · [日本語](docs/i18n/user-manual-ja/index.md) · [한국어](docs/i18n/user-manual-ko/index.md) · [العربية](docs/i18n/user-manual-ar/index.md)
+また、[GitHub Discussions](https://github.com/sdlyxianchao/AIAllInOne/discussions)（または [Issue](https://github.com/sdlyxianchao/AIAllInOne/issues) を直接作成）もご利用いただけます。
+
+## 🤝 コントリビュート
+
+このプロジェクトは**オープンソースで無料**、コミュニティとともに成長しています。スキルのレベルに関係なく、あなたに合った方法があります：
+
+- ⭐ **リポジトリにスターを付ける**——最も簡単で、最も価値のあるサポートです
+- 🐛 **バグ報告 / 機能要望**——issue を立てて、再現手順を明確に記載してください
+- 📝 **ドキュメントやチュートリアルを書く**——デプロイガイド、トラブルシューティングの経験、ベストプラクティス
+- 🌐 **翻訳**——マニュアルはすでに 9 言語あります。改善や新規追加にご協力ください
+- 🧪 **テストと共有**——一度デプロイして、何が使いやすいか、どこで躓いたかを教えてください
+- 💻 **コードをコントリビュートする**——統合レイヤー（統合 SSO、管理ポータル、監視、バックアップ）が最も取り組みやすい箇所です
+
+完全なガイドは [CONTRIBUTING.md](../CONTRIBUTING.md) を参照してください。公開されている[ロードマップ](#roadmap)で今後の計画をご覧いただけます。**すべてのコントリビューター（貢献者）は README のコントリビューターリストに記載されます。**
+
+<h2 id="roadmap">🗺️ ロードマップ</h2>
+
+- ✅ v0.9x — Windows プラットフォーム：オールインワン + AI 管理センター + 階層別管理者権限 + 企業 IM アラート + セマンティックキャッシュ（LiteLLM redis-semantic）
+- 🚧 **Linux / macOS** — セルフホスト Linux サーバー対応（`linux/`）
+- 🚧 **オンラインサーバー** — 純 Docker / クラウドでの本番デプロイ（`docker/`）
+- 🚧 **共創者プログラム** — タスクボード、毎週の同期ミーティング、デプロイパートナー認定
+
+## 🔒 セキュリティについて
+
+- 本リポジトリには**実際のシークレット（キー）は一切含まれません**；実際の値は各実行環境の `.env` にのみ存在します（リポジトリには `.env.example` テンプレートのみをコミット）。
+- デフォルトはイントラネット内の平文 HTTP；HTTPS の設定は各プラットフォームのデプロイガイドを参照してください。
+- 各プラットフォームの落とし穴、ポート表、データフローは、対応する `*-deploy-guide*.html` ドキュメントを参照してください。
+
+## 📄 ライセンス
+
+[MIT](../LICENSE)——自由に使用、変更、再配布できます。統合された各コンポーネントはそれぞれのライセンスを保持します（デプロイガイドのライセンス審査セクションを参照）。

@@ -1,185 +1,190 @@
-# AI AllInOne — Plateforme IA d'intranet d'entreprise (multi-plateforme, auto-hébergée)
+# AI AllInOne — Plateforme IA d'entreprise open source et auto-hébergée
 
-> 📖 **Langues** : [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
+> 📖 **Langue** : [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · **Français** · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
 
-Une **suite IA d'intranet d'entreprise prête à l'emploi et multi-plateforme** : authentification unifiée, routage LLM, masquage PII, applications IA, portail d'entreprise, source/CI, distribution client, administration unifiée, supervision et alertes, observabilité, journalisation, et sauvegarde/restauration — le tout orchestré avec Docker en un système intégré, avec **connexion unique (SSO) à chaque produit via un seul compte Keycloak**.
+[![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
+[![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
+[![GitHub tag](https://img.shields.io/github/v/tag/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/tags)
+![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
 
-Le dépôt prend en charge trois plateformes de déploiement :
+> **Un serveur. Un compte. Toute la suite IA d'entreprise — open source et gratuite, vos données ne quittent jamais l'intranet.**
 
-| Plateforme | Dossier du dépôt (sur GitHub) | Cas d'usage typique |
-|---|---|---|
-| Windows | `windows/` | Windows 11 + Docker Desktop (machine unique) |
-| Linux / macOS | `linux/` | Serveur Linux auto-hébergé / macOS (Docker) |
-| Serveur en ligne | `docker/` | Hôte cloud / Docker nu (production) |
+AI AllInOne est une plateforme IA d'intranet d'entreprise **open source et gratuite**, prête à l'emploi : authentification unique (SSO) unifiée, routage LLM, applications IA, portail d'entreprise, code source/CI, administration unifiée, supervision et alertes, observabilité, journaux, sauvegarde et restauration — le tout orchestré avec Docker en un ensemble cohérent. **Les employés se connectent une seule fois avec un compte et ont accès à tous les outils IA.**
 
-> Dans le répertoire de travail local, ces dossiers sont nommés `windows-github/`, `linux-github/` et `docker-github/` ; après publication sur GitHub, le suffixe `-github` est supprimé et ils deviennent `windows/`, `linux/` et `docker/`. Toute mise à jour future suit ce même mappage.
+![Centre d'administration IA](<../pics/AI Admin.png>)
+
+![Portail d'entreprise](<../pics/AI All In One Hub.png>)
 
 ---
 
-## 1. Contenu
+## ✨ Pourquoi choisir AI AllInOne
+
+| | |
+|---|---|
+| 🧩 **Suite complète, zéro assemblage** | Plus de 8 composants open source pré-intégrés : authentification, passerelle, applications, portail, Git, supervision, journaux, sauvegarde. Aucun assemblage manuel nécessaire. |
+| 🔐 **SSO unifié** | Un seul compte Keycloak (avec fédération AD/LDAP) connecte automatiquement à tous les produits, sans saisie de mot de passe. |
+| 🔒 **Données confinées à l'intranet** | Entièrement auto-hébergé — les appels de modèles, prompts, documents et données utilisateurs restent au sein de l'entreprise. |
+| ⚡ **Déploiement en ~30 minutes** | `docker compose` + scripts automatisés, ou laissez un AI Agent déployer tout l'environnement pour vous. |
+| 🛡️ **Désidentification PII** | Les informations sensibles (numéros de téléphone, numéros de carte d'identité, e-mails, etc.) sont automatiquement masquées avant l'appel aux grands modèles externes (Presidio). |
+| 📊 **Observabilité de bout en bout** | Supervision Prometheus + Grafana, traçage LLM Langfuse, journaux unifiés Loki, alertes IM d'entreprise (DingTalk / WeCom / Feishu). |
+| 💾 **Sauvegarde et restauration** | Sauvegarde complète quotidienne en un clic et restauration en un clic depuis le panneau d'administration. |
+| 🌐 **9 langues** | Manuels et interface d'administration multilingues (zh-CN / zh-TW / EN / FR / ES / PT / JA / KO / AR). |
+
+## 📦 Liste des composants
 
 | Couche | Composant | Rôle |
 |---|---|---|
-| Authentification | Keycloak | SSO / OIDC, intégrable avec AD/LDAP ou comptes locaux |
-| Routage LLM | NewAPI | Canaux, clés, quotas, audit, coût |
-| Masquage PII | LiteLLM + Presidio | Masquage automatique téléphones/identifiants/e-mails avant les appels modèle |
-| Applications IA | Dify | Plateforme d'apps IA visuelles / Agents + base de connaissances unifiée (RAG) |
-| Portail d'entreprise | Ghost | Annonces et actualités de l'entreprise |
-| Source / CI | Gitea + Runner | Git interne + automatisation Actions |
+| Authentification | Keycloak | SSO / OIDC, fédération AD/LDAP ou comptes locaux |
+| Routage LLM | NewAPI | Canaux, clés, quotas, audit, coûts |
+| Désidentification PII | LiteLLM + Presidio | Masquage automatique des informations sensibles avant l'appel aux modèles |
+| Applications IA | Dify | Plateforme d'applications IA / Agents visuels + base de connaissances unifiée (RAG) |
+| Portail d'entreprise | Ghost | Portail d'annonces et d'actualités de l'entreprise (thème Corp Portal personnalisé intégré) |
+| Code source / CI | Gitea + Runner | Git interne + automatisation Actions |
 | Client | DeepChat | Client IA de bureau local (Windows / macOS / Linux) |
-| Distribution client | Update Server | Hébergement et mise à jour auto de l'installeur DeepChat |
-| Administration unifiée | AI Admin Center | Point d'entrée unique : tableau de bord + produits intégrés + audit/coût/rapports + recherche RAG + autorisation d'admin par module + synchronisation/rôles Keycloak |
-| Passerelle | MCP Gateway | Gestion du marché Skill / MCP + recherche de connaissances Dify (RAG) |
-| Supervision | Prometheus + Grafana + Alertmanager | Supervision des ressources conteneurs + notifications d'alerte |
-| Observabilité LLM | Langfuse | Trace / latence / tokens / coût de chaque appel modèle |
-| Journalisation unifiée | Loki + Promtail | Journaux agrégés et interrogeables de tous les conteneurs |
-| Sauvegarde/restauration | scripts backup/restore + page admin | Sauvegarde complète quotidienne + restauration en un clic |
-
-Chaque dossier de plateforme contient : `docker-compose.yml`, `.env.example`, `*-deploy-guide*.html` (guide de déploiement), `*-checklist*.html` (liste de contrôle), le guide d'intégration du fournisseur d'identité, des scripts de déploiement en un clic, ainsi que le code source et la config assainis. **Aucun secret réel n'est versionné.**
+| Distribution client | Update Server | Hébergement des installateurs DeepChat et mises à jour automatiques |
+| Administration unifiée | AI Admin Center | Point d'entrée unique : tableau de bord + produits intégrés + audit / coûts / rapports + autorisations administrateur hiérarchisées + synchronisation / rôles Keycloak |
+| Passerelle | MCP Gateway | Marché de compétences / MCP + recherche dans la base de connaissances Dify (RAG) |
+| Supervision | Prometheus + Grafana + Alertmanager | Supervision des ressources des conteneurs + notifications d'alerte |
+| Observabilité LLM | Langfuse | Suivi de la latence, des tokens et des coûts de chaque appel de modèle |
+| Journaux unifiés | Loki + Promtail | Agrégation des journaux de tous les conteneurs, filtrables par conteneur / mot-clé / période |
+| Sauvegarde et restauration | Scripts + page d'administration | Sauvegarde complète quotidienne + restauration en un clic |
 
 ### Architecture et flux de données
 
-![Architecture](<../pics/Architecture.png>)
+![Vue d'ensemble de l'architecture](<../pics/Architecture.png>)
 
 ![Flux de données](<../pics/DataFlow.png>)
 
-### Captures d’écran
-
-**AI Admin Center** — portail d’administration unifié
-
-![AI Admin Center](<../pics/AI Admin.png>)
-
-**Dify** — plateforme d’applications IA
-
-![Dify](<../pics/Dify.png>)
-
-**Portail d’entreprise** — accueil (Ghost)
-
-![Accueil du portail](<../pics/AI All In One Hub.png>)
-
-**DeepChat** — client IA de bureau
-
-![DeepChat](<../pics/DeepChat.png>)
-
-**Marché MCP/SKILL** — accès MCP en un clic + téléchargement des packs de compétences
-
-![Marché MCP/SKILL](<../pics/Market.png>)
-
 ---
 
-## 2. Démarrage rapide : déploiement automatisé via un outil de type Harness (recommandé)
+## 🚀 Démarrage rapide
 
-Les outils de type Harness (OpenClaw, Microsoft Scout, WorkBuddy, etc.) peuvent lire la documentation et la config de ce projet et construire tout l'environnement étape par étape sur votre machine. Voici le déroulé standard.
+**Prérequis** : une machine avec Docker (Windows 11 + Docker Desktop, ou Linux), capable d'accéder au registre d'images Docker.
 
-### 5 prérequis
-
-**1. Installer un outil de type Harness**
-Installez OpenClaw / Microsoft Scout / WorkBuddy (ou un équivalent). Ils savent tous lire/écrire des fichiers locaux, exécuter des commandes et faire des recherches web.
-
-**2. Acheter un abonnement ou configurer votre propre API**
-Souscrivez dans l'outil, ou renseignez votre propre clé API LLM (DeepSeek / OpenAI / Claude / Qwen / ERNIE, etc.) afin que l'outil puisse converser normalement.
-
-**3. Préparer l'environnement réseau**
-C'est l'étape qui bloque le plus souvent :
-- Assurez-vous que la machine peut joindre les **registres d'images Docker** (Docker Hub / quay.io, etc.). Sinon, configurez un miroir de registre (par ex. DaoCloud) au préalable.
-- Assurez-vous qu'elle peut joindre **GitHub** (pour cloner le dépôt et récupérer certaines dépendances publiques). Sinon, utilisez un proxy ou téléchargez l'archive source à l'avance.
-- Vérifiez que la machine cible est joignable sur le segment réseau que vous comptez exposer.
-
-**4. Cloner ou télécharger le projet en local**
 ```bash
 git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
-# ou téléchargez l'archive et extrayez-la dans n'importe quel dossier local
+cd AIAllInOne/windows
+# Démarrez les services principaux, puis initialisez l'authentification / les canaux LLM / chaque produit conformément au guide de déploiement
+docker compose up -d
 ```
 
-**5. Collez le prompt ci-dessous dans l'outil pour lancer le déploiement automatisé**
+Deux options s'offrent à vous :
 
-Copiez l'**intégralité du prompt** ci-dessous dans la zone de saisie de l'outil Harness, puis répondez à ses questions une par une. L'outil va : détecter votre plateforme → collecter les paramètres → générer un fichier de progression local → configurer étape par étape selon le guide → itérer avec vous pour tester et corriger les problèmes → maintenir la progression à jour → exécuter un test complet à la fin et en rapporter les résultats.
+1. **Déploiement automatisé (recommandé)** — confiez le déploiement à un AI Agent (WorkBuddy / OpenClaw / Microsoft Scout). Il lit la documentation de déploiement et la configuration, recueille vos paramètres (IP du serveur, source d'identité, compte administrateur, clés LLM), puis réalise toute la configuration étape par étape. [Voir le prompt de déploiement en un clic →](../windows/windows-deploy-guide-v2.html)
 
-### Prompt de déploiement en un clic (à copier dans l'outil)
+<details>
+<summary>📋 Prompt de déploiement en un clic (cliquer pour déplier)</summary>
 
 ````text
-Vous êtes ingénieur de déploiement pour une plateforme IA d'intranet d'entreprise. À partir de la documentation et des fichiers de config de ce projet, déployez et vérifiez entièrement la plateforme « AI AllInOne » sur la machine actuelle. Communiquez avec moi en français tout au long et suivez strictement le processus ci-dessous.
+Vous êtes un ingénieur de déploiement pour une plateforme IA d'intranet d'entreprise. Sur la base de la documentation et des fichiers de configuration de ce projet, déployez et validez entièrement la plateforme « AI AllInOne » sur la machine actuelle. Communiquez avec moi en français tout au long du processus et suivez strictement la procédure ci-dessous.
 
 ## Étape 1 : Confirmer le répertoire de déploiement et la plateforme cible
+1. Demandez-moi d'abord : quel est le chemin local d'extraction/clonage de ce projet ? (par exemple C:\AIAllInOne ou /opt/AIAllInOne)
+2. Après être entré dans ce répertoire, déterminez le répertoire de la plateforme cible en fonction du système d'exploitation de la machine :
+   - Windows → utilisez le répertoire windows-github (ou windows)
+   - Linux / macOS → utilisez le répertoire linux-github (ou linux)
+   - Serveur en ligne / environnement Docker pur → utilisez le répertoire docker-github (ou docker)
+   En cas de doute, indiquez-moi le système d'exploitation détecté et confirmez avec moi le répertoire à utiliser.
+3. Avant de commencer, lisez le README.md à la racine et le README du répertoire de la plateforme pour comprendre l'architecture et la méthode de déploiement.
 
-1. Demandez-moi d'abord : quel est le chemin local d'extraction/clonage de ce projet ? (par ex. C:\AIAllInOne ou /opt/AIAllInOne)
-2. Après être entré dans ce répertoire, déterminez le dossier de plateforme cible selon le système d'exploitation de la machine :
-   - Windows → utiliser le dossier `windows-github` (ou `windows`)
-   - Linux / macOS → utiliser le dossier `linux-github` (ou `linux`)
-   - Serveur en ligne / environnement Docker pur → utiliser le dossier `docker-github` (ou `docker`)
-   En cas de doute, indiquez-moi l'OS détecté et confirmez avec moi le dossier à utiliser.
-3. Lisez le README.md racine et le README.md du dossier de plateforme pour comprendre l'architecture et l'approche de déploiement avant d'agir.
-
-## Étape 2 : Collecter les paramètres requis (demandez-moi un par un ; ne sautez pas, ne devinez pas)
-
-Avant de configurer, collectez les informations suivantes, en me demandant tout ce qui manque et en expliquant l'utilité de chaque élément :
-
-1. L'IP intranet utilisée pour exposer la plateforme (l'adresse que les autres machines utilisent pour l'atteindre, par ex. 192.168.1.100).
+## Étape 2 : Collecter les paramètres requis un par un (demandez-moi chacun, ne sautez ni ne devinez)
+1. L'IP intranet (ou nom de domaine) exposée par la plateforme, c'est-à-dire l'adresse à laquelle les autres machines accèdent (par exemple 192.168.1.100 ou portal.company.com).
 2. Source d'identité (Identity Provider) :
-   - Contrôleur de domaine AD d'entreprise (Active Directory) : demandez-moi le nom de domaine, l'IP du DC, la base DN LDAP, le bind DN, le mot de passe du compte de bind, sAMAccountName, etc.
-   - Autre IdP (LDAP/OpenLDAP/OIDC/Feishu/WeCom/DingTalk, etc.) : demandez-moi la config et les infos de compte correspondantes.
-   - Aucune source d'identité externe (comptes locaux uniquement) : confirmez avec moi puis passez.
-3. Compte admin unifié : nom d'utilisateur, mot de passe, e-mail (pour le SSO Keycloak et la connexion admin à chaque produit).
-4. Clés API LLM : quels fournisseurs de modèles et quelles clés je possède réellement (DeepSeek / OpenAI / Claude / Qwen / ERNIE, etc.) ; passez ceux que je n'ai pas.
-5. Autres éléments à demander selon les besoins : canal de notification d'alerte (URL webhook DingTalk/WeCom/Feishu), certificats HTTPS, politique de rétention des sauvegardes, etc.
+   - Contrôleur de domaine AD de l'entreprise : demandez-moi le nom de domaine, l'IP du DC, la base DN LDAP, le bind DN, le mot de passe du compte de liaison (bind), le sAMAccountName, etc.
+   - Autre IdP (LDAP / OpenLDAP / OIDC / Feishu / WeCom / DingTalk, etc.) : demandez-moi la configuration et les informations de compte correspondantes.
+   - Aucune source d'identité externe (comptes locaux uniquement) : confirmez avec moi puis passez à la suite.
+3. Compte administrateur unifié : nom d'utilisateur, mot de passe, e-mail (pour la connexion SSO Keycloak et les connexions administrateur de chaque produit).
+4. Clés API LLM : quels fournisseurs de modèles et clés sont réellement disponibles (DeepSeek / OpenAI / Claude / Qwen / Tongyi / ERNIE, etc.) ; passez ce qui n'est pas disponible.
+5. Langue du contenu d'exemple du portail Ghost : chinois, ou à traduire dans une autre langue avant l'importation.
+6. Autres demandes selon les besoins : nom d'hôte du marché de compétences MCP (Windows), canaux de notification d'alerte (webhook DingTalk / WeCom / Feishu), certificats HTTPS, stratégie de conservation des sauvegardes, etc.
 
-## Étape 3 : Générer un fichier de progression local
+## Étape 3 : Générer le fichier de progression local
+1. Recherchez le document « liste de contrôle de progression » (*-checklist*.html) et le « guide d'intégration de la source d'identité » (par exemple *-ad-integration*.html ou les documents relatifs à l'IdP) dans le répertoire de la plateforme.
+2. À partir du contenu de la liste, générez un fichier de progression dans le répertoire du projet, nommé par exemple « deployment-progress-<platform>-<date>.md », et copiez chaque élément de la liste en tant qu'inachevé (- [ ]).
+3. Ensuite, après chaque tâche accomplie ou problème résolu, mettez à jour ce fichier de progression et rapportez-moi brièvement l'avancement dans la conversation.
 
-1. Localisez le document « liste de contrôle » dans le dossier de plateforme (par ex. *-checklist*.html) et le « guide d'intégration de la source d'identité » (par ex. *-ad-integration*.html ou docs liés à l'IdP).
-2. À partir du contenu de la liste, générez un nouveau fichier de progression dans le répertoire du projet, nommé par ex. « progression-deploiement-<plateforme>-<date>.md », en copiant chaque élément comme non terminé (- [ ]).
-3. Ensuite, mettez à jour ce fichier chaque fois que vous terminez un élément ou résolvez un problème, et rapportez brièvement l'avancement dans la conversation.
+## Étape 4 : Configurer progressivement selon le guide de déploiement
+1. Lisez attentivement le document « guide de déploiement » de la plateforme (par exemple *-deploy-guide*.html) et suivez-le strictement, en accordant une attention particulière aux « ⚠️ pièges clés » qu'il signale.
+2. Ordre général : préparer les variables d'environnement → démarrer les conteneurs → initialiser l'authentification / l'IdP → configurer le routage LLM et les canaux de modèles → initialiser chaque produit (portail Ghost : déployer le thème Corp Portal intégré et importer le contenu d'exemple) → configurer la supervision / l'observabilité / les journaux / la désidentification → configurer la sauvegarde et la restauration.
+3. Privilégiez les scripts d'automatisation du répertoire (comme bootstrap.ps1, keycloak-realm-init.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, health-check.ps1, etc.) ; pour les étapes scriptables, n'utilisez pas l'interface graphique manuellement.
 
-## Étape 4 : Configurer étape par étape selon le guide de déploiement
+## Étape 5 : Tester de façon itérative avec moi et résoudre les problèmes
+1. Si une étape échoue ou ne correspond pas aux attentes, consultez d'abord les journaux (docker logs, points de terminaison de santé des services, fichiers de configuration) pour identifier la cause racine avant de corriger ; ne réessayez pas à l'aveugle.
+2. Lorsque ma participation est nécessaire (par exemple exécuter des commandes nécessitant des droits administrateur, confirmer une connexion, fournir des informations complémentaires), indiquez-moi clairement « quoi faire et pourquoi ».
+3. Après résolution, consignez la cause racine et le correctif dans le fichier de progression, puis faites-en un bref rapport.
 
-1. Lisez attentivement le « guide de déploiement » de la plateforme (par ex. *-deploy-guide*.html) et suivez-le strictement, en portant une attention particulière aux « ⚠️ pièges critiques / points d'achoppement » qu'il signale.
-2. Ordre approximatif : préparer les variables d'environnement → démarrer les conteneurs → initialiser auth/IdP → configurer le routage LLM et les canaux de modèles → initialiser chaque produit → configurer supervision/observabilité/journalisation/masquage → configurer sauvegarde et restauration.
-3. Privilégiez les scripts d'automatisation déjà présents dans le dossier (par ex. bootstrap.ps1, keycloak-realm-init.ps1, health-check, etc.) ; ne cliquez pas dans les UI pour les étapes automatisables.
+## Étape 6 : Validation de bout en bout complète
+Une fois tous les éléments de la liste terminés, effectuez un test de bout en bout complet couvrant au minimum :
+- Santé des services (tous les conteneurs Up, points de terminaison de santé opérationnels) ;
+- Connexion SSO unifiée (connexion Keycloak → SSO / connexion automatique à chaque produit) ;
+- Chaîne LLM (envoyer une vraie conversation via NewAPI/LiteLLM, vérifier la réponse et l'efficacité de la désidentification PII) ;
+- Connexion par source d'identité (si AD / autre IdP intégré, tester la connexion avec le compte correspondant) ;
+- Supervision / observabilité / journaux / alertes (vérifier que des données sont présentes et que les alertes peuvent se déclencher) ;
+- Sauvegarde et restauration (effectuer une sauvegarde et vérifier qu'elle est restaurable).
 
-## Étape 5 : Itérer avec moi pour tester et corriger les problèmes
-
-1. Quand une étape échoue ou ne correspond pas aux attentes, inspectez d'abord les journaux (docker logs, points de terminaison de santé de chaque service, fichiers de config), localisez la cause racine, puis corrigez — ne réessayez pas à l'aveugle.
-2. Quand vous avez besoin de mon intervention (exécuter une commande avec droits admin, confirmer une connexion, fournir des infos), dites-moi clairement « quoi faire et pourquoi ».
-3. Après résolution, notez la cause racine et le correctif dans le fichier de progression et rapportez-moi brièvement.
-
-## Étape 6 : Vérification complète de bout en bout
-
-Une fois chaque élément de la liste terminé, exécutez un test de bout en bout couvrant au moins :
-- Santé des services (tous les conteneurs Up, points de terminaison de santé normaux) ;
-- Connexion unifiée SSO (connexion Keycloak → SSO/connexion auto dans chaque produit) ;
-- Chaîne LLM (envoyer un vrai chat via NewAPI/LiteLLM, vérifier la réponse + le masquage PII) ;
-- Connexion par source d'identité (si AD/autre IdP est connecté, tester la connexion avec le compte correspondant) ;
-- Supervision/observabilité/journalisation/alertes (confirmer que les données existent et que les alertes se déclenchent) ;
-- Sauvegarde et restauration (exécuter une sauvegarde et vérifier qu'elle peut être restaurée).
-
-Enfin, résumez les résultats de test élément par élément, en marquant clairement ✅ réussi / ❌ échoué ; pour les échecs, donnez la cause racine et des suggestions de suivi.
+Enfin, récapitulez les résultats des tests point par point, en marquant clairement ✅ Réussi / ❌ Échec ; pour les échecs, indiquez la cause racine et des recommandations ultérieures.
 ````
 
----
+</details>
 
-## 3. Déploiement manuel (alternative)
+2. **Déploiement manuel** — suivez pas à pas le [guide de déploiement Windows](../windows/windows-deploy-guide-v2.html) (avec la liste de contrôle de progression `windows-checklist.html`).
 
-Si vous préférez ne pas utiliser d'outil de type Harness, vous pouvez déployer manuellement en suivant le `README.md` et le `*-deploy-guide*.html` de chaque plateforme. Le déroulé principal est identique : démarrer les conteneurs → initialiser auth/IdP → configurer les canaux LLM → initialiser chaque produit → configurer supervision/sauvegarde.
+> **État de la plateforme** : Windows (Windows 11 + Docker Desktop) **en cours de test réel**. Linux/macOS (`linux/`) et serveur en ligne (`docker/`) sont prévus — voir la [feuille de route](#roadmap).
 
----
+## 🖼️ Captures d'écran
 
-## 4. Sécurité et remarques
+**Dify** — plateforme d'applications IA · **Marché MCP / Skills** — branchez outils et compétences en un clic · **DeepChat** — client IA de bureau
 
-- Ce dépôt ne contient **aucun secret réel** ; toutes les valeurs réelles vivent dans le `.env` de chaque environnement d'exécution (seuls les modèles `.env.example` sont versionnés).
-- Par défaut, HTTP en clair sur l'intranet ; pour HTTPS, voir le chapitre correspondant du guide de déploiement de chaque plateforme.
-- Les pièges, diagrammes d'architecture, tables de ports et flux de données de chaque plateforme figurent dans les documents `*-deploy-guide*.html` correspondants.
+![Dify](<../pics/Dify.png>) ![Marché MCP/SKILL](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
 
----
+D'autres captures d'écran (48 captures d'interface réelles) sont intégrées au [manuel de l'administrateur](../docs/admin-manual/index.md).
 
-## 5. Exploiter avec un agent IA
+## 📚 Manuels (en ligne, 9 langues)
 
-Cette plateforme peut être entièrement exploitée et maintenue via un agent IA (WorkBuddy, OpenClaw, Microsoft Scout, etc.) : vérifications de santé, gestion des conteneurs, modifications de configuration, synchronisation Gitea, portail Ghost, sauvegardes, versions et dépannage.
+| Manuel | Langue |
+|---|---|
+| **Manuel de l'administrateur** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
+| **Manuel de l'utilisateur** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
 
-Consultez le **[Guide d'exploitation par agent IA](AI-AGENT-OPS.fr.md)** (disponible en 9 langues).
+Pour l'exploitation quotidienne de l'IA par agent, voir le **[guide d'exploitation AI Agent](../AI-AGENT-OPS.md)**.
 
----
+## 👥 Communauté
 
-## 7. Manuels (en ligne, toutes langues)
+> Groupe WeChat — pour échanger, obtenir de l'aide sur le déploiement, donner des retours et **construire ensemble**. Scannez le code QR pour ajouter un ami et rejoindre le groupe.
 
-Manuel administrateur：[English](docs/admin-manual/index.md) · [简体中文](docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](docs/i18n/admin-manual-zh-TW/index.md) · [Français](docs/i18n/admin-manual-fr/index.md) · [Español](docs/i18n/admin-manual-es/index.md) · [Português](docs/i18n/admin-manual-pt/index.md) · [日本語](docs/i18n/admin-manual-ja/index.md) · [한국어](docs/i18n/admin-manual-ko/index.md) · [العربية](docs/i18n/admin-manual-ar/index.md)
+<img src="../pics/wechat.png" alt="QR code du groupe WeChat" width="200" />
 
-Manuel utilisateur：[English](docs/user-manual/index.md) · [简体中文](docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](docs/i18n/user-manual-zh-TW/index.md) · [Français](docs/i18n/user-manual-fr/index.md) · [Español](docs/i18n/user-manual-es/index.md) · [Português](docs/i18n/user-manual-pt/index.md) · [日本語](docs/i18n/user-manual-ja/index.md) · [한국어](docs/i18n/user-manual-ko/index.md) · [العربية](docs/i18n/user-manual-ar/index.md)
+Vous pouvez également utiliser [GitHub Discussions](https://github.com/sdlyxianchao/AIAllInOne/discussions) (ou ouvrir directement une [Issue](https://github.com/sdlyxianchao/AIAllInOne/issues)).
+
+## 🤝 Contribuer
+
+Ce projet est **open source et gratuit**, et il se développe grâce à la communauté. Quel que soit votre niveau, il existe une façon de contribuer adaptée à vous :
+
+- ⭐ **Mettre une étoile au dépôt** — le soutien le plus simple et le plus précieux
+- 🐛 **Signaler un bug / proposer une fonctionnalité** — ouvrez une issue en décrivant clairement les étapes de reproduction
+- 📝 **Rédiger de la documentation et des tutoriels** — guides de déploiement, retours d'expérience de dépannage, bonnes pratiques
+- 🌐 **Traduire** — les manuels sont déjà disponibles en 9 langues ; aidez à les améliorer ou à en ajouter davantage
+- 🧪 **Tester et partager** — déployez une fois et dites-nous ce qui fonctionne bien et les pièges rencontrés
+- 💻 **Contribuer au code** — la couche d'intégration (SSO unifié, portail d'administration, supervision, sauvegarde) est le meilleur endroit pour commencer
+
+Le guide complet figure dans [CONTRIBUTING.md](../CONTRIBUTING.md) ; la [feuille de route](#roadmap) publique montre les prochaines étapes. **Chaque contributeur est inscrit dans la liste des contributeurs du README.**
+
+<h2 id="roadmap">🗺️ Feuille de route</h2>
+
+- ✅ v0.9x — Plateforme Windows : suite complète + centre d'administration IA + autorisations administrateur hiérarchisées + alertes IM d'entreprise + cache sémantique (LiteLLM redis-semantic)
+- 🚧 **Linux / macOS** — prise en charge des serveurs Linux auto-hébergés (`linux/`)
+- 🚧 **Serveur en ligne** — déploiement de production en Docker pur / cloud (`docker/`)
+- 🚧 **Programme de co-construction** — tableau de tâches, réunion de synchronisation hebdomadaire, certification des partenaires de déploiement
+
+## 🔒 Considérations de sécurité
+
+- Ce dépôt **ne contient aucune clé réelle** ; les valeurs réelles ne sont conservées que dans le `.env` de chaque environnement d'exécution (le dépôt ne contient que le modèle `.env.example`).
+- HTTP en clair par défaut sur l'intranet ; la configuration HTTPS est décrite dans le guide de déploiement de chaque plateforme.
+- Les pièges, tables de ports et flux de données de chaque plateforme figurent dans les documents `*-deploy-guide*.html` correspondants.
+
+## 📄 Licence
+
+[MIT](../LICENSE) — libre d'utilisation, de modification et de redistribution. Les composants intégrés conservent leurs licences respectives (voir la section de revue des licences du guide de déploiement).

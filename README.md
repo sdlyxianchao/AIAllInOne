@@ -1,43 +1,56 @@
-# AI AllInOne — Enterprise Intranet AI Platform (Multi-platform, Self-hosted)
+# AI AllInOne — Enterprise AI Platform, Self-hosted & Open Source
 
-> 📖 **Languages**: [English](README.md) · [简体中文](i18n/README.zh.md) · [繁體中文](i18n/README.zh-TW.md) · [Français](i18n/README.fr.md) · [Español](i18n/README.es.md) · [Português](i18n/README.pt.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [العربية](i18n/README.ar.md)
+> 📖 **Languages**: English · [简体中文](i18n/README.zh.md) · [繁體中文](i18n/README.zh-TW.md) · [Français](i18n/README.fr.md) · [Español](i18n/README.es.md) · [Português](i18n/README.pt.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [العربية](i18n/README.ar.md)
 
-A **ready-to-use, multi-platform** enterprise intranet AI stack: unified authentication, LLM routing, PII redaction, AI applications, an enterprise portal, source/CI, client distribution, unified administration, monitoring & alerting, observability, logging, and backup/restore — all orchestrated with Docker into one integrated system, with **single sign-on to every product via one Keycloak account**.
+[![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
+[![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](LICENSE)
+[![GitHub tag](https://img.shields.io/github/v/tag/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/tags)
+![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
-The repository supports three deployment platforms:
+> **One server. One SSO. The whole enterprise AI stack — free and self-hosted.**
 
-| Platform | Repo directory (on GitHub) | Typical use case | Status |
-|---|---|---|---|
-| Windows | `windows/` | Windows 11 + Docker Desktop (single machine) | ✅ **In testing** |
-| Linux / macOS | `linux/` | Self-hosted Linux server / macOS (Docker) | 🚧 Coming soon |
-| Online server | `docker/` | Cloud / bare Docker host (production) | 🚧 Coming soon |
+AI AllInOne is a ready-to-use, **open-source** enterprise intranet AI platform: unified SSO, LLM routing, AI applications, an enterprise portal, source/CI, unified administration, monitoring & alerting, observability, logging, and backup/restore — all orchestrated with Docker into one integrated system. **Employees log in once with a single account and get every AI tool.**
 
-> **Current status: we are actively testing the Windows platform.** The Linux/macOS and online-server platforms are still under development — their folders only contain a "Coming Soon" README for now.
->
-> In the local working directory these folders are named `windows-github/`, `linux-github/`, and `docker-github/`; after uploading to GitHub the `-github` suffix is dropped and they become `windows/`, `linux/`, and `docker/`. Every future update follows this same mapping.
+![AI Admin Center](<pics/AI Admin.png>)
+
+![Enterprise portal](<pics/AI All In One Hub.png>)
 
 ---
 
-## 1. What's inside
+## ✨ Why AI AllInOne
+
+| | |
+|---|---|
+| 🧩 **All-in-one, no assembly** | 8+ open-source components pre-integrated: auth, gateway, apps, portal, Git, monitoring, logging, backup. No "glue it yourself" work. |
+| 🔐 **One SSO for everything** | Single Keycloak account (with AD/LDAP federation) signs into every product automatically. |
+| 🔒 **Data never leaves the intranet** | Fully self-hosted — model calls, prompts, docs and user data stay inside your network. |
+| ⚡ **Deploy in ~30 minutes** | `docker compose` + automation scripts, or let an AI agent deploy the whole stack for you. |
+| 🛡️ **PII redaction** | Phone numbers / IDs / emails are redacted before calls reach external LLMs (Presidio). |
+| 📊 **Observe everything** | Prometheus + Grafana monitoring, Langfuse LLM tracing, Loki unified logs, IM alerting (DingTalk/WeCom/Feishu). |
+| 💾 **Backup & restore** | One-click daily full backup and restore from the admin portal. |
+| 🌐 **9 languages** | Manuals and admin UI localized (zh-CN / zh-TW / en / fr / es / pt / ja / ko / ar). |
+
+## 📦 What's inside
 
 | Layer | Component | Purpose |
 |---|---|---|
-| Auth | Keycloak | SSO / OIDC, can integrate with AD/LDAP or local accounts |
+| Auth | Keycloak | SSO / OIDC, AD/LDAP federation or local accounts |
 | LLM routing | NewAPI | Channels, keys, quotas, audit, cost |
-| PII redaction | LiteLLM + Presidio | Auto-redact phone numbers / IDs / emails before model calls |
+| PII redaction | LiteLLM + Presidio | Auto-redact sensitive info before model calls |
 | AI applications | Dify | Visual AI app / Agent platform + unified knowledge base (RAG) |
-| Enterprise portal | Ghost | Company announcements & news portal |
+| Enterprise portal | Ghost | Company announcements & news portal (custom Corp Portal theme included) |
 | Source / CI | Gitea + Runner | Internal Git + Actions automation |
 | Client | DeepChat | Local AI desktop client (Windows / macOS / Linux) |
 | Client distribution | Update Server | DeepChat installer hosting & auto-update |
-| Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports + RAG retrieval + scoped admin authorization + Keycloak sync/roles |
-| Gateway | MCP Gateway | Skill / MCP market management + Dify knowledge retrieval (RAG) |
+| Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports + scoped admin authorization + Keycloak sync/roles |
+| Gateway | MCP Gateway | Skill / MCP market + Dify knowledge retrieval (RAG) |
 | Monitoring | Prometheus + Grafana + Alertmanager | Container resource monitoring + alert notifications |
 | LLM observability | Langfuse | Trace / latency / tokens / cost of every model call |
 | Unified logging | Loki + Promtail | Aggregated, searchable logs from all containers |
-| Backup & restore | backup/restore scripts + admin page | Daily full backup + one-click restore |
-
-Every platform directory contains: `docker-compose.yml`, `.env.example`, `*-deploy-guide*.html` (deployment guide), `*-checklist*.html` (progress checklist), identity-provider integration guide, one-click deployment scripts, plus sanitized source code and config. **No real secrets are committed.**
+| Backup & restore | scripts + admin page | Daily full backup + one-click restore |
 
 ### Architecture & data flow
 
@@ -45,163 +58,119 @@ Every platform directory contains: `docker-compose.yml`, `.env.example`, `*-depl
 
 ![Data flow](<pics/DataFlow.png>)
 
-### Screenshots
-
-**AI Admin Center** — unified management portal
-
-![AI Admin Center](<pics/AI Admin.png>)
-
-**Dify** — AI application platform
-
-![Dify](<pics/Dify.png>)
-
-**Enterprise portal** — home (Ghost)
-
-![Enterprise portal home](<pics/AI All In One Hub.png>)
-
-**DeepChat** — desktop AI client
-
-![DeepChat](<pics/DeepChat.png>)
-
-**MCP/SKILL Market** — one-click MCP gateway access + skill package download
-
-![MCP/SKILL Market](<pics/Market.png>)
-
-### Custom Ghost theme — Corp Portal
-
-The enterprise portal also ships with a custom-built Ghost theme, **Corp Portal** (`windows/ghost-theme-corp-portal/`) — a professional corporate style with a hero banner, platform-capability cards, and the news/article list directly on the home page. It's fully responsive and uses Chinese serif/sans fonts (Noto Serif SC / Noto Sans SC).
-
-- **Use it**: upload the theme in Ghost admin (**Settings → Design → upload & activate "Corp Portal"**), or copy the folder into the Ghost container's `content/themes/` directory.
-- **Full instructions**: see `windows/ghost-theme-corp-portal/README.md` (installation, file layout, and routing notes).
-
 ---
 
-## 2. Quick start: automated deployment via a Harness-style tool (recommended)
+## 🚀 Quick start
 
-Harness-style tools (OpenClaw, Microsoft Scout, WorkBuddy, and similar) can read this project's docs and config and build the entire environment step by step on your machine. Below is the standard flow.
+**Prerequisites:** a machine with Docker (Windows 11 + Docker Desktop, or Linux), and network access to Docker registries.
 
-### 5 prerequisites
-
-**1. Install a Harness-style tool**
-Install OpenClaw / Microsoft Scout / WorkBuddy (or an equivalent). They can all read/write local files, run commands, and search the web.
-
-**2. Buy a subscription or configure your own API**
-Complete the subscription in the tool, or fill in your own LLM API key (DeepSeek / OpenAI / Claude / Qwen / ERNIE, etc.) so the tool can converse normally.
-
-**3. Prepare the network environment**
-This is the step that most often blocks people:
-- Make sure the machine can reach **Docker image registries** (Docker Hub / quay.io, etc.). If direct access fails, configure a registry mirror (e.g. DaoCloud or another regional mirror) beforehand.
-- Make sure it can reach **GitHub** (to clone the repo and pull some public dependencies). If direct access fails, use a proxy or download the source archive in advance.
-- Confirm the target machine is reachable on the network segment you intend to expose.
-
-**4. Git clone or download the project locally**
 ```bash
 git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
-# or download the archive and extract it to any local directory
+cd AIAllInOne/windows
+# start the core stack, then follow the deployment guide to initialize auth/LLM channels/products
+docker compose up -d
 ```
 
-**5. Paste the prompt below into the tool to start automated deployment**
+Two ways to go from here:
 
-Copy the **entire prompt** below into the Harness tool's input box, then answer its questions one by one. The tool will: detect your platform → collect parameters → generate a local progress file → configure step by step per the deployment guide → iterate with you to test and fix problems → keep the progress updated → run a full test at the end and report the results.
+1. **Automated (recommended)** — hand the deployment to an AI agent (WorkBuddy / OpenClaw / Microsoft Scout). It reads the deployment guide and configs, asks you for parameters (server IP, IdP, admin account, LLM keys), and configures everything step by step. [Copy the one-click prompt →](windows/windows-deploy-guide-v2.html)
 
-### One-click deployment prompt (copy into the tool)
+<details>
+<summary>📋 One-click deployment prompt (click to expand)</summary>
 
 ````text
 You are a deployment engineer for an enterprise intranet AI platform. Based on this project's documentation and config files, fully deploy and verify the "AI AllInOne" platform on the current machine. Communicate with me in English throughout and strictly follow the process below.
 
 ## Step 1: Confirm the deployment directory and target platform
-
 1. First ask me: what is the local extraction/clone path of this project? (e.g. C:\AIAllInOne or /opt/AIAllInOne)
-2. After entering that directory, determine the target platform folder based on the current machine's operating system:
-   - Windows → use the `windows-github` (or `windows`) folder
-   - Linux / macOS → use the `linux-github` (or `linux`) folder
-   - Online server / pure Docker environment → use the `docker-github` (or `docker`) folder
-   If unsure, tell me what OS you detected and confirm with me which folder to use.
-3. Read the root README.md and the README.md inside that platform folder to understand the architecture and deployment approach before acting.
+2. After entering that directory, determine the target platform folder based on the current machine's operating system (Windows → windows-github/windows; Linux/macOS → linux-github/linux; Online server → docker-github/docker).
+3. Read the root README.md and the platform folder's README to understand the architecture before acting.
 
 ## Step 2: Collect required parameters (ask me one by one; don't skip or guess)
-
-Before configuring, collect the following information, asking me for anything missing and explaining the purpose of each item:
-
-1. The intranet IP (or domain) used to expose the platform (the address other machines use to reach it, e.g. 192.168.1.100 or portal.company.com). This same address is used to generate the product links in the Ghost portal's example content.
-2. Identity source (Identity Provider):
-   - Company AD domain controller (Active Directory): ask me for the domain name, DC IP, LDAP base DN, bind DN, bind account password, sAMAccountName, etc.
-   - Other IdP (LDAP/OpenLDAP/OIDC/Feishu/WeCom/DingTalk, etc.): ask me for the corresponding config and account info.
-   - No external identity source (local accounts only): confirm with me and skip.
-3. Unified admin account: username, password, email (used for Keycloak SSO and admin login to every product).
-4. LLM API keys: which model providers and keys I actually have (DeepSeek / OpenAI / Claude / Qwen / ERNIE, etc.); skip any I don't have.
-5. Ghost portal example content language: Chinese, or another language to translate the example content seed into before importing.
-6. Other items to ask as needed: the MCP skill-market hostname (Windows), alert notification channel (DingTalk/WeCom/Feishu webhook URL), HTTPS certificates, backup retention policy, etc.
+1. The intranet IP (or domain) used to expose the platform.
+2. Identity source: company AD domain controller (domain, DC IP, LDAP base DN, bind DN, bind password), other IdP (LDAP/OIDC/Feishu/WeCom/DingTalk), or local accounts only.
+3. Unified admin account: username, password, email (Keycloak SSO + admin login to every product).
+4. LLM API keys: which providers/keys I have (DeepSeek / OpenAI / Claude / Qwen / ERNIE, etc.); skip any I don't have.
+5. Ghost portal example content language.
+6. Other: MCP skill-market hostname, alert channel webhook (DingTalk/WeCom/Feishu), HTTPS certs, backup retention.
 
 ## Step 3: Generate a local progress file
-
-1. Locate the "progress checklist" document in the platform folder (e.g. *-checklist*.html) and the "identity source integration guide" (e.g. *-ad-integration*.html or IdP-related docs).
-2. Based on the checklist content, generate a new progress file in the project directory, named e.g. "deployment-progress-<platform>-<date>.md", copying every checklist item as incomplete (- [ ]).
-3. From then on, promptly update this progress file each time you complete an item or solve a problem, and briefly report progress to me in the conversation.
+1. Find the progress checklist (*-checklist*.html) and identity-provider guide (*-ad-integration*.html) in the platform folder.
+2. Generate "deployment-progress-<platform>-<date>.md" with every checklist item as incomplete (- [ ]).
+3. Update this file as you complete items and report progress to me.
 
 ## Step 4: Configure step by step per the deployment guide
-
-1. Carefully read the platform's "deployment guide" document (e.g. *-deploy-guide*.html) and follow it strictly, paying special attention to "⚠️ critical pitfalls / gotchas" it marks.
-2. Rough order: prepare environment variables → start containers → initialize auth/IdP → configure LLM routing and model channels → initialize each product (for the Ghost portal: deploy the bundled "Corp Portal" theme and import the example content seed) → configure monitoring/observability/logging/redaction → configure backup & restore.
-3. Prefer the automation scripts already in the directory (e.g. bootstrap.ps1, keycloak-realm-init.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, health-check, etc.); don't click through UIs for steps that can be automated.
+1. Follow the platform deployment guide (*-deploy-guide*.html) strictly, paying attention to "⚠️ critical pitfalls".
+2. Rough order: env vars → start containers → init auth/IdP → configure LLM routing/channels → init each product (Ghost: deploy Corp Portal theme + import seed) → monitoring/observability/logging/redaction → backup.
+3. Prefer the automation scripts in scripts/ (bootstrap.ps1, keycloak-realm-init.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, health-check.ps1, etc.).
 
 ## Step 5: Iterate with me to test and fix problems
-
-1. When a step fails or doesn't match expectations, first inspect logs (docker logs, each service's health endpoint, config files), locate the root cause, then fix it — don't blindly retry.
-2. When you need me involved (e.g. running a command with admin rights, confirming a login, providing extra info), clearly tell me "what to do and why".
-3. After solving, record the root cause and fix in the progress file and briefly report back to me.
+1. On failure: inspect logs (docker logs, health endpoints, configs), find the root cause, fix it — don't blindly retry.
+2. When you need me (admin command, login confirmation, extra info), clearly tell me "what to do and why".
+3. Record the root cause and fix in the progress file.
 
 ## Step 6: Full end-to-end verification
-
-Once every checklist item is complete, run a full end-to-end test covering at least:
-- Service health (all containers Up, health endpoints normal);
-- SSO unified login (Keycloak login → SSO/auto-login into each product);
-- LLM chain (send one real chat through NewAPI/LiteLLM, verify the response + PII redaction works);
-- Identity-source login (if AD/other IdP is connected, test login with the corresponding account);
-- Monitoring/observability/logging/alerting (confirm data exists and alerts can fire);
-- Backup & restore (run a backup and verify it can be restored).
-
-Finally, summarize the test results item by item, clearly marking ✅ passed / ❌ failed; for failures, give the root cause and follow-up suggestions.
+Test at least: service health; SSO unified login into each product; LLM chain (real chat through NewAPI/LiteLLM, PII redaction); IdP login (if AD connected); monitoring/observability/logging/alerting; backup & restore.
+Finally summarize results item by item with ✅/❌; for failures give root cause and follow-up.
 ````
 
----
+</details>
 
-## 3. Manual deployment (alternative)
+2. **Manual** — follow the [Windows deployment guide](windows/windows-deploy-guide-v2.html) step by step (or `windows/README.md` + `windows-checklist.html`).
 
-If you prefer not to use a Harness-style tool, you can deploy manually following each platform's `README.md` and `*-deploy-guide*.html`. The main flow is the same: start containers → initialize auth/IdP → configure LLM channels → initialize each product → configure monitoring/backup.
+> **Platform status**: Windows (Windows 11 + Docker Desktop) is **actively tested**. Linux/macOS (`linux/`) and online-server (`docker/`) are planned — see the [Roadmap](#roadmap).
 
----
+## 🖼️ Screenshots
 
-## 4. Security & notes
+**Dify** — AI application platform · **MCP/Skill Market** — one-click tool & skill access · **DeepChat** — desktop AI client
 
-- This repository contains **no real secrets**; all real values live in each runtime environment's `.env` (only `.env.example` templates are committed).
-- The default is plain HTTP on the intranet; for HTTPS see the relevant chapter in each platform's deployment guide.
-- Per-platform gotchas, architecture diagrams, port tables, and data flows are in the corresponding `*-deploy-guide*.html` documents.
+![Dify](<pics/Dify.png>) ![MCP/SKILL Market](<pics/Market.png>) ![DeepChat](<pics/DeepChat.png>)
 
----
+More screenshots (48 real UI captures) are embedded in the [Admin Manual](docs/admin-manual/index.md).
 
-## 5. Community — WeChat group
-
-> 👥 **WeChat group** — this group is for communication and discussion (deployment, usage, feedback). Scan the QR code to add us on WeChat and we'll pull you into the group.
-
-<img src="pics/wechat.png" alt="WeChat group QR code" width="200" />
-
----
-
-## 6. Operating & maintaining with an AI agent
-
-This platform can be fully operated and maintained through an AI agent (WorkBuddy, OpenClaw, Microsoft Scout, etc.): health checks, container management, configuration changes, Gitea sync, the Ghost portal, backups, releases, and troubleshooting.
-
-See the **[AI Agent Operations Guide](AI-AGENT-OPS.md)** for the complete walkthrough (available in 9 languages).
-
----
-
-## 7. Manuals (online, all languages)
-
-The **Administrator Manual** and **Employee User Manual** are published as Markdown so you can read them directly on GitHub. Each manual is available in 9 languages:
+## 📚 Manuals (online, 9 languages)
 
 | Manual | Languages |
 |---|---|
 | **Admin Manual** | [English](docs/admin-manual/index.md) · [简体中文](docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](docs/i18n/admin-manual-zh-TW/index.md) · [Français](docs/i18n/admin-manual-fr/index.md) · [Español](docs/i18n/admin-manual-es/index.md) · [Português](docs/i18n/admin-manual-pt/index.md) · [日本語](docs/i18n/admin-manual-ja/index.md) · [한국어](docs/i18n/admin-manual-ko/index.md) · [العربية](docs/i18n/admin-manual-ar/index.md) |
 | **User Manual** | [English](docs/user-manual/index.md) · [简体中文](docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](docs/i18n/user-manual-zh-TW/index.md) · [Français](docs/i18n/user-manual-fr/index.md) · [Español](docs/i18n/user-manual-es/index.md) · [Português](docs/i18n/user-manual-pt/index.md) · [日本語](docs/i18n/user-manual-ja/index.md) · [한국어](docs/i18n/user-manual-ko/index.md) · [العربية](docs/i18n/user-manual-ar/index.md) |
 
+Also see the **[AI Agent Operations Guide](AI-AGENT-OPS.md)** (9 languages) for day-to-day AI-agent-driven operation.
+
+## 👥 Community
+
+> WeChat group — for discussion, deployment help, feedback and **co-building**. Scan the QR code; we'll pull you in.
+
+<img src="pics/wechat.png" alt="WeChat group QR code" width="200" />
+
+Also available: [GitHub Discussions](https://github.com/sdlyxianchao/AIAllInOne/discussions) (or open an [Issue](https://github.com/sdlyxianchao/AIAllInOne/issues)).
+
+## 🤝 Contributing
+
+This project is **open source and free** — it grows through the community. You can help in many ways, no matter your skill level:
+
+- ⭐ **Star the repo** — the simplest and most valuable support
+- 🐛 **Report bugs / request features** — open an issue with a clear description
+- 📝 **Write docs & tutorials** — deployment guides, troubleshooting, best practices
+- 🌐 **Translate** — manuals are already in 9 languages; help improve or add more
+- 🧪 **Test & share** — deploy it and tell us what worked / what didn't
+- 💻 **Contribute code** — the integration layer (unified SSO, admin portal, monitoring, backup) is the easiest place to start
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadmap](#roadmap) to see what's next. **Every contributor is listed in the README's contributors section.**
+
+<h2 id="roadmap">🗺️ Roadmap</h2>
+
+- ✅ v0.9x — Windows platform: full stack + AI Admin Center + scoped admin authorization + IM alerting + semantic caching (LiteLLM redis-semantic)
+- 🚧 **Linux / macOS** — self-hosted Linux server support (`linux/`)
+- 🚧 **Online server** — pure Docker / cloud production deployment (`docker/`)
+- 🚧 **Contributor program** — task board, weekly sync calls, certification for deployment partners
+
+## 🔒 Security & notes
+
+- This repository contains **no real secrets**; real values live in each runtime `.env` (only `.env.example` templates are committed).
+- Default is plain HTTP on the intranet; HTTPS guidance is in each platform's deployment guide.
+- Per-platform gotchas, port tables, and data flows are in the corresponding `*-deploy-guide*.html` docs.
+
+## 📄 License
+
+[MIT](LICENSE) — free to use, modify and distribute. The underlying components retain their own licenses (see the deployment guide's license review section).

@@ -1,43 +1,56 @@
-# AI AllInOne — 企业内网 AI 平台（多平台自托管）
+# AI AllInOne — 开源自托管的企业 AI 平台
 
-> 📖 **语言**：[English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
+> 📖 **语言**：[English](../README.md) · **简体中文** · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
 
-一套**开箱即用、多平台**的企业内网 AI 全家桶：把统一认证、LLM 路由、PII 脱敏、AI 应用、企业门户、源码/CI、客户端分发、统一管理、监控告警、可观测、日志、备份恢复，全部用 Docker 编排成一个整体，通过 Keycloak 实现**一个账号单点登录所有产品**。
+[![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
+[![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
+[![GitHub tag](https://img.shields.io/github/v/tag/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/tags)
+![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
 
-本仓库同时支持三种部署平台：
+> **一台服务器。一个账号。企业级 AI 全家桶——开源免费，数据不出内网。**
 
-| 平台 | 本仓库目录（GitHub 上） | 适用场景 | 状态 |
-|---|---|---|---|
-| Windows | `windows/` | Windows 11 + Docker Desktop 单机 | ✅ **正在测试** |
-| Linux / macOS | `linux/` | 自建 Linux 服务器 / macOS（Docker） | 🚧 即将上线 |
-| 线上服务器 | `docker/` | 云端 / 裸 Docker 主机的线上环境 | 🚧 即将上线 |
+AI AllInOne 是一套**开源免费**、开箱即用的企业内网 AI 平台：统一 SSO、LLM 路由、AI 应用、企业门户、源码/CI、统一管理、监控告警、可观测、日志、备份恢复——全部用 Docker 编排成一个整体。**员工用一个账号登录一次，就能使用所有 AI 工具。**
 
-> **当前状态：正在测试 Windows 平台。** Linux/macOS 和线上服务器平台仍在开发中，其目录目前只放了一个「Coming Soon」的 README。
->
-> 本地工作目录里这些文件夹对应命名为 `windows-github/`、`linux-github/`、`docker-github/`；上传到 GitHub 后去掉 `-github` 后缀变成 `windows/`、`linux/`、`docker/`。后续每次更新都按这个映射关系同步。
+![AI 管理中心](<../pics/AI Admin.png>)
+
+![企业门户](<../pics/AI All In One Hub.png>)
 
 ---
 
-## 一、这套系统包含什么
+## ✨ 为什么选择 AI AllInOne
 
-| 层 | 组件 | 作用 |
+| | |
+|---|---|
+| 🧩 **全家桶，免组装** | 8+ 个开源组件预集成：认证、网关、应用、门户、Git、监控、日志、备份。无需自己"拼装"。 |
+| 🔐 **统一 SSO** | 一个 Keycloak 账号（支持 AD/LDAP 联邦）自动登录所有产品，免密进入。 |
+| 🔒 **数据不出内网** | 完全自托管——模型调用、提示词、文档和用户数据都留在企业内部。 |
+| ⚡ **约 30 分钟完成部署** | `docker compose` + 自动化脚本，或直接让 AI Agent 帮你部署整套环境。 |
+| 🛡️ **PII 脱敏** | 手机号 / 身份证 / 邮箱等敏感信息在调用外部大模型前自动脱敏（Presidio）。 |
+| 📊 **全链路可观测** | Prometheus + Grafana 监控、Langfuse LLM 追踪、Loki 统一日志、企业 IM 告警（钉钉/企微/飞书）。 |
+| 💾 **备份与恢复** | 管理后台一键每日全量备份和一键恢复。 |
+| 🌐 **9 种语言** | 手册和管理界面多语言（简中 / 繁中 / 英 / 法 / 西 / 葡 / 日 / 韩 / 阿）。 |
+
+## 📦 组件清单
+
+| 层级 | 组件 | 用途 |
 |---|---|---|
-| 统一认证 | Keycloak | SSO / OIDC，可对接 AD/LDAP 或本地账号 |
+| 认证 | Keycloak | SSO / OIDC，AD/LDAP 联邦或本地账号 |
 | LLM 路由 | NewAPI | 渠道、密钥、额度、审计、成本 |
-| PII 脱敏 | LiteLLM + Presidio | 模型调用前自动脱敏手机号/身份证/邮箱等 |
+| PII 脱敏 | LiteLLM + Presidio | 调用模型前自动脱敏敏感信息 |
 | AI 应用 | Dify | 可视化 AI 应用 / Agent 平台 + 统一知识库（RAG） |
-| 企业门户 | Ghost | 企业公告与新闻门户 |
+| 企业门户 | Ghost | 公司公告与新闻门户（内置定制 Corp Portal 主题） |
 | 源码 / CI | Gitea + Runner | 内部 Git + Actions 自动化 |
 | 客户端 | DeepChat | 本地 AI 桌面客户端（Windows / macOS / Linux） |
 | 客户端分发 | Update Server | DeepChat 安装包托管与自动更新 |
-| 统一管理 | AI 管理中心 | 唯一入口：Dashboard + 各产品内嵌 + 审计/成本/报告 + RAG 检索 + 分模块管理员授权 + Keycloak 同步/角色管理 |
-| 网关 | MCP Gateway | Skill / MCP 市场管理 + Dify 知识库检索（RAG） |
-| 监控告警 | Prometheus + Grafana + Alertmanager | 容器资源监控 + 告警通知 |
-| LLM 可观测 | Langfuse | 每次模型调用的 trace / 延迟 / token / 成本 |
-| 统一日志 | Loki + Promtail | 所有容器日志聚合检索 |
-| 备份恢复 | backup / restore 脚本 + 管理页 | 全量数据每日备份 + 一键恢复 |
-
-每个平台目录里都有：`docker-compose.yml`、`.env.example`、`*-deploy-guide*.html`（部署指导）、`*-checklist*.html`（进度清单）、身份源配置指导、一键部署脚本，以及脱敏后的源码与配置。**不含任何真实密钥**。
+| 统一管理 | AI Admin Center | 统一入口：仪表板 + 内嵌产品 + 审计/成本/报表 + 分级管理员授权 + Keycloak 同步/角色 |
+| 网关 | MCP Gateway | 技能 / MCP 市场 + Dify 知识检索（RAG） |
+| 监控 | Prometheus + Grafana + Alertmanager | 容器资源监控 + 告警通知 |
+| LLM 可观测 | Langfuse | 追踪每次模型调用的延迟、token、成本 |
+| 统一日志 | Loki + Promtail | 聚合全部容器日志，可按容器/关键字/时间检索 |
+| 备份恢复 | 脚本 + 管理页 | 每日全量备份 + 一键恢复 |
 
 ### 架构与数据流
 
@@ -45,152 +58,133 @@
 
 ![数据流](<../pics/DataFlow.png>)
 
-### 效果截图
-
-**AI 管理中心** — 统一管理门户
-
-![AI 管理中心](<../pics/AI Admin.png>)
-
-**Dify** — AI 应用平台
-
-![Dify](<../pics/Dify.png>)
-
-**企业门户** — 首页（Ghost）
-
-![企业门户首页](<../pics/AI All In One Hub.png>)
-
-**DeepChat** — 桌面 AI 客户端
-
-![DeepChat](<../pics/DeepChat.png>)
-
-**MCP/SKILL 市场** — 一键接入 MCP 网关 + 内网技能包下载
-
-![MCP/SKILL 市场](<../pics/Market.png>)
-
 ---
 
-## 二、快速上手：用 Harness 类工具自动部署（推荐）
+## 🚀 快速开始
 
-Harness 类工具（OpenClaw、Microsoft Scout、WorkBuddy 等）能读取本项目的文档和配置，在本地一步步搭出整套环境。以下是标准流程。
+**前置条件**：一台装有 Docker 的机器（Windows 11 + Docker Desktop，或 Linux），且能访问 Docker 镜像仓库。
 
-### 前置 5 步
-
-**1. 安装一个 Harness 工具**
-安装 OpenClaw / Microsoft Scout / WorkBuddy 任意一款（或其同类）。它们都能读写本地文件、执行命令、联网检索。
-
-**2. 购买订阅或配置好自己的 API**
-在工具里完成订阅，或填入你自己的大模型 API Key（DeepSeek / OpenAI / Claude / 通义 / 文心等），保证工具能正常对话。
-
-**3. 准备好网络环境**
-这是最容易卡住的一步：
-- 确保机器能访问 **Docker 镜像仓库**（Docker Hub / quay.io 等）。若无法直连，需提前配置镜像加速（如 DaoCloud 等国内镜像源）。
-- 确保能访问 **GitHub**（克隆仓库、拉取部分公开依赖）。若无法直连，用代理或提前下载源码包。
-- 确认目标机器与你要对外提供服务的网段互通。
-
-**4. Git clone 或下载本项目到本地**
 ```bash
 git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
-# 或下载压缩包后解压到本地任意目录
+cd AIAllInOne/windows
+# 启动核心服务，然后按部署指南初始化认证 / LLM 渠道 / 各产品
+docker compose up -d
 ```
 
-**5. 在工具里粘贴下面的提示词，开始自动部署**
+接下来有两种方式：
 
-把下面的提示词**整段复制**到 Harness 工具的输入框，然后按它的提问逐项回答即可。工具会：判断你的平台 → 收集参数 → 生成本地进度文件 → 按部署指导逐步配置 → 遇到问题跟你反复测试解决 → 全程更新进度 → 最后做一次完整测试并给你结果。
+1. **自动部署（推荐）**——把部署交给 AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）。它会读取部署文档和配置，向你收集参数（服务器 IP、身份源、管理员账号、LLM 密钥），然后一步步完成全部配置。[查看一键部署提示词 →](../windows/windows-deploy-guide-v2.html)
 
-### 一键部署提示词（复制到工具里）
+<details>
+<summary>📋 一键部署提示词（点击展开）</summary>
 
 ````text
-你是企业内网 AI 平台的部署工程师。请根据本项目文档和配置文件，在当前机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通，按下面流程严格执行。
+你是企业内网 AI 平台的部署工程师。请基于本项目的文档和配置文件，在当前机器上完整部署并验证「AI AllInOne」平台。全程用中文与我沟通，并严格按以下流程执行。
 
-## 第一步：确认部署目录与目标平台
-
+## 第 1 步：确认部署目录与目标平台
 1. 先问我：本项目的本地解压/克隆路径是什么？（例如 C:\AIAllInOne 或 /opt/AIAllInOne）
-2. 进入该目录后，根据当前机器的操作系统判断目标平台文件夹：
-   - Windows → 使用 `windows-github`（或 `windows`）文件夹
-   - Linux / macOS → 使用 `linux-github`（或 `linux`）文件夹
-   - 线上服务器 / 纯 Docker 环境 → 使用 `docker-github`（或 `docker`）文件夹
-   若拿不准，把你检测到的操作系统告诉我，并向我确认该用哪个文件夹。
-3. 阅读根目录 README.md 和该平台文件夹内的 README.md，先理解整体架构与部署方式，再动手。
+2. 进入该目录后，根据当前机器操作系统确定目标平台目录：
+   - Windows → 使用 windows-github（或 windows）目录
+   - Linux / macOS → 使用 linux-github（或 linux）目录
+   - 在线服务器 / 纯 Docker 环境 → 使用 docker-github（或 docker）目录
+   如果不确定，告诉我检测到的操作系统并和我确认使用哪个目录。
+3. 动手前先阅读根目录 README.md 和该平台目录内的 README，理解架构和部署方式。
 
-## 第二步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-
-开始配置前，请收集以下信息，缺哪项就问我哪项，并说明每项的用途：
-
-1. 对外提供服务的内网 IP（或域名，其他机器访问本平台的地址，如 192.168.1.100 或 portal.company.com）。这个地址也会用来生成门户示例内容里的各产品链接。
+## 第 2 步：逐项收集所需参数（逐个问我，不要跳过或猜测）
+1. 平台对外暴露的内网 IP（或域名），即其他机器访问它的地址（如 192.168.1.100 或 portal.company.com）。
 2. 身份源（Identity Provider）：
-   - 接公司 AD 域控（Active Directory）：向我要域名、域控 IP、LDAP base DN、bind DN、bind 账号密码、sAMAccountName 等。
-   - 接其他 IdP（LDAP/OpenLDAP/OIDC/飞书/企微/钉钉等）：向我要对应的配置与账号信息。
-   - 不接任何外部身份源（只用本地账号）：与我确认后跳过。
-3. 统一管理员账号：用户名、密码、邮箱（用于 Keycloak SSO 及各产品管理员登录）。
-4. 大模型 API Key：我实际拥有的模型服务商及 Key（DeepSeek / OpenAI / Claude / 通义 / 文心等），没有的跳过。
-5. Ghost 门户示例内容语言：中文，或选择其他语言，导入前先把示例内容种子翻译成目标语言。
-6. 其他按需询问：MCP Skill 市场主机名（Windows）、告警通知渠道（钉钉/企微/飞书 webhook 地址）、HTTPS 证书、备份保留策略等。
+   - 公司 AD 域控：问我域名、DC IP、LDAP base DN、bind DN、bind 账号密码、sAMAccountName 等。
+   - 其他 IdP（LDAP/OpenLDAP/OIDC/飞书/企微/钉钉等）：问我对应配置和账号信息。
+   - 无外部身份源（仅本地账号）：和我确认后跳过。
+3. 统一管理员账号：用户名、密码、邮箱（用于 Keycloak SSO 和各产品管理员登录）。
+4. LLM API 密钥：我实际有哪些模型供应商和密钥（DeepSeek / OpenAI / Claude / Qwen / 通义 / ERNIE 等）；没有的跳过。
+5. Ghost 门户示例内容的语言：中文，或翻译成其他语言后再导入。
+6. 其他按需询问：MCP 技能市场主机名（Windows）、告警通知渠道（钉钉/企微/飞书 webhook）、HTTPS 证书、备份保留策略等。
 
-## 第三步：生成本地进度文件
+## 第 3 步：生成本地进度文件
+1. 找到平台目录内的「进度清单」文档（*-checklist*.html）和「身份源对接指南」（如 *-ad-integration*.html 或 IdP 相关文档）。
+2. 根据清单内容，在项目目录生成进度文件，命名如 "deployment-progress-<platform>-<date>.md"，把每一项清单复制为未完成（- [ ]）。
+3. 之后每完成一项或解决一个问题，及时更新该进度文件，并在对话中向我简要汇报进度。
 
-1. 找到该平台文件夹里的「进度清单」文档（如 *-checklist*.html）和「身份源配置指导」文档（如 *-ad-integration*.html 或 IdP 相关文档）。
-2. 基于进度清单内容，在项目目录下生成一份新的进度文件，命名如「部署进度-<平台>-<日期>.md」，把清单所有条目复制为未完成状态（- [ ]）。
-3. 之后每完成一项、每解决一个问题，就及时更新这份进度文件，并在对话里简要告诉我进展。
+## 第 4 步：按部署指南逐步配置
+1. 仔细阅读平台的「部署指南」文档（如 *-deploy-guide*.html）并严格遵循，特别注意其中标注的「⚠️ 关键坑位」。
+2. 大致顺序：准备环境变量 → 启动容器 → 初始化认证/IdP → 配置 LLM 路由和模型渠道 → 初始化各产品（Ghost 门户：部署内置 Corp Portal 主题并导入示例内容）→ 配置监控/可观测/日志/脱敏 → 配置备份恢复。
+3. 优先使用目录内的自动化脚本（如 bootstrap.ps1、keycloak-realm-init.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、health-check.ps1 等），能脚本化的步骤不要手动点 UI。
 
-## 第四步：按部署指导逐步配置
+## 第 5 步：和我一起迭代测试并解决问题
+1. 某一步失败或不符合预期时，先查日志（docker logs、各服务健康端点、配置文件）定位根因再修，不要盲目重试。
+2. 需要我参与时（例如执行需要管理员权限的命令、确认登录、补充信息），明确告诉我「要做什么、为什么」。
+3. 解决后把根因和修复记录到进度文件，并简要向我汇报。
 
-1. 精读该平台「部署指导」文档（如 *-deploy-guide*.html），严格按步骤执行，特别注意文档里标注的「⚠️ 关键坑 / 踩坑记录」。
-2. 顺序大致为：准备环境变量 → 起容器 → 初始化认证/IdP → 配置 LLM 路由与模型渠道 → 初始化各产品（Ghost 门户：部署自带「Corp Portal」主题并导入示例内容种子）→ 配置监控/可观测/日志/脱敏 → 配置备份与恢复。
-3. 优先使用目录里已有的自动化脚本（如 bootstrap.ps1、keycloak-realm-init.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、health-check 等），能自动化的步骤不要手工点 UI。
-
-## 第五步：遇到问题反复测试解决
-
-1. 每一步出错或结果不符预期时，先自查日志（docker logs、各服务健康端点、配置文件），定位根因后再修复，不要盲目重试。
-2. 需要我参与时（如需要管理员权限执行命令、需要登录确认、需要补充信息），明确告诉我「需要你做什么、为什么」。
-3. 解决后把根因和修复方法记录进进度文件，并简要报告给我。
-
-## 第六步：全流程验证
-
-当进度清单所有条目完成后，做一次完整的端到端测试，至少覆盖：
-- 各服务健康状态（容器全部 Up、健康端点正常）；
-- SSO 统一登录（Keycloak 登录 → 各产品单点/自动登录）；
-- LLM 链路（经 NewAPI/LiteLLM 发一次真实对话，验证返回 + PII 脱敏生效）；
-- 身份源登录（接了 AD/其他 IdP 时，用对应账号测一次登录）；
+## 第 6 步：完整端到端验证
+全部清单项完成后，做一次完整端到端测试，至少覆盖：
+- 服务健康（所有容器 Up、健康端点正常）；
+- SSO 统一登录（Keycloak 登录 → 各产品 SSO/自动登录）；
+- LLM 链路（通过 NewAPI/LiteLLM 发一次真实对话，验证响应和 PII 脱敏生效）；
+- 身份源登录（如已对接 AD/其他 IdP，用对应账号测试登录）；
 - 监控/可观测/日志/告警（确认有数据、告警能触发）；
-- 备份与恢复（跑一次备份，验证能恢复）。
+- 备份与恢复（执行一次备份并验证可恢复）。
 
-最后把测试结果逐项汇总给我，明确标出 ✅通过 / ❌失败；失败的项给出根因和后续建议。
+最后逐项汇总测试结果，明确标注 ✅ 通过 / ❌ 失败；失败项给出根因和后续建议。
 ````
 
----
+</details>
 
-## 三、手动部署（备选）
+2. **手动部署**——按 [Windows 部署指南](../windows/windows-deploy-guide-v2.html) 逐步操作（配合 `windows-checklist.html` 进度清单）。
 
-不想用 Harness 工具时，也可按各平台 `README.md` 和 `*-deploy-guide*.html` 手动部署。核心主线一致：起容器 → 初始化认证/IdP → 配 LLM 渠道 → 初始化各产品 → 配监控/备份。
+> **平台状态**：Windows（Windows 11 + Docker Desktop）**实测中**。Linux/macOS（`linux/`）与在线服务器（`docker/`）已在规划中——见[路线图](#roadmap)。
 
----
+## 🖼️ 界面截图
 
-## 四、安全与说明
+**Dify** — AI 应用平台 · **MCP/Skill 市场** — 一键接入工具与技能 · **DeepChat** — 桌面 AI 客户端
 
-- 本仓库**不含任何真实密钥**，所有真实值在各自运行环境的 `.env` 中（提交的是 `.env.example` 模板）。
-- 默认内网 HTTP 明文；如需 HTTPS 见各平台部署指导的相关章节。
-- 各平台的踩坑记录、架构图、端口表、数据流，见对应 `*-deploy-guide*.html` 文档。
+![Dify](<../pics/Dify.png>) ![MCP/SKILL 市场](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
 
----
+更多截图（48 张真实界面截图）已嵌入[管理员手册](../docs/admin-manual/index.md)。
 
-## 五、社区 — 微信群
+## 📚 手册（在线，9 种语言）
 
-> 👥 **微信群** —— 本群用于交流（部署、使用、反馈）。扫码添加微信，我们会拉你进群。
+| 手册 | 语言 |
+|---|---|
+| **管理员手册** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
+| **用户手册** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
+
+日常 AI Agent 运维见 **[AI Agent 运维指南](../AI-AGENT-OPS.md)**。
+
+## 👥 社区
+
+> 微信群——用于交流、部署答疑、反馈与**共建**。扫码加好友，拉你进群。
 
 <img src="../pics/wechat.png" alt="微信群二维码" width="200" />
 
----
+同时欢迎使用 [GitHub Discussions](https://github.com/sdlyxianchao/AIAllInOne/discussions)（或直接提 [Issue](https://github.com/sdlyxianchao/AIAllInOne/issues)）。
 
-## 六、用 AI Agent 运维
+## 🤝 参与共建
 
-这套系统可以完全通过 AI Agent（WorkBuddy、OpenClaw、Microsoft Scout 等）来运维：健康检查、容器管理、配置修改、Gitea 同步、Ghost 门户、备份、发布、排障。
+本项目**开源免费**，靠社区一起成长。无论你的水平如何，都有适合你的方式：
 
-完整教程见 **[AI Agent 运维指南](AI-AGENT-OPS.zh.md)**（提供 9 种语言版本）。
+- ⭐ **给仓库点星**——最简单也是最有价值的支持
+- 🐛 **报 Bug / 提需求**——开 issue 并写清楚复现步骤
+- 📝 **写文档和教程**——部署指南、排错经验、最佳实践
+- 🌐 **翻译**——手册已有 9 种语言，帮忙改进或新增更多
+- 🧪 **测试分享**——部署一次，告诉我们哪些好用哪些踩坑
+- 💻 **贡献代码**——集成层（统一 SSO、管理门户、监控、备份）是最好上手的地方
 
----
+完整指南见 [CONTRIBUTING.md](../CONTRIBUTING.md)，公开的[路线图](#roadmap)可以看到下一步计划。**每一位贡献者都会列入 README 的贡献者名单。**
 
-## 7. 手册（在线，全部语言）
+<h2 id="roadmap">🗺️ 路线图</h2>
 
-管理员手册：[English](docs/admin-manual/index.md) · [简体中文](docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](docs/i18n/admin-manual-zh-TW/index.md) · [Français](docs/i18n/admin-manual-fr/index.md) · [Español](docs/i18n/admin-manual-es/index.md) · [Português](docs/i18n/admin-manual-pt/index.md) · [日本語](docs/i18n/admin-manual-ja/index.md) · [한국어](docs/i18n/admin-manual-ko/index.md) · [العربية](docs/i18n/admin-manual-ar/index.md)
+- ✅ v0.9x — Windows 平台：全家桶 + AI 管理中心 + 分级管理员授权 + 企业 IM 告警 + 语义缓存（LiteLLM redis-semantic）
+- 🚧 **Linux / macOS** — 自托管 Linux 服务器支持（`linux/`）
+- 🚧 **在线服务器** — 纯 Docker / 云上生产部署（`docker/`）
+- 🚧 **共建者计划** — 任务看板、每周同步例会、部署伙伴认证
 
-用户手册：[English](docs/user-manual/index.md) · [简体中文](docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](docs/i18n/user-manual-zh-TW/index.md) · [Français](docs/i18n/user-manual-fr/index.md) · [Español](docs/i18n/user-manual-es/index.md) · [Português](docs/i18n/user-manual-pt/index.md) · [日本語](docs/i18n/user-manual-ja/index.md) · [한국어](docs/i18n/user-manual-ko/index.md) · [العربية](docs/i18n/user-manual-ar/index.md)
+## 🔒 安全说明
+
+- 本仓库**不含任何真实密钥**；真实值只存在各运行环境的 `.env`（仓库只提交 `.env.example` 模板）。
+- 默认内网明文 HTTP；HTTPS 配置见各平台部署指南。
+- 各平台的坑位、端口表、数据流见对应 `*-deploy-guide*.html` 文档。
+
+## 📄 许可证
+
+[MIT](../LICENSE)——可自由使用、修改与分发。所集成组件保留各自的许可证（见部署指南的许可证审查章节）。
