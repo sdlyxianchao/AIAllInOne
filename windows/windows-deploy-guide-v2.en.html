@@ -2368,8 +2368,14 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
 <p>Log into Grafana: <code>http://&lt;server-IP&gt;:3030</code>, account <code>ai_all_in_one_admin</code> / unified password. Preset alert rules: container down (critical), container memory &gt;90% (warning), container CPU &gt;80% (warning).</p>
 <div class="note">⚠️ <b>Port conflicts</b>: Prometheus's default 9090 is taken by Keycloak, so changed to <b>9091</b>; Grafana's default 3000 conflicts with NewAPI and 3001 is also taken, so changed to <b>3030</b>.</div>
 <div class="note">⚠️ <b>Alert false-positive pitfall</b>: cadvisor reports the host's <b>all cgroups</b> (systemd services like snap, docker, etc.), which have no <code>name</code> label. If the alert rule doesn't write <code>{name!=""}</code>, it false-alerts on systemd services; memory alerts also need <code>container_spec_memory_limit_bytes &gt; 0</code> (otherwise limit=0 containers divide by zero producing <code>+Inf</code> that always triggers). <code>alerts.yml</code> has fixed these filters.</div>
-<div class="callout callout-warn">
-  <strong>Alert notification:</strong> alert rules are ready, but <b>notification channels are not connected</b> (DingTalk/WeCom webhook). To connect: in Grafana's Alerting → Contact points add a Webhook (or deploy Alertmanager) pointing to the company's DingTalk/WeCom bot address.
+<div class="callout callout-info">
+  <strong>🔔 Alert notification (enterprise IM):</strong> the alert path is <b>Prometheus → Alertmanager → AI Admin Center (<code>/api/alert-webhook</code>) → (optional) enterprise IM</b>. By default alerts are only shown on the AI Admin Center "Monitoring" page; to push them to enterprise IM, configure it in the AI Admin Center menu <b>"Operations → Enterprise IM Alerts"</b> (stored in Redis, survives restart), supporting:
+  <ul>
+    <li><b>Multiple receivers</b>: group bots (DingTalk/WeCom/Feishu, fill in the webhook URL) or enterprise apps (DingTalk/WeCom, send to individuals);</li>
+    <li><b>Sending rules</b>: master switch, minimum severity (critical/warning/info), whether to send "firing" / "resolved" notifications;</li>
+    <li><b>Send history</b>: records time/receiver/type/alert name/severity/result of every send, with pagination, adjustable page size, keyword search, and category filtering by type/result/severity.</li>
+  </ul>
+  A group-bot webhook can only send to a <b>group chat</b>; to send to <b>individuals</b>, choose "DingTalk App (to person)" (fill AppKey/AppSecret/AgentId/userid) or "WeCom App (to person)" (fill corpId/secret/agentid/userid). You can also keep using <code>ALERT_IM_WEBHOOK_URL</code> in <code>.env</code> as a default receiver (backward compatible).
 </div>
 
 <h3>13.4 LLM observability (Langfuse)</h3>

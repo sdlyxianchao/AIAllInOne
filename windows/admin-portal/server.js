@@ -29,7 +29,7 @@ const KC_CLIENT_ID = process.env.KEYCLOAK_CLIENT_ID || 'admin-portal';
 const KC_CLIENT_SECRET = process.env.KEYCLOAK_CLIENT_SECRET || '';
 const ADMIN_USER = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ai_all_in_one_admin@chxia.lab';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
 const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY || '';
 // 服务器对外地址（浏览器访问用）：IP 或域名，不含端口、不含尾斜杠。
 // 所有产品入口 URL 都由它派生，将来换成域名（如 https://ai.example.com）只需改 SERVER_PUBLIC_URL 一处。
@@ -41,6 +41,9 @@ const NEWAPI_ADMIN_USER = process.env.NEWAPI_ADMIN_USERNAME || ADMIN_USER;
 const NEWAPI_ADMIN_PASS = process.env.NEWAPI_ADMIN_PASSWORD || ADMIN_PASS;
 const MCP_GATEWAY_URL = process.env.MCP_GATEWAY_URL || 'http://mcp-gateway:3100';
 const MCP_ADMIN_TOKEN = process.env.MCP_ADMIN_TOKEN || '';
+// 企业 IM 告警转发（钉钉/企微/飞书）：填机器人 webhook 地址后启用；不填则仅在 AI Admin 内展示
+const ALERT_IM_WEBHOOK_URL = (process.env.ALERT_IM_WEBHOOK_URL || '').trim();
+const ALERT_IM_TYPE = (process.env.ALERT_IM_TYPE || '').trim().toLowerCase(); // dingtalk | wecom | feishu（留空自动按 URL 识别）
 const GITEA_URL = process.env.GITEA_URL || 'http://gitea:3000';
 const GITEA_ADMIN_USER = process.env.GITEA_ADMIN_USERNAME || ADMIN_USER;
 const GITEA_ADMIN_PASS = process.env.GITEA_ADMIN_PASSWORD || ADMIN_PASS;
@@ -52,7 +55,7 @@ const DIFY_DEFAULT_DATASET_ID = process.env.DIFY_DEFAULT_DATASET_ID || '';
 const GHOST_CONTAINER = process.env.GHOST_CONTAINER || 'ghost';
 const GHOST_INTERNAL_URL = process.env.GHOST_INTERNAL_URL || 'http://ghost:2368';
 const GHOST_EXTERNAL_URL = process.env.GHOST_EXTERNAL_URL || extUrl(8090);
-const GHOST_ADMIN_EMAIL = process.env.GHOST_ADMIN_EMAIL || 'ai_all_in_one_admin@chxia.lab';
+const GHOST_ADMIN_EMAIL = process.env.GHOST_ADMIN_EMAIL || 'admin@example.com';
 const LITELLM_INTERNAL_URL = process.env.LITELLM_INTERNAL_URL || 'http://litellm:4000';
 const UPDATE_CONTAINER = process.env.UPDATE_CONTAINER || 'update-server';
 const REDIS_URL = process.env.REDIS_URL || 'redis://admin-session-redis:6379';
@@ -3003,8 +3006,191 @@ app.delete('/api/report/file/:name', keycloak.protect(), protectAdmin('report'),
 });
 
 // ═══════════════════════════════════════════
-// 告警通知（Alertmanager webhook 接收 + 最近告警查询）
+// 企业 IM 告警（多个接收人 + 发送规则 + 发送历史，Redis 持久化）
 // ═══════════════════════════════════════════
+// Redis key：imalert:receivers（JSON 数组）、imalert:rules（JSON 对象）、imalert:history（list，最新在前）
+const IM_HISTORY_LIMIT = 500;                       // 最多保留的发送历史条数
+const IM_SEV_RANK = { info: 1, warning: 2, critical: 3 };
+
+async function imGetReceivers() {
+  try { const v = await redisClient.get('imalert:receivers'); return v ? JSON.parse(v) : []; } catch (e) { return []; }
+}
+async function imSetReceivers(list) {
+  try { await redisClient.set('imalert:receivers', JSON.stringify(list || [])); } catch (e) { console.warn('[imalert] 保存接收人失败:', e.message); }
+}
+async function imGetRules() {
+  const dft = { enabled: false, minSeverity: 'warning', sendFiring: true, sendResolved: true };
+  try {
+    const v = await redisClient.get('imalert:rules');
+    if (!v) return dft;
+    return Object.assign({}, dft, JSON.parse(v));
+  } catch (e) { return dft; }
+}
+async function imSetRules(rules) {
+  try { await redisClient.set('imalert:rules', JSON.stringify(rules || {})); } catch (e) { console.warn('[imalert] 保存规则失败:', e.message); }
+}
+async function imPushHistory(entry) {
+  try {
+    await redisClient.lPush('imalert:history', JSON.stringify(entry));
+    await redisClient.lTrim('imalert:history', 0, IM_HISTORY_LIMIT - 1);
+  } catch (e) { console.warn('[imalert] 记录历史失败:', e.message); }
+}
+
+// 按 webhook URL 识别企业 IM 类型（钉钉/企微/飞书）
+function detectImType(url) {
+  if (/oapi\.dingtalk\.com/.test(url)) return 'dingtalk';
+  if (/qyapi\.weixin\.qq\.com/.test(url)) return 'wecom';
+  if (/feishu\.cn/.test(url)) return 'feishu';
+  return '';
+}
+
+// 组装各 IM 的消息体（群机器人 webhook 用）
+function imAlertPayload(type, lines) {
+  const text = lines.join('\n');
+  if (type === 'dingtalk') return { msgtype: 'markdown', markdown: { title: 'AI 平台告警', text } };
+  if (type === 'wecom') return { msgtype: 'markdown', markdown: { content: text } };
+  if (type === 'feishu') return { msg_type: 'text', content: { text } };
+  return null;
+}
+
+// ─── 企业应用「发个人」：钉钉 / 企微 access_token 缓存与获取 ───
+const _imAppTokenCache = {}; // { cacheKey: { token, exp } }
+async function imGetAppToken(kind, rc) {
+  const now = Date.now();
+  const cacheKey = kind === 'dingtalk' ? ('dd:' + rc.appKey) : ('wc:' + rc.corpId + ':' + rc.secret);
+  const c = _imAppTokenCache[cacheKey];
+  if (c && c.exp > now) return c.token;
+  const url = kind === 'dingtalk'
+    ? `https://oapi.dingtalk.com/gettoken?appkey=${encodeURIComponent(rc.appKey)}&appsecret=${encodeURIComponent(rc.appSecret)}`
+    : `https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=${encodeURIComponent(rc.corpId)}&corpsecret=${encodeURIComponent(rc.secret)}`;
+  const r = await fetch(url);
+  const d = await r.json().catch(() => ({}));
+  if (d.errcode !== 0) throw new Error((kind === 'dingtalk' ? '钉钉' : '企微') + ' 获取 access_token 失败: ' + (d.errmsg || JSON.stringify(d)) + ' (errcode ' + d.errcode + ')');
+  const exp = now + ((d.expires_in || 7200) - 300) * 1000; // 提前 5 分钟过期
+  _imAppTokenCache[cacheKey] = { token: d.access_token, exp };
+  return d.access_token;
+}
+
+// 钉钉企业应用「发个人」：工作通知（corpconversation/asyncsend_v2），markdown
+async function imSendDingtalkApp(rc, text) {
+  const token = await imGetAppToken('dingtalk', rc);
+  const body = {
+    agent_id: Number(rc.agentId),
+    userid_list: String(rc.userIds || '').trim(),
+    msg: { msgtype: 'markdown', markdown: { title: 'AI 平台告警', text } },
+  };
+  const r = await fetch(`https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2?access_token=${token}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (d.errcode !== 0) throw new Error('钉钉工作通知发送失败: ' + (d.errmsg || JSON.stringify(d)) + ' (errcode ' + d.errcode + ')');
+  return d;
+}
+
+// 企微企业应用「发个人」：应用消息（message/send），markdown
+async function imSendWecomApp(rc, text) {
+  const token = await imGetAppToken('wecom', rc);
+  const body = {
+    touser: String(rc.toUsers || '').trim().replace(/,/g, '|'),
+    msgtype: 'markdown',
+    agentid: Number(rc.agentId),
+    markdown: { content: text },
+  };
+  const r = await fetch(`https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${token}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (d.errcode !== 0) throw new Error('企微应用消息发送失败: ' + (d.errmsg || JSON.stringify(d)) + ' (errcode ' + d.errcode + ')');
+  return d;
+}
+
+// 判断某条告警是否满足发送规则
+function imAlertPasses(alert, rules) {
+  const resolved = alert.status === 'resolved';
+  if (resolved && !rules.sendResolved) return false;
+  if (!resolved && !rules.sendFiring) return false;
+  const sev = String((alert.labels && alert.labels.severity) || 'warning').toLowerCase();
+  const rank = IM_SEV_RANK[sev] != null ? IM_SEV_RANK[sev] : 2;
+  const minRank = IM_SEV_RANK[rules.minSeverity] != null ? IM_SEV_RANK[rules.minSeverity] : 2;
+  return rank >= minRank;
+}
+
+// 把告警转发到所有启用的接收人（不阻塞主流程；逐接收人发送、逐告警记历史）
+async function forwardAlertToIM(alerts) {
+  if (!alerts || !alerts.length) return;
+  const rules = await imGetRules();
+  let receivers = await imGetReceivers();
+  // 向后兼容：Redis 无接收人、但 .env 配了单 webhook，则视为一个默认接收人
+  if (!receivers.length && ALERT_IM_WEBHOOK_URL) {
+    receivers = [{ id: 'default', name: '默认接收人', type: ALERT_IM_TYPE || detectImType(ALERT_IM_WEBHOOK_URL), webhookUrl: ALERT_IM_WEBHOOK_URL, enabled: true }];
+  }
+  if (!receivers.length) return;
+  for (const rc of receivers) {
+    if (!rc || !rc.enabled) continue;
+    // 群机器人需要 webhookUrl；企业应用（发个人）需要各自凭据，由 imSendToReceiver 内校验
+    if (!rc.webhookUrl && rc.type !== 'dingtalk_app' && rc.type !== 'wecom_app') continue;
+    await imSendToReceiver(rc, alerts, rules);
+  }
+}
+
+async function imSendToReceiver(rc, alerts, rules) {
+  const type = rc.type || detectImType(rc.webhookUrl);
+  if (!type) { console.warn('[imalert] 无法识别 IM 类型，跳过接收人:', rc.name || rc.webhookUrl); return; }
+  const filtered = alerts.filter(a => imAlertPasses(a, rules));
+  if (!filtered.length) return;
+  const lines = [];
+  for (const a of filtered) {
+    const status = a.status === 'resolved' ? '✅ 恢复' : '🔴 告警';
+    const name = (a.labels && a.labels.alertname) || 'unknown';
+    const sev = (a.labels && a.labels.severity) || '';
+    const summary = (a.annotations && a.annotations.summary) || '';
+    const desc = (a.annotations && a.annotations.description) || '';
+    lines.push(`${status} ${name}${sev ? ' [' + sev + ']' : ''}`);
+    if (summary) lines.push(summary);
+    if (desc) lines.push(desc);
+  }
+  const text = lines.join('\n');
+  const time = new Date().toISOString();
+  let result = 'fail', detail = '发送异常';
+  try {
+    if (type === 'dingtalk_app') {
+      await imSendDingtalkApp(rc, text);
+      result = 'success';
+      detail = '钉钉工作通知已发送';
+      console.log(`[imalert] ✓ dingtalk_app/${rc.name || rc.id}: 发个人 ${rc.userIds}`);
+    } else if (type === 'wecom_app') {
+      await imSendWecomApp(rc, text);
+      result = 'success';
+      detail = '企微应用消息已发送';
+      console.log(`[imalert] ✓ wecom_app/${rc.name || rc.id}: 发个人 ${rc.toUsers}`);
+    } else {
+      const payload = imAlertPayload(type, lines);
+      if (!payload) return;
+      const r = await fetch(rc.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const respText = await r.text();
+      const ok = r.status >= 200 && r.status < 300;
+      result = ok ? 'success' : 'fail';
+      detail = ok ? ('HTTP ' + r.status) : ('HTTP ' + r.status + ' ' + String(respText).slice(0, 120));
+      console.log(`[imalert] ${ok ? '✓' : '✗'} ${type}/${rc.name || rc.id}: HTTP ${r.status}`);
+    }
+  } catch (e) {
+    result = 'fail';
+    detail = e.message;
+    console.warn('[imalert] 转发失败:', e.message);
+  }
+  // 逐条告警记历史（细粒度，便于检索与分类筛选），共享本次发送结果
+  for (const a of filtered) {
+    const name = (a.labels && a.labels.alertname) || 'unknown';
+    const sev = String((a.labels && a.labels.severity) || 'warning').toLowerCase();
+    const summary = (a.annotations && a.annotations.summary) || '';
+    await imPushHistory({
+      id: cuidLike(), time, receiverId: rc.id, receiverName: rc.name || rc.id, type,
+      alertname: name, severity: sev, status: a.status || 'firing', summary,
+      result, detail,
+    });
+  }
+}
+
 const recentAlerts = [];
 app.post('/api/alert-webhook', (req, res) => {
   try {
@@ -3021,6 +3207,7 @@ app.post('/api/alert-webhook', (req, res) => {
       console.log(`[alert] ${a.status || 'firing'}: ${(a.labels && a.labels.alertname) || 'unknown'} - ${(a.annotations && a.annotations.summary) || ''}`);
     }
     if (recentAlerts.length > 200) recentAlerts.length = 200;
+    forwardAlertToIM(alerts); // 异步转发到企业 IM（不阻塞响应）
     res.json({ ok: true, received: alerts.length });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
@@ -3028,6 +3215,150 @@ app.post('/api/alert-webhook', (req, res) => {
 // 最近告警（AI Admin 监控页展示）
 app.get('/api/alerts', keycloak.protect(), (req, res) => {
   res.json({ alerts: recentAlerts });
+});
+
+// ─── 企业 IM 告警配置端点（monitoring 模块管理员或全局管理员）───
+// 配置总览（接收人 + 规则 + 历史条数）
+app.get('/api/imalert/config', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    const receivers = await imGetReceivers();
+    const rules = await imGetRules();
+    let historyTotal = 0;
+    try { historyTotal = await redisClient.lLen('imalert:history'); } catch (e) {}
+    res.json({ receivers, rules, historyTotal });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 添加接收人
+app.post('/api/imalert/receivers', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    const b = req.body || {};
+    const name = b.name, type = b.type, webhookUrl = b.webhookUrl, enabled = b.enabled;
+    const isApp = type === 'dingtalk_app' || type === 'wecom_app';
+    if (isApp) {
+      if (type === 'dingtalk_app' && (!b.appKey || !b.appSecret || !b.agentId || !b.userIds)) return res.status(400).json({ error: '钉钉企业应用需填写 AppKey、AppSecret、AgentId、用户 userid' });
+      if (type === 'wecom_app' && (!b.corpId || !b.secret || !b.agentId || !b.toUsers)) return res.status(400).json({ error: '企微企业应用需填写 corpId、secret、agentid、用户 userid' });
+    } else if (!webhookUrl) {
+      return res.status(400).json({ error: 'webhookUrl 必填' });
+    }
+    const receivers = await imGetReceivers();
+    const rc = { id: cuidLike(), name: name || '接收人', type: type || detectImType(webhookUrl) || 'dingtalk', enabled: enabled !== false };
+    if (isApp) {
+      if (type === 'dingtalk_app') { rc.appKey = b.appKey; rc.appSecret = b.appSecret; rc.agentId = b.agentId; rc.userIds = b.userIds; }
+      else { rc.corpId = b.corpId; rc.secret = b.secret; rc.agentId = b.agentId; rc.toUsers = b.toUsers; }
+    } else {
+      rc.webhookUrl = webhookUrl;
+    }
+    receivers.push(rc);
+    await imSetReceivers(receivers);
+    res.json({ ok: true, receiver: rc });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 更新接收人
+app.put('/api/imalert/receivers/:id', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    const receivers = await imGetReceivers();
+    const i = receivers.findIndex(r => r.id === req.params.id);
+    if (i < 0) return res.status(404).json({ error: '接收人不存在' });
+    const b = req.body || {};
+    const cur = receivers[i];
+    if (b.name !== undefined) cur.name = b.name;
+    if (b.type !== undefined) cur.type = b.type;
+    if (b.enabled !== undefined) cur.enabled = !!b.enabled;
+    if (b.webhookUrl !== undefined) cur.webhookUrl = b.webhookUrl;
+    // 企业应用凭据字段
+    ['appKey', 'appSecret', 'agentId', 'userIds', 'corpId', 'secret', 'toUsers'].forEach(k => { if (b[k] !== undefined) cur[k] = b[k]; });
+    if (!cur.type) cur.type = detectImType(cur.webhookUrl) || 'dingtalk';
+    receivers[i] = cur;
+    await imSetReceivers(receivers);
+    res.json({ ok: true, receiver: cur });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 删除接收人
+app.delete('/api/imalert/receivers/:id', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    let receivers = await imGetReceivers();
+    receivers = receivers.filter(r => r.id !== req.params.id);
+    await imSetReceivers(receivers);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 更新发送规则
+app.put('/api/imalert/rules', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    const rules = await imGetRules();
+    const b = req.body || {};
+    if (b.enabled !== undefined) rules.enabled = !!b.enabled;
+    if (b.minSeverity !== undefined) rules.minSeverity = b.minSeverity;
+    if (b.sendFiring !== undefined) rules.sendFiring = !!b.sendFiring;
+    if (b.sendResolved !== undefined) rules.sendResolved = !!b.sendResolved;
+    await imSetRules(rules);
+    res.json({ ok: true, rules });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 发送测试消息到指定接收人
+app.post('/api/imalert/test/:id', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    const receivers = await imGetReceivers();
+    const rc = receivers.find(r => r.id === req.params.id);
+    if (!rc) return res.status(404).json({ error: '接收人不存在' });
+    const type = rc.type || detectImType(rc.webhookUrl);
+    if (!type) return res.status(400).json({ error: '无法识别 IM 类型' });
+    const testText = '🔔 测试消息\n这是一条来自 AI 管理中心的 IM 告警测试消息。';
+    const time = new Date().toISOString();
+    const record = (result, detail) => imPushHistory({ id: cuidLike(), time, receiverId: rc.id, receiverName: rc.name || rc.id, type, alertname: '测试消息', severity: 'info', status: 'firing', summary: 'IM 告警测试', result, detail });
+    try {
+      if (type === 'dingtalk_app') {
+        await imSendDingtalkApp(rc, testText);
+        await record('success', '钉钉工作通知已发送');
+        return res.json({ ok: true, detail: '钉钉工作通知已发送' });
+      }
+      if (type === 'wecom_app') {
+        await imSendWecomApp(rc, testText);
+        await record('success', '企微应用消息已发送');
+        return res.json({ ok: true, detail: '企微应用消息已发送' });
+      }
+      const payload = imAlertPayload(type, [testText]);
+      if (!payload) return res.status(400).json({ error: '不支持的类型' });
+      const r = await fetch(rc.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const respText = await r.text();
+      const ok = r.status >= 200 && r.status < 300;
+      await record(ok ? 'success' : 'fail', ok ? ('HTTP ' + r.status) : ('HTTP ' + r.status + ' ' + String(respText).slice(0, 120)));
+      res.json({ ok, status: r.status, detail: String(respText).slice(0, 160) });
+    } catch (e) {
+      await record('fail', e.message);
+      res.json({ ok: false, detail: e.message });
+    }
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 发送历史（分页 + 检索 + 分类筛选）
+app.get('/api/imalert/history', keycloak.protect(), protectAdmin('monitoring'), async (req, res) => {
+  try {
+    const page = Math.max(0, parseInt(req.query.page, 10) || 0);
+    const pageSize = Math.min(200, Math.max(1, parseInt(req.query.pageSize, 10) || 20));
+    const q = String(req.query.q || '').trim().toLowerCase();
+    const type = String(req.query.type || '').trim();        // dingtalk | wecom | feishu
+    const result = String(req.query.result || '').trim();    // success | fail
+    const severity = String(req.query.severity || '').trim();// critical | warning | info
+    let raw = [];
+    try { raw = await redisClient.lRange('imalert:history', 0, -1); } catch (e) {}
+    let items = raw.map(s => { try { return JSON.parse(s); } catch (e) { return null; } }).filter(Boolean);
+    if (q) items = items.filter(h =>
+      (h.alertname || '').toLowerCase().includes(q) ||
+      (h.receiverName || '').toLowerCase().includes(q) ||
+      (h.summary || '').toLowerCase().includes(q));
+    if (type) items = items.filter(h => h.type === type);
+    if (result) items = items.filter(h => h.result === result);
+    if (severity) items = items.filter(h => h.severity === severity);
+    const total = items.length;
+    const paged = items.slice(page * pageSize, (page + 1) * pageSize);
+    res.json({ items: paged, total, page, pageSize });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // ═══════════════════════════════════════════

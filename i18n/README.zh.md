@@ -186,3 +186,11 @@ git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 这套系统可以完全通过 AI Agent（WorkBuddy、OpenClaw、Microsoft Scout 等）来运维：健康检查、容器管理、配置修改、Gitea 同步、Ghost 门户、备份、发布、排障。
 
 完整教程见 **[AI Agent 运维指南](AI-AGENT-OPS.zh.md)**（提供 9 种语言版本）。
+
+---
+
+## 7. 手册（在线，全部语言）
+
+管理员手册：[English](docs/admin-manual.md) · [简体中文](docs/i18n/admin-manual-zh-cn.md) · [繁體中文](docs/i18n/admin-manual-zh-TW.md) · [Français](docs/i18n/admin-manual-fr.md) · [Español](docs/i18n/admin-manual-es.md) · [Português](docs/i18n/admin-manual-pt.md) · [日本語](docs/i18n/admin-manual-ja.md) · [한국어](docs/i18n/admin-manual-ko.md) · [العربية](docs/i18n/admin-manual-ar.md)
+
+用户手册：[English](docs/user-manual.md) · [简体中文](docs/i18n/user-manual-zh-cn.md) · [繁體中文](docs/i18n/user-manual-zh-TW.md) · [Français](docs/i18n/user-manual-fr.md) · [Español](docs/i18n/user-manual-es.md) · [Português](docs/i18n/user-manual-pt.md) · [日本語](docs/i18n/user-manual-ja.md) · [한국어](docs/i18n/user-manual-ko.md) · [العربية](docs/i18n/user-manual-ar.md)

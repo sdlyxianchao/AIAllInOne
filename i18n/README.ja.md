@@ -175,3 +175,11 @@ Harness系ツールを使いたくない場合は、各プラットフォーム�
 このプラットフォームは、AI エージェント（WorkBuddy、OpenClaw、Microsoft Scout など）で完全に運用・保守できます。ヘルスチェック、コンテナ管理、設定変更、Gitea 同期、Ghost ポータル、バックアップ、リリース、トラブルシューティング。
 
 完全な手順は **[AI エージェント運用ガイド](AI-AGENT-OPS.ja.md)**（9 言語対応）をご覧ください。
+
+---
+
+## 7. マニュアル（オンライン・全言語）
+
+管理者マニュアル：[English](docs/admin-manual.md) · [简体中文](docs/i18n/admin-manual-zh-cn.md) · [繁體中文](docs/i18n/admin-manual-zh-TW.md) · [Français](docs/i18n/admin-manual-fr.md) · [Español](docs/i18n/admin-manual-es.md) · [Português](docs/i18n/admin-manual-pt.md) · [日本語](docs/i18n/admin-manual-ja.md) · [한국어](docs/i18n/admin-manual-ko.md) · [العربية](docs/i18n/admin-manual-ar.md)
+
+ユーザーマニュアル：[English](docs/user-manual.md) · [简体中文](docs/i18n/user-manual-zh-cn.md) · [繁體中文](docs/i18n/user-manual-zh-TW.md) · [Français](docs/i18n/user-manual-fr.md) · [Español](docs/i18n/user-manual-es.md) · [Português](docs/i18n/user-manual-pt.md) · [日本語](docs/i18n/user-manual-ja.md) · [한국어](docs/i18n/user-manual-ko.md) · [العربية](docs/i18n/user-manual-ar.md)

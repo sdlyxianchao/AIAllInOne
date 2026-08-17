@@ -175,3 +175,11 @@ Se preferir não usar uma ferramenta do tipo Harness, você pode implantar manua
 Esta plataforma pode ser totalmente operada e mantida por um agente de IA (WorkBuddy, OpenClaw, Microsoft Scout etc.): verificações de integridade, gerenciamento de contêineres, mudanças de configuração, sincronização do Gitea, o portal Ghost, backups, releases e solução de problemas.
 
 Veja o **[Guia de operação com agentes de IA](AI-AGENT-OPS.pt.md)** (disponível em 9 idiomas).
+
+---
+
+## 7. Manuais (online, todos os idiomas)
+
+Manual do administrador：[English](docs/admin-manual.md) · [简体中文](docs/i18n/admin-manual-zh-cn.md) · [繁體中文](docs/i18n/admin-manual-zh-TW.md) · [Français](docs/i18n/admin-manual-fr.md) · [Español](docs/i18n/admin-manual-es.md) · [Português](docs/i18n/admin-manual-pt.md) · [日本語](docs/i18n/admin-manual-ja.md) · [한국어](docs/i18n/admin-manual-ko.md) · [العربية](docs/i18n/admin-manual-ar.md)
+
+Manual do usuário：[English](docs/user-manual.md) · [简体中文](docs/i18n/user-manual-zh-cn.md) · [繁體中文](docs/i18n/user-manual-zh-TW.md) · [Français](docs/i18n/user-manual-fr.md) · [Español](docs/i18n/user-manual-es.md) · [Português](docs/i18n/user-manual-pt.md) · [日本語](docs/i18n/user-manual-ja.md) · [한국어](docs/i18n/user-manual-ko.md) · [العربية](docs/i18n/user-manual-ar.md)

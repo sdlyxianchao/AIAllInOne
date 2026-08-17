@@ -193,3 +193,15 @@ If you prefer not to use a Harness-style tool, you can deploy manually following
 This platform can be fully operated and maintained through an AI agent (WorkBuddy, OpenClaw, Microsoft Scout, etc.): health checks, container management, configuration changes, Gitea sync, the Ghost portal, backups, releases, and troubleshooting.
 
 See the **[AI Agent Operations Guide](AI-AGENT-OPS.md)** for the complete walkthrough (available in 9 languages).
+
+---
+
+## 7. Manuals (online, all languages)
+
+The **Administrator Manual** and **Employee User Manual** are published as Markdown so you can read them directly on GitHub. Each manual is available in 9 languages:
+
+| Manual | Languages |
+|---|---|
+| **Admin Manual** | [English](docs/admin-manual.md) · [简体中文](docs/i18n/admin-manual-zh-cn.md) · [繁體中文](docs/i18n/admin-manual-zh-TW.md) · [Français](docs/i18n/admin-manual-fr.md) · [Español](docs/i18n/admin-manual-es.md) · [Português](docs/i18n/admin-manual-pt.md) · [日本語](docs/i18n/admin-manual-ja.md) · [한국어](docs/i18n/admin-manual-ko.md) · [العربية](docs/i18n/admin-manual-ar.md) |
+| **User Manual** | [English](docs/user-manual.md) · [简体中文](docs/i18n/user-manual-zh-cn.md) · [繁體中文](docs/i18n/user-manual-zh-TW.md) · [Français](docs/i18n/user-manual-fr.md) · [Español](docs/i18n/user-manual-es.md) · [Português](docs/i18n/user-manual-pt.md) · [日本語](docs/i18n/user-manual-ja.md) · [한국어](docs/i18n/user-manual-ko.md) · [العربية](docs/i18n/user-manual-ar.md) |
+

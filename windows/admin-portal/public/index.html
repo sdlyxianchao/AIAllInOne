@@ -107,6 +107,7 @@
     <div class="nav-group-body">
       <a class="nav-item" data-product="availability" onclick="loadAvailability(this)">🩺 <span data-i18n="availability">可用性测试</span></a>
       <a class="nav-item" data-product="monitoring" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
+      <a class="nav-item" data-product="monitoring" onclick="loadImAlert(this)">🔔 <span data-i18n="im_alert">企业 IM 告警</span></a>
       <a class="nav-item" data-product="observability" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3010</span></a>
       <a class="nav-item" data-product="pii" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:5001/:5002</span></a>
       <a class="nav-item" data-product="logs" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">Loki</span></a>
@@ -278,6 +279,8 @@ const I18N = {
     alerts_firing: '告警中',
     open_monitoring: '打开监控大盘',
     open_observability: '打开可观测平台',
+    im_alert: '企业 IM 告警', im_alert_about: '将 Prometheus/Alertmanager 告警转发到企业 IM（钉钉/企微/飞书），支持多接收人、发送规则与发送历史。', im_receivers: '接收人', im_add_receiver: '添加接收人', im_receiver_name: '名称', im_type: '类型', im_webhook: 'Webhook 地址', im_receiver_enabled: '启用', im_no_receivers: '暂无接收人，请点击右上角添加', im_rules: '发送规则', im_rules_enabled: '启用 IM 告警转发', im_rules_min_severity: '最低告警级别', im_rules_send_firing: '发送告警（firing）', im_rules_send_resolved: '发送恢复（resolved）', im_severity_critical: '严重', im_severity_warning: '警告', im_severity_info: '信息', im_type_dingtalk: '钉钉', im_type_wecom: '企业微信', im_type_feishu: '飞书', im_result_success: '成功', im_result_fail: '失败', im_status_firing: '告警', im_status_resolved: '恢复', im_history: '发送历史', im_time: '时间', im_alertname: '告警名称', im_severity: '级别', im_alert_status: '状态', im_result: '结果', im_detail: '详情', im_filter_all: '全部', im_no_history: '暂无发送记录', im_test: '测试', im_edit: '编辑', im_testing: '正在发送测试消息…', im_test_sent: '测试消息已发送', im_test_failed: '测试发送失败', im_save_fail: '保存失败', im_url_required: 'Webhook 地址必填', im_del_confirm: '确定删除接收人', im_delete_fail: '删除失败', im_type_dingtalk_app: '钉钉企业应用（发个人）', im_type_wecom_app: '企微企业应用（发个人）', im_target: '目标', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: '用户 userid（逗号分隔）', im_userids_hint: '钉钉企业内部应用的 userid，多个用英文逗号分隔（如 zhang3,li4）。', im_corpid: 'corpId', im_secret: '应用 secret', im_tousers: '用户 userid（竖线或逗号分隔）', im_tousers_hint: '企业微信成员的 userid，多个用竖线 | 或逗号分隔。', im_app_required: '企业应用凭据与接收人 userid 均必填',
+
     traces: '追踪记录',
     obs_desc: '追踪每次模型调用的提示词、响应、延迟、token、成本，用于质量分析与故障定位。',
     product_about: '产品说明', entry_url: '访问入口', official_docs: '官方文档',
@@ -417,6 +420,8 @@ const I18N = {
     alerts_firing: 'Firing alerts',
     open_monitoring: 'Open Monitoring',
     open_observability: 'Open Observability',
+    im_alert: 'Enterprise IM Alerts', im_alert_about: 'Forward Prometheus/Alertmanager alerts to enterprise IM (DingTalk/WeCom/Feishu), with multiple receivers, sending rules and send history.', im_receivers: 'Receivers', im_add_receiver: 'Add Receiver', im_receiver_name: 'Name', im_type: 'Type', im_webhook: 'Webhook URL', im_receiver_enabled: 'Enabled', im_no_receivers: 'No receivers yet, click Add Receiver', im_rules: 'Sending Rules', im_rules_enabled: 'Enable IM alert forwarding', im_rules_min_severity: 'Min severity', im_rules_send_firing: 'Send firing alerts', im_rules_send_resolved: 'Send resolved notifications', im_severity_critical: 'Critical', im_severity_warning: 'Warning', im_severity_info: 'Info', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: 'Success', im_result_fail: 'Failed', im_status_firing: 'Firing', im_status_resolved: 'Resolved', im_history: 'Send History', im_time: 'Time', im_alertname: 'Alert', im_severity: 'Severity', im_alert_status: 'Status', im_result: 'Result', im_detail: 'Detail', im_filter_all: 'All', im_no_history: 'No send history yet', im_test: 'Test', im_edit: 'Edit', im_testing: 'Sending test message…', im_test_sent: 'Test message sent', im_test_failed: 'Test send failed', im_save_fail: 'Save failed', im_url_required: 'Webhook URL is required', im_del_confirm: 'Delete receiver', im_delete_fail: 'Delete failed', im_type_dingtalk_app: 'DingTalk App (to person)', im_type_wecom_app: 'WeCom App (to person)', im_target: 'Target', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: 'User userIds (comma-separated)', im_userids_hint: 'DingTalk internal app userIds, comma-separated (e.g. zhang3,li4).', im_corpid: 'corpId', im_secret: 'App secret', im_tousers: 'User userIds (pipe or comma separated)', im_tousers_hint: 'WeCom member userIds, separated by | or comma.', im_app_required: 'App credentials and recipient userIds are required',
+
     traces: 'Traces',
     obs_desc: 'Traces prompts, responses, latency, tokens and cost of every model call for quality analysis and debugging.',
     product_about: 'About', entry_url: 'Entry URL', official_docs: 'Official Docs',
@@ -549,6 +554,8 @@ const I18N = {
     alerts_firing: '告警中',
     open_monitoring: '開啟監控大盤',
     open_observability: '開啟可觀測平台',
+    im_alert: '企業 IM 告警', im_alert_about: '將 Prometheus/Alertmanager 告警轉發到企業 IM（釘釘/企微/飛書），支援多接收人、傳送規則與傳送歷史。', im_receivers: '接收人', im_add_receiver: '新增接收人', im_receiver_name: '名稱', im_type: '類型', im_webhook: 'Webhook 位址', im_receiver_enabled: '啟用', im_no_receivers: '暫無接收人，請點右上角新增', im_rules: '傳送規則', im_rules_enabled: '啟用 IM 告警轉發', im_rules_min_severity: '最低告警級別', im_rules_send_firing: '傳送告警（firing）', im_rules_send_resolved: '傳送恢復（resolved）', im_severity_critical: '嚴重', im_severity_warning: '警告', im_severity_info: '資訊', im_type_dingtalk: '釘釘', im_type_wecom: '企業微信', im_type_feishu: '飛書', im_result_success: '成功', im_result_fail: '失敗', im_status_firing: '告警', im_status_resolved: '恢復', im_history: '傳送歷史', im_time: '時間', im_alertname: '告警名稱', im_severity: '級別', im_alert_status: '狀態', im_result: '結果', im_detail: '詳情', im_filter_all: '全部', im_no_history: '暫無傳送記錄', im_test: '測試', im_edit: '編輯', im_testing: '正在傳送測試訊息…', im_test_sent: '測試訊息已傳送', im_test_failed: '測試傳送失敗', im_save_fail: '儲存失敗', im_url_required: 'Webhook 位址必填', im_del_confirm: '確定刪除接收人', im_delete_fail: '刪除失敗', im_type_dingtalk_app: '釘釘企業應用（發個人）', im_type_wecom_app: '企微企業應用（發個人）', im_target: '目標', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: '使用者 userid（逗號分隔）', im_userids_hint: '釘釘企業內部應用的 userid，多個用英文逗號分隔。', im_corpid: 'corpId', im_secret: '應用 secret', im_tousers: '使用者 userid（豎線或逗號分隔）', im_tousers_hint: '企業微信成員的 userid，多個用豎線 | 或逗號分隔。', im_app_required: '企業應用憑據與接收人 userid 均必填',
+
     traces: '追蹤記錄',
     obs_desc: '追蹤每次模型呼叫的提示詞、回應、延遲、token、成本，用於品質分析與故障定位。',
   },
@@ -641,6 +648,8 @@ const I18N = {
     alerts_firing: 'Alertes actives',
     open_monitoring: 'Ouvrir la supervision',
     open_observability: 'Ouvrir l’observabilité',
+    im_alert: 'Alertes IM entreprise', im_alert_about: 'Transfère les alertes Prometheus/Alertmanager vers l\'IM d\'entreprise (DingTalk/WeCom/Feishu), avec plusieurs destinataires, règles d\'envoi et historique.', im_receivers: 'Destinataires', im_add_receiver: 'Ajouter un destinataire', im_receiver_name: 'Nom', im_type: 'Type', im_webhook: 'URL Webhook', im_receiver_enabled: 'Activé', im_no_receivers: 'Aucun destinataire, ajoutez-en un', im_rules: 'Règles d\'envoi', im_rules_enabled: 'Activer le transfert d\'alertes IM', im_rules_min_severity: 'Sévérité minimale', im_rules_send_firing: 'Envoyer les alertes (firing)', im_rules_send_resolved: 'Envoyer les résolutions (resolved)', im_severity_critical: 'Critique', im_severity_warning: 'Avertissement', im_severity_info: 'Info', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: 'Succès', im_result_fail: 'Échec', im_status_firing: 'Alerte', im_status_resolved: 'Résolu', im_history: 'Historique d\'envoi', im_time: 'Heure', im_alertname: 'Alerte', im_severity: 'Sévérité', im_alert_status: 'Statut', im_result: 'Résultat', im_detail: 'Détail', im_filter_all: 'Tous', im_no_history: 'Aucun historique d\'envoi', im_test: 'Test', im_edit: 'Modifier', im_testing: 'Envoi du message de test…', im_test_sent: 'Message de test envoyé', im_test_failed: 'Échec du test', im_save_fail: 'Échec de l\'enregistrement', im_url_required: 'L\'URL Webhook est requise', im_del_confirm: 'Supprimer le destinataire', im_delete_fail: 'Échec de la suppression', im_type_dingtalk_app: 'DingTalk App (à une personne)', im_type_wecom_app: 'WeCom App (à une personne)', im_target: 'Cible', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: 'UserIds (séparés par virgules)', im_userids_hint: 'UserId de l\'application interne DingTalk, séparés par des virgules.', im_corpid: 'corpId', im_secret: 'Secret de l\'application', im_tousers: 'UserIds (séparés par | ou virgule)', im_tousers_hint: 'UserId des membres WeCom, séparés par | ou virgule.', im_app_required: 'Identifiants de l\'application et UserId requis',
+
     traces: 'Traces',
     obs_desc: 'Trace les prompts, réponses, latence, tokens et coûts de chaque appel modèle pour analyse qualité et débogage.',
   },
@@ -733,6 +742,8 @@ const I18N = {
     alerts_firing: 'Alertas activas',
     open_monitoring: 'Abrir monitoreo',
     open_observability: 'Abrir observabilidad',
+    im_alert: 'Alertas IM empresariales', im_alert_about: 'Reenvía alertas de Prometheus/Alertmanager al IM empresarial (DingTalk/WeCom/Feishu), con varios destinatarios, reglas de envío e historial.', im_receivers: 'Destinatarios', im_add_receiver: 'Añadir destinatario', im_receiver_name: 'Nombre', im_type: 'Tipo', im_webhook: 'URL del webhook', im_receiver_enabled: 'Activado', im_no_receivers: 'Sin destinatarios, añade uno', im_rules: 'Reglas de envío', im_rules_enabled: 'Activar el reenvío de alertas IM', im_rules_min_severity: 'Severidad mínima', im_rules_send_firing: 'Enviar alertas (firing)', im_rules_send_resolved: 'Enviar resoluciones (resolved)', im_severity_critical: 'Crítica', im_severity_warning: 'Advertencia', im_severity_info: 'Info', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: 'Éxito', im_result_fail: 'Fallido', im_status_firing: 'Alerta', im_status_resolved: 'Resuelto', im_history: 'Historial de envío', im_time: 'Hora', im_alertname: 'Alerta', im_severity: 'Severidad', im_alert_status: 'Estado', im_result: 'Resultado', im_detail: 'Detalle', im_filter_all: 'Todos', im_no_history: 'Sin historial de envío', im_test: 'Probar', im_edit: 'Editar', im_testing: 'Enviando mensaje de prueba…', im_test_sent: 'Mensaje de prueba enviado', im_test_failed: 'Prueba fallida', im_save_fail: 'Error al guardar', im_url_required: 'La URL del webhook es obligatoria', im_del_confirm: 'Eliminar destinatario', im_delete_fail: 'Error al eliminar', im_type_dingtalk_app: 'DingTalk App (a una persona)', im_type_wecom_app: 'WeCom App (a una persona)', im_target: 'Destino', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: 'UserIds (separados por comas)', im_userids_hint: 'UserId de la app interna de DingTalk, separados por comas.', im_corpid: 'corpId', im_secret: 'Secret de la app', im_tousers: 'UserIds (separados por | o coma)', im_tousers_hint: 'UserId de miembros de WeCom, separados por | o coma.', im_app_required: 'Credenciales de la app y UserId requeridos',
+
     traces: 'Trazas',
     obs_desc: 'Rastrea prompts, respuestas, latencia, tokens y costo de cada llamada para análisis de calidad y depuración.',
   },
@@ -825,6 +836,8 @@ const I18N = {
     alerts_firing: 'Alertas ativos',
     open_monitoring: 'Abrir monitoramento',
     open_observability: 'Abrir observabilidade',
+    im_alert: 'Alertas IM empresariais', im_alert_about: 'Encaminha alertas do Prometheus/Alertmanager para o IM empresarial (DingTalk/WeCom/Feishu), com vários destinatários, regras de envio e histórico.', im_receivers: 'Destinatários', im_add_receiver: 'Adicionar destinatário', im_receiver_name: 'Nome', im_type: 'Tipo', im_webhook: 'URL do webhook', im_receiver_enabled: 'Ativado', im_no_receivers: 'Nenhum destinatário, adicione um', im_rules: 'Regras de envio', im_rules_enabled: 'Ativar encaminhamento de alertas IM', im_rules_min_severity: 'Severidade mínima', im_rules_send_firing: 'Enviar alertas (firing)', im_rules_send_resolved: 'Enviar resoluções (resolved)', im_severity_critical: 'Crítico', im_severity_warning: 'Aviso', im_severity_info: 'Info', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: 'Sucesso', im_result_fail: 'Falhou', im_status_firing: 'Alerta', im_status_resolved: 'Resolvido', im_history: 'Histórico de envio', im_time: 'Hora', im_alertname: 'Alerta', im_severity: 'Severidade', im_alert_status: 'Estado', im_result: 'Resultado', im_detail: 'Detalhe', im_filter_all: 'Todos', im_no_history: 'Sem histórico de envio', im_test: 'Testar', im_edit: 'Editar', im_testing: 'Enviando mensagem de teste…', im_test_sent: 'Mensagem de teste enviada', im_test_failed: 'Teste falhou', im_save_fail: 'Falha ao salvar', im_url_required: 'URL do webhook é obrigatória', im_del_confirm: 'Excluir destinatário', im_delete_fail: 'Falha ao excluir', im_type_dingtalk_app: 'DingTalk App (para pessoa)', im_type_wecom_app: 'WeCom App (para pessoa)', im_target: 'Destino', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: 'UserIds (separados por vírgula)', im_userids_hint: 'UserId do app interno do DingTalk, separados por vírgula.', im_corpid: 'corpId', im_secret: 'Secret do app', im_tousers: 'UserIds (separados por | ou vírgula)', im_tousers_hint: 'UserId de membros do WeCom, separados por | ou vírgula.', im_app_required: 'Credenciais do app e UserId são obrigatórios',
+
     traces: 'Rastros',
     obs_desc: 'Rastreia prompts, respostas, latência, tokens e custo de cada chamada para análise de qualidade e depuração.',
   },
@@ -917,6 +930,8 @@ const I18N = {
     alerts_firing: '発火中アラート',
     open_monitoring: '監視ダッシュボードを開く',
     open_observability: '可観測性を開く',
+    im_alert: '企業 IM アラート', im_alert_about: 'Prometheus/Alertmanager のアラートを企業 IM（DingTalk/WeCom/Feishu）へ転送。複数受信者・送信ルール・送信履歴に対応。', im_receivers: '受信者', im_add_receiver: '受信者を追加', im_receiver_name: '名前', im_type: '種別', im_webhook: 'Webhook URL', im_receiver_enabled: '有効', im_no_receivers: '受信者がありません。右上から追加してください', im_rules: '送信ルール', im_rules_enabled: 'IM アラート転送を有効化', im_rules_min_severity: '最低重大度', im_rules_send_firing: '発火（firing）を送信', im_rules_send_resolved: '復旧（resolved）を送信', im_severity_critical: '重大', im_severity_warning: '警告', im_severity_info: '情報', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: '成功', im_result_fail: '失敗', im_status_firing: '発火', im_status_resolved: '復旧', im_history: '送信履歴', im_time: '時刻', im_alertname: 'アラート名', im_severity: '重大度', im_alert_status: '状態', im_result: '結果', im_detail: '詳細', im_filter_all: 'すべて', im_no_history: '送信履歴がありません', im_test: 'テスト', im_edit: '編集', im_testing: 'テストメッセージを送信中…', im_test_sent: 'テストメッセージを送信しました', im_test_failed: 'テスト送信に失敗', im_save_fail: '保存に失敗', im_url_required: 'Webhook URL は必須です', im_del_confirm: '受信者を削除', im_delete_fail: '削除に失敗', im_type_dingtalk_app: 'DingTalk アプリ（個人宛）', im_type_wecom_app: 'WeCom アプリ（個人宛）', im_target: '宛先', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: 'ユーザー userid（カンマ区切り）', im_userids_hint: 'DingTalk 内部アプリの userid。複数はカンマ区切り。', im_corpid: 'corpId', im_secret: 'アプリ secret', im_tousers: 'ユーザー userid（| またはカンマ区切り）', im_tousers_hint: 'WeCom メンバーの userid。複数は | またはカンマ区切り。', im_app_required: 'アプリ認証情報と受信者 userid は必須です',
+
     traces: 'トレース',
     obs_desc: '各モデル呼び出しのプロンプト、応答、遅延、トークン、コストを追跡し、品質分析と障害特定に使用。',
   },
@@ -1009,6 +1024,8 @@ const I18N = {
     alerts_firing: '발화 알림',
     open_monitoring: '모니터링 열기',
     open_observability: '관측 열기',
+    im_alert: '기업 IM 알림', im_alert_about: 'Prometheus/Alertmanager 알림을 기업 IM(DingTalk/WeCom/Feishu)으로 전달하며, 여러 수신자·전송 규칙·전송 이력을 지원합니다.', im_receivers: '수신자', im_add_receiver: '수신자 추가', im_receiver_name: '이름', im_type: '유형', im_webhook: 'Webhook URL', im_receiver_enabled: '활성화', im_no_receivers: '수신자가 없습니다. 우측 상단에서 추가하세요', im_rules: '전송 규칙', im_rules_enabled: 'IM 알림 전달 활성화', im_rules_min_severity: '최소 심각도', im_rules_send_firing: '알림(firing) 전송', im_rules_send_resolved: '복구(resolved) 전송', im_severity_critical: '심각', im_severity_warning: '경고', im_severity_info: '정보', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: '성공', im_result_fail: '실패', im_status_firing: '알림', im_status_resolved: '복구', im_history: '전송 이력', im_time: '시간', im_alertname: '알림 이름', im_severity: '심각도', im_alert_status: '상태', im_result: '결과', im_detail: '상세', im_filter_all: '전체', im_no_history: '전송 이력 없음', im_test: '테스트', im_edit: '편집', im_testing: '테스트 메시지 전송 중…', im_test_sent: '테스트 메시지 전송됨', im_test_failed: '테스트 전송 실패', im_save_fail: '저장 실패', im_url_required: 'Webhook URL 필수', im_del_confirm: '수신자 삭제', im_delete_fail: '삭제 실패', im_type_dingtalk_app: 'DingTalk 앱(개인 발송)', im_type_wecom_app: 'WeCom 앱(개인 발송)', im_target: '대상', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: '사용자 userid(쉼표 구분)', im_userids_hint: 'DingTalk 내부 앱의 userid. 여러 개는 쉼표로 구분.', im_corpid: 'corpId', im_secret: '앱 secret', im_tousers: '사용자 userid(| 또는 쉼표 구분)', im_tousers_hint: 'WeCom 구성원 userid. 여러 개는 | 또는 쉼표로 구분.', im_app_required: '앱 자격 증명과 수신자 userid가 필요합니다',
+
     traces: '트레이스',
     obs_desc: '각 모델 호출의 프롬프트, 응답, 지연, 토큰, 비용을 추적하여 품질 분석 및 장애 위치 파악에 사용.',
   },
@@ -1101,6 +1118,8 @@ const I18N = {
     alerts_firing: 'تنبيهات نشطة',
     open_monitoring: 'فتح المراقبة',
     open_observability: 'فتح المراقبة',
+    im_alert: 'تنبيهات IM المؤسسية', im_alert_about: 'إعادة توجيه تنبيهات Prometheus/Alertmanager إلى IM المؤسسي (DingTalk/WeCom/Feishu)، مع عدة مستقبلين وقواعد إرسال وسجل إرسال.', im_receivers: 'المستقبلون', im_add_receiver: 'إضافة مستقبل', im_receiver_name: 'الاسم', im_type: 'النوع', im_webhook: 'رابط Webhook', im_receiver_enabled: 'مفعّل', im_no_receivers: 'لا يوجد مستقبلون، أضف واحدًا', im_rules: 'قواعد الإرسال', im_rules_enabled: 'تفعيل إعادة توجيه تنبيهات IM', im_rules_min_severity: 'أدنى خطورة', im_rules_send_firing: 'إرسال التنبيهات (firing)', im_rules_send_resolved: 'إرسال الاسترجاع (resolved)', im_severity_critical: 'حرج', im_severity_warning: 'تحذير', im_severity_info: 'معلومات', im_type_dingtalk: 'DingTalk', im_type_wecom: 'WeCom', im_type_feishu: 'Feishu', im_result_success: 'نجاح', im_result_fail: 'فشل', im_status_firing: 'تنبيه', im_status_resolved: 'تم الحل', im_history: 'سجل الإرسال', im_time: 'الوقت', im_alertname: 'اسم التنبيه', im_severity: 'الخطورة', im_alert_status: 'الحالة', im_result: 'النتيجة', im_detail: 'التفاصيل', im_filter_all: 'الكل', im_no_history: 'لا يوجد سجل إرسال', im_test: 'اختبار', im_edit: 'تعديل', im_testing: 'جارٍ إرسال رسالة الاختبار…', im_test_sent: 'تم إرسال رسالة الاختبار', im_test_failed: 'فشل إرسال الاختبار', im_save_fail: 'فشل الحفظ', im_url_required: 'رابط Webhook مطلوب', im_del_confirm: 'حذف المستقبل', im_delete_fail: 'فشل الحذف', im_type_dingtalk_app: 'تطبيق DingTalk (لشخص)', im_type_wecom_app: 'تطبيق WeCom (لشخص)', im_target: 'الهدف', im_appkey: 'AppKey', im_appsecret: 'AppSecret', im_agentid: 'AgentId', im_userids: 'معرّفات المستخدمين (بفاصلة)', im_userids_hint: 'معرّف مستخدم تطبيق DingTalk الداخلي، مفصولة بفواصل.', im_corpid: 'corpId', im_secret: 'سر التطبيق', im_tousers: 'معرّفات المستخدمين (بـ | أو فاصلة)', im_tousers_hint: 'معرّف عضو WeCom، مفصولة بـ | أو فاصلة.', im_app_required: 'بيانات اعتماد التطبيق ومعرّف المستلم مطلوبة',
+
     traces: 'تتبعات',
     obs_desc: 'يتتبع المطالبات والاستجابات وزمن الاستجابة والرموز والتكلفة لكل استدعاء نموذج لتحليل الجودة واستكشاف الأخطاء.',
   },
@@ -2262,6 +2281,287 @@ function entriesCard(entries, docsUrl) {
 }
 function keyInfoCard(html, title) {
   return `<div class="card"><h3>🗂️ ${title || t('key_info')}</h3>${html}</div>`;
+}
+
+// ═══ 企业 IM 告警配置 ═══
+let _imPaging = { page: 0, pageSize: 20, q: '', type: '', result: '', severity: '' };
+let _imReceivers = [];
+let _imRules = {};
+
+// 统一类型文案（群机器人 + 企业应用发个人）
+function imTypeLabel(ty) {
+  return ({ dingtalk: t('im_type_dingtalk'), wecom: t('im_type_wecom'), feishu: t('im_type_feishu'), dingtalk_app: t('im_type_dingtalk_app'), wecom_app: t('im_type_wecom_app') }[ty] || ty);
+}
+// 接收人「目标」列的显示内容（群机器人=webhook 地址；企业应用=发个人的 userid）
+function imRcTarget(r) {
+  if (r.type === 'dingtalk_app') return (r.userIds || '—');
+  if (r.type === 'wecom_app') return (r.toUsers || '—');
+  return (r.webhookUrl || '—');
+}
+
+async function loadImAlert(el) {
+  setActive(el);
+  const title = t('im_alert');
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔔 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
+  try {
+    const d = await (await fetch(API + '/imalert/config')).json();
+    if (d.error) throw new Error(d.error);
+    _imReceivers = d.receivers || [];
+    _imRules = d.rules || {};
+    renderImAlert();
+  } catch (e) {
+    document.getElementById('main').innerHTML = productError('🔔', title, null, e.message, '');
+  }
+}
+
+function renderImAlert() {
+  const receivers = _imReceivers;
+  const rules = _imRules;
+  const rcRows = receivers.length ? receivers.map(r => {
+    const ty = r.type || 'dingtalk';
+    const toggle = `<button onclick="imToggleReceiver('${r.id}')" style="background:transparent;border:none;cursor:pointer;font-size:1.1em" title="${r.enabled ? t('admins_disable') : t('admins_enable')}">${r.enabled ? '🟢' : '⚪'}</button>`;
+    const target = imRcTarget(r);
+    return `<tr>
+      <td>${toggle}</td>
+      <td style="color:var(--textstrong)">${r.name || '—'}</td>
+      <td>${imTypeLabel(ty)}</td>
+      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--textdim)" title="${String(target).replace(/"/g, '&quot;')}">${target}</td>
+      <td style="white-space:nowrap">
+        <button onclick="imTestReceiver('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.8em;margin-right:6px">${t('im_test')}</button>
+        <button onclick="imEditReceiver('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.8em;margin-right:6px">${t('im_edit')}</button>
+        <button onclick="imDeleteReceiver('${r.id}')" style="background:transparent;color:var(--red);border:none;cursor:pointer;font-size:0.8em;text-decoration:underline">${t('delete')}</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" style="color:var(--textdim)">${t('im_no_receivers')}</td></tr>`;
+
+  const sevOpt = ['critical', 'warning', 'info'].map(s => `<option value="${s}"${rules.minSeverity === s ? ' selected' : ''}>${t('im_severity_' + s)}</option>`).join('');
+  const rulesHtml = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.92em">
+        <input type="checkbox" id="imRuleEnabled" ${rules.enabled ? 'checked' : ''} onchange="imSetRule('enabled', this.checked)" style="width:18px;height:18px;cursor:pointer">
+        <b>${t('im_rules_enabled')}</b>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9em;margin-left:12px">
+        <span style="color:var(--textdim)">${t('im_rules_min_severity')}</span>
+        <select id="imRuleSeverity" onchange="imSetRule('minSeverity', this.value)" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.85em">${sevOpt}</select>
+      </label>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em">
+        <input type="checkbox" id="imRuleFiring" ${rules.sendFiring ? 'checked' : ''} onchange="imSetRule('sendFiring', this.checked)" style="width:16px;height:16px;cursor:pointer">
+        ${t('im_rules_send_firing')}
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9em">
+        <input type="checkbox" id="imRuleResolved" ${rules.sendResolved ? 'checked' : ''} onchange="imSetRule('sendResolved', this.checked)" style="width:16px;height:16px;cursor:pointer">
+        ${t('im_rules_send_resolved')}
+      </label>
+    </div>`;
+
+  document.getElementById('main').innerHTML = `<div class="topbar"><h1>🔔 ${t('im_alert')}</h1></div>`
+    + aboutCard(t('im_alert_about'))
+    + keyInfoCard(`
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px"><b style="color:var(--textstrong)">${t('im_receivers')}</b><button onclick="imAddReceiver()" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em">➕ ${t('im_add_receiver')}</button></div>
+        <table><tr><th style="width:44px"></th><th>${t('im_receiver_name')}</th><th>${t('im_type')}</th><th>${t('im_target')}</th><th>${t('admins_actions')}</th></tr>${rcRows}</table>
+      `, t('im_receivers'))
+    + keyInfoCard(rulesHtml, t('im_rules'))
+    + keyInfoCard(imHistoryHtml(), t('im_history'));
+  imLoadHistory();
+}
+
+function imHistoryHtml() {
+  const st = _imPaging;
+  const sizeOpts = [10, 20, 50, 100].map(n => `<option value="${n}"${st.pageSize === n ? ' selected' : ''}>${n}</option>`).join('');
+  const typeOpts = ['', 'dingtalk', 'wecom', 'feishu', 'dingtalk_app', 'wecom_app'].map(v => `<option value="${v}"${st.type === v ? ' selected' : ''}>${v === '' ? t('im_filter_all') : imTypeLabel(v)}</option>`).join('');
+  const resultOpts = ['', 'success', 'fail'].map(v => `<option value="${v}"${st.result === v ? ' selected' : ''}>${v === '' ? t('im_filter_all') : t('im_result_' + v)}</option>`).join('');
+  const sevOpts = ['', 'critical', 'warning', 'info'].map(v => `<option value="${v}"${st.severity === v ? ' selected' : ''}>${v === '' ? t('im_filter_all') : t('im_severity_' + v)}</option>`).join('');
+  return `
+    <div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;flex-wrap:wrap">
+      <input id="imSearch" type="text" placeholder="${t('search_ph')}" value="${st.q.replace(/"/g, '&quot;')}" onkeydown="if(event.key==='Enter')imSearch()" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 10px;border-radius:6px;font-size:0.82em;width:180px">
+      <button onclick="imSearch()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82em">🔍</button>
+      <select onchange="imFilter('type', this.value)" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${typeOpts}</select>
+      <select onchange="imFilter('result', this.value)" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${resultOpts}</select>
+      <select onchange="imFilter('severity', this.value)" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${sevOpts}</select>
+      <span style="color:var(--textdim);font-size:0.8em;margin-left:auto">${t('per_page')}</span>
+      <select id="imPageSize" onchange="imPageSize()" style="background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:5px 8px;border-radius:6px;font-size:0.82em">${sizeOpts}</select>
+    </div>
+    <div id="imHistoryTable"></div>
+    <div id="imHistoryPager"></div>`;
+}
+
+async function imLoadHistory() {
+  const st = _imPaging;
+  const tableEl = document.getElementById('imHistoryTable');
+  const pagerEl = document.getElementById('imHistoryPager');
+  if (!tableEl) return;
+  tableEl.innerHTML = `<p class="loading">${t('loading')}</p>`;
+  try {
+    const q = new URLSearchParams({ page: st.page, pageSize: st.pageSize, q: st.q, type: st.type, result: st.result, severity: st.severity });
+    const d = await (await fetch(`${API}/imalert/history?${q}`)).json();
+    if (d.error) throw new Error(d.error);
+    const sevLabel = s => ({ critical: t('im_severity_critical'), warning: t('im_severity_warning'), info: t('im_severity_info') }[s] || s);
+    const rows = (d.items || []).map(h => `<tr>
+      <td style="color:var(--textdim);white-space:nowrap">${h.time ? new Date(h.time).toLocaleString() : '—'}</td>
+      <td style="color:var(--textstrong)">${h.receiverName || '—'}</td>
+      <td>${imTypeLabel(h.type)}</td>
+      <td>${h.alertname || '—'}</td>
+      <td>${sevLabel(h.severity)}</td>
+      <td style="color:${h.status === 'resolved' ? 'var(--green)' : 'var(--red)'}">${h.status === 'resolved' ? t('im_status_resolved') : t('im_status_firing')}</td>
+      <td style="color:${h.result === 'success' ? 'var(--green)' : 'var(--red)'}">${h.result === 'success' ? t('im_result_success') : t('im_result_fail')}</td>
+      <td style="color:var(--textdim);font-size:0.82em" title="${(h.detail || '').replace(/"/g, '&quot;')}">${(h.summary || '').slice(0, 40)}${(h.detail && h.result !== 'success') ? ' · ' + String(h.detail).slice(0, 40) : ''}</td>
+    </tr>`).join('');
+    tableEl.innerHTML = (d.items && d.items.length)
+      ? `<table><tr><th>${t('im_time')}</th><th>${t('im_receiver_name')}</th><th>${t('im_type')}</th><th>${t('im_alertname')}</th><th>${t('im_severity')}</th><th>${t('im_alert_status')}</th><th>${t('im_result')}</th><th>${t('im_detail')}</th></tr>${rows}</table>`
+      : `<p class="loading">${t('im_no_history')}</p>`;
+    const pages = Math.max(1, Math.ceil(d.total / st.pageSize));
+    const btn = (label, page, disabled) => `<button onclick="imGo(${page})"${disabled ? ' disabled style="opacity:.4;cursor:not-allowed"' : ''} style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8em">${label}</button>`;
+    pagerEl.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+      ${btn(t('prev_page'), st.page - 1, st.page <= 0)}
+      <span style="color:var(--textdim);font-size:0.82em">${st.page + 1} / ${pages} · ${d.total}</span>
+      ${btn(t('next_page'), st.page + 1, st.page + 1 >= pages)}
+    </div>`;
+  } catch (e) {
+    tableEl.innerHTML = `<p class="error">${e.message}</p>`;
+    pagerEl.innerHTML = '';
+  }
+}
+
+function imGo(page) { _imPaging.page = page; imLoadHistory(); }
+function imSearch() { _imPaging.q = document.getElementById('imSearch').value.trim(); _imPaging.page = 0; imLoadHistory(); }
+function imFilter(key, val) { _imPaging[key] = val; _imPaging.page = 0; imLoadHistory(); }
+function imPageSize() { _imPaging.pageSize = parseInt(document.getElementById('imPageSize').value, 10) || 20; _imPaging.page = 0; imLoadHistory(); }
+
+async function imSetRule(key, val) {
+  try {
+    const r = await fetch(API + '/imalert/rules', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [key]: val }) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    _imRules = d.rules;
+  } catch (e) { alert(t('im_save_fail') + ': ' + e.message); }
+}
+
+function imAddReceiver() {
+  adminModal(imReceiverForm(null), { id: 'imRcOverlay', width: '500px', title: '➕ ' + t('im_add_receiver') });
+}
+function imEditReceiver(id) {
+  const r = _imReceivers.find(x => x.id === id);
+  if (!r) return;
+  adminModal(imReceiverForm(r), { id: 'imRcOverlay', width: '500px', title: '✏️ ' + t('im_edit') });
+}
+function imReceiverForm(rc) {
+  const ty = rc ? (rc.type || '') : 'dingtalk';
+  const typeOpts = ['dingtalk', 'wecom', 'feishu', 'dingtalk_app', 'wecom_app'].map(v => `<option value="${v}"${ty === v ? ' selected' : ''}>${imTypeLabel(v)}</option>`).join('');
+  const field = (id, label, val, ph, type) => `<label style="display:block;font-size:0.85em;color:var(--textdim);margin:8px 0 4px">${label}</label><input id="${id}" value="${String(val == null ? '' : val).replace(/"/g, '&quot;')}"${ph ? ` placeholder="${ph}"` : ''}${type === 'password' ? ' type="password"' : ''} style="width:100%;background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:8px 10px;border-radius:6px;font-size:0.9em">`;
+  return `<div>
+    ${field('imRcName', t('im_receiver_name'), rc ? rc.name : '', '', '')}
+    <label style="display:block;font-size:0.85em;color:var(--textdim);margin:8px 0 4px">${t('im_type')}</label>
+    <select id="imRcType" onchange="imRcTypeChanged()" style="width:100%;background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:8px 10px;border-radius:6px;font-size:0.9em">${typeOpts}</select>
+    <div id="imRcFields">${imRcFieldsHtml(ty, rc)}</div>
+    <label style="display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:0.88em;cursor:pointer">
+      <input type="checkbox" id="imRcEnabled" ${rc ? (rc.enabled ? 'checked' : '') : 'checked'} style="width:16px;height:16px">${t('im_receiver_enabled')}
+    </label>
+    <div style="margin-top:16px;text-align:right">
+      <button onclick="imSaveReceiver('${rc ? rc.id : ''}')" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 22px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_save')}</button>
+    </div>
+  </div>`;
+}
+
+// 按类型渲染动态字段（群机器人=webhook；钉钉企业应用=appKey/appSecret/agentId/userIds；企微=corpId/secret/agentId/toUsers）
+function imRcFieldsHtml(ty, rc) {
+  rc = rc || {};
+  const field = (id, label, val, ph, type) => `<label style="display:block;font-size:0.85em;color:var(--textdim);margin:8px 0 4px">${label}</label><input id="${id}" value="${String(val == null ? '' : val).replace(/"/g, '&quot;')}"${ph ? ` placeholder="${ph}"` : ''}${type === 'password' ? ' type="password" autocomplete="off"' : ''} style="width:100%;background:var(--bg);color:var(--textstrong);border:1px solid var(--border);padding:8px 10px;border-radius:6px;font-size:0.9em">`;
+  if (ty === 'dingtalk_app') {
+    return field('imRcAppKey', t('im_appkey'), rc.appKey, '', '') +
+      field('imRcAppSecret', t('im_appsecret'), rc.appSecret, '', 'password') +
+      field('imRcAgentId', t('im_agentid'), rc.agentId, '12345', '') +
+      field('imRcUserIds', t('im_userids'), rc.userIds, 'userid1,userid2', '') +
+      `<p style="margin:6px 0 0;color:var(--textdim);font-size:0.78em">${t('im_userids_hint')}</p>`;
+  }
+  if (ty === 'wecom_app') {
+    return field('imRcCorpId', t('im_corpid'), rc.corpId, 'ww...', '') +
+      field('imRcSecret', t('im_secret'), rc.secret, '', 'password') +
+      field('imRcAgentId', t('im_agentid'), rc.agentId, '1000002', '') +
+      field('imRcToUsers', t('im_tousers'), rc.toUsers, 'user1|user2', '') +
+      `<p style="margin:6px 0 0;color:var(--textdim);font-size:0.78em">${t('im_tousers_hint')}</p>`;
+  }
+  return field('imRcUrl', t('im_webhook'), rc.webhookUrl, 'https://...', '');
+}
+function imRcTypeChanged() {
+  const ty = document.getElementById('imRcType').value;
+  document.getElementById('imRcFields').innerHTML = imRcFieldsHtml(ty, null);
+}
+async function imSaveReceiver(id) {
+  const name = document.getElementById('imRcName').value.trim();
+  const type = document.getElementById('imRcType').value;
+  const enabled = document.getElementById('imRcEnabled').checked;
+  const body = { name, type, enabled };
+  if (type === 'dingtalk_app') {
+    body.appKey = document.getElementById('imRcAppKey').value.trim();
+    body.appSecret = document.getElementById('imRcAppSecret').value.trim();
+    body.agentId = document.getElementById('imRcAgentId').value.trim();
+    body.userIds = document.getElementById('imRcUserIds').value.trim();
+    if (!body.appKey || !body.appSecret || !body.agentId || !body.userIds) { alert(t('im_app_required')); return; }
+  } else if (type === 'wecom_app') {
+    body.corpId = document.getElementById('imRcCorpId').value.trim();
+    body.secret = document.getElementById('imRcSecret').value.trim();
+    body.agentId = document.getElementById('imRcAgentId').value.trim();
+    body.toUsers = document.getElementById('imRcToUsers').value.trim();
+    if (!body.corpId || !body.secret || !body.agentId || !body.toUsers) { alert(t('im_app_required')); return; }
+  } else {
+    body.webhookUrl = document.getElementById('imRcUrl').value.trim();
+    if (!body.webhookUrl) { alert(t('im_url_required')); return; }
+  }
+  try {
+    const method = id ? 'PUT' : 'POST';
+    const url = API + '/imalert/receivers' + (id ? '/' + id : '');
+    const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    adminCloseModal('imRcOverlay');
+    const cfg = await (await fetch(API + '/imalert/config')).json();
+    _imReceivers = cfg.receivers || [];
+    _imRules = cfg.rules || {};
+    renderImAlert();
+  } catch (e) { alert(t('im_save_fail') + ': ' + e.message); }
+}
+function imToggleReceiver(id) {
+  const r = _imReceivers.find(x => x.id === id);
+  if (!r) return;
+  fetch(API + '/imalert/receivers/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !r.enabled }) })
+    .then(r => r.json()).then(d => {
+      if (d.error) throw new Error(d.error);
+      const i = _imReceivers.findIndex(x => x.id === id);
+      if (i >= 0) _imReceivers[i] = d.receiver;
+      renderImAlert();
+    }).catch(e => alert(t('im_save_fail') + ': ' + e.message));
+}
+function imDeleteReceiver(id) {
+  const r = _imReceivers.find(x => x.id === id);
+  const name = r ? r.name : id;
+  adminModal(`<p>${t('im_del_confirm')}「${name}」？</p><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('imDelOverlay')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:7px;cursor:pointer;margin-right:10px">${t('admins_cancel')}</button><button onclick="imDoDeleteReceiver('${id}')" style="background:var(--red);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('delete')}</button></div>`, { id: 'imDelOverlay', width: '440px', title: '🗑️ ' + t('delete') });
+}
+async function imDoDeleteReceiver(id) {
+  try {
+    const r = await fetch(API + '/imalert/receivers/' + id, { method: 'DELETE' });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
+    adminCloseModal('imDelOverlay');
+    _imReceivers = _imReceivers.filter(x => x.id !== id);
+    renderImAlert();
+  } catch (e) { alert(t('im_delete_fail') + ': ' + e.message); }
+}
+async function imTestReceiver(id) {
+  const r = _imReceivers.find(x => x.id === id);
+  const name = r ? r.name : id;
+  adminModal(`<p class="loading">${t('im_testing')}…</p>`, { id: 'imTestOverlay', width: '440px', title: '🔔 ' + t('im_test'), dismissable: false });
+  try {
+    const rsp = await fetch(API + '/imalert/test/' + id, { method: 'POST' });
+    const d = await rsp.json();
+    if (d.error) throw new Error(d.error);
+    const okTxt = d.ok ? `✅ ${t('im_test_sent')}` : `⚠️ ${t('im_test_failed')}`;
+    adminModal(`<div style="padding:6px 0;font-weight:700;color:${d.ok ? 'var(--green)' : 'var(--red)'}">${okTxt}</div><div style="padding:5px 0;color:var(--textdim);font-size:0.88em">${t('im_receiver_name')}: <b>${name}</b></div>${d.detail ? `<div style="padding:5px 0;color:var(--textdim);font-size:0.85em">${t('im_detail')}: ${String(d.detail).slice(0, 160)}</div>` : ''}<div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('imTestOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'imTestOverlay', width: '440px', title: '🔔 ' + t('im_test') });
+  } catch (e) {
+    adminModal(`<p class="error">${t('im_test_failed')}: ${e.message}</p><div style="margin-top:16px;text-align:right"><button onclick="adminCloseModal('imTestOverlay')" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 20px;border-radius:7px;cursor:pointer;font-weight:600">${t('admins_ok')}</button></div>`, { id: 'imTestOverlay', width: '440px', title: '🔔 ' + t('im_test') });
+  }
 }
 
 async function loadMonitoring(el) {

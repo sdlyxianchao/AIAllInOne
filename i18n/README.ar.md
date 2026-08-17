@@ -175,3 +175,11 @@ git clone https://github.com/sdlyxianchao/AIAllInOne AIAllInOne
 يمكن تشغيل هذه المنصة وصيانتها بالكامل عبر وكيل ذكاء اصطناعي (WorkBuddy وOpenClaw وMicrosoft Scout وغيرها): فحوصات السلامة، وإدارة الحاويات، وتعديل الإعدادات، ومزامنة Gitea، وبوابة Ghost، والنسخ الاحتياطي، والإصدارات، وحلّ المشكلات.
 
 راجع **[دليل تشغيل المنصة عبر وكيل الذكاء الاصطناعي](AI-AGENT-OPS.ar.md)** (متوفر بـ 9 لغات).
+
+---
+
+## 7. الأدلة (عبر الإنترنت، بجميع اللغات)
+
+دليل المدير：[English](docs/admin-manual.md) · [简体中文](docs/i18n/admin-manual-zh-cn.md) · [繁體中文](docs/i18n/admin-manual-zh-TW.md) · [Français](docs/i18n/admin-manual-fr.md) · [Español](docs/i18n/admin-manual-es.md) · [Português](docs/i18n/admin-manual-pt.md) · [日本語](docs/i18n/admin-manual-ja.md) · [한국어](docs/i18n/admin-manual-ko.md) · [العربية](docs/i18n/admin-manual-ar.md)
+
+دليل المستخدم：[English](docs/user-manual.md) · [简体中文](docs/i18n/user-manual-zh-cn.md) · [繁體中文](docs/i18n/user-manual-zh-TW.md) · [Français](docs/i18n/user-manual-fr.md) · [Español](docs/i18n/user-manual-es.md) · [Português](docs/i18n/user-manual-pt.md) · [日本語](docs/i18n/user-manual-ja.md) · [한국어](docs/i18n/user-manual-ko.md) · [العربية](docs/i18n/user-manual-ar.md)
