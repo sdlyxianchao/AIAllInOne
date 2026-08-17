@@ -180,6 +180,6 @@ Harness형 도구를 사용하지 않으려면 각 플랫폼의 `README.md`와 `
 
 ## 7. 매뉴얼 (온라인, 모든 언어)
 
-관리자 매뉴얼：[English](docs/admin-manual.md) · [简体中文](docs/i18n/admin-manual-zh-cn.md) · [繁體中文](docs/i18n/admin-manual-zh-TW.md) · [Français](docs/i18n/admin-manual-fr.md) · [Español](docs/i18n/admin-manual-es.md) · [Português](docs/i18n/admin-manual-pt.md) · [日本語](docs/i18n/admin-manual-ja.md) · [한국어](docs/i18n/admin-manual-ko.md) · [العربية](docs/i18n/admin-manual-ar.md)
+관리자 매뉴얼：[English](docs/admin-manual/index.md) · [简体中文](docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](docs/i18n/admin-manual-zh-TW/index.md) · [Français](docs/i18n/admin-manual-fr/index.md) · [Español](docs/i18n/admin-manual-es/index.md) · [Português](docs/i18n/admin-manual-pt/index.md) · [日本語](docs/i18n/admin-manual-ja/index.md) · [한국어](docs/i18n/admin-manual-ko/index.md) · [العربية](docs/i18n/admin-manual-ar/index.md)
 
-사용자 매뉴얼：[English](docs/user-manual.md) · [简体中文](docs/i18n/user-manual-zh-cn.md) · [繁體中文](docs/i18n/user-manual-zh-TW.md) · [Français](docs/i18n/user-manual-fr.md) · [Español](docs/i18n/user-manual-es.md) · [Português](docs/i18n/user-manual-pt.md) · [日本語](docs/i18n/user-manual-ja.md) · [한국어](docs/i18n/user-manual-ko.md) · [العربية](docs/i18n/user-manual-ar.md)
+사용자 매뉴얼：[English](docs/user-manual/index.md) · [简体中文](docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](docs/i18n/user-manual-zh-TW/index.md) · [Français](docs/i18n/user-manual-fr/index.md) · [Español](docs/i18n/user-manual-es/index.md) · [Português](docs/i18n/user-manual-pt/index.md) · [日本語](docs/i18n/user-manual-ja/index.md) · [한국어](docs/i18n/user-manual-ko/index.md) · [العربية](docs/i18n/user-manual-ar/index.md)
