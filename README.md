@@ -80,25 +80,25 @@ Two ways to go from here:
 
 > Copied from the deployment guide (chapter 0): the guide can be executed **chapter by chapter by hand**, or handed to an **AI agent** end-to-end. With WorkBuddy / OpenClaw / Microsoft Scout, point the agent at this directory (guide, `windows-checklist.html`, `docker-compose.yml`, `.env.example`, `scripts/`), paste the prompt below, and it will: detect the platform → collect your parameters one by one → generate a local progress file → configure step by step per the guide → test, debug and retry on failures → update progress throughout → run a full end-to-end verification and report the results.
 
-**Prompt to copy to your agent** (Windows platform, Chinese — the agent will walk you through it):
+**Prompt to copy to your agent** (Windows platform, English — the agent will walk you through it):
 
 ````text
-你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
+You are a deployment engineer for an enterprise intranet AI platform. Based on the deployment guide "windows-deploy-guide-v2.html", the progress checklist windows-checklist.html, docker-compose.yml and .env.example in this directory, fully deploy and verify this "AI AllInOne" platform on the current Windows machine. Communicate with me in English throughout.
 
-## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+## Step 1: Collect the required parameters (ask me one by one — don't skip or guess)
+Before starting, collect from me: 1) the intranet IP exposed by the platform; 2) the Skill market hostname (domain — used to replace <market-hostname> in mcp-gateway/skills/skill-market/config.json and SKILL.md, and resolved via hosts/DNS); 3) the identity source (if connecting an AD domain controller: domain / DC IP / LDAP base DN / bind DN / bind password / sAMAccountName; or the config of another IdP; confirm if none); 4) the unified admin account and password; 5) LLM API keys (DeepSeek / OpenAI / Claude, etc.); 6) ask as needed about alert webhook, HTTPS and backup retention policy.
 
-## 第二步：生成本地进度文件
-基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
+## Step 2: Generate a local progress file
+Based on the content of windows-checklist.html, generate "deployment-progress-<date>.md" in this directory with every item marked as incomplete (- [ ]). Update it and report briefly after completing each item or resolving each issue.
 
-## 第三步：按部署指南逐步执行
-精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
+## Step 3: Configure step by step per the deployment guide
+Read windows-deploy-guide-v2.html carefully — it is the only authoritative guide for this deployment. Execute its chapters 1~13 strictly in order (do not substitute windows-checklist.html or any older document), paying special attention to the "⚠️ critical pitfalls" in each chapter. Prefer the automation scripts under scripts/ (bootstrap.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, keycloak-realm-init.ps1, backup.ps1, restore.ps1, etc.); automate rather than clicking through UIs. The Ghost portal (section 6.5) must: ① deploy the bundled Corp Portal theme — run scripts\ghost-theme-setup.ps1 to install and activate it, do not stay on the default official theme; ② import the example content: first ask me for the public address of the portal and all products (intranet IP or domain, e.g. 192.168.1.10 or portal.company.com) — use it to replace the <server-IP> placeholders in the seed (also replace the NewAPI / MCP / Dify access URLs in article bodies; do not change container-internal fixed addresses such as host.docker.internal); then ask me what language the portal example content should use — for Chinese, run scripts\ghost-content-import.ps1 -ServerAddr "<public address>" directly; for other languages, first translate the title / html / plaintext / custom_excerpt fields in ghost-content-seed/content.json into the target language (keep the <server-IP> placeholders and all URL structures unchanged), then import.
 
-## 第四步：反复测试解决
-出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
+## Step 4: Test and fix iteratively
+On failure, first inspect the logs (docker logs, health endpoints, configs) to find the root cause before fixing — do not blindly retry. When admin rights or my manual confirmation are needed, clearly tell me "what to do and why". After resolving, write back to the progress file and report briefly.
 
-## 第五步：全流程验证
-全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
+## Step 5: Full end-to-end verification
+When everything is done, run end-to-end tests: all containers Up, Keycloak SSO login, a real conversation through NewAPI/LiteLLM to verify PII masking, identity-source login, monitoring / logging / alerting, backup & restore. Finally summarize each item as ✅/❌, giving the root cause and a suggestion for failures.
 ````
 
 > 💡 Even if you **don't use an agent**, this prompt doubles as a clear pre-deployment checklist — it lists every parameter you need to prepare before starting.

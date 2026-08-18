@@ -79,25 +79,25 @@ docker compose up -d
 
 > 배포 가이드(0장)에서 가져온 내용 : 가이드는 **수동으로 장(chapter)별로 실행**할 수도 있고, **AI 에이전트**(WorkBuddy / OpenClaw / Microsoft Scout)에게 처음부터 끝까지 맡길 수도 있습니다. 이 디렉터리(가이드, `windows-checklist.html`, `docker-compose.yml`, `.env.example`, `scripts/`)를 에이전트에 제공하고 아래 프롬프트를 붙여넣으면, 에이전트는 : 플랫폼 판별 → 파라미터를 하나씩 수집 → 로컬 진행 파일 생성 → 가이드에 따라 단계별 구성 → 실패 시 테스트·디버그·재시도 → 진행 상황을 계속 업데이트 → 엔드투엔드 전체 검증을 실행하고 결과를 보고합니다.
 
-**에이전트에 복사할 프롬프트** (Windows 플랫폼, 중국어 — 에이전트가 단계별로 안내합니다) :
+**에이전트에 복사할 프롬프트** (Windows 플랫폼, 한국어 — 에이전트가 단계별로 안내합니다) :
 
 ````text
-你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
+당신은 기업 인트라넷 AI 플랫폼의 배포 엔지니어입니다. 이 디렉터리의 배포 가이드 "windows-deploy-guide-v2.html", 진행 체크리스트 windows-checklist.html, docker-compose.yml, .env.example을 기반으로 이 Windows 머신에서 "AI AllInOne" 플랫폼을 완전히 배포하고 검증하세요. 전체 과정에서 저와 한국어로 소통하세요.
 
-## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+## 1단계: 필요 파라미터 수집(하나씩 물어보세요. 건너뛰거나 추측하지 마세요)
+시작 전에 저에게서 수집할 것: 1) 외부에 노출할 인트라넷 IP; 2) Skill 마켓 호스트 이름(도메인 — mcp-gateway/skills/skill-market/config.json 및 SKILL.md의 <market-hostname>을 교체하는 데 사용하며 hosts/DNS로 해석); 3) ID 공급원(AD 도메인 컨트롤러 연동 시 도메인/DC IP/LDAP base DN/bind DN/bind 비밀번호/sAMAccountName, 또는 다른 IdP 설정, 미연동 시 확인); 4) 통합 관리자 계정과 비밀번호; 5) LLM API 키(DeepSeek/OpenAI/Claude 등); 6) 필요 시 알림 webhook, HTTPS, 백업 보존 정책 질문.
 
-## 第二步：生成本地进度文件
-基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
+## 2단계: 로컬 진행 파일 생성
+windows-checklist.html의 내용을 기반으로 이 디렉터리에 "deployment-progress-<date>.md"를 생성하고 모든 항목을 미완료(- [ ])로 복사하세요. 항목을 완료하거나 문제를 해결할 때마다 업데이트하고 간단히 보고하세요.
 
-## 第三步：按部署指南逐步执行
-精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
+## 3단계: 배포 가이드에 따라 단계별로 구성
+windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 권위 있는 가이드입니다. 1~13장을 엄격히 순서대로 실행하고(windows-checklist.html이나 이전 문서로 대체하지 말 것), 각 장의 "⚠️ 핵심 함정"에 특히 주의하세요. scripts/ 아래의 자동화 스크립트(bootstrap.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, keycloak-realm-init.ps1, backup.ps1, restore.ps1 등)를 우선 사용하고, 자동화할 수 있는 것은 UI를 수동 클릭하지 마세요. Ghost 포털(6.5장) 필수사항: ①번들된 Corp Portal 테마를 배포하고 scripts\ghost-theme-setup.ps1을 실행해 자동 설치·활성화할 것, 공식 기본 테마에 머물지 말 것; ②샘플 콘텐츠 가져오기: 먼저 포털과 각 제품의 대외 공개 주소(인트라넷 IP 또는 도메인, 예: 192.168.1.10 또는 portal.company.com)를 저에게 물어보세요 — 그 주소로 seed의 <server-IP> 플레이스홀더를 교체하고(문서 본문의 NewAPI / MCP / Dify 등 접속 URL도 함께 교체, host.docker.internal 같은 컨테이너 내부 고정 주소는 변경하지 말 것); 다음으로 포털 샘플 콘텐츠의 언어를 물어보세요 — 중국어면 scripts\ghost-content-import.ps1 -ServerAddr "공개 주소"를 바로 실행; 다른 언어면 먼저 ghost-content-seed/content.json의 title / html / plaintext / custom_excerpt 필드를 대상 언어로 번역한 뒤(<server-IP> 플레이스홀더와 모든 URL 구조는 유지) 가져오세요.
 
-## 第四步：反复测试解决
-出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
+## 4단계: 반복 테스트로 해결
+오류 발생 시 먼저 로그(docker logs, 헬스 엔드포인트, 설정)를 확인해 근본 원인을 찾은 뒤 수정하고, 무작정 재시도하지 마세요. 관리자 권한이나 제 수동 확인이 필요하면 "무엇을, 왜" 명확히 알려주세요. 해결 후 진행 파일에 기록하고 간단히 보고하세요.
 
-## 第五步：全流程验证
-全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
+## 5단계: 전체 엔드투엔드 검증
+모든 작업이 끝나면 엔드투엔드 테스트를 실행하세요: 전체 컨테이너 Up, Keycloak SSO 로그인, NewAPI/LiteLLM을 통한 실제 대화로 PII 마스킹 검증, ID 공급원 로그인, 모니터링/로그/알림, 백업/복원. 마지막으로 각 항목을 ✅/❌로 정리하고, 실패 항목에는 근본 원인과 제안을 제시하세요.
 ````
 
 > 💡 에이전트를 **사용하지 않더라도** 이 프롬프트는 배포 전 체크리스트로 활용할 수 있습니다 — 시작 전에 준비해야 할 모든 파라미터가 나열되어 있습니다.

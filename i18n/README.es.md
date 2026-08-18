@@ -79,25 +79,25 @@ A continuación tienes dos opciones:
 
 > Copiado de la guía de despliegue (capítulo 0) : la guía puede ejecutarse **capítulo a capítulo manualmente**, o entregarse de extremo a extremo a un **agente de IA** (WorkBuddy / OpenClaw / Microsoft Scout). Dale a este directorio (la guía, `windows-checklist.html`, `docker-compose.yml`, `.env.example`, `scripts/`), pega la indicación siguiente y el agente : detectará la plataforma → recopilará tus parámetros uno a uno → generará un archivo de progreso local → configurará paso a paso según la guía → probará, depurará y reintentará en caso de fallo → actualizará el progreso en todo momento → ejecutará una verificación completa de extremo a extremo y te informará de los resultados.
 
-**Indicación para copiar a tu agente** (plataforma Windows, en chino — el agente te guiará paso a paso) :
+**Indicación para copiar a tu agente** (plataforma Windows, en español — el agente te guiará paso a paso) :
 
 ````text
-你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
+Eres ingeniero de despliegue de una plataforma de IA empresarial en intranet. Con la guía de despliegue « windows-deploy-guide-v2.html », la lista de verificación windows-checklist.html, docker-compose.yml y .env.example de este directorio, despliega y verifica por completo la plataforma « AI AllInOne » en esta máquina Windows. Comunícate conmigo en español durante todo el proceso.
 
-## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+## Paso 1: Recopilar los parámetros necesarios (pregúntame uno a uno — no te saltes ni adivines nada)
+Antes de empezar, recopila de mí: 1) la IP de intranet expuesta por la plataforma; 2) el nombre de host del mercado Skill (dominio — se usa para reemplazar <market-hostname> en mcp-gateway/skills/skill-market/config.json y SKILL.md, y se resuelve mediante hosts/DNS); 3) la fuente de identidad (si se conecta un controlador de dominio AD: dominio / IP del DC / base DN LDAP / bind DN / contraseña de bind / sAMAccountName; o la configuración de otro IdP; confirma si no hay ninguna); 4) la cuenta y contraseña de administrador unificada; 5) las claves API de LLM (DeepSeek / OpenAI / Claude, etc.); 6) pregunta según sea necesario sobre webhook de alertas, HTTPS y política de retención de copias de seguridad.
 
-## 第二步：生成本地进度文件
-基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
+## Paso 2: Generar un archivo de progreso local
+Según el contenido de windows-checklist.html, genera « deployment-progress-<date>.md » en este directorio con cada elemento marcado como incompleto (- [ ]). Actualízalo y reporta brevemente tras completar cada elemento o resolver cada problema.
 
-## 第三步：按部署指南逐步执行
-精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
+## Paso 3: Configurar paso a paso según la guía
+Lee con atención windows-deploy-guide-v2.html — es la única guía autorizada para este despliegue. Ejecuta estrictamente sus capítulos 1~13 en orden (no lo sustituyas por windows-checklist.html ni por ningún documento más antiguo), prestando especial atención a los « ⚠️ escollos críticos » de cada capítulo. Prefiere los scripts de automatización de scripts/ (bootstrap.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, keycloak-realm-init.ps1, backup.ps1, restore.ps1, etc.); automatiza en lugar de hacer clic en las interfaces. El portal Ghost (sección 6.5) debe: ① desplegar el tema Corp Portal incluido — ejecuta scripts\ghost-theme-setup.ps1 para instalarlo y activarlo, no te quedes con el tema oficial por defecto; ② importar el contenido de ejemplo: primero pregúntame la dirección pública del portal y de todos los productos (IP de intranet o dominio, p. ej. 192.168.1.10 o portal.company.com) — úsala para reemplazar los marcadores <server-IP> del seed (también reemplaza las URLs de acceso NewAPI / MCP / Dify de los artículos; no cambies las direcciones internas fijas como host.docker.internal); luego pregúntame qué idioma debe tener el contenido del portal — para chino, ejecuta directamente scripts\ghost-content-import.ps1 -ServerAddr "<dirección pública>" ; para otros idiomas, traduce primero los campos title / html / plaintext / custom_excerpt de ghost-content-seed/content.json al idioma de destino (mantén los marcadores <server-IP> y todas las estructuras de URL sin cambios) y luego importa.
 
-## 第四步：反复测试解决
-出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
+## Paso 4: Probar y resolver de forma iterativa
+Ante un fallo, inspecciona primero los registros (docker logs, puntos de salud, configuraciones) para encontrar la causa raíz antes de corregir — no reintentes a ciegas. Cuando se necesiten derechos de administrador o mi confirmación manual, dime claramente « qué hacer y por qué ». Tras resolverlo, actualiza el archivo de progreso y reporta brevemente.
 
-## 第五步：全流程验证
-全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
+## Paso 5: Verificación completa de extremo a extremo
+Cuando todo esté hecho, ejecuta pruebas de extremo a extremo: todos los contenedores Up, inicio de sesión SSO de Keycloak, una conversación real a través de NewAPI/LiteLLM para verificar el enmascaramiento de PII, inicio de sesión con la fuente de identidad, monitorización / registro / alertas, copia de seguridad y restauración. Finalmente, resume cada elemento como ✅/❌, dando la causa raíz y una sugerencia para los fallos.
 ````
 
 > 💡 Aunque **no uses un agente**, esta indicación también sirve como lista de verificación previa al despliegue : enumera todos los parámetros que debes preparar antes de empezar.

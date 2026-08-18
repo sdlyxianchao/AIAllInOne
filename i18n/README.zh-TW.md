@@ -79,25 +79,25 @@ docker compose up -d
 
 > 以下內容複製自部署指南（第 0 章）：部署指南既可以**人工逐章執行**，也可以**整體交給 AI Agent**（WorkBuddy / OpenClaw / Microsoft Scout）端到端完成。把本目錄（部署指南、`windows-checklist.html`、`docker-compose.yml`、`.env.example`、`scripts/`）提供給 Agent，再貼上下列提示詞，它會：判斷平台 → 逐項向你收集參數 → 生成本地進度檔 → 依部署指南逐步設定 → 遇錯除錯重試 → 全程更新進度 → 最後做一次完整端到端驗證並回報結果。
 
-**複製給 Agent 的提示詞**（Windows 平台，中文——Agent 會帶你逐步完成）：
+**複製給 Agent 的提示詞**（Windows 平台，繁體中文——Agent 會帶你逐步完成）：
 
 ````text
-你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
+你是企業內網 AI 平台的部署工程師。請根據本目錄下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 進度清單、docker-compose.yml 與 .env.example 配置，在目前這台 Windows 機器上完整部署並驗證這套「AI AllInOne」平台。全程用繁體中文與我溝通。
 
-## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+## 第一步：收集必要參數（逐項問我，不要跳過、不要擅自猜測）
+開始前向我收集：1) 對外服務的內網 IP；2) Skill 市場主機名稱（網域名稱，用於取代 mcp-gateway/skills/skill-market/config.json 與 SKILL.md 裡的 <市場主機名稱>，並在 hosts/DNS 裡解析）；3) 身分來源（接 AD 域控則要網域/域控 IP/LDAP base DN/bind DN/bind 密碼/sAMAccountName，或接其他 IdP 的設定，不接則確認）；4) 統一管理員帳號密碼；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需詢問告警 webhook、HTTPS、備份保留策略。
 
-## 第二步：生成本地进度文件
-基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
+## 第二步：生成本地進度檔案
+基於 windows-checklist.html 的內容，在本目錄生成「部署進度-<日期>.md」，所有條目複製為未完成（- [ ]）。每完成一項、每解決一個問題就更新它並簡要回報。
 
-## 第三步：按部署指南逐步执行
-精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
+## 第三步：依部署指南逐步執行
+精讀《windows-deploy-guide-v2.html》——這是本次部署唯一的權威指南，嚴格依它的第 1~13 章順序執行（不要用 windows-checklist.html 或任何舊文件替代），特別注意各章「⚠️ 關鍵坑」。優先使用 scripts/ 下的自動化腳本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自動化的不要手動點 UI。其中 Ghost 入口網站（6.5 章）必須：①部署專案自帶的 Corp Portal 主題，執行 scripts\ghost-theme-setup.ps1 自動裝好並啟動，不要停留在官方預設主題；②匯入範例內容：先問使用者「入口網站及各產品的對外發布位址（內網 IP 或網域，如 192.168.1.10 或 portal.company.com）」——用它取代 seed 裡的 <伺服器IP> 佔位符（文章內文裡的 NewAPI / MCP / Dify 等存取位址也一併取代，注意別把 host.docker.internal 這類容器內固定位址改掉）；再問使用者「入口網站範例內容用什麼語言」，中文則直接執行 scripts\ghost-content-import.ps1 -ServerAddr "發布位址" 匯入；選其他語言時，先把 ghost-content-seed/content.json 裡的 title / html / plaintext / custom_excerpt 欄位翻譯成目標語言（保留 <伺服器IP> 佔位符和所有 URL 結構不動），再匯入。
 
-## 第四步：反复测试解决
-出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
+## 第四步：反覆測試解決
+出錯先查日誌（docker logs、健康端點、設定）定位根因再修，不要盲目重試；需要系統管理員權限或我手動確認時，明確告訴我「做什麼、為什麼」；解決後回寫進度檔案並簡要回報。
 
-## 第五步：全流程验证
-全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
+## 第五步：全流程驗證
+全部完成後做端到端測試：容器全 Up、Keycloak SSO 登入、經 NewAPI/LiteLLM 發真實對話驗證 PII 脫敏、身分來源登入、監控/日誌/告警、備份還原。最後逐項彙整 ✅/❌ 結果，失敗項給根因和建議。
 ````
 
 > 💡 即使你**不用 Agent**，這段提示詞也可以當作「部署前資訊核對清單」——它列出了啟動前需要準備的全部參數。

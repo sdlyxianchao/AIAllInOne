@@ -79,25 +79,25 @@ docker compose up -d
 
 > デプロイガイド（第 0 章）からの引用：ガイドは**手動で章ごとに実行**することも、**AI エージェント**（WorkBuddy / OpenClaw / Microsoft Scout）に最初から最後まで一任することもできます。このディレクトリ（ガイド、`windows-checklist.html`、`docker-compose.yml`、`.env.example`、`scripts/`）をエージェントに渡し、下のプロンプトを貼り付けると、エージェントは：プラットフォームを判別 → パラメータを 1 つずつ収集 → ローカル進捗ファイルを作成 → ガイドに従って段階的に設定 → 失敗時はテスト・デバッグ・再試行 → 進捗を随時更新 → エンドツーエンドの完全検証を実行して結果を報告します。
 
-**エージェントにコピーするプロンプト**（Windows プラットフォーム、中国語 — エージェントが順に案内します）：
+**エージェントにコピーするプロンプト**（Windows プラットフォーム、日本語 — エージェントが順に案内します）：
 
 ````text
-你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
+あなたは企業イントラネット AI プラットフォームのデプロイエンジニアです。このディレクトリ内のデプロイガイド「windows-deploy-guide-v2.html」、進捗チェックリスト windows-checklist.html、docker-compose.yml、.env.example に基づき、この Windows マシン上で「AI AllInOne」プラットフォームを完全にデプロイし、検証してください。全体を通して日本語で私とコミュニケーションしてください。
 
-## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+## ステップ1：必要パラメータを収集（1つずつ質問してください。スキップや推測はしないでください）
+開始前に私から収集すること：1) 外部公開するイントラネット IP；2) Skill マーケットのホスト名（ドメイン — mcp-gateway/skills/skill-market/config.json と SKILL.md の <market-hostname> を置き換えるために使用し、hosts/DNS で解決）；3) アイデンティティソース（AD ドメインコントローラに接続する場合はドメイン/DC IP/LDAP base DN/bind DN/bind パスワード/sAMAccountName、または他の IdP の設定、接続しない場合は確認）；4) 統合管理者アカウントとパスワード；5) LLM API キー（DeepSeek/OpenAI/Claude など）；6) 必要に応じてアラート webhook、HTTPS、バックアップ保持ポリシーを質問。
 
-## 第二步：生成本地进度文件
-基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
+## ステップ2：ローカル進捗ファイルを作成
+windows-checklist.html の内容に基づき、このディレクトリに「deployment-progress-<date>.md」を生成し、すべての項目を未完了（- [ ]）としてコピーします。各項目を完了するか、各問題を解決するたびに更新し、簡単に報告してください。
 
-## 第三步：按部署指南逐步执行
-精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
+## ステップ3：デプロイガイドに従って段階的に設定
+windows-deploy-guide-v2.html を熟読してください——これが今回のデプロイ唯一の権威あるガイドです。第 1〜13 章を厳密に順番どおり実行し（windows-checklist.html や古いドキュメントで代替しないこと）、各章の「⚠️ 重要な落とし穴」に特に注意してください。scripts/ 以下の自動化スクリプト（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 など）を優先し、自動化できるものは UI を手動クリックしないでください。Ghost ポータル（6.5 章）は必須事項：①同梱の Corp Portal テーマをデプロイし、scripts\ghost-theme-setup.ps1 を実行して自動インストール・有効化すること。公式デフォルトテーマのままにしないこと；②サンプルコンテンツをインポート：まずポータルと各製品の対外公開アドレス（イントラネット IP またはドメイン、例：192.168.1.10 または portal.company.com）を私に質問——それを使って seed 内の <server-IP> プレースホルダを置き換える（記事本文の NewAPI / MCP / Dify 等のアクセス URL も一括置き換え。host.docker.internal のようなコンテナ内固定アドレスは変更しないこと）；次にポータルのサンプルコンテンツをどの言語にするか質問——中国語なら scripts\ghost-content-import.ps1 -ServerAddr "公開アドレス" を直接実行；他の言語なら、まず ghost-content-seed/content.json の title / html / plaintext / custom_excerpt フィールドを対象言語に翻訳し（<server-IP> プレースホルダと全 URL 構造は変更しない）、その後インポートする。
 
-## 第四步：反复测试解决
-出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
+## ステップ4：反復テストで解決
+エラー時はまずログ（docker logs、ヘルスエンドポイント、設定）を確認して根本原因を特定してから修正し、無闇に再試行しないこと。管理者権限や私の手動確認が必要なときは、「何を・なぜ」を明確に伝えること。解決後は進捗ファイルに書き戻し、簡単に報告してください。
 
-## 第五步：全流程验证
-全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
+## ステップ5：完全なエンドツーエンド検証
+すべて完了したら、エンドツーエンドテストを実行：全コンテナ Up、Keycloak SSO ログイン、NewAPI/LiteLLM 経由の実会話で PII マスキング検証、アイデンティティソースログイン、監視/ログ/アラート、バックアップ/復元。最後に各項目を ✅/❌ でまとめ、失敗項目には根本原因と提案を記載すること。
 ````
 
 > 💡 エージェントを**使わない場合**でも、このプロンプトはデプロイ前のチェックリストとして使えます — 開始前に準備すべき全パラメータが列挙されています。
