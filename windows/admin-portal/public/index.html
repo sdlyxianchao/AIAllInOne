@@ -45,6 +45,7 @@
   .card th{background:var(--bg);color:var(--accent);font-weight:600}
   /* ── Status grid ── */
   .status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+  button:disabled{opacity:.55;cursor:not-allowed}
   .svc-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;transition:border-color 0.2s}
   .svc-card:hover{border-color:var(--accent)}
   .svc-card .svc-name{font-weight:600;margin-bottom:6px;font-size:0.95em}
@@ -1182,21 +1183,40 @@ async function loadDashboard(el) {
   } catch(e) {
     document.getElementById('metricsGrid').innerHTML = `<div class="error">${t('metrics_error')}${e.message}</div>`;
   }
-  // 可用性测试汇总（追加到产品指标卡片区）
+  // 可用性测试汇总（追加到产品指标卡片区，30s 轮询跟随单测/全测更新）
+  const dashAvailTimer = setInterval(refreshDashAvail, 30000);
+  window.__dashAvailTimer = dashAvailTimer;
   try {
     const r4 = await fetch(API + '/availability');
     const av = await r4.json();
-    if (av && av.last && av.last.summary) {
-      const s = av.last.summary;
-      const cls = (s.fail > 0) ? 'exited' : 'running';
-      const lastTxt = av.last.runAt ? new Date(av.last.runAt).toLocaleTimeString() : '—';
-      document.getElementById('metricsGrid').insertAdjacentHTML('beforeend', `
-        <div class="svc-card" style="cursor:pointer" onclick="loadAvailability()">
-          <div class="svc-name">🩺 ${t('availability')}</div>
-          <div class="svc-status ${cls}">${t('avail_pass')} ${s.ok ?? 0}/${s.total ?? 0}</div>
-          <div class="svc-image" style="font-size:0.78em;color:var(--textdim)">${t('avail_fail')} ${s.fail ?? 0} · ${t('avail_last')} ${lastTxt}</div>
-        </div>`);
-    }
+    renderDashAvail(av);
+  } catch(e) {}
+}
+
+// dashboard 上的可用性卡片（无则创建，有则原位刷新）
+function renderDashAvail(av) {
+  if (!av || !av.last || !av.last.summary) return;
+  const s = av.last.summary;
+  const cls = (s.fail > 0) ? 'exited' : 'running';
+  const lastTxt = av.last.runAt ? new Date(av.last.runAt).toLocaleTimeString() : '—';
+  let el = document.getElementById('dashAvailCard');
+  if (!el) {
+    const grid = document.getElementById('metricsGrid');
+    if (!grid) return;
+    grid.insertAdjacentHTML('beforeend', '<div class="svc-card" id="dashAvailCard" style="cursor:pointer" onclick="loadAvailability()"></div>');
+    el = document.getElementById('dashAvailCard');
+  }
+  el.innerHTML = `
+    <div class="svc-name">🩺 ${t('availability')}</div>
+    <div class="svc-status ${cls}">${t('avail_pass')} ${s.ok ?? 0}/${s.total ?? 0}</div>
+    <div class="svc-image" style="font-size:0.78em;color:var(--textdim)">${t('avail_fail')} ${s.fail ?? 0} · ${t('avail_last')} ${lastTxt}</div>`;
+}
+
+async function refreshDashAvail() {
+  try {
+    const r4 = await fetch(API + '/availability');
+    const av = await r4.json();
+    renderDashAvail(av);
   } catch(e) {}
 }
 
@@ -2997,9 +3017,10 @@ async function saveReportRetention() {
 function escHtml(s) { return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function availCard(r) {
-  const ok = r.status === 'ok', fail = r.status === 'fail';
-  const icon = ok ? '✅' : (fail ? '❌' : '⚠️');
-  const color = ok ? 'var(--green)' : (fail ? 'var(--red)' : 'var(--yellow)');
+  const ok = r.status === 'ok', fail = r.status === 'fail', running = r.status === 'running';
+  const icon = ok ? '✅' : (fail ? '❌' : (running ? '⏳' : '⚠️'));
+  const color = ok ? 'var(--green)' : (fail ? 'var(--red)' : (running ? 'var(--textdim)' : 'var(--yellow)'));
+  const st = running ? t('avail_running') : r.status.toUpperCase();
   const lat = (r.latency_ms != null) ? `<span style="font-size:0.78em;color:var(--textdim)">${r.latency_ms} ms</span>` : '';
   return `<div class="svc-card" id="avail-${r.id}">
     <div class="svc-name">${icon} ${escHtml(r.name)}</div>
@@ -3011,10 +3032,16 @@ function availCard(r) {
   </div>`;
 }
 
-function renderAvail(d) {
-  const s = d.summary || {};
+// 渲染统计条（全测 / 单测 / 历史加载共用）
+function renderAvailSummary(s) {
   const sumEl = document.getElementById('availSummary');
-  if (sumEl) sumEl.innerHTML = `✅ <span style="color:var(--green)">${s.ok ?? 0}</span> · ❌ <span style="color:var(--red)">${s.fail ?? 0}</span> · <span style="color:var(--textdim)">/ ${s.total ?? 0}</span>`;
+  if (!sumEl) return;
+  const o = s || {};
+  sumEl.innerHTML = `✅ <span style="color:var(--green)">${o.ok ?? 0}</span> · ❌ <span style="color:var(--red)">${o.fail ?? 0}</span> · <span style="color:var(--textdim)">/ ${o.total ?? 0}</span>`;
+}
+
+function renderAvail(d) {
+  renderAvailSummary(d.summary);
   const grid = document.getElementById('availGrid');
   if (grid) grid.innerHTML = (d.results || []).map(availCard).join('');
 }
@@ -3025,7 +3052,7 @@ async function loadAvailability(el) {
     <div class="topbar"><h1>🩺 ${t('availability')}</h1></div>
     <div class="card"><h3>🩺 ${t('avail_desc')}</h3>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <button onclick="runAllAvail()" style="background:var(--accentbtn);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('avail_run_all')}</button>
+        <button onclick="runAllAvail(this)" style="background:var(--accentbtn);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">${t('avail_run_all')}</button>
         <span id="availInterval" style="color:var(--textdim);font-size:0.85em"></span>
         <span id="availSummary" style="font-size:0.9em"></span>
       </div>
@@ -3042,15 +3069,43 @@ async function loadAvailability(el) {
   }
 }
 
-async function runAllAvail() {
+async function runAllAvail(btn) {
+  if (btn) btn.disabled = true;
   const grid = document.getElementById('availGrid');
-  if (grid) grid.innerHTML = `<p class="loading">${t('avail_running')}</p>`;
+  // 1. 拉取测试项清单（id + name），用于渲染全部卡片
+  let defs = [];
   try {
-    const d = await (await fetch(API + '/availability/run', { method: 'POST' })).json();
-    renderAvail(d);
+    const d = await (await fetch(API + '/availability')).json();
+    defs = d.defs || [];
   } catch (e) {
     if (grid) grid.innerHTML = `<div class="error">${e.message}</div>`;
+    if (btn) btn.disabled = false;
+    return;
   }
+  if (!defs.length) {
+    if (grid) grid.innerHTML = `<p class="loading">${t('avail_none')}</p>`;
+    if (btn) btn.disabled = false;
+    return;
+  }
+  // 2. 所有卡片一起进入「测试中」状态（卡片不消失，只换内容和状态）
+  grid.innerHTML = defs.map(x => availCard({ id: x.id, name: x.name, status: 'running', detail: t('avail_running') })).join('');
+  // 3. 统计重置，随每个结果逐个累加
+  renderAvailSummary({ ok: 0, fail: 0, total: defs.length });
+  // 4. 逐个测试，每完成一个立即更新对应卡片和统计
+  let ok = 0, fail = 0;
+  for (const x of defs) {
+    let r;
+    try {
+      r = await (await fetch(API + '/availability/test/' + encodeURIComponent(x.id), { method: 'POST' })).json();
+    } catch (e) {
+      r = { id: x.id, name: x.name, status: 'fail', detail: e.message };
+    }
+    const card = document.getElementById('avail-' + r.id);
+    if (card) card.outerHTML = availCard(r);
+    if (r.status === 'ok') ok++; else if (r.status === 'fail') fail++;
+    renderAvailSummary({ ok, fail, total: defs.length });
+  }
+  if (btn) btn.disabled = false;
 }
 
 async function runOneAvail(id) {
@@ -3060,6 +3115,8 @@ async function runOneAvail(id) {
     const r = await (await fetch(API + '/availability/test/' + id, { method: 'POST' })).json();
     const card = document.getElementById('avail-' + id);
     if (card) card.outerHTML = availCard(r);
+    // 单测结果同步更新统计（后端已重算 summary 随结果返回）
+    if (r.summary) renderAvailSummary(r.summary);
   } catch (e) {
     if (logEl) logEl.textContent = e.message;
   }
@@ -3834,6 +3891,8 @@ async function loadUpdate(el) {
 
 // ═══ Helpers ═══
 function setActive(el) {
+  // 离开 dashboard 时停止可用性轮询
+  if (window.__dashAvailTimer) { clearInterval(window.__dashAvailTimer); window.__dashAvailTimer = null; }
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   if (el && el.classList) {
     el.classList.add('active');

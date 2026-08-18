@@ -2468,13 +2468,20 @@ const availabilityTestDefs = [
     } },
 ];
 
+// 根据结果列表重算统计（全测、单测回写缓存共用）
+function computeAvailSummary(results) {
+  return {
+    total: results.length,
+    ok: results.filter(r => r.status === 'ok').length,
+    fail: results.filter(r => r.status === 'fail').length,
+    degraded: results.filter(r => r.status === 'degraded').length,
+  };
+}
+
 // 运行全部测试
 async function runAllAvailability() {
   const results = await Promise.all(availabilityTestDefs.map(d => runAvailabilityTest(d.id, d.name, d.run)));
-  const ok = results.filter(r => r.status === 'ok').length;
-  const fail = results.filter(r => r.status === 'fail').length;
-  const degraded = results.filter(r => r.status === 'degraded').length;
-  return { runAt: Date.now(), summary: { total: results.length, ok, fail, degraded }, results };
+  return { runAt: Date.now(), summary: computeAvailSummary(results), results };
 }
 
 // 最近一次结果缓存
@@ -2496,9 +2503,13 @@ function startAvailabilityScheduler() {
   console.log(`[availability] 定时可用性测试每 ${AVAILABILITY_INTERVAL_MIN} 分钟运行一次`);
 }
 
-// 结果（含配置）
+// 结果（含配置 + 测试项清单，前端用于逐个测试的卡片渲染）
 app.get('/api/availability', keycloak.protect(), async (req, res) => {
-  res.json({ interval_min: AVAILABILITY_INTERVAL_MIN, last: lastAvailability });
+  res.json({
+    interval_min: AVAILABILITY_INTERVAL_MIN,
+    defs: availabilityTestDefs.map(d => ({ id: d.id, name: d.name })),
+    last: lastAvailability,
+  });
 });
 
 // 全测
@@ -2511,13 +2522,16 @@ app.post('/api/availability/test/:id', keycloak.protect(), protectAdmin('availab
   const def = availabilityTestDefs.find(d => d.id === req.params.id);
   if (!def) return res.status(404).json({ error: '未知测试项 ' + req.params.id });
   const r = await runAvailabilityTest(def.id, def.name, def.run);
-  // 回写缓存对应项
+  // 回写缓存对应项并重算统计（首次单测也建缓存），dashboard / 统计随之更新
   if (lastAvailability) {
     const i = lastAvailability.results.findIndex(x => x.id === def.id);
     if (i >= 0) lastAvailability.results[i] = r; else lastAvailability.results.push(r);
+    lastAvailability.summary = computeAvailSummary(lastAvailability.results);
     lastAvailability.runAt = Date.now();
+  } else {
+    lastAvailability = { runAt: Date.now(), summary: computeAvailSummary([r]), results: [r] };
   }
-  res.json(r);
+  res.json({ ...r, summary: lastAvailability.summary });
 });
 
 // ═══════════════════════════════════════════
