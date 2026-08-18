@@ -46,6 +46,23 @@
   /* ── Status grid ── */
   .status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
   button:disabled{opacity:.55;cursor:not-allowed}
+  .md-preview{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:16px 18px;color:var(--text);font-size:0.88em;line-height:1.7;max-height:640px;overflow:auto;word-break:break-word}
+  .md-preview h1,.md-preview h2,.md-preview h3,.md-preview h4{margin:1em 0 .5em;color:var(--textstrong);line-height:1.35}
+  .md-preview h1{font-size:1.35em;border-bottom:1px solid var(--border);padding-bottom:.3em}
+  .md-preview h2{font-size:1.18em;border-bottom:1px solid var(--border);padding-bottom:.25em}
+  .md-preview h3{font-size:1.05em}.md-preview h4{font-size:.95em}
+  .md-preview p{margin:.55em 0}
+  .md-preview ul,.md-preview ol{margin:.5em 0;padding-left:1.6em}
+  .md-preview li{margin:.25em 0}
+  .md-preview code{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:.12em .4em;font-size:.9em;font-family:Consolas,Menlo,monospace}
+  .md-preview pre{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;overflow:auto;margin:.6em 0}
+  .md-preview pre code{background:none;border:none;padding:0}
+  .md-preview table{border-collapse:collapse;margin:.7em 0;font-size:.92em;max-width:100%}
+  .md-preview th,.md-preview td{border:1px solid var(--border);padding:6px 10px;text-align:left}
+  .md-preview th{background:var(--panel2);color:var(--textstrong);font-weight:600}
+  .md-preview blockquote{border-left:3px solid var(--accent);margin:.6em 0;padding:.2em .9em;color:var(--textdim)}
+  .md-preview hr{border:none;border-top:1px solid var(--border);margin:1em 0}
+  .md-preview a{color:var(--accent)}
   .svc-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;transition:border-color 0.2s}
   .svc-card:hover{border-color:var(--accent)}
   .svc-card .svc-name{font-weight:600;margin-bottom:6px;font-size:0.95em}
@@ -146,6 +163,7 @@
   </div>
 </div>
 
+<script src="vendor/marked.min.js"></script>
 <script>
 const API = '/api';
 // 全局 fetch 拦截：会话失效/未登录时，/api/* 会被 302 重定向到 Keycloak 登录页，
@@ -319,7 +337,7 @@ const I18N = {
     report: '报告生成', report_title: '报告生成 — 系统详细报告', report_desc: '按自定义条件生成系统报告：一段时间的系统状态、使用情况、客户端统计、最近问题、可用性、备份与 PII 状态。',
     report_conditions: '报告条件', report_days: '统计周期', report_days_1: '最近 1 天', report_days_7: '最近 7 天', report_days_30: '最近 30 天', report_days_90: '最近 90 天',
     report_sections: '包含内容', report_sec_system: '系统总览', report_sec_usage: '使用统计', report_sec_client: '客户端统计', report_sec_issues: '最近问题', report_sec_avail: '可用性测试', report_sec_backup: '备份状态', report_sec_pii: 'PII 脱敏',
-    report_generate: '📄 生成报告', report_generating: '正在生成报告...', report_download: '⬇️ 导出为 .md 文件', report_preview: '报告预览', report_lang: '报告语言与当前界面语言一致', report_need_admin: '生成报告需要 ai-platform-admin 角色',
+    report_generate: '📄 生成报告', report_generating: '正在生成报告...', report_download: '⬇️ 导出为 .md 文件', report_preview: '报告预览', report_lang: '报告语言与当前界面语言一致', report_need_admin: '生成报告需要 ai-platform-admin 角色', report_view_rendered: '📖 渲染预览', report_view_source: '📝 Markdown 源码',
     report_none: '暂无报告，点击「生成报告」生成。', report_history: '历史报告', report_history_desc: '生成的报告自动保存在服务器，按保留策略自动清理。',
     report_no_history: '暂无历史报告', report_view: '查看', report_delete: '删除', report_download_file: '下载', report_delete_confirm: '确认删除报告「', report_size: '大小',
     report_retention: '报告保留策略', report_retention_mode: '保留方式', report_retention_count: '按份数', report_retention_days: '按天数', report_retention_value: '数量',
@@ -460,7 +478,7 @@ const I18N = {
     report: 'Report', report_title: 'Report — System Detailed Report', report_desc: 'Generate a system report by custom conditions: system status over time, usage, client statistics, recent issues, availability, backup and PII status.',
     report_conditions: 'Conditions', report_days: 'Period', report_days_1: 'Last 1 day', report_days_7: 'Last 7 days', report_days_30: 'Last 30 days', report_days_90: 'Last 90 days',
     report_sections: 'Include', report_sec_system: 'System Overview', report_sec_usage: 'Usage Stats', report_sec_client: 'Client Stats', report_sec_issues: 'Recent Issues', report_sec_avail: 'Availability', report_sec_backup: 'Backup', report_sec_pii: 'PII Redaction',
-    report_generate: '📄 Generate Report', report_generating: 'Generating report...', report_download: '⬇️ Export as .md', report_preview: 'Report Preview', report_lang: 'Report language matches current UI language', report_need_admin: 'Generating reports requires the ai-platform-admin role',
+    report_generate: '📄 Generate Report', report_generating: 'Generating report...', report_download: '⬇️ Export as .md', report_preview: 'Report Preview', report_lang: 'Report language matches current UI language', report_need_admin: 'Generating reports requires the ai-platform-admin role', report_view_rendered: '📖 Rendered', report_view_source: '📝 Markdown Source',
     report_none: 'No report yet. Click "Generate Report".', report_history: 'Report History', report_history_desc: 'Generated reports are saved on the server and auto-pruned by the retention policy.',
     report_no_history: 'No history yet', report_view: 'View', report_delete: 'Delete', report_download_file: 'Download', report_delete_confirm: 'Delete report "', report_size: 'Size',
     report_retention: 'Report retention', report_retention_mode: 'Retention mode', report_retention_count: 'By count', report_retention_days: 'By days', report_retention_value: 'Value',
@@ -2876,7 +2894,9 @@ async function loadReport(el) {
       <p style="color:var(--textdim);font-size:0.8em;margin-top:10px">🌐 ${t('report_lang')} · 📂 <span id="reportRetention" style="color:var(--accent)">—</span></p>
     </div>
     <div class="card"><h3>${t('report_preview')}</h3>
-      <div id="reportToolbar" style="display:none;margin-bottom:10px">
+      <div id="reportToolbar" style="display:none;margin-bottom:10px;align-items:center;flex-wrap:wrap;gap:10px">
+        <button id="btnReportRendered" onclick="setReportView('rendered')" style="background:var(--accentbtn);color:#fff;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_view_rendered')}</button>
+        <button id="btnReportSource" onclick="setReportView('source')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:9px 18px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_view_source')}</button>
         <button onclick="downloadReport()" style="background:var(--greenbtn);color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600">${t('report_download')}</button>
       </div>
       <div id="reportPreview"><p class="loading">${t('report_none')}</p></div>
@@ -2900,8 +2920,8 @@ async function generateReport() {
     if (d.error) throw new Error(d.error);
     lastReportMd = d.markdown;
     lastReportFilename = d.filename || 'report.md';
-    if (toolbar) toolbar.style.display = 'block';
-    preview.innerHTML = `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
+    if (toolbar) { toolbar.style.display = 'flex'; }
+    renderReportView();
     refreshReportHistory();
   } catch (e) {
     preview.innerHTML = `<p class="error">${e.message}</p>`;
@@ -2918,6 +2938,36 @@ function downloadReport() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
+}
+
+// ═══ 报告 Markdown 预览（渲染 / 源码切换）═══
+let reportViewMode = 'rendered';
+
+function mdToHtml(md) {
+  if (typeof marked === 'undefined') return `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(md)}</pre>`;
+  let html;
+  try { html = marked.parse(md || ''); } catch (e) { html = escHtml(md || ''); }
+  // 过滤脚本与事件属性（报告内容含业务数据，防止注入）
+  return html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+}
+
+function setReportView(mode) {
+  reportViewMode = mode === 'source' ? 'source' : 'rendered';
+  const rb = document.getElementById('btnReportRendered');
+  const sb = document.getElementById('btnReportSource');
+  if (rb) rb.style.background = reportViewMode === 'rendered' ? 'var(--accentbtn)' : 'var(--panel2)';
+  if (sb) sb.style.background = reportViewMode === 'source' ? 'var(--accentbtn)' : 'var(--panel2)';
+  renderReportView();
+}
+
+function renderReportView() {
+  const preview = document.getElementById('reportPreview');
+  if (!preview || !lastReportMd) return;
+  if (reportViewMode === 'source') {
+    preview.innerHTML = `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(lastReportMd)}</pre>`;
+  } else {
+    preview.innerHTML = `<div class="md-preview">${mdToHtml(lastReportMd)}</div>`;
+  }
 }
 
 // ═══ 报告历史 / 保留策略 ═══
@@ -2961,8 +3011,8 @@ async function viewReport(name) {
     if (d.error) throw new Error(d.error);
     lastReportMd = d.markdown;
     lastReportFilename = d.name;
-    if (toolbar) toolbar.style.display = 'block';
-    if (preview) preview.innerHTML = `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;color:var(--text);font-size:0.82em;line-height:1.6;max-height:640px;overflow:auto;white-space:pre-wrap;word-break:break-word">${escHtml(d.markdown)}</pre>`;
+    if (toolbar) toolbar.style.display = 'flex';
+    renderReportView();
   } catch (e) {
     if (preview) preview.innerHTML = `<p class="error">${e.message}</p>`;
   }
