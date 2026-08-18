@@ -51,6 +51,7 @@ AI AllInOne is a ready-to-use, **open-source** enterprise intranet AI platform: 
 | LLM observability | Langfuse | Trace / latency / tokens / cost of every model call |
 | Unified logging | Loki + Promtail | Aggregated, searchable logs from all containers |
 | Backup & restore | scripts + admin page | Daily full backup + one-click restore |
+| AI operations | WorkBuddy / OpenClaw / Microsoft Scout | Operate & maintain the whole platform through an AI agent — see [AI Agent Operations](#ai-agent-operations) |
 
 ### Architecture & data flow
 
@@ -73,7 +74,7 @@ docker compose up -d
 
 Two ways to go from here:
 
-1. **Automated (recommended)** — hand the deployment to an AI agent (WorkBuddy / OpenClaw / Microsoft Scout). It reads the deployment guide and configs, asks you for parameters (server IP, IdP, admin account, LLM keys), and configures everything step by step. [Copy the one-click prompt →](windows/windows-deploy-guide-v2.html)
+1. **Automated (recommended)** — hand the deployment to an AI agent (WorkBuddy / OpenClaw / Microsoft Scout). It reads the deployment guide and configs, asks you for parameters (server IP, IdP, admin account, LLM keys), and configures everything step by step. [Copy the one-click prompt →](windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 One-click deployment prompt (click to expand)</summary>
@@ -116,7 +117,7 @@ Finally summarize results item by item with ✅/❌; for failures give root caus
 
 </details>
 
-2. **Manual** — follow the [Windows deployment guide](windows/windows-deploy-guide-v2.html) step by step (or `windows/README.md` + `windows-checklist.html`).
+2. **Manual** — follow the [Windows deployment guide](windows/windows-deploy-guide-v2.md) step by step (or `windows/README.md` + `windows-checklist.html`).
 
 > **Platform status**: Windows (Windows 11 + Docker Desktop) is **actively tested**. Linux/macOS (`linux/`) and online-server (`docker/`) are planned — see the [Roadmap](#roadmap).
 
@@ -169,8 +170,29 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 
 - This repository contains **no real secrets**; real values live in each runtime `.env` (only `.env.example` templates are committed).
 - Default is plain HTTP on the intranet; HTTPS guidance is in each platform's deployment guide.
-- Per-platform gotchas, port tables, and data flows are in the corresponding `*-deploy-guide*.html` docs.
+- Per-platform gotchas, port tables, and data flows are in the corresponding `*-deploy-guide*` docs (Markdown / HTML, e.g. `windows/windows-deploy-guide-v2.md`).
 
 ## 📄 License
 
 [MIT](LICENSE) — free to use, modify and distribute. The underlying components retain their own licenses (see the deployment guide's license review section).
+
+## 🤖 AI Agent Operations
+
+The platform is designed to be **operated and maintained through an AI agent** — WorkBuddy, OpenClaw, Microsoft Scout, or any equivalent tool. Instead of clicking through a dozen admin consoles, you tell the agent what you want in plain language; it reads files, runs commands, and talks to the services for you.
+
+Everything that makes the platform run lives on your machine as **code, config, and data** — Docker Compose services, `.env` files, admin APIs, and the databases/files that hold the actual state — so an agent can see and change all of it:
+
+| Task | How the agent does it |
+|---|---|
+| Health check / status overview | `docker ps` + health endpoints + admin APIs |
+| Start / restart / stop services | `docker compose up -d <svc>` / `docker restart <svc>` |
+| Inspect logs & errors | `docker logs <svc> --tail N` + log files |
+| Change configuration | edit config files, then restart the affected container |
+| Edit the AI Admin Center | edit `admin-portal/public/index.html` (UI) or `admin-portal/server.js` (API), then restart |
+| Manage Gitea + sync | Gitea API: trigger workflows, read run status/logs, edit repo files |
+| Manage the Ghost portal | read/write the Ghost SQLite DB, edit theme templates, import the content seed |
+| Backup & restore | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| Publish a release | `publish.ps1` (build + commit + push to GitHub) |
+| Troubleshoot | port conflicts, Docker Desktop issues, DNS/proxy, etc. |
+
+Example: *"Check that all services are running and healthy"* — the agent runs `docker ps`, hits each health endpoint, and reports what's wrong and why. For ready-made prompts, best practices and the full command reference, see the **[AI Agent Operations Guide](AI-AGENT-OPS.md)** (9 languages).

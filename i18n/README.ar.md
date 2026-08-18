@@ -73,7 +73,7 @@ docker compose up -d
 
 بعد ذلك لديك خياران:
 
-1. **النشر التلقائي (موصى به)** — فوّض النشر إلى وكيل الذكاء الاصطناعي (WorkBuddy / OpenClaw / Microsoft Scout). سيقرأ وثائق النشر وملفات الإعدادات، ويجمع منك المعاملات (عنوان IP الخادم، مصدر الهوية، حساب المسؤول، مفاتيح LLM)، ثم يُنجز جميع الإعدادات خطوة بخطوة. [عرض نص موجّه النشر بنقرة واحدة ←](../windows/windows-deploy-guide-v2.html)
+1. **النشر التلقائي (موصى به)** — فوّض النشر إلى وكيل الذكاء الاصطناعي (WorkBuddy / OpenClaw / Microsoft Scout). سيقرأ وثائق النشر وملفات الإعدادات، ويجمع منك المعاملات (عنوان IP الخادم، مصدر الهوية، حساب المسؤول، مفاتيح LLM)، ثم يُنجز جميع الإعدادات خطوة بخطوة. [عرض نص موجّه النشر بنقرة واحدة ←](../windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 نص موجّه النشر بنقرة واحدة (اضغط للتوسيع)</summary>
@@ -130,7 +130,7 @@ docker compose up -d
 
 </details>
 
-2. **النشر اليدوي** — اتبع [دليل نشر Windows](../windows/windows-deploy-guide-v2.html) خطوة بخطوة (بالتزامن مع قائمة التقدم `windows-checklist.html`).
+2. **النشر اليدوي** — اتبع [دليل نشر Windows](../windows/windows-deploy-guide-v2.md) خطوة بخطوة (بالتزامن مع قائمة التقدم `windows-checklist.html`).
 
 > **حالة المنصة**: Windows (Windows 11 + Docker Desktop) **قيد الاختبار الفعلي**. أما Linux/macOS (`linux/`) والخوادم عبر الإنترنت (`docker/`) ففي طور التخطيط — راجع [خارطة الطريق](#roadmap).
 

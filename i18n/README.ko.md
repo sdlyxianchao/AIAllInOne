@@ -73,7 +73,7 @@ docker compose up -d
 
 이제 두 가지 방법이 있습니다:
 
-1. **자동 배포(권장)**——배포를 AI Agent(WorkBuddy / OpenClaw / Microsoft Scout)에게 맡깁니다. 배포 문서와 구성을 읽고, 필요한 파라미터(서버 IP, 신원 공급자, 관리자 계정, LLM API 키)를 수집한 다음 단계별로 전체 구성을 완료합니다. [원클릭 배포 프롬프트 보기 →](../windows/windows-deploy-guide-v2.html)
+1. **자동 배포(권장)**——배포를 AI Agent(WorkBuddy / OpenClaw / Microsoft Scout)에게 맡깁니다. 배포 문서와 구성을 읽고, 필요한 파라미터(서버 IP, 신원 공급자, 관리자 계정, LLM API 키)를 수집한 다음 단계별로 전체 구성을 완료합니다. [원클릭 배포 프롬프트 보기 →](../windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 원클릭 배포 프롬프트(클릭하여 펼치기)</summary>
@@ -130,7 +130,7 @@ docker compose up -d
 
 </details>
 
-2. **수동 배포**——[Windows 배포 가이드](../windows/windows-deploy-guide-v2.html)에 따라 단계별로 진행합니다(`windows-checklist.html` 진행 체크리스트 활용).
+2. **수동 배포**——[Windows 배포 가이드](../windows/windows-deploy-guide-v2.md)에 따라 단계별로 진행합니다(`windows-checklist.html` 진행 체크리스트 활용).
 
 > **플랫폼 상태**: Windows(Windows 11 + Docker Desktop)는 **실측 테스트 중**입니다. Linux/macOS(`linux/`) 및 온라인 서버(`docker/`)는 계획 중입니다——[로드맵](#roadmap) 참조.
 

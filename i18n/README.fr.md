@@ -73,7 +73,7 @@ docker compose up -d
 
 Deux options s'offrent à vous :
 
-1. **Déploiement automatisé (recommandé)** — confiez le déploiement à un AI Agent (WorkBuddy / OpenClaw / Microsoft Scout). Il lit la documentation de déploiement et la configuration, recueille vos paramètres (IP du serveur, source d'identité, compte administrateur, clés LLM), puis réalise toute la configuration étape par étape. [Voir le prompt de déploiement en un clic →](../windows/windows-deploy-guide-v2.html)
+1. **Déploiement automatisé (recommandé)** — confiez le déploiement à un AI Agent (WorkBuddy / OpenClaw / Microsoft Scout). Il lit la documentation de déploiement et la configuration, recueille vos paramètres (IP du serveur, source d'identité, compte administrateur, clés LLM), puis réalise toute la configuration étape par étape. [Voir le prompt de déploiement en un clic →](../windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 Prompt de déploiement en un clic (cliquer pour déplier)</summary>
@@ -130,7 +130,7 @@ Enfin, récapitulez les résultats des tests point par point, en marquant claire
 
 </details>
 
-2. **Déploiement manuel** — suivez pas à pas le [guide de déploiement Windows](../windows/windows-deploy-guide-v2.html) (avec la liste de contrôle de progression `windows-checklist.html`).
+2. **Déploiement manuel** — suivez pas à pas le [guide de déploiement Windows](../windows/windows-deploy-guide-v2.md) (avec la liste de contrôle de progression `windows-checklist.html`).
 
 > **État de la plateforme** : Windows (Windows 11 + Docker Desktop) **en cours de test réel**. Linux/macOS (`linux/`) et serveur en ligne (`docker/`) sont prévus — voir la [feuille de route](#roadmap).
 

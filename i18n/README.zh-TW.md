@@ -73,7 +73,7 @@ docker compose up -d
 
 接下來有兩種方式：
 
-1. **自動部署（推薦）**——把部署交給 AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）。它會讀取部署文件和設定，向你收集參數（伺服器 IP、身分來源、管理員帳號、LLM 金鑰），然後一步步完成全部設定。[查看一鍵部署提示詞 →](../windows/windows-deploy-guide-v2.html)
+1. **自動部署（推薦）**——把部署交給 AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）。它會讀取部署文件和設定，向你收集參數（伺服器 IP、身分來源、管理員帳號、LLM 金鑰），然後一步步完成全部設定。[查看一鍵部署提示詞 →](../windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 一鍵部署提示詞（點擊展開）</summary>
@@ -130,7 +130,7 @@ docker compose up -d
 
 </details>
 
-2. **手動部署**——依照 [Windows 部署指南](../windows/windows-deploy-guide-v2.html) 逐步操作（搭配 `windows-checklist.html` 進度清單）。
+2. **手動部署**——依照 [Windows 部署指南](../windows/windows-deploy-guide-v2.md) 逐步操作（搭配 `windows-checklist.html` 進度清單）。
 
 > **平台狀態**：Windows（Windows 11 + Docker Desktop）**實測中**。Linux/macOS（`linux/`）與線上伺服器（`docker/`）已在規劃中——見[路線圖](#roadmap)。
 

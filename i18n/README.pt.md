@@ -73,7 +73,7 @@ docker compose up -d
 
 Você tem duas opções a seguir:
 
-1. **Implantação automática (recomendada)** — deixe a implantação com um AI Agent (WorkBuddy / OpenClaw / Microsoft Scout). Ele lê a documentação e as configurações, coleta os parâmetros com você (IP do servidor, fonte de identidade, conta de administrador, chaves de LLM) e conclui toda a configuração passo a passo. [Ver o prompt de implantação com um clique →](../windows/windows-deploy-guide-v2.html)
+1. **Implantação automática (recomendada)** — deixe a implantação com um AI Agent (WorkBuddy / OpenClaw / Microsoft Scout). Ele lê a documentação e as configurações, coleta os parâmetros com você (IP do servidor, fonte de identidade, conta de administrador, chaves de LLM) e conclui toda a configuração passo a passo. [Ver o prompt de implantação com um clique →](../windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 Prompt de implantação com um clique (clique para expandir)</summary>
@@ -130,7 +130,7 @@ Por fim, resuma os resultados dos testes item por item, marcando claramente ✅ 
 
 </details>
 
-2. **Implantação manual** — siga o [Guia de implantação do Windows](../windows/windows-deploy-guide-v2.html) passo a passo (use a checklist de progresso `windows-checklist.html`).
+2. **Implantação manual** — siga o [Guia de implantação do Windows](../windows/windows-deploy-guide-v2.md) passo a passo (use a checklist de progresso `windows-checklist.html`).
 
 > **Status da plataforma**: Windows (Windows 11 + Docker Desktop) **em testes reais**. Linux/macOS (`linux/`) e servidores online (`docker/`) estão planejados — veja o [roteiro](#roadmap).
 

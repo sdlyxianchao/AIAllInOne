@@ -73,7 +73,7 @@ docker compose up -d
 
 次に、2 つの方法があります：
 
-1. **自動デプロイ（推奨）**——デプロイを AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）に任せます。デプロイドキュメントと設定を読み取り、パラメータ（サーバー IP、アイデンティティプロバイダ、管理者アカウント、LLM キー）をあなたから収集し、ステップごとにすべての設定を完了します。[ワンクリックデプロイ用プロンプトを確認 →](../windows/windows-deploy-guide-v2.html)
+1. **自動デプロイ（推奨）**——デプロイを AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）に任せます。デプロイドキュメントと設定を読み取り、パラメータ（サーバー IP、アイデンティティプロバイダ、管理者アカウント、LLM キー）をあなたから収集し、ステップごとにすべての設定を完了します。[ワンクリックデプロイ用プロンプトを確認 →](../windows/windows-deploy-guide-v2.md)
 
 <details>
 <summary>📋 ワンクリックデプロイ用プロンプト（クリックで展開）</summary>
@@ -130,7 +130,7 @@ docker compose up -d
 
 </details>
 
-2. **手動デプロイ**——[Windows デプロイガイド](../windows/windows-deploy-guide-v2.html) に従って順に操作します（`windows-checklist.html` 進捗チェックリストと併用）。
+2. **手動デプロイ**——[Windows デプロイガイド](../windows/windows-deploy-guide-v2.md) に従って順に操作します（`windows-checklist.html` 進捗チェックリストと併用）。
 
 > **プラットフォームの状態**：Windows（Windows 11 + Docker Desktop）は**実測中**です。Linux/macOS（`linux/`）とオンラインサーバー（`docker/`）は計画中です——[ロードマップ](#roadmap)をご覧ください。
 
