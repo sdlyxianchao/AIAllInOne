@@ -75,60 +75,32 @@ A continuación tienes dos opciones:
 
 1. **Despliegue automático (recomendado)** — delega el despliegue a un agente de IA (WorkBuddy / OpenClaw / Microsoft Scout). Leerá la documentación y la configuración del despliegue, te pedirá los parámetros (IP del servidor, fuente de identidad, cuenta de administrador, claves de LLM) y completará toda la configuración paso a paso. [Ver el prompt de despliegue con un clic →](../windows/windows-deploy-guide-v2.md)
 
-<details>
-<summary>📋 Prompt de despliegue con un clic (haz clic para expandir)</summary>
+#### 🤖 Despliegue con IA — en un clic, dirigido por un agente de IA
+
+> Copiado de la guía de despliegue (capítulo 0) : la guía puede ejecutarse **capítulo a capítulo manualmente**, o entregarse de extremo a extremo a un **agente de IA** (WorkBuddy / OpenClaw / Microsoft Scout). Dale a este directorio (la guía, `windows-checklist.html`, `docker-compose.yml`, `.env.example`, `scripts/`), pega la indicación siguiente y el agente : detectará la plataforma → recopilará tus parámetros uno a uno → generará un archivo de progreso local → configurará paso a paso según la guía → probará, depurará y reintentará en caso de fallo → actualizará el progreso en todo momento → ejecutará una verificación completa de extremo a extremo y te informará de los resultados.
+
+**Indicación para copiar a tu agente** (plataforma Windows, en chino — el agente te guiará paso a paso) :
 
 ````text
-Eres el ingeniero de despliegue de la plataforma de IA para la intranet empresarial. Basándote en la documentación y los archivos de configuración de este proyecto, despliega y verifica por completo la plataforma «AI AllInOne» en la máquina actual. Comunícate conmigo en español durante todo el proceso y sigue estrictamente el flujo que se indica a continuación.
+你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
 
-## Paso 1: Confirma el directorio de despliegue y la plataforma de destino
-1. Pregúntame primero: ¿cuál es la ruta local de extracción/clonación de este proyecto? (por ejemplo, C:\AIAllInOne o /opt/AIAllInOne)
-2. Una vez dentro de ese directorio, determina el directorio de la plataforma de destino según el sistema operativo de la máquina actual:
-   - Windows → usa el directorio windows-github (o windows)
-   - Linux / macOS → usa el directorio linux-github (o linux)
-   - Servidor en línea / entorno solo con Docker → usa el directorio docker-github (o docker)
-   Si no estás seguro, dime el sistema operativo detectado y confirma conmigo qué directorio usar.
-3. Antes de empezar, lee el README.md de la raíz y el README del directorio de esa plataforma para entender la arquitectura y el método de despliegue.
+## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
+开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
 
-## Paso 2: Recopila los parámetros necesarios uno por uno (pregúntame uno a uno, no los omitas ni los supongas)
-1. La IP de intranet (o el dominio) que la plataforma expone al exterior, es decir, la dirección que usarán otras máquinas para acceder a ella (por ejemplo, 192.168.1.100 o portal.company.com).
-2. Fuente de identidad (Identity Provider):
-   - Controlador de dominio AD de la empresa: pregúntame por el dominio, la IP del DC, el LDAP base DN, el bind DN, la contraseña de la cuenta de bind, el sAMAccountName, etc.
-   - Otros IdP (LDAP/OpenLDAP/OIDC/Feishu/WeCom/DingTalk, etc.): pregúntame por la configuración correspondiente y la información de la cuenta.
-   - Sin fuente de identidad externa (solo cuentas locales): confírmalo conmigo y omítelo.
-3. Cuenta de administrador unificada: nombre de usuario, contraseña, correo electrónico (para el SSO de Keycloak y el inicio de sesión de administrador de cada producto).
-4. Claves de API de LLM: qué proveedores de modelos y claves tengo realmente (DeepSeek / OpenAI / Claude / Qwen / Tongyi / ERNIE, etc.); si no hay, omítelos.
-5. Idioma del contenido de ejemplo del portal Ghost: chino, o traducido a otro idioma antes de importarlo.
-6. Pregunta según necesidad: hostname del mercado de skills de MCP (Windows), canales de notificación de alertas (webhook de DingTalk/WeCom/Feishu), certificados HTTPS, política de retención de copias de seguridad, etc.
+## 第二步：生成本地进度文件
+基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
 
-## Paso 3: Genera un archivo de progreso local
-1. Localiza el documento de «lista de verificación de progreso» (*-checklist*.html) y la «guía de integración de la fuente de identidad» (como *-ad-integration*.html o la documentación relacionada con el IdP) dentro del directorio de la plataforma.
-2. Según el contenido de la lista, genera un archivo de progreso en el directorio del proyecto con un nombre como "deployment-progress-<platform>-<date>.md" y copia cada elemento de la lista como sin completar (- [ ]).
-3. Después, cada vez que completes un elemento o resuelvas un problema, actualiza ese archivo de progreso y resúmeme brevemente el avance en la conversación.
+## 第三步：按部署指南逐步执行
+精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
 
-## Paso 4: Configura paso a paso según la guía de despliegue
-1. Lee atentamente el documento de «guía de despliegue» de la plataforma (como *-deploy-guide*.html) y síguelo estrictamente, prestando especial atención a los «⚠️ puntos críticos» marcados.
-2. Orden aproximado: preparar las variables de entorno → iniciar los contenedores → inicializar la autenticación/IdP → configurar el enrutamiento de LLM y los canales de modelos → inicializar cada producto (portal Ghost: desplegar el tema Corp Portal integrado e importar el contenido de ejemplo) → configurar monitoreo/observabilidad/registros/redacción → configurar la copia de seguridad y restauración.
-3. Prioriza los scripts de automatización del directorio (como bootstrap.ps1, keycloak-realm-init.ps1, ghost-setup.ps1, ghost-theme-setup.ps1, ghost-content-import.ps1, health-check.ps1, etc.); para los pasos que se puedan automatizar, no uses la UI manualmente.
+## 第四步：反复测试解决
+出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
 
-## Paso 5: Prueba de forma iterativa y resuelve los problemas conmigo
-1. Cuando un paso falle o no cumpla lo esperado, consulta primero los registros (docker logs, los endpoints de salud de los servicios, los archivos de configuración) para localizar la causa raíz y luego arréglalo; no reintentes a ciegas.
-2. Cuando necesites mi participación (por ejemplo, ejecutar comandos que requieren permisos de administrador, confirmar el inicio de sesión, completar información), dime claramente «qué hay que hacer y por qué».
-3. Tras resolverlo, registra la causa raíz y la solución en el archivo de progreso y resúmeme brevemente lo ocurrido.
-
-## Paso 6: Verificación completa de extremo a extremo
-Cuando estén completados todos los elementos de la lista, realiza una prueba completa de extremo a extremo que cubra al menos:
-- Salud de los servicios (todos los contenedores en estado Up, endpoints de salud normales);
-- Inicio de sesión único (SSO) unificado (inicio de sesión en Keycloak → SSO/inicio de sesión automático en cada producto);
-- Cadena de LLM (enviar una conversación real a través de NewAPI/LiteLLM y verificar la respuesta y que la redacción de PII esté activa);
-- Inicio de sesión con la fuente de identidad (si AD/otro IdP ya está integrado, prueba el inicio de sesión con la cuenta correspondiente);
-- Monitoreo/observabilidad/registros/alertas (confirmar que hay datos y que las alertas se pueden disparar);
-- Copia de seguridad y restauración (realizar una copia de seguridad y verificar que se puede restaurar).
-
-Por último, resume los resultados de la prueba elemento por elemento, marcando claramente ✅ aprobado / ❌ fallido; para los fallidos, indica la causa raíz y las sugerencias posteriores.
+## 第五步：全流程验证
+全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
 ````
 
-</details>
+> 💡 Aunque **no uses un agente**, esta indicación también sirve como lista de verificación previa al despliegue : enumera todos los parámetros que debes preparar antes de empezar.
 
 2. **Despliegue manual** — sigue paso a paso la [guía de despliegue de Windows](../windows/windows-deploy-guide-v2.md) (junto con la lista de verificación de progreso `windows-checklist.html`).
 
@@ -188,3 +160,57 @@ Consulta la guía completa en [CONTRIBUTING.md](../CONTRIBUTING.md); en la [hoja
 ## 📄 Licencia
 
 [MIT](../LICENSE) — de uso, modificación y distribución libres. Los componentes integrados conservan sus propias licencias (consulta la sección de revisión de licencias de la guía de despliegue).
+
+## 🤖 Operaciones con agentes de IA
+
+La plataforma está diseñada para **operarse y mantenerse mediante un agente de IA** — WorkBuddy, OpenClaw, Microsoft Scout o cualquier herramienta equivalente. En lugar de hacer clic en una docena de consolas de administración, le dices al agente lo que quieres en lenguaje natural ; él lee archivos, ejecuta comandos y habla con los servicios por ti.
+
+Todo lo que hace funcionar la plataforma vive en tu máquina como **código, configuración y datos** — servicios de Docker Compose, archivos `.env`, APIs de administración y las bases/archivos con el estado real — así que un agente puede verlo y cambiarlo todo :
+
+| 任务 | Agent 的做法 |
+|---|---|
+| Comprobación de salud / estado general | `docker ps` + endpoints de salud + API de administración |
+| Iniciar / reiniciar / detener servicios | `docker compose up -d <svc>` / `docker restart <svc>` |
+| Ver registros y errores | `docker logs <svc> --tail N` + archivos de registro |
+| Cambiar configuración | editar archivos de configuración y reiniciar el contenedor afectado |
+| Editar el Centro de Administración IA | editar `admin-portal/public/index.html` (UI) o `admin-portal/server.js` (API), luego reiniciar |
+| Gestionar Gitea y sincronización | API de Gitea : disparar workflows, leer estado/registros, editar archivos del repo |
+| Gestionar el portal Ghost | leer/escribir la BD SQLite de Ghost, editar temas, importar el contenido semilla |
+| Copia de seguridad y restauración | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| Publicar una versión | `publish.ps1` (build + commit + push a GitHub) |
+| Solucionar problemas | conflictos de puertos, problemas de Docker Desktop, DNS/proxy, etc. |
+
+Ejemplo : *« Comprueba que todos los servicios están en funcionamiento y son saludables »* — el agente ejecuta `docker ps`, consulta cada endpoint de salud e informa qué falla y por qué. Indicaciones listas, buenas prácticas y referencia completa de comandos en la **[Guía de operaciones con agentes de IA](../AI-AGENT-OPS.md)** (9 idiomas).
+
+### 🛡️ Operaciones IA — comprobación de salud en un comando y arranque automático
+
+> Copiado de la guía de despliegue (capítulo 12) : la plataforma incluye una **comprobación de salud con un solo comando** (`health-check.ps1`) que verifica los **41 contenedores en 9 etapas** — incluida la cadena LLM completa, la autenticación AD + inicio de sesión de administrador, las funciones MCP/Skill y el espacio en disco. Las credenciales se leen de `.env` ; el script no contiene contraseñas fijas. Solo dile a tu agente de IA que lo ejecute (p. ej. *« Ejecuta la comprobación de salud y dime qué está fallando »*), o déjalo correr automáticamente en cada inicio de sesión :
+
+| Fase | Verificación | Método |
+|---|---|---|
+| Stage 1 | ¿El daemon de Docker está en ejecución (espera lista, para autoarranque)? | `docker info` |
+| Stage 2 | Estado de los 41 contenedores (Up/Exited/Restarting) | `docker ps -a` |
+| Stage 3 | Respuesta de 10 endpoints HTTP (incluido MCP Gateway) | `curl.exe 127.0.0.1:puerto` |
+| Stage 4 | LiteLLM /readiness + **registro de modelos**, litellm-redis PING, Dify API /health, salud de MySQL/PostgreSQL/Redis/Sandbox | `docker exec` + `docker inspect` |
+| Stage 5 | **Cadena LLM completa** : estado de canales NewAPI + una petición real en nombre de DeepChat y Dify (NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
+| Stage 6 | **Cadena de autenticación AD** : Keycloak well-known + sincronización de usuarios AD (aitest1) + configuración OIDC de NewAPI + integridad de clientes OIDC + **login admin de NewAPI** | curl + Admin API + mysql |
+| Stage 7 | **MCP Gateway + Skill** : /health + tools/list + tools/call + agregación de Skills externos | curl (protocolo MCP) |
+| Stage 8 | **Prerrequisitos de login DeepChat / Dify** : NewAPI disponible + Dify inicializado | curl + psql |
+| Stage 9 | **Espacio en disco** : restante en el disco del sistema + uso de Docker | `Get-PSDrive` + `docker system df` |
+
+**Ejecución manual** (PowerShell) :
+
+```powershell
+C:\AIAllInOne\windows\scripts\health-check.ps1
+# 结果输出到 C:\AIAllInOne\windows\scripts\health_check_<年月日_时分秒>.log
+# 输出末尾显示 ALL CLEAR 且 Fail: 0 表示全部正常
+```
+
+**Ejecución automática al iniciar sesión** (tarea programada — ejecuta PowerShell como administrador) :
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # 登录后延迟 2 分钟，等 Docker Desktop + 容器启动
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
+```

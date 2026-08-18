@@ -75,60 +75,32 @@ docker compose up -d
 
 1. **自動デプロイ（推奨）**——デプロイを AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）に任せます。デプロイドキュメントと設定を読み取り、パラメータ（サーバー IP、アイデンティティプロバイダ、管理者アカウント、LLM キー）をあなたから収集し、ステップごとにすべての設定を完了します。[ワンクリックデプロイ用プロンプトを確認 →](../windows/windows-deploy-guide-v2.md)
 
-<details>
-<summary>📋 ワンクリックデプロイ用プロンプト（クリックで展開）</summary>
+#### 🤖 AI デプロイ — ワンクリック、AI エージェントが主導
+
+> デプロイガイド（第 0 章）からの引用：ガイドは**手動で章ごとに実行**することも、**AI エージェント**（WorkBuddy / OpenClaw / Microsoft Scout）に最初から最後まで一任することもできます。このディレクトリ（ガイド、`windows-checklist.html`、`docker-compose.yml`、`.env.example`、`scripts/`）をエージェントに渡し、下のプロンプトを貼り付けると、エージェントは：プラットフォームを判別 → パラメータを 1 つずつ収集 → ローカル進捗ファイルを作成 → ガイドに従って段階的に設定 → 失敗時はテスト・デバッグ・再試行 → 進捗を随時更新 → エンドツーエンドの完全検証を実行して結果を報告します。
+
+**エージェントにコピーするプロンプト**（Windows プラットフォーム、中国語 — エージェントが順に案内します）：
 
 ````text
-あなたは企業イントラネット向け AI プラットフォームのデプロイエンジニアです。本プロジェクトのドキュメントと設定ファイルに基づき、現在のマシンに「AI AllInOne」プラットフォームを完全にデプロイし、検証してください。やり取りはすべて日本語で行い、以下の手順に厳密に従って実行してください。
+你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
 
-## ステップ 1：デプロイディレクトリと対象プラットフォームを確認
-1. まず私に尋ねる：本プロジェクトのローカルの解凍/クローン先パスはどこか？（例：C:\AIAllInOne または /opt/AIAllInOne）
-2. そのディレクトリに入ったら、現在のマシンの OS に基づいて対象プラットフォームのディレクトリを決定する：
-   - Windows → windows-github（または windows）ディレクトリを使用
-   - Linux / macOS → linux-github（または linux）ディレクトリを使用
-   - オンラインサーバー / 純 Docker 環境 → docker-github（または docker）ディレクトリを使用
-   不明な場合は、検出した OS を私に伝え、どのディレクトリを使うか私と確認する。
-3. 着手する前に、ルートの README.md とそのプラットフォームディレクトリ内の README を読み、アーキテクチャとデプロイ方法を理解する。
+## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
+开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
 
-## ステップ 2：必要なパラメータを 1 つずつ収集（個別に私に尋ね、スキップや推測をしない）
-1. プラットフォームが外部に公開するイントラネット IP（またはドメイン）。つまり他のマシンがアクセスするアドレス（例：192.168.1.100 または portal.company.com）。
-2. アイデンティティプロバイダ（Identity Provider）：
-   - 会社の AD ドメインコントローラー：ドメイン名、DC IP、LDAP base DN、bind DN、bind アカウントのパスワード、sAMAccountName などを私に尋ねる。
-   - その他の IdP（LDAP/OpenLDAP/OIDC/飞书/企微/钉钉など）：対応する設定とアカウント情報を私に尋ねる。
-   - 外部アイデンティティプロバイダなし（ローカルアカウントのみ）：私と確認したうえでスキップする。
-3. 統合管理者アカウント：ユーザー名、パスワード、メールアドレス（Keycloak SSO と各製品の管理者ログインに使用）。
-4. LLM API キー：実際にどのモデルプロバイダとキーがあるか（DeepSeek / OpenAI / Claude / Qwen / 通义 / ERNIE など）；ないものはスキップ。
-5. Ghost ポータルのサンプルコンテンツの言語：日本語、または他の言語に翻訳してからインポート。
-6. その他必要に応じて尋ねる：MCP スキルマーケットのホスト名（Windows）、アラート通知チャネル（钉钉/企微/飞书 webhook）、HTTPS 証明書、バックアップ保持ポリシーなど。
+## 第二步：生成本地进度文件
+基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
 
-## ステップ 3：ローカル進捗ファイルを生成
-1. プラットフォームディレクトリ内の「進捗チェックリスト」ドキュメント（*-checklist*.html）と「アイデンティティプロバイダ連携ガイド」（*-ad-integration*.html や IdP 関連ドキュメントなど）を探す。
-2. チェックリストの内容に基づき、プロジェクトディレクトリに進捗ファイルを生成し、"deployment-progress-<platform>-<date>.md" のような名前を付け、各チェックリスト項目を未完了（- [ ]）としてコピーする。
-3. 以降、1 項目完了するごと、または 1 つの問題を解決するごとに、その進捗ファイルをすぐに更新し、会話の中で私に進捗を簡潔に報告する。
+## 第三步：按部署指南逐步执行
+精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
 
-## ステップ 4：デプロイガイドに従って順に設定
-1. プラットフォームの「デプロイガイド」ドキュメント（*-deploy-guide*.html など）をよく読み、厳密に従う。特に「⚠️ 重要な落とし穴」と注記された箇所に注意する。
-2. おおよその順序：環境変数の準備 → コンテナの起動 → 認証/IdP の初期化 → LLM ルーティングとモデルチャネルの設定 → 各製品の初期化（Ghost ポータル：内蔵の Corp Portal テーマをデプロイしサンプルコンテンツをインポート）→ 監視/可観測性/ログ/匿名化の設定 → バックアップと復元の設定。
-3. ディレクトリ内の自動化スクリプト（bootstrap.ps1、keycloak-realm-init.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、health-check.ps1 など）を優先的に使用し、スクリプト化できる手順は UI を手動で操作しない。
+## 第四步：反复测试解决
+出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
 
-## ステップ 5：私と一緒に反復テストを行い問題を解決
-1. ある手順が失敗した、または期待どおりでない場合、まずログ（docker logs、各サービスのヘルスエンドポイント、設定ファイル）を確認して根本原因を特定してから修正し、やみくもにリトライしない。
-2. 私の参加が必要な場合（例：管理者権限が必要なコマンドの実行、ログイン確認、情報の補足）、「何をするのか、なぜか」を明確に私に伝える。
-3. 解決後は根本原因と修正内容を進捗ファイルに記録し、私に簡潔に報告する。
-
-## ステップ 6：完全なエンドツーエンド検証
-すべてのチェックリスト項目が完了したら、完全なエンドツーエンドテストを 1 回行い、少なくとも以下をカバーする：
-- サービスの健全性（すべてのコンテナが Up、ヘルスエンドポイントが正常）；
-- SSO 統合ログイン（Keycloak へのログイン → 各製品の SSO/自動ログイン）；
-- LLM 経路（NewAPI/LiteLLM 経由で実際の会話を 1 回送信し、応答と PII 匿名化が機能することを検証）；
-- アイデンティティプロバイダでのログイン（AD/他の IdP を連携済みの場合は、対応するアカウントでログインをテスト）；
-- 監視/可観測性/ログ/アラート（データが入っていること、アラートが発火できることを確認）；
-- バックアップと復元（バックアップを 1 回実行し、復元できることを検証）。
-
-最後にテスト結果を項目ごとにまとめ、✅ 合格 / ❌ 失敗を明確に記載する；失敗項目には根本原因と今後の提案を記載する。
+## 第五步：全流程验证
+全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
 ````
 
-</details>
+> 💡 エージェントを**使わない場合**でも、このプロンプトはデプロイ前のチェックリストとして使えます — 開始前に準備すべき全パラメータが列挙されています。
 
 2. **手動デプロイ**——[Windows デプロイガイド](../windows/windows-deploy-guide-v2.md) に従って順に操作します（`windows-checklist.html` 進捗チェックリストと併用）。
 
@@ -188,3 +160,57 @@ docker compose up -d
 ## 📄 ライセンス
 
 [MIT](../LICENSE)——自由に使用、変更、再配布できます。統合された各コンポーネントはそれぞれのライセンスを保持します（デプロイガイドのライセンス審査セクションを参照）。
+
+## 🤖 AI エージェント運用
+
+本プラットフォームは、**AI エージェントによる運用・保守**を前提に設計されています — WorkBuddy、OpenClaw、Microsoft Scout、または同等のツールです。多数の管理コンソールをクリックして回る代わりに、エージェントに自然言語でやりたいことを伝えるだけで、エージェントがファイルを読み、コマンドを実行し、サービスと通信してくれます。
+
+プラットフォームを動かしているものはすべて、お使いのマシン上の**コード・設定・データ**として存在します — Docker Compose サービス、`.env` ファイル、管理 API、実際の状態を保持する DB/ファイル — つまりエージェントはそのすべてを閲覧・変更できます：
+
+| 任务 | Agent 的做法 |
+|---|---|
+| ヘルスチェック / 状態の概要 | `docker ps` + ヘルスエンドポイント + 管理 API |
+| サービスの起動 / 再起動 / 停止 | `docker compose up -d <svc>` / `docker restart <svc>` |
+| ログとエラーの確認 | `docker logs <svc> --tail N` + ログファイル |
+| 設定の変更 | 設定ファイルを編集し、対象コンテナを再起動 |
+| AI 管理センターの編集 | `admin-portal/public/index.html`（UI）または `admin-portal/server.js`（API）を編集して再起動 |
+| Gitea と同期の管理 | Gitea API：ワークフロー起動、実行状態/ログ参照、リポジトリファイル編集 |
+| Ghost ポータルの管理 | Ghost の SQLite DB を読み書き、テーマ編集、コンテンツシードをインポート |
+| バックアップと復元 | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| リリースの公開 | `publish.ps1`（ビルド + コミット + GitHub へプッシュ） |
+| トラブルシューティング | ポート競合、Docker Desktop の問題、DNS/プロキシなど |
+
+例：*「すべてのサービスが稼働し健全か確認して」* — エージェントが `docker ps` を実行し、各ヘルスエンドポイントを確認して、何がどう悪いかを報告します。完成済みプロンプト・ベストプラクティス・コマンドリファレンスは **[AI エージェント運用ガイド](../AI-AGENT-OPS.md)**（9 言語）をご覧ください。
+
+### 🛡️ AI 運用 — ワンコマンドのヘルスチェックと自動起動
+
+> デプロイガイド（第 12 章）からの引用：本プラットフォームには、**1 コマンドのヘルスチェック**（`health-check.ps1`）が同梱されており、**41 コンテナを 9 段階**で検証します — LLM フルチェーン、AD 認証 + 管理者ログイン、MCP/Skill 機能、ディスク容量を含みます。認証情報は `.env` から読み取り、パスワードはハードコードされていません。AI エージェントに実行させるだけで OK です（例：*「ヘルスチェックを実行して、何が失敗しているか教えて」*）。また、ログオンごとに自動実行させることもできます：
+
+| 段階 | チェック項目 | 方法 |
+|---|---|---|
+| Stage 1 | Docker デーモンが起動しているか（起動自検に備え準備完了まで待機） | `docker info` |
+| Stage 2 | 41 コンテナの状態（Up/Exited/Restarting） | `docker ps -a` |
+| Stage 3 | 10 個の HTTP エンドポイントの応答（MCP Gateway 含む） | `curl.exe 127.0.0.1:ポート` |
+| Stage 4 | LiteLLM /readiness + **モデル登録**、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox の健全性 | `docker exec` + `docker inspect` |
+| Stage 5 | **LLM フルチェーン**：NewAPI チャネル状態 + DeepChat と Dify 名義で各1件の実リクエスト（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
+| Stage 6 | **AD 認証チェーン**：Keycloak well-known + AD ユーザー同期（aitest1）+ NewAPI OIDC 設定 + OIDC クライアント整合性 + **NewAPI 管理者ログイン** | curl + Admin API + mysql |
+| Stage 7 | **MCP Gateway + Skill**：/health + tools/list + tools/call + 外部 Skill 集約 | curl（MCP プロトコル） |
+| Stage 8 | **DeepChat / Dify ログイン前提条件**：NewAPI 利用可 + Dify 初期化済み | curl + psql |
+| Stage 9 | **ディスク容量**：システムディスク残量 + Docker 使用量 | `Get-PSDrive` + `docker system df` |
+
+**手動実行**（PowerShell）：
+
+```powershell
+C:\AIAllInOne\windows\scripts\health-check.ps1
+# 结果输出到 C:\AIAllInOne\windows\scripts\health_check_<年月日_时分秒>.log
+# 输出末尾显示 ALL CLEAR 且 Fail: 0 表示全部正常
+```
+
+**ログオン時に自動実行**（タスクスケジューラ — PowerShell を管理者として実行）：
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # 登录后延迟 2 分钟，等 Docker Desktop + 容器启动
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
+```

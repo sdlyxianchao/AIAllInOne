@@ -75,60 +75,32 @@ docker compose up -d
 
 1. **自动部署（推荐）**——把部署交给 AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）。它会读取部署文档和配置，向你收集参数（服务器 IP、身份源、管理员账号、LLM 密钥），然后一步步完成全部配置。[查看一键部署提示词 →](../windows/windows-deploy-guide-v2.md)
 
-<details>
-<summary>📋 一键部署提示词（点击展开）</summary>
+#### 🤖 AI 部署——交给 AI Agent 一键完成
+
+> 以下内容复制自部署指南（第 0 章）：部署指南既可以**人工逐章执行**，也可以**整体交给 AI Agent**（WorkBuddy / OpenClaw / Microsoft Scout）端到端完成。把本目录（部署指南、`windows-checklist.html`、`docker-compose.yml`、`.env.example`、`scripts/`）提供给 Agent，再粘贴下面的提示词，它会：判断平台 → 逐项向你收集参数 → 生成本地进度文件 → 按部署指南逐步配置 → 遇错调试重试 → 全程更新进度 → 最后做一次完整端到端验证并汇报结果。
+
+**复制给 Agent 的提示词**（Windows 平台，中文——Agent 会带你逐步完成）：
 
 ````text
-你是企业内网 AI 平台的部署工程师。请基于本项目的文档和配置文件，在当前机器上完整部署并验证「AI AllInOne」平台。全程用中文与我沟通，并严格按以下流程执行。
+你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
 
-## 第 1 步：确认部署目录与目标平台
-1. 先问我：本项目的本地解压/克隆路径是什么？（例如 C:\AIAllInOne 或 /opt/AIAllInOne）
-2. 进入该目录后，根据当前机器操作系统确定目标平台目录：
-   - Windows → 使用 windows-github（或 windows）目录
-   - Linux / macOS → 使用 linux-github（或 linux）目录
-   - 在线服务器 / 纯 Docker 环境 → 使用 docker-github（或 docker）目录
-   如果不确定，告诉我检测到的操作系统并和我确认使用哪个目录。
-3. 动手前先阅读根目录 README.md 和该平台目录内的 README，理解架构和部署方式。
+## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
+开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 <市场主机名>，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
 
-## 第 2 步：逐项收集所需参数（逐个问我，不要跳过或猜测）
-1. 平台对外暴露的内网 IP（或域名），即其他机器访问它的地址（如 192.168.1.100 或 portal.company.com）。
-2. 身份源（Identity Provider）：
-   - 公司 AD 域控：问我域名、DC IP、LDAP base DN、bind DN、bind 账号密码、sAMAccountName 等。
-   - 其他 IdP（LDAP/OpenLDAP/OIDC/飞书/企微/钉钉等）：问我对应配置和账号信息。
-   - 无外部身份源（仅本地账号）：和我确认后跳过。
-3. 统一管理员账号：用户名、密码、邮箱（用于 Keycloak SSO 和各产品管理员登录）。
-4. LLM API 密钥：我实际有哪些模型供应商和密钥（DeepSeek / OpenAI / Claude / Qwen / 通义 / ERNIE 等）；没有的跳过。
-5. Ghost 门户示例内容的语言：中文，或翻译成其他语言后再导入。
-6. 其他按需询问：MCP 技能市场主机名（Windows）、告警通知渠道（钉钉/企微/飞书 webhook）、HTTPS 证书、备份保留策略等。
+## 第二步：生成本地进度文件
+基于 windows-checklist.html 的内容，在本目录生成「部署进度-<日期>.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
 
-## 第 3 步：生成本地进度文件
-1. 找到平台目录内的「进度清单」文档（*-checklist*.html）和「身份源对接指南」（如 *-ad-integration*.html 或 IdP 相关文档）。
-2. 根据清单内容，在项目目录生成进度文件，命名如 "deployment-progress-<platform>-<date>.md"，把每一项清单复制为未完成（- [ ]）。
-3. 之后每完成一项或解决一个问题，及时更新该进度文件，并在对话中向我简要汇报进度。
+## 第三步：按部署指南逐步执行
+精读《windows-deploy-guide-v2.html》——这是本次部署唯一的权威指南，严格按它的第 1~13 章顺序执行（不要用 windows-checklist.html 或任何旧文档替代），特别注意各章「⚠️ 关键坑」。优先用 scripts/ 下的自动化脚本（bootstrap.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、keycloak-realm-init.ps1、backup.ps1、restore.ps1 等），能自动化的不要手工点 UI。其中 Ghost 门户（6.5 章）必须：①部署项目自带的 Corp Portal 主题，跑 scripts\ghost-theme-setup.ps1 自动装好并激活，不要停留在官方默认主题；②导入示例内容：先问用户「门户及各产品的对外发布地址（内网 IP 或域名，如 192.168.1.10 或 portal.company.com）」——用它替换 seed 里的 <服务器IP> 占位符（文章正文里的 NewAPI / MCP / Dify 等访问地址也一并替换，注意别把 host.docker.internal 这类容器内固定地址改掉）；再问用户「门户示例内容用什么语言」，中文则直接跑 scripts\ghost-content-import.ps1 -ServerAddr "发布地址" 导入；选其他语言时，先把 ghost-content-seed/content.json 里的 title / html / plaintext / custom_excerpt 字段翻译成目标语言（保留 <服务器IP> 占位符和所有 URL 结构不动），再导入。
 
-## 第 4 步：按部署指南逐步配置
-1. 仔细阅读平台的「部署指南」文档（如 *-deploy-guide*.html）并严格遵循，特别注意其中标注的「⚠️ 关键坑位」。
-2. 大致顺序：准备环境变量 → 启动容器 → 初始化认证/IdP → 配置 LLM 路由和模型渠道 → 初始化各产品（Ghost 门户：部署内置 Corp Portal 主题并导入示例内容）→ 配置监控/可观测/日志/脱敏 → 配置备份恢复。
-3. 优先使用目录内的自动化脚本（如 bootstrap.ps1、keycloak-realm-init.ps1、ghost-setup.ps1、ghost-theme-setup.ps1、ghost-content-import.ps1、health-check.ps1 等），能脚本化的步骤不要手动点 UI。
+## 第四步：反复测试解决
+出错先查日志（docker logs、健康端点、配置）定位根因再修，不要盲目重试；需要管理员权限或我手动确认时，明确告诉我「做什么、为什么」；解决后回写进度文件并简要汇报。
 
-## 第 5 步：和我一起迭代测试并解决问题
-1. 某一步失败或不符合预期时，先查日志（docker logs、各服务健康端点、配置文件）定位根因再修，不要盲目重试。
-2. 需要我参与时（例如执行需要管理员权限的命令、确认登录、补充信息），明确告诉我「要做什么、为什么」。
-3. 解决后把根因和修复记录到进度文件，并简要向我汇报。
-
-## 第 6 步：完整端到端验证
-全部清单项完成后，做一次完整端到端测试，至少覆盖：
-- 服务健康（所有容器 Up、健康端点正常）；
-- SSO 统一登录（Keycloak 登录 → 各产品 SSO/自动登录）；
-- LLM 链路（通过 NewAPI/LiteLLM 发一次真实对话，验证响应和 PII 脱敏生效）；
-- 身份源登录（如已对接 AD/其他 IdP，用对应账号测试登录）；
-- 监控/可观测/日志/告警（确认有数据、告警能触发）；
-- 备份与恢复（执行一次备份并验证可恢复）。
-
-最后逐项汇总测试结果，明确标注 ✅ 通过 / ❌ 失败；失败项给出根因和后续建议。
+## 第五步：全流程验证
+全部完成后做端到端测试：容器全 Up、Keycloak SSO 登录、经 NewAPI/LiteLLM 发真实对话验证 PII 脱敏、身份源登录、监控/日志/告警、备份恢复。最后逐项汇总 ✅/❌ 结果，失败项给根因和建议。
 ````
 
-</details>
+> 💡 即使你**不用 Agent**，这段提示词也可以当作「部署前信息核对清单」——它列出了启动前需要准备的全部参数。
 
 2. **手动部署**——按 [Windows 部署指南](../windows/windows-deploy-guide-v2.md) 逐步操作（配合 `windows-checklist.html` 进度清单）。
 
@@ -188,3 +160,57 @@ docker compose up -d
 ## 📄 许可证
 
 [MIT](../LICENSE)——可自由使用、修改与分发。所集成组件保留各自的许可证（见部署指南的许可证审查章节）。
+
+## 🤖 AI Agent 运维
+
+本平台从设计上就支持**通过 AI Agent 运维**——WorkBuddy、OpenClaw、Microsoft Scout 或任何同类工具。你不再需要逐个登录十几个管理后台点点点，而是用自然语言告诉 Agent 你想做什么，它负责读文件、执行命令、调用服务。
+
+平台的一切都运行在你机器上的**代码、配置和数据**里——Docker Compose 服务、`.env` 文件、管理 API，以及保存实际状态的数据/文件——所以 Agent 能看得到、改得了全部：
+
+| 任务 | Agent 的做法 |
+|---|---|
+| 健康检查 / 状态总览 | `docker ps` + 健康端点 + 管理 API |
+| 启动 / 重启 / 停止服务 | `docker compose up -d <svc>` / `docker restart <svc>` |
+| 查看日志与报错 | `docker logs <svc> --tail N` + 日志文件 |
+| 修改配置 | 改配置文件后重启对应容器 |
+| 修改 AI 管理中心 | 改 `admin-portal/public/index.html`（前端）或 `admin-portal/server.js`（后端）后重启 |
+| 管理 Gitea 与同步 | Gitea API：触发工作流、查看运行状态/日志、编辑仓库文件 |
+| 管理 Ghost 门户 | 读写 Ghost SQLite 库、改主题模板、导入内容种子 |
+| 备份与恢复 | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| 发布版本 | `publish.ps1`（构建 + 提交 + 推送到 GitHub） |
+| 排障 | 端口冲突、Docker Desktop 问题、DNS/代理等 |
+
+示例：*"检查所有服务是否都在正常运行"* —— Agent 执行 `docker ps`、探测各健康端点，然后告诉你哪里有问题、为什么。完整的现成提示词、最佳实践和命令速查见 **[AI Agent 运维指南](../AI-AGENT-OPS.md)**（9 种语言）。
+
+### 🛡️ AI 运维——一键健康检查与开机自检
+
+> 以下内容复制自部署指南（第 12 章）：平台内置**一条命令的健康检查**（`health-check.ps1`），分 9 个阶段检查全部 **41 个容器**——含 LLM 全链路、AD 认证与管理员登录、MCP/Skill 功能、磁盘空间。凭据从 `.env` 读取，脚本不硬编码密码。直接让 AI Agent 执行即可（例如 *"跑一下健康检查，告诉我哪里挂了"*），也可以设置成每次登录自动运行：
+
+| 阶段 | 检查项 | 方式 |
+|---|---|---|
+| Stage 1 | Docker Daemon 是否运行（等待就绪，适配开机自检） | `docker info` |
+| Stage 2 | 41 个容器状态（Up/Exited/Restarting） | `docker ps -a` |
+| Stage 3 | 10 个 HTTP 端点响应（含 MCP Gateway） | `curl.exe 127.0.0.1:端口` |
+| Stage 4 | LiteLLM /readiness + **模型注册**、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox 健康状态 | `docker exec` + `docker inspect` |
+| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DeepChat 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
+| Stage 6 | **AD 账号认证链路**：Keycloak well-known + AD 用户同步（aitest1）+ NewAPI OIDC 配置 + OIDC clients 完整性 + **NewAPI 管理员登录** | curl + Admin API + mysql |
+| Stage 7 | **MCP Gateway + Skill**：/health + tools/list + tools/call + 外部 Skill 聚合 | curl MCP 协议 |
+| Stage 8 | **DeepChat / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
+| Stage 9 | **磁盘空间**：系统盘剩余 + Docker 磁盘占用 | `Get-PSDrive` + `docker system df` |
+
+**手动执行**（PowerShell）：
+
+```powershell
+C:\AIAllInOne\windows\scripts\health-check.ps1
+# 结果输出到 C:\AIAllInOne\windows\scripts\health_check_<年月日_时分秒>.log
+# 输出末尾显示 ALL CLEAR 且 Fail: 0 表示全部正常
+```
+
+**开机自动运行**（计划任务，请以管理员身份运行 PowerShell）：
+
+```powershell
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger.Delay = "PT2M"   # 登录后延迟 2 分钟，等 Docker Desktop + 容器启动
+Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
+```
