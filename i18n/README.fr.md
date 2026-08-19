@@ -2,6 +2,8 @@
 
 > 📖 **Langue** : [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · **Français** · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
 
+> ⭐ **Si ce projet vous aide, laissez-lui une étoile — c'est gratuit et aide plus de gens à le trouver.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **Un serveur. Un compte. Toute la suite IA d'entreprise — open source et gratuite, vos données ne quittent jamais l'intranet.**
 
@@ -156,6 +159,18 @@ Le guide complet figure dans [CONTRIBUTING.md](../CONTRIBUTING.md) ; la [feuille
 - Ce dépôt **ne contient aucune clé réelle** ; les valeurs réelles ne sont conservées que dans le `.env` de chaque environnement d'exécution (le dépôt ne contient que le modèle `.env.example`).
 - HTTP en clair par défaut sur l'intranet ; la configuration HTTPS est décrite dans le guide de déploiement de chaque plateforme.
 - Les pièges, tables de ports et flux de données de chaque plateforme figurent dans les documents `*-deploy-guide*.html` correspondants.
+
+## ⭐ Soutenez le projet
+
+Si AI AllInOne vous fait gagner du temps ou de l'argent, une étoile ne vous coûte rien et aide le projet à grandir :
+
+- ⭐ **Mettez une étoile au dépôt** — aide plus de gens à découvrir et bénéficier du projet
+- 🐛 **Signalez des problèmes** — bugs, demandes de fonctionnalités et problèmes de déploiement bienvenus
+- 🤝 **Contribuez** — code, documentation et traductions (9 langues) bienvenus
+- 💬 **Rejoignez la communauté** — partagez vos expériences de déploiement et vos idées
+- 📣 **Partagez** — parlez-en à vos collègues ou sur votre blog / réseaux sociaux
+
+Une étoile en haut à droite est le plus grand soutien pour ce projet.
 
 ## 📄 Licence
 

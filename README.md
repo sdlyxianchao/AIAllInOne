@@ -2,6 +2,8 @@
 
 > 📖 **Languages**: English · [简体中文](i18n/README.zh.md) · [繁體中文](i18n/README.zh-TW.md) · [Français](i18n/README.fr.md) · [Español](i18n/README.es.md) · [Português](i18n/README.pt.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [العربية](i18n/README.ar.md)
 
+> ⭐ **If this project helps you, give it a star — it's free and helps more people find it.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **One server. One SSO. The whole enterprise AI stack — free and self-hosted.**
 
@@ -157,6 +160,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 - This repository contains **no real secrets**; real values live in each runtime `.env` (only `.env.example` templates are committed).
 - Default is plain HTTP on the intranet; HTTPS guidance is in each platform's deployment guide.
 - Per-platform gotchas, port tables, and data flows are in the corresponding `*-deploy-guide*` docs (Markdown / HTML, e.g. `windows/windows-deploy-guide-v2.md`).
+
+## ⭐ Support the project
+
+If AI AllInOne saves you time or money, a star costs you nothing and helps the project grow:
+
+- ⭐ **Star this repo** — helps more people discover and benefit from the project
+- 🐛 **Report issues** — bugs, feature requests and deployment problems are all welcome
+- 🤝 **Contribute** — code, docs and translations (9 languages) are all welcome
+- 💬 **Join the community** — share your deployment experience and ideas
+- 📣 **Share it** — tell your colleagues, or post about it on your blog / social media
+
+One star on the top right is the biggest support for this project.
 
 ## 📄 License
 

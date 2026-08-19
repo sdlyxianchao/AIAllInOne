@@ -2,6 +2,8 @@
 
 > 📖 **言語**：[English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · **日本語** · [한국어](README.ko.md) · [العربية](README.ar.md)
 
+> ⭐ **このプロジェクトが役に立ったら、Star をお願いします——無料で、より多くの人に見つけてもらえます。**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **1 台のサーバー。1 つのアカウント。エンタープライズ向け AI オールインワン——オープンソースで無料、データはイントラネットの外に出ません。**
 
@@ -156,6 +159,18 @@ windows-deploy-guide-v2.html を熟読してください——これが今回の
 - 本リポジトリには**実際のシークレット（キー）は一切含まれません**；実際の値は各実行環境の `.env` にのみ存在します（リポジトリには `.env.example` テンプレートのみをコミット）。
 - デフォルトはイントラネット内の平文 HTTP；HTTPS の設定は各プラットフォームのデプロイガイドを参照してください。
 - 各プラットフォームの落とし穴、ポート表、データフローは、対応する `*-deploy-guide*.html` ドキュメントを参照してください。
+
+## ⭐ プロジェクトをサポート
+
+AI AllInOne が時間やお金の節約になっているなら、Star は無料で、プロジェクトの成長を助けます：
+
+- ⭐ **このリポジトリに Star を** — より多くの人がプロジェクトを見つけ、恩恵を受けられます
+- 🐛 **Issue を報告** — バグ、機能リクエスト、デプロイの問題も歓迎します
+- 🤝 **コントリビュート** — コード、ドキュメント、翻訳（9言語）も歓迎します
+- 💬 **コミュニティに参加** — デプロイ経験やアイデアを共有しましょう
+- 📣 **シェア** — 同僚に伝えたり、ブログ / SNS で紹介してください
+
+右上の Star をクリックすることが、このプロジェクトへの最大のサポートです。
 
 ## 📄 ライセンス
 

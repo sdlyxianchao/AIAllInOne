@@ -2,6 +2,8 @@
 
 > 📖 **Idiomas**: [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · **Português** · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
 
+> ⭐ **Se este projeto te ajuda, dê uma estrela — é grátis e ajuda mais pessoas a encontrá-lo.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **Um servidor. Uma conta. O pacote completo de IA empresarial — open-source e gratuito, com os dados que nunca saem da intranet.**
 
@@ -156,6 +159,18 @@ O guia completo está no [CONTRIBUTING.md](../CONTRIBUTING.md), e o [roteiro](#r
 - Este repositório **não contém nenhuma chave real**; os valores reais ficam apenas nos `.env` de cada ambiente (o repositório só commita o modelo `.env.example`).
 - Por padrão, HTTP em texto simples na intranet; a configuração de HTTPS está nos guias de implantação de cada plataforma.
 - As armadilhas, a tabela de portas e o fluxo de dados de cada plataforma estão nos documentos `*-deploy-guide*.html` correspondentes.
+
+## ⭐ Apoie o projeto
+
+Se o AI AllInOne economiza seu tempo ou dinheiro, uma estrela não custa nada e ajuda o projeto a crescer:
+
+- ⭐ **Dê uma estrela neste repositório** — ajuda mais pessoas a descobrir e se beneficiar do projeto
+- 🐛 **Reporte problemas** — bugs, pedidos de recursos e problemas de implantação são bem-vindos
+- 🤝 **Contribua** — código, documentação e traduções (9 idiomas) são bem-vindos
+- 💬 **Entre na comunidade** — compartilhe suas experiências de implantação e ideias
+- 📣 **Compartilhe** — conte para seus colegas ou publique no seu blog / redes sociais
+
+Uma estrela no canto superior direito é o maior apoio para este projeto.
 
 ## 📄 Licença
 

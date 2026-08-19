@@ -2,6 +2,8 @@
 
 > 📖 **語言**：[English](../README.md) · [简体中文](README.zh.md) · **繁體中文** · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
 
+> ⭐ **如果這個專案幫到了你，給個 Star 吧——免費，還能讓更多人找到它。**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **一台伺服器。一個帳號。企業級 AI 全家桶——開源免費，資料不出內網。**
 
@@ -156,6 +159,18 @@ docker compose up -d
 - 本倉庫**不含任何真實金鑰**；真實值只存在各執行環境的 `.env`（倉庫只提交 `.env.example` 模板）。
 - 預設內網明文 HTTP；HTTPS 設定請見各平台部署指南。
 - 各平台的地雷、連接埠表、資料流請見對應 `*-deploy-guide*.html` 文件。
+
+## ⭐ 支持這個專案
+
+如果 AI AllInOne 幫你省了時間或錢，點個 Star 不用花一分錢，卻能幫專案成長：
+
+- ⭐ **Star 這個倉庫** — 讓更多人能搜到這個專案
+- 🐛 **提 Issue** — 回報 bug、提功能建議、部署問題都可以
+- 🤝 **參與貢獻** — 程式碼、文件、翻譯（9 種語言都歡迎）
+- 💬 **加入社群** — 分享你的部署經驗和想法
+- 📣 **分享出去** — 轉給同事，或發到你的部落格 / 社交平台
+
+右上角點一下 Star，就是對這個專案最大的支持。
 
 ## 📄 授權條款
 

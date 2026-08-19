@@ -2,6 +2,8 @@
 
 > 📖 **اللغة**: [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · **العربية**
 
+> ⭐ **إذا كان هذا المشروع مفيدًا لك، امنحه نجمة — إنه مجاني ويساعد المزيد من الأشخاص على اكتشافه.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **خادم واحد. حساب واحد. حزمة ذكاء اصطناعي مؤسسية متكاملة — مفتوحة المصدر ومجانية، والبيانات لا تغادر الإنترانت.**
 
@@ -156,6 +159,18 @@ docker compose up -d
 - لا يحتوي هذا المستودع على **أي مفاتيح حقيقية**؛ القيم الحقيقية موجودة فقط في ملف `.env` لكل بيئة تشغيل (لا يُرفع في المستودع سوى قالب `.env.example`).
 - HTTP نصي افتراضيًا داخل الإنترانت؛ راجع أدلة نشر كل منصة لإعداد HTTPS.
 - المخاطر وجداول المنافذ وتدفق البيانات لكل منصة موجودة في وثائق `*-deploy-guide*.html` المقابلة.
+
+## ⭐ ادعم المشروع
+
+إذا كان AI AllInOne يوفر لك الوقت أو المال، فإن النجمة لا تكلفك شيئًا وتساعد المشروع على النمو:
+
+- ⭐ **امنح هذا المستودع نجمة** — تساعد المزيد من الأشخاص على اكتشاف المشروع والاستفادة منه
+- 🐛 **أبلغ عن مشاكل** — الأخطاء وطلبات الميزات ومشاكل النشر مرحب بها
+- 🤝 **ساهم** — الكود والوثائق والترجمات (9 لغات) مرحب بها
+- 💬 **انضم إلى المجتمع** — شارك تجاربك وأفكارك في النشر
+- 📣 **شاركه** — أخبر زملاءك أو انشره في مدونتك / وسائل التواصل الاجتماعي
+
+نجمة واحدة في الزاوية العلوية اليمنى هي أكبر دعم لهذا المشروع.
 
 ## 📄 الترخيص
 

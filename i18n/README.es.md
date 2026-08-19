@@ -2,6 +2,8 @@
 
 > 📖 **Idiomas**: [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · **Español** · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
 
+> ⭐ **Si este proyecto te ayuda, dale una estrella — es gratis y ayuda a que más gente lo encuentre.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **Un solo servidor. Una sola cuenta. Todo el ecosistema de IA empresarial — de código abierto y gratuito, con los datos dentro de la intranet.**
 
@@ -156,6 +159,18 @@ Consulta la guía completa en [CONTRIBUTING.md](../CONTRIBUTING.md); en la [hoja
 - Este repositorio **no contiene ninguna clave real**; los valores reales solo existen en el `.env` de cada entorno de ejecución (el repositorio solo incluye la plantilla `.env.example`).
 - Por defecto se usa HTTP sin cifrar en la intranet; la configuración de HTTPS se detalla en la guía de despliegue de cada plataforma.
 - Los puntos críticos, la tabla de puertos y el flujo de datos de cada plataforma se encuentran en los documentos `*-deploy-guide*.html` correspondientes.
+
+## ⭐ Apoya el proyecto
+
+Si AI AllInOne te ahorra tiempo o dinero, una estrella no te cuesta nada y ayuda al proyecto a crecer:
+
+- ⭐ **Da una estrella al repositorio** — ayuda a que más gente descubra y se beneficie del proyecto
+- 🐛 **Reporta problemas** — bugs, peticiones de funciones y problemas de despliegue son bienvenidos
+- 🤝 **Contribuye** — código, documentación y traducciones (9 idiomas) son bienvenidos
+- 💬 **Únete a la comunidad** — comparte tus experiencias de despliegue e ideas
+- 📣 **Compártelo** — cuéntaselo a tus compañeros o publícalo en tu blog / redes sociales
+
+Una estrella en la esquina superior derecha es el mayor apoyo para este proyecto.
 
 ## 📄 Licencia
 

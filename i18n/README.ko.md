@@ -2,6 +2,8 @@
 
 > 📖 **언어**: [English](../README.md) · [简体中文](README.zh.md) · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · **한국어** · [العربية](README.ar.md)
 
+> ⭐ **이 프로젝트가 도움이 되셨다면 Star를 눌러주세요 — 무료이며 더 많은 사람들이 찾을 수 있게 됩니다.**
+
 [![GitHub stars](https://img.shields.io/github/stars/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/sdlyxianchao/AIAllInOne?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/network)
 [![GitHub license](https://img.shields.io/github/license/sdlyxianchao/AIAllInOne?style=flat-square)](../LICENSE)
@@ -9,6 +11,7 @@
 ![Self-hosted](https://img.shields.io/badge/self--hosted-Yes-brightgreen?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue?style=flat-square)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](../CONTRIBUTING.md)
+[![Star us](https://img.shields.io/badge/⭐-Star%20this%20repo-yellow?style=flat-square)](https://github.com/sdlyxianchao/AIAllInOne/stargazers)
 
 > **서버 한 대. 계정 하나. 기업용 AI 올인원——오픈소스 무료, 데이터는 인트라넷 밖으로 나가지 않습니다.**
 
@@ -156,6 +159,18 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 - 이 저장소에는 **실제 키가 전혀 포함되어 있지 않습니다**. 실제 값은 각 실행 환경의 `.env`에만 존재합니다(저장소에는 `.env.example` 템플릿만 커밋됨).
 - 기본적으로 인트라넷 내 평문 HTTP를 사용합니다. HTTPS 구성은 각 플랫폼 배포 가이드를 참조하세요.
 - 각 플랫폼의 함정, 포트 표, 데이터 흐름은 해당 `*-deploy-guide*.html` 문서를 참조하세요.
+
+## ⭐ 프로젝트 지원하기
+
+AI AllInOne이 시간이나 비용을 절약해 준다면, Star 하나는 비용이 들지 않으면서 프로젝트 성장에 도움이 됩니다:
+
+- ⭐ **이 저장소에 Star 누르기** — 더 많은 사람들이 프로젝트를 발견하고 혜택을 받을 수 있습니다
+- 🐛 **이슈 보고** — 버그, 기능 요청, 배포 문제 모두 환영합니다
+- 🤝 **기여하기** — 코드, 문서, 번역(9개 언어) 모두 환영합니다
+- 💬 **커뮤니티 참여** — 배포 경험과 아이디어를 공유하세요
+- 📣 **공유하기** — 동료에게 알리거나 블로그 / 소셜 미디어에 소개해 주세요
+
+오른쪽 위 Star를 누르는 것이 이 프로젝트에 대한 최고의 지원입니다.
 
 ## 📄 라이선스
 
