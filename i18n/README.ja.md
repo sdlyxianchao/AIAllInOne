@@ -124,6 +124,15 @@ windows-deploy-guide-v2.html を熟読してください——これが今回の
 | **管理者マニュアル** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
 | **ユーザーマニュアル** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
 
+## 🎓 トレーニングプログラム
+
+このプラットフォームには、デプロイと運用のための**完全なトレーニングプログラム**（17 モジュール・60 時間・10 営業日）が付属しています：
+
+| パッケージ | 言語 | エントリ |
+|---|---|---|
+| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
+| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+
 日常の AI Agent 運用については **[AI Agent 運用ガイド](../AI-AGENT-OPS.md)** を参照してください。
 
 ## 👥 コミュニティ

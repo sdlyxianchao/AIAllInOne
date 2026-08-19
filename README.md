@@ -125,6 +125,17 @@ More screenshots (48 real UI captures) are embedded in the [Admin Manual](docs/a
 | **Admin Manual** | [English](docs/admin-manual/index.md) · [简体中文](docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](docs/i18n/admin-manual-zh-TW/index.md) · [Français](docs/i18n/admin-manual-fr/index.md) · [Español](docs/i18n/admin-manual-es/index.md) · [Português](docs/i18n/admin-manual-pt/index.md) · [日本語](docs/i18n/admin-manual-ja/index.md) · [한국어](docs/i18n/admin-manual-ko/index.md) · [العربية](docs/i18n/admin-manual-ar/index.md) |
 | **User Manual** | [English](docs/user-manual/index.md) · [简体中文](docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](docs/i18n/user-manual-zh-TW/index.md) · [Français](docs/i18n/user-manual-fr/index.md) · [Español](docs/i18n/user-manual-es/index.md) · [Português](docs/i18n/user-manual-pt/index.md) · [日本語](docs/i18n/user-manual-ja/index.md) · [한국어](docs/i18n/user-manual-ko/index.md) · [العربية](docs/i18n/user-manual-ar/index.md) |
 
+## 🎓 Training Program
+
+The platform ships with a complete **on-the-job training program** (17 modules, 60 hours, 10 working days) for deployment & operations onboarding: master outline, 10-day schedule, per-product outlines/textbooks/labs/exams (each with local + official docs + video references), and a final exam package with certificate.
+
+| Training package | Language | Entry |
+|---|---|---|
+| **English** | EN | [training/training_eng/index.html](training/training_eng/index.html) |
+| **简体中文** | zh-CN | [training/training_chn/index.html](training/training_chn/index.html) |
+
+> ⚠️ For published copies (GitHub / Gitee): the English README links to the **English** training package; the Chinese README (Gitee default) links to the **Chinese** package — keep the language matched.
+
 Also see the **[AI Agent Operations Guide](AI-AGENT-OPS.md)** (9 languages) for day-to-day AI-agent-driven operation.
 
 ## 👥 Community

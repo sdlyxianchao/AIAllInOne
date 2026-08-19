@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI AllInOne 企业内网 AI 平台 · 培训计划</title>
+<style>
+:root{
+  --bg:#0d1117; --bg2:#161b22; --bg3:#1c2331; --border:#30363d;
+  --text:#c9d1d9; --muted:#8b949e; --blue:#58a6ff; --green:#56d364;
+  --amber:#d29922; --purple:#d2a8ff; --teal:#39c5cf; --red:#f85149;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;line-height:1.7;font-size:15px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
+
+/* Header */
+header{background:linear-gradient(135deg,#1a1030 0%,#0a1e3a 55%,#0d1117 100%);border:1px solid var(--border);border-radius:14px;padding:36px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+header::after{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(88,166,255,.18),transparent 70%);border-radius:50%}
+header h1{font-size:30px;color:#fff;letter-spacing:.5px;margin-bottom:8px}
+header h1 span{color:var(--blue)}
+header .sub{color:var(--muted);font-size:14px;margin-bottom:14px}
+header .badges{display:flex;flex-wrap:wrap;gap:8px}
+.badge{display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:rgba(22,27,34,.8);color:var(--muted)}
+.badge b{color:var(--green)}
+.nav{position:sticky;top:0;z-index:50;background:rgba(13,17,23,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);margin-bottom:28px}
+.nav ul{list-style:none;display:flex;flex-wrap:wrap;gap:2px;padding:8px 0}
+.nav li a{display:block;padding:7px 14px;border-radius:8px;font-size:13.5px;color:var(--muted)}
+.nav li a:hover{background:var(--bg2);color:var(--text);text-decoration:none}
+
+h2{font-size:22px;color:#fff;margin:36px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+h2 .ico{font-size:20px}
+h3{font-size:17px;color:var(--blue);margin:20px 0 10px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+th{background:var(--bg3);color:#fff;text-align:left;padding:9px 12px;border:1px solid var(--border);font-weight:600}
+td{padding:8px 12px;border:1px solid var(--border);vertical-align:top}
+tr:nth-child(even) td{background:rgba(22,27,34,.5)}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:6px;margin-right:4px;border:1px solid}
+.tag-core{color:var(--purple);border-color:rgba(210,168,255,.4)}
+.tag-base{color:var(--blue);border-color:rgba(88,166,255,.4)}
+.tag-ops{color:var(--teal);border-color:rgba(57,197,207,.4)}
+.tag-imp{color:var(--amber);border-color:rgba(210,153,34,.4)}
+
+/* product card */
+.pcard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s}
+.pcard:hover{border-color:var(--blue)}
+.pcard .pname{font-size:16px;color:#fff;font-weight:600}
+.pcard .pmeta{font-size:12px;color:var(--muted)}
+.pcard .pdesc{font-size:13px;color:var(--muted);flex:1}
+.pcard .plinks{display:flex;flex-wrap:wrap;gap:6px}
+.plink{font-size:12px;padding:3px 10px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--blue)}
+.plink:hover{background:#1f6feb33;text-decoration:none}
+
+/* schedule */
+.day{display:grid;grid-template-columns:64px 1fr 1fr 1fr;gap:10px;align-items:start;padding:12px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:var(--bg2)}
+.day .dnum{font-size:20px;font-weight:700;color:var(--blue);text-align:center;padding-top:6px}
+.day .slot{font-size:13px}
+.day .slot b{display:block;color:#fff;font-size:13.5px;margin-bottom:3px}
+.day .out{font-size:12.5px;color:var(--green)}
+.day .out b{color:var(--green)}
+.alert{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.35);border-radius:10px;padding:12px 16px;font-size:13.5px;color:#ffb3ad;margin:10px 0}
+.ok{color:var(--green)}
+.warn{color:var(--amber)}
+
+footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:12.5px;text-align:center}
+@media print{
+  body{background:#fff;color:#222}
+  header{background:#fff;border:1px solid #ccc;color:#222}
+  .nav{display:none}
+  .card,.pcard,.day{background:#fff;border:1px solid #bbb;color:#222}
+  table th{background:#eee;color:#222}
+  h2,h3{color:#000}
+  .pcard .pname,.day .slot b{color:#000}
+  a{color:#0000cc}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>AI AllInOne <span>企业内网 AI 平台</span> · 培训计划</h1>
+  <div class="sub">One server. One SSO. The whole enterprise AI stack — free and self-hosted. 本培训体系面向平台部署与运维上岗，共 16+ 模块、60 学时、10 个工作日。</div>
+  <div class="badges">
+    <span class="badge">版本 <b>v1.0</b></span>
+    <span class="badge">2026-08-19</span>
+    <span class="badge">模块 <b>17</b></span>
+    <span class="badge">学时 <b>60</b></span>
+    <span class="badge">考核 <b>理论+实操+答辩</b></span>
+    <span class="badge">结业证书 ✓</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <ul>
+    <li><a href="#overview">培训总览</a></li>
+    <li><a href="#schedule">10 日日程</a></li>
+    <li><a href="#modules">产品模块</a></li>
+    <li><a href="#exam">考核体系</a></li>
+    <li><a href="#resources">参考资料</a></li>
+    <li><a href="#docs">配套文档</a></li>
+  </ul>
+</nav>
+
+<h2 id="overview"><span class="ico">🎯</span> 培训总览</h2>
+<div class="card">
+  <h3>目标能力</h3>
+  <table>
+    <tr><th>能力</th><th>达标标准</th></tr>
+    <tr><td>部署</td><td>独立完成 Windows 11 + Docker Desktop 全栈部署（约 41 容器），走通 LLM 全链路</td></tr>
+    <tr><td>配置</td><td>独立完成 Keycloak SSO、NewAPI 渠道、Dify 模型/知识库、Ghost 门户、Gitea CI/CD、MCP Gateway 互连配置</td></tr>
+    <tr><td>运维</td><td>日常巡检、健康检查、备份恢复、日志查询、故障排查</td></tr>
+    <tr><td>答疑</td><td>面对「怎么用 / 为什么不能用 / 怎么配」能给出正确回答</td></tr>
+    <tr><td>安全</td><td>理解 PII 脱敏、数据分级（公开/内部/机密）、内网合规</td></tr>
+  </table>
+  <h3>角色分层</h3>
+  <table>
+    <tr><th>角色</th><th>对象</th><th>深度</th><th>考核</th></tr>
+    <tr><td>A · 平台管理员（核心）</td><td>部署/运维技术人员</td><td>全部 17 模块，深度掌握</td><td>理论+实操+答辩</td></tr>
+    <tr><td>B · 产品运营/内容管理员</td><td>门户内容、知识库、日常答疑</td><td>8 个重点模块，中深度</td><td>理论+实操</td></tr>
+    <tr><td>C · 普通用户支持人员</td><td>一线答疑、用户培训</td><td>5 个模块，了解级</td><td>理论</td></tr>
+  </table>
+  <p class="warn">默认按 A 级制定全套计划；B、C 级可裁减对应模块。详细内容见 <a href="00-总纲/培训总纲.md">培训总纲.md</a></p>
+</div>
+
+<h2 id="schedule"><span class="ico">📅</span> 10 日培训日程（A 级管理员班）</h2>
+<div class="day"><div class="dnum">D1</div><div class="slot"><b>M01 平台总览与架构</b>组件 / 端口 / 数据流 / 安全模型</div><div class="slot"><b>M02 Docker 基础 + 环境准备</b>Docker Desktop、.wslconfig、目录、.env、ai-platform 网络、固定 IP</div><div class="out"><b>产出：</b>环境就绪；画出平台架构图</div></div>
+<div class="day"><div class="dnum">D2</div><div class="slot"><b>M02 Docker Compose 深度 + 核心服务启动</b>10 容器 Up + 逐服务验证</div><div class="slot"><b>M02 续：Dify 独立部署</b>15 容器 + 排错（GRAPH_ENGINE / WebSocket）+ Ollama bge-m3</div><div class="out"><b>产出：</b>41 容器全 Up；提交部署日志</div></div>
+<div class="day"><div class="dnum">D3</div><div class="slot"><b>M03 Keycloak 上</b>Realm / 用户 / 组 / 角色 / OIDC Client</div><div class="slot"><b>M03 Keycloak 下</b>AD/LDAP 联邦 + Entra ID / SAML 多身份源 + 排错</div><div class="out"><b>产出：</b>Keycloak SSO 登录验证通过</div></div>
+<div class="day"><div class="dnum">D4</div><div class="slot"><b>M04 NewAPI</b>初始化 / 渠道 / 令牌 / 额度 / OIDC 接入 / 提权</div><div class="slot"><b>M05 LiteLLM + Presidio</b>模型列表 / PII 脱敏 / 语义缓存 / Langfuse 上报</div><div class="out"><b>产出：</b>LLM 全链路（NewAPI→LiteLLM→DeepSeek）打通</div></div>
+<div class="day"><div class="dnum">D5</div><div class="slot"><b>M06 Dify 上</b>模型供应商 / 聊天助手 / Agent</div><div class="slot"><b>M06 Dify 下</b>知识库 RAG / Knowledge API / 工作流 / 发布</div><div class="out"><b>产出：</b>Dify 应用 + 知识库检索可用</div></div>
+<div class="day"><div class="dnum">D6</div><div class="slot"><b>M07 Ghost</b>初始化 / Corp Portal 主题 / 内容种子 / 下载中心</div><div class="slot"><b>M08 Gitea + Runner</b>Actions / deepchat-sync / 工作流语法 / SSO</div><div class="out"><b>产出：</b>门户发布文章；CI 工作流跑通</div></div>
+<div class="day"><div class="dnum">D7</div><div class="slot"><b>M09 DeepChat</b>安装 / 模型配置 / MCP / Skill / 更新链路</div><div class="slot"><b>M10 MCP Gateway</b>内置工具 / 外部 MCP / Skill 市场 / RAG 检索</div><div class="out"><b>产出：</b>DeepChat 调 search_knowledge 成功</div></div>
+<div class="day"><div class="dnum">D8</div><div class="slot"><b>M11 AI 管理中心</b>初始化 / 菜单 / 分模块授权 / 备份恢复</div><div class="slot"><b>M12~M16 运维模块</b>Update Server / 监控告警 / Langfuse / Loki / MailHog</div><div class="out"><b>产出：</b>管理中心全功能可用；告警配置完成</div></div>
+<div class="day"><div class="dnum">D9</div><div class="slot"><b>综合实战一</b>12 项互连验证 + health-check.ps1 全绿</div><div class="slot"><b>综合实战二 · M17 AI 运维</b>Agent 驱动巡检 / 备份 / 故障演练 / 发布</div><div class="out"><b>产出：</b>12 项互连全绿；健康检查 ALL CLEAR</div></div>
+<div class="day"><div class="dnum">D10</div><div class="slot"><b>总复习 + 答疑 + 模拟答辩</b></div><div class="slot"><b>结业考核</b>理论 100 题（90min）+ 实操（120min）+ 答辩</div><div class="out"><b>产出：</b>三项考核完成并评分、结业</div></div>
+<div class="alert">⚠️ 培训纪律：使用测试数据；凭据仅存 .env；遇到问题先按《故障排查手册》自查再求助；破坏性操作须讲师监督。B/C 级班日程按总纲裁减。</div>
+
+<h2 id="modules"><span class="ico">🧩</span> 产品模块（16 个产品文件夹 + 平台总览）</h2>
+<div class="alert" style="background:rgba(88,166,255,.08);border-color:rgba(88,166,255,.35);color:#9ecbff">📚 <b>每个产品文件夹都有一份《参考资料清单.md》</b>：本地文档（docs 手册对应章节 + 部署指南 + 源码/配置）+ 官方文档 + 视频教程 + 优质图文，按「先本地 → 再官方 → 后视频」给出自学路径。</div>
+<div class="grid">
+
+<div class="pcard"><div class="pname">M01 平台总览与架构 <span class="tag tag-base">基础</span></div><div class="pmeta">6 层架构 · 16 端口 · 数据流 · 安全模型</div><div class="pdesc">动手前建立完整平台地图：LLM 请求流 5 步、用户访问流、自动更新流、RAG 流、认证流。</div><div class="plinks"><a class="plink" href="00-总纲/平台总览教材-M01.md">教材</a></div></div>
+
+<div class="pcard"><div class="pname">M02 Docker + Compose + Ollama <span class="tag tag-base">基础</span></div><div class="pmeta">41 容器底座 · 6 学时</div><div class="pdesc">镜像/容器/卷/网络、compose 语法、8 个端口冲突、.env 必填项、Dify 独立部署、bge-m3 本地 embedding。</div><div class="plinks"><a class="plink" href="15-docker-ollama/培训大纲.md">大纲</a><a class="plink" href="15-docker-ollama/教材.md">教材</a><a class="plink" href="15-docker-ollama/培训计划与考试.md">计划/考试</a><a class="plink" href="15-docker-ollama/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M03 Keycloak 统一认证 <span class="tag tag-core">核心</span></div><div class="pmeta">SSO/OIDC/AD 联邦 · 6 学时</div><div class="pdesc">Realm/Client/User/Role、OIDC Client 配置、AD/LDAP 用户联合（重点）、多身份源共存、SSO 排错（invalid_grant/429）。</div><div class="plinks"><a class="plink" href="01-keycloak/培训大纲.md">大纲</a><a class="plink" href="01-keycloak/教材.md">教材</a><a class="plink" href="01-keycloak/培训计划.md">计划</a><a class="plink" href="01-keycloak/考试考察.md">考试</a><a class="plink" href="01-keycloak/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M04 NewAPI LLM 路由 <span class="tag tag-core">核心</span></div><div class="pmeta">渠道/令牌/额度/审计 · 3 学时</div><div class="pdesc">初始化向导、渠道指向 LiteLLM、密钥分离、OIDC 接入（host.docker.internal 修正 + 服务器地址 + 提权）、成本/审计、限流。</div><div class="plinks"><a class="plink" href="02-newapi/培训大纲.md">大纲</a><a class="plink" href="02-newapi/教材.md">教材</a><a class="plink" href="02-newapi/培训计划.md">计划</a><a class="plink" href="02-newapi/考试考察.md">考试</a><a class="plink" href="02-newapi/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M05 LiteLLM + Presidio <span class="tag tag-core">核心</span></div><div class="pmeta">PII 脱敏/语义缓存 · 3 学时</div><div class="pdesc">config.yaml 结构、内置正则脱敏 + 敏感词 BLOCK、Presidio 端点坑、Redis 语义缓存（bge-m3）、Langfuse 上报。</div><div class="plinks"><a class="plink" href="03-litellm-presidio/培训大纲.md">大纲</a><a class="plink" href="03-litellm-presidio/教材.md">教材</a><a class="plink" href="03-litellm-presidio/培训计划.md">计划</a><a class="plink" href="03-litellm-presidio/考试考察.md">考试</a><a class="plink" href="03-litellm-presidio/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M06 Dify AI 应用平台 <span class="tag tag-core">核心</span></div><div class="pmeta">应用/Agent/工作流/RAG · 6 学时</div><div class="pdesc">独立部署排错、模型供应商、五类应用、知识库高质量索引、Knowledge API、Chatflow 智能客服、发布嵌入、密码重置。</div><div class="plinks"><a class="plink" href="04-dify/培训大纲.md">大纲</a><a class="plink" href="04-dify/教材.md">教材</a><a class="plink" href="04-dify/培训计划.md">计划</a><a class="plink" href="04-dify/考试考察.md">考试</a><a class="plink" href="04-dify/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M07 Ghost 企业门户 <span class="tag tag-core">核心</span></div><div class="pmeta">内容/主题/下载中心 · 3 学时</div><div class="pdesc">SQLite 坑、Corp Portal 主题、内容种子导入、文章/导航、MailHog 验证码、AI 管理中心免登录（TOTP）。</div><div class="plinks"><a class="plink" href="05-ghost/培训大纲.md">大纲</a><a class="plink" href="05-ghost/教材.md">教材</a><a class="plink" href="05-ghost/培训计划.md">计划</a><a class="plink" href="05-ghost/考试考察.md">考试</a><a class="plink" href="05-ghost/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M08 Gitea + Runner <span class="tag tag-core">核心</span></div><div class="pmeta">Git/CI/CD · 3 学时</div><div class="pdesc">Runner 注册与 4 个坑、deepchat-sync 工作流（sync-config.json 三开关）、Actions 语法、SSO 自动注册、ROOT_URL。</div><div class="plinks"><a class="plink" href="06-gitea-runner/培训大纲.md">大纲</a><a class="plink" href="06-gitea-runner/教材.md">教材</a><a class="plink" href="06-gitea-runner/培训计划.md">计划</a><a class="plink" href="06-gitea-runner/考试考察.md">考试</a><a class="plink" href="06-gitea-runner/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M09 DeepChat 桌面客户端 <span class="tag tag-core">核心</span></div><div class="pmeta">模型/MCP/Skill/更新 · 3 学时</div><div class="pdesc">安装配置、手动 MCP（跳过至手动配置）、SSE 提示、Skill URL 安装、技能管家（主机名坑）、自动更新链路。</div><div class="plinks"><a class="plink" href="07-deepchat/培训大纲.md">大纲</a><a class="plink" href="07-deepchat/教材.md">教材</a><a class="plink" href="07-deepchat/培训计划.md">计划</a><a class="plink" href="07-deepchat/考试考察.md">考试</a><a class="plink" href="07-deepchat/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M10 MCP Gateway <span class="tag tag-core">核心</span></div><div class="pmeta">工具/Skill 市场/RAG · 3 学时</div><div class="pdesc">MCP 协议、内置 4 工具、外部 Server 聚合、Skill 市场、search_knowledge 全链路（3 个坑）、管理 API。</div><div class="plinks"><a class="plink" href="09-mcp-gateway/培训大纲.md">大纲</a><a class="plink" href="09-mcp-gateway/教材.md">教材</a><a class="plink" href="09-mcp-gateway/培训计划.md">计划</a><a class="plink" href="09-mcp-gateway/考试考察.md">考试</a><a class="plink" href="09-mcp-gateway/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M11 AI 管理中心 <span class="tag tag-core">核心</span></div><div class="pmeta">统一管理门户 · 4 学时</div><div class="pdesc">Global Admin 初始化、菜单全览、分模块授权（admin:产品 + 产品侧 provision）、备份恢复、可用性测试、报告、IM 告警。</div><div class="plinks"><a class="plink" href="10-admin-center/培训大纲.md">大纲</a><a class="plink" href="10-admin-center/教材.md">教材</a><a class="plink" href="10-admin-center/培训计划.md">计划</a><a class="plink" href="10-admin-center/考试考察.md">考试</a><a class="plink" href="10-admin-center/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M12 Update Server <span class="tag tag-base">基础</span></div><div class="pmeta">安装包分发 · 1 学时</div><div class="pdesc">分发链路、手工上传验证、latest.yml/version.txt/publish.url、403 属正常、防版本回退。</div><div class="plinks"><a class="plink" href="08-update-server/培训大纲.md">大纲</a><a class="plink" href="08-update-server/教材.md">教材</a><a class="plink" href="08-update-server/培训计划与考试.md">计划/考试</a><a class="plink" href="08-update-server/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M13 监控告警 <span class="tag tag-imp">重要</span></div><div class="pmeta">Prometheus+Grafana+Alertmanager · 2 学时</div><div class="pdesc">cadvisor 采集、大盘操作、两条防误报规则、IM 告警配置（群机器人/企业应用）、端口冲突。</div><div class="plinks"><a class="plink" href="11-monitoring/培训大纲.md">大纲</a><a class="plink" href="11-monitoring/教材.md">教材</a><a class="plink" href="11-monitoring/培训计划与考试.md">计划/考试</a><a class="plink" href="11-monitoring/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M14 Langfuse 可观测 <span class="tag tag-imp">重要</span></div><div class="pmeta">LLM 追踪/成本 · 1.5 学时</div><div class="pdesc">trace 解读、V4_WRITE_MODE=dual 坑、SSO 组织绑定坑、成本分析、Prompt 管理入门。</div><div class="plinks"><a class="plink" href="12-langfuse/培训大纲.md">大纲</a><a class="plink" href="12-langfuse/教材.md">教材</a><a class="plink" href="12-langfuse/培训计划与考试.md">计划/考试</a><a class="plink" href="12-langfuse/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M15 Loki 统一日志 <span class="tag tag-imp">重要</span></div><div class="pmeta">Loki+Promtail · 1 学时</div><div class="pdesc">只索引标签的设计、统一日志页查询、LogQL 基础、Docker Desktop 挂载坑。</div><div class="plinks"><a class="plink" href="13-loki/培训大纲.md">大纲</a><a class="plink" href="13-loki/教材.md">教材</a><a class="plink" href="13-loki/培训计划与考试.md">计划/考试</a><a class="plink" href="13-loki/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M16 MailHog 邮件接收器 <span class="tag tag-base">基础</span></div><div class="pmeta">0.5 学时</div><div class="pdesc">Ghost 邮件出口、验证码查看 :8025、TOTP 免登录原理。考核并入 M07。</div><div class="plinks"><a class="plink" href="14-mailhog/培训大纲与教材.md">大纲/教材</a><a class="plink" href="14-mailhog/参考资料清单.md">资料</a></div></div>
+
+<div class="pcard"><div class="pname">M17 AI Agent 运维 <span class="tag tag-imp">进阶</span></div><div class="pmeta">WorkBuddy/OpenClaw/Scout · 3 学时</div><div class="pdesc">原理、10 个常用提示词、Best Practices（前端/后端重载、验证不轻信）、health-check.ps1、quick command reference。</div><div class="plinks"><a class="plink" href="16-ai-agent-ops/培训大纲.md">大纲</a><a class="plink" href="16-ai-agent-ops/教材.md">教材</a><a class="plink" href="16-ai-agent-ops/培训计划与考试.md">计划/考试</a><a class="plink" href="16-ai-agent-ops/参考资料清单.md">资料</a></div></div>
+
+</div>
+
+<h2 id="exam"><span class="ico">📝</span> 考核体系</h2>
+<div class="card">
+  <table>
+    <tr><th>考核项</th><th>形式</th><th>权重</th><th>通过线</th><th>组织</th></tr>
+    <tr><td>理论考试</td><td>闭卷笔试 100 题（单选50/多选15/判断25/简答10）</td><td>40%</td><td>≥70 分</td><td>D10 · 90 分钟</td></tr>
+    <tr><td>实操考核</td><td>现场操作（13 项，⭐ 关键项全过）</td><td>40%</td><td>关键项全过</td><td>D10 · 120 分钟</td></tr>
+    <tr><td>综合答辩</td><td>模拟用户提问（员工/管理层/同事三类）</td><td>20%</td><td>≥70 分</td><td>D10 · 10 分钟/人</td></tr>
+  </table>
+  <p><b>总评 = 理论×0.4 + 实操×0.4 + 答辩×0.2，≥70 结业；单科 &lt;60 需补考。</b> 实操关键项任一不通过即实操不合格。</p>
+  <h3>考核文档</h3>
+  <div class="plinks" style="margin-top:6px">
+    <a class="plink" href="17-考试考察/总考试考察方案.md">总考试考察方案</a>
+    <a class="plink" href="17-考试考察/理论考试题库.md">理论考试题库（100 题含答案）</a>
+    <a class="plink" href="17-考试考察/上机实操考核清单.md">上机实操考核清单</a>
+    <a class="plink" href="17-考试考察/考核评分表.md">考核评分表（含结业证书模板）</a>
+  </div>
+</div>
+
+<h2 id="resources"><span class="ico">📚</span> 参考资料</h2>
+<div class="card">
+  <table>
+    <tr><th>资源</th><th>位置</th></tr>
+    <tr><td>📚 <b>各产品全套资料清单</b>（本地文档 + 官方文档 + 视频 + 图文，每个产品一份）</td><td>各产品文件夹下的 <code>参考资料清单.md</code>（01-keycloak/ … 16-ai-agent-ops/）</td></tr>
+    <tr><td>视频教程索引（B 站 / YouTube，按模块归类）</td><td><a href="99-参考资料/视频教程索引.md">99-参考资料/视频教程索引.md</a></td></tr>
+    <tr><td>官方文档快照（离线）</td><td>各产品 <code>参考资料/</code> 目录（含抓取脚本说明 <a href="99-参考资料/README.md">99-参考资料/README.md</a>）</td></tr>
+    <tr><td>官方文档链接总表（原厂索引）</td><td><a href="../../../../docs/i18n/admin-manual-zh-cn/ch30-appendix.md">../../docs/i18n/admin-manual-zh-cn/ch30-appendix.md</a></td></tr>
+    <tr><td>平台管理员手册（中文 30 章）</td><td><a href="../../../../docs/i18n/admin-manual-zh-cn/index.md">../../docs/i18n/admin-manual-zh-cn/index.md</a></td></tr>
+    <tr><td>平台用户手册（中文 8 章）</td><td><a href="../../docs/i18n/user-manual-zh-cn/index.md">docs/i18n/user-manual-zh-cn/index.md</a></td></tr>
+    <tr><td>Windows 部署指南（权威指南）</td><td><a href="../../../../windows/windows-deploy-guide-v2.md">../../windows/windows-deploy-guide-v2.md</a></td></tr>
+    <tr><td>AI Agent 运维指南</td><td><a href="../../../../AI-AGENT-OPS.md">../../AI-AGENT-OPS.md</a></td></tr>
+    <tr><td>AD 集成完整指南</td><td><a href="../../../../windows/windows-ad-integration.html">../../windows/windows-ad-integration.html</a></td></tr>
+    <tr><td>账号密码清单（机密）</td><td>../../windows/credentials.html（不随培训材料外传）</td></tr>
+  </table>
+</div>
+
+<h2 id="docs"><span class="ico">📁</span> 培训目录结构</h2>
+<div class="card" style="font-family:Consolas,'Cascadia Code',monospace;font-size:13px;line-height:1.9">
+<pre>
+C:\AIAllInOne\trainning\
+├── index.html                  ← 本文件（HTML 培训计划主页）
+├── 00-总纲\
+│   ├── 培训总纲.md             ← 目标/对象/体系/原则/考核
+│   ├── 总体培训计划.md         ← 10 日日程表/阶段测验/讲师清单
+│   └── 平台总览教材-M01.md
+├── 01-keycloak\ … 16-ai-agent-ops\   ← 每个产品一个文件夹
+│   ├── 培训大纲.md / 教材.md / 培训计划.md / 考试考察.md
+│   ├── 参考资料清单.md          ← 本地文档+官方文档+视频+图文 全套资料
+│   └── 参考资料\（官方文档快照）
+├── 17-考试考察\
+│   ├── 总考试考察方案.md / 理论考试题库.md
+│   ├── 上机实操考核清单.md / 考核评分表.md
+│   └── 成绩\（归档）
+└── 99-参考资料\
+    ├── 视频教程索引.md / 官方文档快照 / 下载脚本
+</pre>
+</div>
+
+<footer>
+  AI AllInOne 培训体系 v1.0 · 生成于 2026-08-19 · 基于 ../../windows/windows-deploy-guide-v2.md 与 docs/ 手册提炼<br>
+  说明：本 HTML 页面可直接浏览器打开、Ctrl+P 打印/另存 PDF；后续可据此生成培训手册 PDF。
+</footer>
+
+</div>
+</body>
+</html>

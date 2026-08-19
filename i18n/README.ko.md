@@ -124,6 +124,15 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 | **관리자 매뉴얼** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
 | **사용자 매뉴얼** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
 
+## 🎓 교육 프로그램
+
+이 플랫폼에는 배포 및 운영을 위한 **완전한 교육 프로그램**(모듈 17개, 60시간, 영업일 10일)이 포함되어 있습니다:
+
+| 패키지 | 언어 | 진입점 |
+|---|---|---|
+| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
+| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+
 일상적인 AI Agent 운영은 **[AI Agent 운영 가이드](../AI-AGENT-OPS.md)**를 참조하세요.
 
 ## 👥 커뮤니티

@@ -124,6 +124,17 @@ docker compose up -d
 | **管理员手册** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
 | **用户手册** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
 
+## 🎓 培训体系
+
+平台自带一整套**上岗培训体系**（17 个模块、60 学时、10 个工作日），面向部署与运维：培训总纲、10 日培训计划、各产品培训大纲/教材/上机计划/考试考察（均附本地 + 官方 + 视频资料），以及结业考试体系（含证书）。
+
+| 培训包 | 语言 | 入口 |
+|---|---|---|
+| **简体中文** | 中文 | [training/training_chn/index.html](../training/training_chn/index.html) |
+| **English** | 英文 | [training/training_eng/index.html](../training/training_eng/index.html) |
+
+> ⚠️ 发布说明：GitHub 版 README 关联**英文版**培训包；Gitee 版默认中文 README 关联**中文版**培训包——保持语言匹配。
+
 日常 AI Agent 运维见 **[AI Agent 运维指南](../AI-AGENT-OPS.md)**。
 
 ## 👥 社区

@@ -124,6 +124,15 @@ Mais capturas de tela (48 capturas reais da interface) estão incorporadas no [M
 | **Manual do Administrador** | [English](../docs/admin-manual/index.md) · [简体中文](../docs/i18n/admin-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/admin-manual-zh-TW/index.md) · [Français](../docs/i18n/admin-manual-fr/index.md) · [Español](../docs/i18n/admin-manual-es/index.md) · [Português](../docs/i18n/admin-manual-pt/index.md) · [日本語](../docs/i18n/admin-manual-ja/index.md) · [한국어](../docs/i18n/admin-manual-ko/index.md) · [العربية](../docs/i18n/admin-manual-ar/index.md) |
 | **Manual do Usuário** | [English](../docs/user-manual/index.md) · [简体中文](../docs/i18n/user-manual-zh-cn/index.md) · [繁體中文](../docs/i18n/user-manual-zh-TW/index.md) · [Français](../docs/i18n/user-manual-fr/index.md) · [Español](../docs/i18n/user-manual-es/index.md) · [Português](../docs/i18n/user-manual-pt/index.md) · [日本語](../docs/i18n/user-manual-ja/index.md) · [한국어](../docs/i18n/user-manual-ko/index.md) · [العربية](../docs/i18n/user-manual-ar/index.md) |
 
+## 🎓 Programa de treinamento
+
+A plataforma inclui um **programa de treinamento completo** (17 módulos, 60 horas, 10 dias úteis) para integração em implantação e operação:
+
+| Pacote | Idioma | Entrada |
+|---|---|---|
+| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
+| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+
 Para operação diária com AI Agent, consulte o **[Guia de Operação do AI Agent](../AI-AGENT-OPS.md)**.
 
 ## 👥 Comunidade
