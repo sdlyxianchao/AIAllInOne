@@ -130,8 +130,8 @@ La plataforma incluye un **programa de formación completo** (17 módulos, 60 ho
 
 | Paquete | Idioma | Entrada |
 |---|---|---|
-| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
-| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+| **English** | EN | [training/training_eng/index.md](../training/training_eng/index.md) |
+| **简体中文** | zh-CN | [training/training_chn/index.md](../training/training_chn/index.md) |
 
 Para la operación diaria con agentes de IA, consulta la **[guía de operaciones de agentes de IA](../AI-AGENT-OPS.md)**.
 

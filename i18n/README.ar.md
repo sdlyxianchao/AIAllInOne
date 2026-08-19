@@ -130,8 +130,8 @@ docker compose up -d
 
 | الحزمة | اللغة | الدخول |
 |---|---|---|
-| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
-| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+| **English** | EN | [training/training_eng/index.md](../training/training_eng/index.md) |
+| **简体中文** | zh-CN | [training/training_chn/index.md](../training/training_chn/index.md) |
 
 للصيانة اليومية عبر وكيل الذكاء الاصطناعي راجع **[دليل تشغيل وكيل الذكاء الاصطناعي](../AI-AGENT-OPS.md)**.
 

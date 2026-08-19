@@ -130,8 +130,8 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 | 패키지 | 언어 | 진입점 |
 |---|---|---|
-| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
-| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+| **English** | EN | [training/training_eng/index.md](../training/training_eng/index.md) |
+| **简体中文** | zh-CN | [training/training_chn/index.md](../training/training_chn/index.md) |
 
 일상적인 AI Agent 운영은 **[AI Agent 운영 가이드](../AI-AGENT-OPS.md)**를 참조하세요.
 

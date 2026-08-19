@@ -130,8 +130,8 @@ docker compose up -d
 
 | 培训包 | 语言 | 入口 |
 |---|---|---|
-| **简体中文** | 中文 | [training/training_chn/index.html](../training/training_chn/index.html) |
-| **English** | 英文 | [training/training_eng/index.html](../training/training_eng/index.html) |
+| **简体中文** | 中文 | [training/training_chn/index.md](../training/training_chn/index.md) |
+| **English** | 英文 | [training/training_eng/index.md](../training/training_eng/index.md) |
 
 > ⚠️ 发布说明：GitHub 版 README 关联**英文版**培训包；Gitee 版默认中文 README 关联**中文版**培训包——保持语言匹配。
 

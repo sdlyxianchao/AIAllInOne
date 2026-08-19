@@ -130,8 +130,8 @@ A plataforma inclui um **programa de treinamento completo** (17 módulos, 60 hor
 
 | Pacote | Idioma | Entrada |
 |---|---|---|
-| **English** | EN | [training/training_eng/index.html](../training/training_eng/index.html) |
-| **简体中文** | zh-CN | [training/training_chn/index.html](../training/training_chn/index.html) |
+| **English** | EN | [training/training_eng/index.md](../training/training_eng/index.md) |
+| **简体中文** | zh-CN | [training/training_chn/index.md](../training/training_chn/index.md) |
 
 Para operação diária com AI Agent, consulte o **[Guia de Operação do AI Agent](../AI-AGENT-OPS.md)**.
 

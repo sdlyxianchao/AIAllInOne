@@ -55,7 +55,7 @@ DeepSeek（platform.deepseek.com）注册即可，成本低；至少 1 个 Key �
 ### 7. 后续要生成培训手册 PDF？
 本套材料为 Markdown + HTML，可直接打印/转换：
 - 单文件转 PDF：Typora / VS Code + Markdown PDF 插件 / Pandoc；
-- 整套手册：由 `index.html`（已含打印样式）Ctrl+P 另存 PDF，或按目录逐章合成。
+- 整套手册：由 `index.md`（Markdown 源）用 Typora / Pandoc 转换为 PDF，或按目录逐章合成。
 
 ### 8. 内网怎么访问视频教程？
 视频索引（`99-参考资料/视频教程索引.md`）均为公网链接。需要内网化时，可提前下载视频放内网共享或门户（注意版权），并更新索引中的链接。

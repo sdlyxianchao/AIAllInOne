@@ -130,8 +130,8 @@ docker compose up -d
 
 | 培訓包 | 語言 | 入口 |
 |---|---|---|
-| **English** | 英文 | [training/training_eng/index.html](../training/training_eng/index.html) |
-| **简体中文** | 中文 | [training/training_chn/index.html](../training/training_chn/index.html) |
+| **English** | 英文 | [training/training_eng/index.md](../training/training_eng/index.md) |
+| **简体中文** | 中文 | [training/training_chn/index.md](../training/training_chn/index.md) |
 
 日常 AI Agent 維運請見 **[AI Agent 維運指南](../AI-AGENT-OPS.md)**。
 

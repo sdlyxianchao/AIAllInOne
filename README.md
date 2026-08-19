@@ -131,8 +131,8 @@ The platform ships with a complete **on-the-job training program** (17 modules, 
 
 | Training package | Language | Entry |
 |---|---|---|
-| **English** | EN | [training/training_eng/index.html](training/training_eng/index.html) |
-| **简体中文** | zh-CN | [training/training_chn/index.html](training/training_chn/index.html) |
+| **English** | EN | [training/training_eng/index.md](training/training_eng/index.md) |
+| **简体中文** | zh-CN | [training/training_chn/index.md](training/training_chn/index.md) |
 
 > ⚠️ For published copies (GitHub / Gitee): the English README links to the **English** training package; the Chinese README (Gitee default) links to the **Chinese** package — keep the language matched.
 

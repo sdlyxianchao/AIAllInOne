@@ -107,7 +107,7 @@ See `17-exam/`: exam scheme, 100-question bank (with answers), hands-on checklis
 | 16 product packages (outline/textbook/plan/exam) | `01-keycloak/` … `16-ai-agent-ops/` |
 | Exam package | `17-exam/` |
 | Video tutorial index | `99-references/video-index.md` |
-| HTML portal | `index.html` |
+| Markdown portal | `index.md` |
 
 ---
 *This master outline is the top-level document; module details live in their folders.*
