@@ -200,9 +200,9 @@ AI AllInOne이 시간이나 비용을 절약해 준다면, Star 하나는 비용
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # 스킬 위치: AIAllInOne/AIOperation/agent/
    ```
-2. **설치** — 폴더를 에이전트의 스킬 디렉토리로 복사(WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`; 다른 에이전트는 각자 스킬 폴더 규칙을 따름):
+2. **설치** — 폴더를 에이전트의 스킬 디렉토리로 복사(WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-deploy-ops/`; 다른 에이전트는 각자 스킬 폴더 규칙을 따름):
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **사용** — 배포 디렉토리에서 에이전트를 열고 그냥 요청하세요. 예: "헬스 체크 실행", "플랫폼 백업", "Ghost가 왜 다운됐지?", "v0.96 릴리스". 스킬이 `.env`에서 자격 증명을 직접 읽으므로 — 비밀번호를 붙여넣을 필요가 전혀 없고, 지정한 어떤 머신에도 자동으로 적응합니다.
 

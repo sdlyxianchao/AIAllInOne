@@ -200,9 +200,9 @@ AI AllInOne が時間やお金の節約になっているなら、Star は無料
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # スキルは AIAllInOne/AIOperation/agent/ にあります
    ```
-2. **インストール** — フォルダーをエージェントのスキルディレクトリへコピー（WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`。他のエージェントは各々のスキルフォルダー規約に従う）：
+2. **インストール** — フォルダーをエージェントのスキルディレクトリへコピー（WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-deploy-ops/`。他のエージェントは各々のスキルフォルダー規約に従う）：
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **使用** — デプロイディレクトリでエージェントを開き、たとえば「健康チェックを実行して」「プラットフォームをバックアップして」「Ghost が落ちているのはなぜ？」「v0.96 をリリースして」と指示するだけ。スキルは `.env` から自分で認証情報を読み取ります——パスワードを貼り付ける必要は一切なく、指定したどのマシンにも自動で適応します。
 

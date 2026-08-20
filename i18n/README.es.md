@@ -200,9 +200,9 @@ Una estrella en la esquina superior derecha es el mayor apoyo para este proyecto
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # la habilidad está en: AIAllInOne/AIOperation/agent/
    ```
-2. **Instálala** — copia la carpeta en el directorio de habilidades de tu agente (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`; otros agentes siguen su propia convención):
+2. **Instálala** — copia la carpeta en el directorio de habilidades de tu agente (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-deploy-ops/`; otros agentes siguen su propia convención):
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **Úsala** — abre el agente en tu directorio de despliegue y solo pregunta, p. ej. *«Ejecuta la comprobación de salud»*, *«Haz una copia de seguridad»*, *«¿Por qué está caído Ghost?»*, *«Publica v0.96»*. La habilidad lee las credenciales de `.env` por sí misma — nunca tienes que pegar contraseñas, y se adapta a cualquier máquina que le indiques.
 

@@ -200,9 +200,9 @@ Une étoile en haut à droite est le plus grand soutien pour ce projet.
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # la compétence se trouve dans : AIAllInOne/AIOperation/agent/
    ```
-2. **Installez-la** — copiez le dossier dans le répertoire de compétences de votre agent (WorkBuddy : `~/.workbuddy/skills/ai-all-in-one-ops/` ; les autres agents suivent leur propre convention) :
+2. **Installez-la** — copiez le dossier dans le répertoire de compétences de votre agent (WorkBuddy : `~/.workbuddy/skills/ai-all-in-one-deploy-ops/` ; les autres agents suivent leur propre convention) :
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **Utilisez-la** — ouvrez l'agent dans votre répertoire de déploiement et demandez simplement, par ex. *« Faites la vérification de santé »*, *« Sauvegardez la plateforme »*, *« Pourquoi Ghost est-il en panne ? »*, *« Publiez v0.96 »*. La compétence lit elle-même les identifiants dans `.env` — vous n'avez jamais à coller de mot de passe, et elle s'adapte à la machine que vous lui indiquez.
 

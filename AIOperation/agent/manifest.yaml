@@ -1,6 +1,6 @@
-name: ai-all-in-one-ops
-version: 0.1.0
-description: Daily operations skill for the AI AllInOne open-source enterprise AI platform (self-hosted all-in-one stack) — health checks, container/log/config management, AI Admin Center unified management, native third-party product management, backup & restore, version releases and troubleshooting.
+name: ai-all-in-one-deploy-ops
+version: 0.2.0
+description: Deploy & operations skill for the AI AllInOne open-source enterprise AI platform (self-hosted all-in-one stack) — from-scratch deployment and initialization, health checks, container/log/config management, AI Admin Center unified management, native third-party product management, backup & restore, version releases and troubleshooting. The AI AllInOne platform must be deployed first (project address in the skill docs).
 category: devops
 author: sdlyxianchao
 license: MIT

@@ -82,6 +82,8 @@ docker compose up -d
 
 > 以下内容复制自部署指南（第 0 章）：部署指南既可以**人工逐章执行**，也可以**整体交给 AI Agent**（WorkBuddy / OpenClaw / Microsoft Scout）端到端完成。把本目录（部署指南、`windows-checklist.html`、`docker-compose.yml`、`.env.example`、`scripts/`）提供给 Agent，再粘贴下面的提示词，它会：判断平台 → 逐项向你收集参数 → 生成本地进度文件 → 按部署指南逐步配置 → 遇错调试重试 → 全程更新进度 → 最后做一次完整端到端验证并汇报结果。
 
+也可以配合项目自带的 **AIOps 技能**（本仓库的 `AIOperation/agent/` 目录，见下文「AI Agent 运维」章节）使用——技能包含完整的部署流程，同一个 Agent 既能先完成部署，之后也能用自然语言做日常运维。
+
 **复制给 Agent 的提示词**（Windows 平台，中文——Agent 会带你逐步完成）：
 
 ````text
@@ -202,9 +204,9 @@ docker compose up -d
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # 技能位于：AIAllInOne/AIOperation/agent/
    ```
-2. **安装**——把文件夹复制到你的 Agent 技能目录（WorkBuddy：`~/.workbuddy/skills/ai-all-in-one-ops/`；其它 Agent 按各自技能目录约定）：
+2. **安装**——把文件夹复制到你的 Agent 技能目录（WorkBuddy：`~/.workbuddy/skills/ai-all-in-one-deploy-ops/`；其它 Agent 按各自技能目录约定）：
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **使用**——在部署目录里打开 Agent 直接说，比如"跑一下健康检查"、"备份平台"、"为什么 Ghost 挂了"、"发布 v0.96"。技能自己从 `.env` 读凭据——你永远不需要粘贴密码，而且会自动适配你指向的任何机器。
 

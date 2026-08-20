@@ -200,9 +200,9 @@ docker compose up -d
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # 技能位於：AIAllInOne/AIOperation/agent/
    ```
-2. **安裝**——把資料夾複製到你的 Agent 技能目錄（WorkBuddy：`~/.workbuddy/skills/ai-all-in-one-ops/`；其它 Agent 依各自技能目錄慣例）：
+2. **安裝**——把資料夾複製到你的 Agent 技能目錄（WorkBuddy：`~/.workbuddy/skills/ai-all-in-one-deploy-ops/`；其它 Agent 依各自技能目錄慣例）：
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **使用**——在部署目錄裡打開 Agent 直接說，例如"跑一下健康檢查"、"備份平台"、"為什麼 Ghost 掛了"、"發布 v0.96"。技能會自己從 `.env` 讀取憑據——你永遠不需要貼上密碼，而且會自動適應你指向的任何機器。
 

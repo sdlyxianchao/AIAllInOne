@@ -200,9 +200,9 @@ docker compose up -d
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # المهارة موجودة في: AIAllInOne/AIOperation/agent/
    ```
-2. **التثبيت** — انسخ المجلد إلى دليل مهارات وكيلك (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`؛ الوكلاء الآخرون يتبعون اصطلاح مجلد المهارات الخاص بهم):
+2. **التثبيت** — انسخ المجلد إلى دليل مهارات وكيلك (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-deploy-ops/`؛ الوكلاء الآخرون يتبعون اصطلاح مجلد المهارات الخاص بهم):
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **الاستخدام** — افتح الوكيل في دليل النشر واسأل مباشرة، مثل «شغّل الفحص الصحي»، «انسخ المنصة احتياطيًا»، «لماذا تعطل Ghost؟»، «أصدر v0.96». تقرأ المهارة بيانات الاعتماد من `.env` بنفسها — لا تحتاج أبدًا إلى لصق كلمات المرور، وتتكيف مع أي جهاز تشير إليه.
 

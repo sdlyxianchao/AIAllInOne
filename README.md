@@ -83,6 +83,8 @@ Two ways to go from here:
 
 > Copied from the deployment guide (chapter 0): the guide can be executed **chapter by chapter by hand**, or handed to an **AI agent** end-to-end. With WorkBuddy / OpenClaw / Microsoft Scout, point the agent at this directory (guide, `windows-checklist.html`, `docker-compose.yml`, `.env.example`, `scripts/`), paste the prompt below, and it will: detect the platform → collect your parameters one by one → generate a local progress file → configure step by step per the guide → test, debug and retry on failures → update progress throughout → run a full end-to-end verification and report the results.
 
+You can also pair it with the bundled **AIOps skill** (the `AIOperation/agent/` folder in this repo, see the "AI Agent Operations" section below) — the skill covers the full deployment flow, so the same agent can deploy the platform first, then handle day-to-day ops with plain-language requests.
+
 **Prompt to copy to your agent** (Windows platform, English — the agent will walk you through it):
 
 ````text
@@ -203,9 +205,9 @@ One star on the top right is the biggest support for this project.
    git clone https://github.com/sdlyxianchao/AIAllInOne
    # the skill lives at: AIAllInOne/AIOperation/agent/
    ```
-2. **Install it** — copy the folder into your agent's skills directory (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`; other agents follow their own skill-folder convention):
+2. **Install it** — copy the folder into your agent's skills directory (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-deploy-ops/`; other agents follow their own skill-folder convention):
    ```bash
-   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
 3. **Use it** — open the agent in your deployment directory and just ask, e.g. *"Run the health check"*, *"Back up the platform"*, *"Why is Ghost down?"*, *"Publish v0.96"*. The skill reads `.env` for credentials itself — you never paste passwords, and it adapts to whichever machine you point it at.
 
