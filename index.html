@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI AllInOne — Enterprise AI Platform, Self-hosted & Open Source</title>
+<meta name="description" content="One server. One SSO. The whole enterprise AI stack — free and self-hosted. Keycloak, LLM routing, Dify, Ghost, Gitea, monitoring, logging, and backup.">
+<meta property="og:title" content="AI AllInOne — Enterprise AI Platform">
+<meta property="og:description" content="Open-source, self-hosted enterprise AI platform. Deploy in 30 minutes.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0a;--surface:#111;--border:#1a1a1a;--text:#e5e5e5;--text-muted:#888;
+  --accent:#00d4aa;--accent-dim:#00d4aa20;--accent-glow:#00d4aa40;
+  --mono:'SF Mono','Fira Code','JetBrains Mono',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Grid noise overlay */
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:60px 60px;opacity:.15;
+}
+
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* Hero */
+.hero{padding:120px 0 80px;text-align:center}
+.hero-badge{
+  display:inline-block;padding:6px 16px;border-radius:100px;
+  border:1px solid var(--accent);color:var(--accent);font-size:13px;
+  font-family:var(--mono);margin-bottom:32px;
+  background:var(--accent-dim);
+}
+.hero h1{font-size:clamp(2.4rem,5vw,3.6rem);font-weight:700;letter-spacing:-.03em;line-height:1.15;margin-bottom:20px}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:1.15rem;color:var(--text-muted);max-width:640px;margin:0 auto 40px;line-height:1.7}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 28px;border-radius:8px;font-size:15px;font-weight:600;
+  transition:all .2s;cursor:pointer;border:none;font-family:var(--sans);
+}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:#00eabb;text-decoration:none;transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid #333}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+/* Stats bar */
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:12px;
+  margin:0 auto 100px;max-width:700px;overflow:hidden;
+}
+.stat{background:var(--surface);padding:24px 16px;text-align:center}
+.stat-num{font-size:1.8rem;font-weight:700;font-family:var(--mono);color:var(--accent)}
+.stat-label{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+
+/* Section */
+section{padding:60px 0}
+section h2{
+  font-size:1.6rem;font-weight:700;letter-spacing:-.02em;margin-bottom:12px;
+}
+.section-desc{color:var(--text-muted);margin-bottom:48px;max-width:600px;font-size:.95rem}
+
+/* Features grid */
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.feature{background:var(--surface);padding:32px;transition:background .2s}
+.feature:hover{background:#161616}
+.feature-icon{font-size:1.6rem;margin-bottom:12px}
+.feature h3{font-size:1rem;font-weight:600;margin-bottom:8px}
+.feature p{font-size:.88rem;color:var(--text-muted);line-height:1.6}
+
+/* Stack table */
+.stack-table{width:100%;border-collapse:collapse;margin-top:32px}
+.stack-table th,.stack-table td{
+  padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);font-size:.88rem;
+}
+.stack-table th{color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;font-family:var(--mono)}
+.stack-table td:first-child{color:var(--accent);font-family:var(--mono);font-weight:500}
+.stack-table tr:hover{background:#111}
+
+/* Architecture */
+.arch-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:40px;margin-top:32px;text-align:center;
+}
+.arch-layers{display:flex;flex-direction:column;gap:8px;max-width:700px;margin:0 auto}
+.arch-layer{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+}
+.arch-chip{
+  padding:8px 14px;border-radius:6px;font-size:.8rem;font-family:var(--mono);
+  background:#1a1a1a;border:1px solid #222;white-space:nowrap;
+}
+.arch-chip.accent{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.arch-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:100%;margin-bottom:4px;font-family:var(--mono)}
+
+/* Quick start */
+.code-block{
+  background:#0d0d0d;border:1px solid var(--border);border-radius:10px;
+  padding:24px;margin-top:24px;overflow-x:auto;
+  font-family:var(--mono);font-size:.85rem;line-height:1.8;color:#ccc;
+}
+.code-block .comment{color:#555}
+.code-block .cmd{color:var(--accent)}
+
+/* CTA */
+.cta{
+  text-align:center;padding:80px 0;
+  background:linear-gradient(180deg,transparent,var(--accent-dim));
+  border-top:1px solid var(--border);
+}
+.cta h2{font-size:2rem;margin-bottom:16px}
+.cta p{color:var(--text-muted);margin-bottom:32px}
+
+/* Footer */
+footer{padding:40px 0;text-align:center;color:#444;font-size:.8rem;border-top:1px solid var(--border)}
+footer a{color:#666}
+
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .hero{padding:80px 0 60px}
+  .features{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">MIT Licensed &middot; Self-hosted &middot; Docker</div>
+    <h1>The <span>Open-Source</span> Enterprise<br>AI Platform</h1>
+    <p>One server. One SSO. The whole enterprise AI stack — auth, LLM routing, AI apps, portal, Git, monitoring, logging, and backup. Deploy in 30 minutes.</p>
+    <div class="hero-actions">
+      <a href="https://github.com/sdlyxianchao/AIAllInOne" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+      <a href="#quick-start" class="btn btn-ghost">Quick Start →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="container">
+  <div class="stats">
+    <div class="stat"><div class="stat-num">30+</div><div class="stat-label">Containers</div></div>
+    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Components</div></div>
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">Languages</div></div>
+    <div class="stat"><div class="stat-num">~30m</div><div class="stat-label">Deploy Time</div></div>
+  </div>
+</div>
+
+<!-- Features -->
+<section>
+  <div class="container">
+    <h2>Why AI AllInOne</h2>
+    <p class="section-desc">No assembly required. No vendor lock-in. Just a complete enterprise AI platform that runs on your own server.</p>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🧩</div>
+        <h3>All-in-One, No Assembly</h3>
+        <p>14 open-source components pre-integrated: auth, LLM routing, AI apps, portal, Git/CI, monitoring, logging, backup. No "glue it yourself" work.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔐</div>
+        <h3>Single Sign-On</h3>
+        <p>One Keycloak account with AD/LDAP federation signs into every product automatically. Employees log in once, get every AI tool.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Data Never Leaves</h3>
+        <p>Fully self-hosted. Model calls, prompts, documents and user data stay inside your network. No third-party cloud dependency.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>PII Redaction</h3>
+        <p>Phone numbers, IDs, emails, and bank cards are automatically redacted before any call reaches external LLMs. Presidio-powered.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <h3>Full Observability</h3>
+        <p>Prometheus + Grafana monitoring, Langfuse LLM tracing, Loki unified logs, and IM alerting via DingTalk, WeCom, or Feishu.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <h3>AI-Powered Operations</h3>
+        <p>Deploy, maintain, and troubleshoot the entire platform through natural language. Works with WorkBuddy, OpenClaw, or Claude Code.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stack -->
+<section>
+  <div class="container">
+    <h2>What's Inside</h2>
+    <p class="section-desc">14 production-grade components, orchestrated by Docker, managed through a unified admin portal.</p>
+    <table class="stack-table">
+      <thead><tr><th>Layer</th><th>Component</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Auth</td><td>Keycloak</td><td>SSO / OIDC, AD/LDAP federation or local accounts</td></tr>
+        <tr><td>LLM Routing</td><td>NewAPI</td><td>Channels, keys, quotas, audit, cost tracking</td></tr>
+        <tr><td>PII Redaction</td><td>LiteLLM + Presidio</td><td>Auto-redact sensitive info before model calls</td></tr>
+        <tr><td>AI Apps</td><td>Dify</td><td>Visual AI app builder + RAG knowledge base</td></tr>
+        <tr><td>Portal</td><td>Ghost</td><td>Company announcements & news portal</td></tr>
+        <tr><td>Source / CI</td><td>Gitea + Runner</td><td>Internal Git hosting + Actions automation</td></tr>
+        <tr><td>Client</td><td>DeepChat</td><td>Desktop AI client (Windows / macOS / Linux)</td></tr>
+        <tr><td>Admin</td><td>AI Admin Center</td><td>Unified management dashboard + audit + reports</td></tr>
+        <tr><td>Gateway</td><td>MCP Gateway</td><td>Skill/MCP marketplace + knowledge retrieval</td></tr>
+        <tr><td>Monitoring</td><td>Prometheus + Grafana</td><td>Container resource monitoring + dashboards</td></tr>
+        <tr><td>Tracing</td><td>Langfuse</td><td>LLM call tracing, latency, tokens, cost</td></tr>
+        <tr><td>Logging</td><td>Loki + Promtail</td><td>Aggregated, searchable container logs</td></tr>
+        <tr><td>Alerting</td><td>Alertmanager</td><td>Alert routing to IM webhooks</td></tr>
+        <tr><td>Backup</td><td>Scripts + Admin UI</td><td>Daily full backup + one-click restore</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section>
+  <div class="container">
+    <h2>Architecture</h2>
+    <p class="section-desc">Three-tier architecture: Auth → Gateway → Services. Everything connected through a single Docker network.</p>
+    <div class="arch-box">
+      <div class="arch-layers">
+        <div class="arch-layer">
+          <span class="arch-label">Clients</span>
+          <span class="arch-chip">DeepChat</span>
+          <span class="arch-chip">Browser</span>
+          <span class="arch-chip">API</span>
+        </div>
+        <div class="arch-layer">
+          <span class="arch-label">Auth & Gateway</span>
+          <span class="arch-chip accent">Keycloak SSO</span>
+          <span class="arch-chip accent">NewAPI Router</span>
+          <span class="arch-chip accent">LiteLLM + Presidio</span>
+          <span class="arch-chip accent">MCP Gateway</span>
+        </div>
+        <div class="arch-layer">
+          <span class="arch-label">Applications</span>
+          <span class="arch-chip">Dify</span>
+          <span class="arch-chip">Ghost</span>
+          <span class="arch-chip">Gitea</span>
+          <span class="arch-chip">Langfuse</span>
+        </div>
+        <div class="arch-layer">
+          <span class="arch-label">Infrastructure</span>
+          <span class="arch-chip">Prometheus</span>
+          <span class="arch-chip">Grafana</span>
+          <span class="arch-chip">Loki</span>
+          <span class="arch-chip">Alertmanager</span>
+        </div>
+        <div class="arch-layer">
+          <span class="arch-label">Data</span>
+          <span class="arch-chip">PostgreSQL</span>
+          <span class="arch-chip">MySQL</span>
+          <span class="arch-chip">Redis</span>
+          <span class="arch-chip">ClickHouse</span>
+          <span class="arch-chip">MinIO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Start -->
+<section id="quick-start">
+  <div class="container">
+    <h2>Quick Start</h2>
+    <p class="section-desc">Two ways to deploy. The AI Agent method is recommended — it reads the deployment guide, asks you for parameters, and configures everything automatically.</p>
+
+    <h3 style="font-size:1rem;margin-bottom:16px;color:var(--accent)">Method 1: AI Agent Deployment (Recommended)</h3>
+    <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:16px">Install any AI coding agent (WorkBuddy, OpenClaw, Claude Code, etc.), point it at the repository, and let it deploy the entire platform for you.</p>
+    <div class="code-block">
+      <span class="comment"># Step 1: Clone the repository</span><br>
+      <span class="cmd">git clone</span> https://github.com/sdlyxianchao/AIAllInOne<br>
+      <span class="cmd">cd</span> AIAllInOne/windows<br><br>
+      <span class="comment"># Step 2: Install the deploy skill (one-time)</span><br>
+      <span class="comment"># Copy AIOperation/agent/ to your agent's skills directory</span><br>
+      <span class="comment"># e.g. ~/.workbuddy/skills/ai-all-in-one-ops/</span><br><br>
+      <span class="comment"># Step 3: Tell your AI agent to deploy</span><br>
+      <span class="comment"># Just say: "Deploy AI AllInOne"</span><br>
+      <span class="comment"># The agent will:</span><br>
+      <span class="comment">#   → Read the deployment guide</span><br>
+      <span class="comment">#   → Ask you for server IP, admin password, API keys</span><br>
+      <span class="comment">#   → Configure .env, start containers</span><br>
+      <span class="comment">#   → Initialize Keycloak, NewAPI, Dify, Ghost, Gitea</span><br>
+      <span class="comment">#   → Run health checks and verify everything works</span>
+    </div>
+
+    <h3 style="font-size:1rem;margin:32px 0 16px;color:var(--text-muted)">Method 2: Manual Deployment</h3>
+    <div class="code-block">
+      <span class="comment"># Clone and configure</span><br>
+      <span class="cmd">git clone</span> https://github.com/sdlyxianchao/AIAllInOne<br>
+      <span class="cmd">cd</span> AIAllInOne/windows<br>
+      <span class="cmd">cp</span> .env.windows .env && <span class="cmd">nano</span> .env<br><br>
+      <span class="comment"># Create network and start</span><br>
+      <span class="cmd">docker network create</span> ai-platform<br>
+      <span class="cmd">docker compose up -d</span><br><br>
+      <span class="comment"># Then follow the deployment guide to initialize</span><br>
+      <span class="comment"># each service (Keycloak, NewAPI, Dify, etc.)</span>
+    </div>
+    <p style="margin-top:16px;font-size:.88rem;color:var(--text-muted)">
+      Supports <strong>Windows</strong> (Docker Desktop), <strong>Linux</strong> (Ubuntu 24.04+), and <strong>offline</strong> deployment (pre-built Docker images included).
+    </p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2>Start Building Today</h2>
+    <p>Free. Open source. No vendor lock-in. Your data stays on your server.</p>
+    <div class="hero-actions">
+      <a href="https://github.com/sdlyxianchao/AIAllInOne" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        Star on GitHub
+      </a>
+      <a href="https://github.com/sdlyxianchao/AIAllInOne/blob/main/README.md" class="btn btn-ghost">Read the Docs →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>AI AllInOne &copy; 2026 &middot; MIT License &middot;
+      <a href="https://github.com/sdlyxianchao/AIAllInOne">GitHub</a> &middot;
+      <a href="https://gitee.com/sdxianchao/AIAllInOne">Gitee</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
