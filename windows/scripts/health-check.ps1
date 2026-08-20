@@ -92,8 +92,6 @@ $expected = @(
     @{n="litellm";e="Up"}, @{n="litellm-redis";e="Up"}, @{n="mcp-gateway";e="Up"},
     @{n="ghost";e="Up"}, @{n="gitea";e="Up"}, @{n="gitea-runner";e="Up"},
     @{n="admin-portal";e="Up"}, @{n="update-server";e="Up"},
-    # AnythingLLM（用户自装）
-    @{n="anythingllm_deepseek";e="Up"}, @{n="anythingllm_glm";e="Up"},
     # Dify（独立 compose）
     @{n="docker-api-1";e="Up"}, @{n="docker-worker-1";e="Up"}, @{n="docker-worker_beat-1";e="Up"},
     @{n="docker-api_websocket-1";e="Up"}, @{n="docker-web-1";e="Up"}, @{n="docker-nginx-1";e="Up"},
@@ -130,9 +128,7 @@ $http = @(
     @{t="Admin Portal";u="http://127.0.0.1:10086/"},
     @{t="Update Server";u="http://127.0.0.1:8091/"},
     @{t="Dify (Nginx:80)";u="http://127.0.0.1/"},
-    @{t="MCP Gateway";u="$McpAddr/health"},
-    @{t="AnythingLLM-DS";u="http://127.0.0.1:3001/"},
-    @{t="AnythingLLM-GLM";u="http://127.0.0.1:3003/"}
+    @{t="MCP Gateway";u="$McpAddr/health"}
 )
 foreach ($h in $http) {
     try {
