@@ -190,6 +190,25 @@ One star on the top right is the biggest support for this project.
 
 ## 🤖 AI Agent Operations
 
+### 🎯 Ready-made AI Ops Skill — download & deploy
+
+> The repo now ships a **ready-made Ops Skill** at [`AIOperation/agent/`](AIOperation/agent/SKILL.md) that turns any AI agent (WorkBuddy, OpenClaw, Microsoft Scout, or equivalent) into a full platform operator — **with zero server-specific setup**. No IPs, no passwords, no hardcoded paths: credentials are read from `.env`, paths auto-resolve, so it works on **any machine** where this platform is deployed.
+
+**What the skill covers** (all day-to-day management): one-command health checks (41 containers × 9 stages), container start/stop/restart & log troubleshooting, configuration changes, the whole AI Admin Center — admins & roles, Keycloak/AD sync, NewAPI channels/tokens/cost, Gitea sync, Ghost portal, Dify, MCP Gateway, monitoring/alerts/logs/PII, availability tests, reports, backup & restore, IM alerting — **native management of every third-party product** (Keycloak realms/roles/clients, NewAPI channels/tokens, LiteLLM models/users, Dify apps/knowledge bases, Ghost content/themes, Gitea repos/CI, Grafana dashboards/users, Langfuse projects, Prometheus/Alertmanager/Loki, Update Server) — plus version releases, disk cleanup and troubleshooting.
+
+**Download & deploy in 3 steps:**
+
+1. **Get it** — clone the repo or download the `AIOperation/` folder from GitHub / Gitee:
+   ```bash
+   git clone https://github.com/sdlyxianchao/AIAllInOne
+   # the skill lives at: AIAllInOne/AIOperation/agent/
+   ```
+2. **Install it** — copy the folder into your agent's skills directory (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`; other agents follow their own skill-folder convention):
+   ```bash
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   ```
+3. **Use it** — open the agent in your deployment directory and just ask, e.g. *"Run the health check"*, *"Back up the platform"*, *"Why is Ghost down?"*, *"Publish v0.96"*. The skill reads `.env` for credentials itself — you never paste passwords, and it adapts to whichever machine you point it at.
+
 The platform is designed to be **operated and maintained through an AI agent** — WorkBuddy, OpenClaw, Microsoft Scout, or any equivalent tool. Instead of clicking through a dozen admin consoles, you tell the agent what you want in plain language; it reads files, runs commands, and talks to the services for you.
 
 Everything that makes the platform run lives on your machine as **code, config, and data** — Docker Compose services, `.env` files, admin APIs, and the databases/files that hold the actual state — so an agent can see and change all of it:

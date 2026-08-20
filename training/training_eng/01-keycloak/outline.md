@@ -1,7 +1,7 @@
 # Keycloak — Training Outline (M03 · Unified Auth)
 
 ## 1. Positioning
-Keycloak is the platform's **identity & authentication hub**: every web product (AI Admin Center, NewAPI, Dify, Ghost, Gitea, Grafana, Langfuse) uses it for Single Sign-On (SSO). Mastering Keycloak is a prerequisite for deploying and operating this platform.
+Keycloak is the platform's **identity & authentication hub**: the SSO-wired products (AI Admin Center, NewAPI, Dify, Gitea, Grafana, Langfuse, LiteLLM) all use it for Single Sign-On (SSO); Ghost and the non-web tools (DeepChat, MCP Gateway, Update Server, MailHog, Ollama) are **not** wired into SSO. Mastering Keycloak is a prerequisite for deploying and operating this platform.
 
 ## 2. Learning Objectives
 After this module you can:

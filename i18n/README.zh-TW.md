@@ -187,6 +187,25 @@ docker compose up -d
 
 ## 🤖 AI Agent 運維
 
+### 🎯 開箱即用的 AI 維運技能——下載即用
+
+> 倉庫現在自帶一個**現成的維運技能**（[`AIOperation/agent/`](../AIOperation/agent/SKILL.md)），能讓任何 AI Agent（WorkBuddy、OpenClaw、Microsoft Scout 等）變成完整的平台維運員——**零伺服器特定配置**。不寫死 IP、密碼和路徑：憑據一律從 `.env` 讀取，路徑自動定位，所以在任何部署了本平台的機器上都能直接用。
+
+**覆蓋範圍**（全部日常管理）：一鍵健康檢查（41 容器 × 9 階段）、容器啟停/重啟與日誌排查、設定修改、整個 AI Admin Center——管理員與角色、Keycloak/AD 同步、NewAPI 管道/令牌/成本、Gitea 同步、Ghost 入口網站、Dify、MCP Gateway、監控/告警/日誌/PII、可用性測試、報告、備份與復原、IM 告警——以及各三方產品的原生管理（Keycloak 域/角色/用戶端、NewAPI 管道/令牌/用戶、LiteLLM 模型/用戶/語義快取、Dify 應用/知識庫、Ghost 內容/主題、Gitea 倉庫/CI、MCP 閘道、Grafana 看板/用戶、Langfuse 專案/金鑰、Prometheus/Alertmanager/Loki、Update Server），以及版本發布、磁碟清理和故障排除。
+
+**下載與部署（3 步）：**
+
+1. **取得**——clone 倉庫，或從 GitHub / Gitee 下載 `AIOperation/` 資料夾：
+   ```bash
+   git clone https://github.com/sdlyxianchao/AIAllInOne
+   # 技能位於：AIAllInOne/AIOperation/agent/
+   ```
+2. **安裝**——把資料夾複製到你的 Agent 技能目錄（WorkBuddy：`~/.workbuddy/skills/ai-all-in-one-ops/`；其它 Agent 依各自技能目錄慣例）：
+   ```bash
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   ```
+3. **使用**——在部署目錄裡打開 Agent 直接說，例如"跑一下健康檢查"、"備份平台"、"為什麼 Ghost 掛了"、"發布 v0.96"。技能會自己從 `.env` 讀取憑據——你永遠不需要貼上密碼，而且會自動適應你指向的任何機器。
+
 本平台從設計上就支援**透過 AI Agent 運維**——WorkBuddy、OpenClaw、Microsoft Scout 或任何同類工具。你不再需要逐一登入十幾個管理後台點點點，而是用自然語言告訴 Agent 你想做什麼，它負責讀檔案、執行指令、呼叫服務。
 
 平台的一切都執行在你機器上的**程式碼、設定和資料**裡——Docker Compose 服務、`.env` 檔案、管理 API，以及保存實際狀態的資料庫/檔案——所以 Agent 能看得到、改得了全部：

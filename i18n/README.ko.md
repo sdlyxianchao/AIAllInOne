@@ -187,6 +187,25 @@ AI AllInOne이 시간이나 비용을 절약해 준다면, Star 하나는 비용
 
 ## 🤖 AI 에이전트 운영
 
+### 🎯 바로 사용 가능한 AI 운영 스킬 — 다운로드 및 배포
+
+> 리포지토리에는 이제 **즉시 사용 가능한 운영 스킬**([`AIOperation/agent/`](../AIOperation/agent/SKILL.md))이 포함되어 있어, 어떤 AI 에이전트(WorkBuddy, OpenClaw, Microsoft Scout 등)든 플랫폼의 완전한 운영자로 바꿔줍니다 — **서버별 설정 없이**. IP·비밀번호·경로를 하드코딩하지 않고, 자격 증명은 `.env`에서 읽으며 경로는 자동으로 해석되므로, 이 플랫폼이 배포된 **어떤 머신에서든** 그대로 작동합니다.
+
+**스킬의 범위**(모든 일상 관리): 원커맨드 헬스 체크(컨테이너 41개 × 9단계), 컨테이너 시작/중지/재시작 및 로그 진단, 설정 변경, AI Admin Center 전체 — 관리자 및 역할, Keycloak/AD 동기화, NewAPI 채널/토큰/비용, Gitea 동기화, Ghost 포털, Dify, MCP Gateway, 모니터링/알림/로그/PII, 가용성 테스트, 리포트, 백업 및 복원, IM 알림 — 그리고 각 서드파티 제품의 네이티브 관리(Keycloak 영역/역할/클라이언트, NewAPI 채널/토큰, LiteLLM 모델/사용자, Dify 앱/지식베이스, Ghost 콘텐츠/테마, Gitea 저장소/CI, MCP 게이트웨이, Grafana 대시보드/사용자, Langfuse 프로젝트/키, Prometheus/Alertmanager/Loki, Update Server), 그리고 버전 릴리스, 디스크 정리, 트러블슈팅까지.
+
+**다운로드 및 배포(3단계):**
+
+1. **획득** — 리포지토리를 클론하거나 GitHub / Gitee에서 `AIOperation/` 폴더를 다운로드:
+   ```bash
+   git clone https://github.com/sdlyxianchao/AIAllInOne
+   # 스킬 위치: AIAllInOne/AIOperation/agent/
+   ```
+2. **설치** — 폴더를 에이전트의 스킬 디렉토리로 복사(WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`; 다른 에이전트는 각자 스킬 폴더 규칙을 따름):
+   ```bash
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   ```
+3. **사용** — 배포 디렉토리에서 에이전트를 열고 그냥 요청하세요. 예: "헬스 체크 실행", "플랫폼 백업", "Ghost가 왜 다운됐지?", "v0.96 릴리스". 스킬이 `.env`에서 자격 증명을 직접 읽으므로 — 비밀번호를 붙여넣을 필요가 전혀 없고, 지정한 어떤 머신에도 자동으로 적응합니다.
+
 이 플랫폼은 **AI 에이전트를 통한 운영·유지보수**를 염두에 두고 설계되었습니다 — WorkBuddy, OpenClaw, Microsoft Scout 또는 이와 동등한 도구입니다. 수십 개의 관리 콘솔을 클릭하는 대신, 에이전트에게 자연어로 원하는 것을 말하면 에이전트가 파일을 읽고, 명령을 실행하고, 서비스와 통신해 줍니다.
 
 플랫폼을 구동하는 모든 것은 여러분의 머신에 **코드, 구성, 데이터**로 존재합니다 — Docker Compose 서비스, `.env` 파일, 관리 API, 실제 상태를 담은 DB/파일 — 따라서 에이전트는 이를 모두 보고 수정할 수 있습니다 :

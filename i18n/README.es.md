@@ -187,6 +187,25 @@ Una estrella en la esquina superior derecha es el mayor apoyo para este proyecto
 
 ## 🤖 Operaciones con agentes de IA
 
+### 🎯 Habilidad de operación de IA lista para usar — descargar y desplegar
+
+> El repositorio incluye ahora una **habilidad de operación lista para usar** ([`AIOperation/agent/`](../AIOperation/agent/SKILL.md)) que convierte a cualquier agente de IA (WorkBuddy, OpenClaw, Microsoft Scout o equivalente) en un operador completo de la plataforma — **sin configuración específica del servidor**. Sin IP, sin contraseñas, sin rutas codificadas: las credenciales se leen de `.env`, las rutas se resuelven automáticamente, por lo que funciona en **cualquier máquina** donde se despliegue la plataforma.
+
+**Qué cubre la habilidad** (toda la gestión diaria): comprobaciones de salud con un comando (41 contenedores × 9 fases), inicio/parada/reinicio de contenedores y diagnóstico de registros, cambios de configuración, todo el AI Admin Center — administradores y roles, sincronización Keycloak/AD, canales/tokens/costes de NewAPI, sincronización de Gitea, portal Ghost, Dify, MCP Gateway, monitorización/alertas/registros/PII, pruebas de disponibilidad, informes, copia de seguridad y restauración, alertas de IM — la gestión nativa de cada producto de terceros (dominios/roles/clientes Keycloak, canales/tokens NewAPI, modelos/usuarios LiteLLM, aplicaciones/bases de conocimiento Dify, contenidos/temas Ghost, repos/CI Gitea, puerta de enlace MCP, paneles/usuarios Grafana, proyectos/claves Langfuse, Prometheus/Alertmanager/Loki, Update Server), además de lanzamientos de versiones, limpieza de disco y solución de problemas.
+
+**Descarga y despliegue (3 pasos):**
+
+1. **Consíguela** — clona el repositorio o descarga la carpeta `AIOperation/` desde GitHub / Gitee:
+   ```bash
+   git clone https://github.com/sdlyxianchao/AIAllInOne
+   # la habilidad está en: AIAllInOne/AIOperation/agent/
+   ```
+2. **Instálala** — copia la carpeta en el directorio de habilidades de tu agente (WorkBuddy: `~/.workbuddy/skills/ai-all-in-one-ops/`; otros agentes siguen su propia convención):
+   ```bash
+   cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-ops
+   ```
+3. **Úsala** — abre el agente en tu directorio de despliegue y solo pregunta, p. ej. *«Ejecuta la comprobación de salud»*, *«Haz una copia de seguridad»*, *«¿Por qué está caído Ghost?»*, *«Publica v0.96»*. La habilidad lee las credenciales de `.env` por sí misma — nunca tienes que pegar contraseñas, y se adapta a cualquier máquina que le indiques.
+
 La plataforma está diseñada para **operarse y mantenerse mediante un agente de IA** — WorkBuddy, OpenClaw, Microsoft Scout o cualquier herramienta equivalente. En lugar de hacer clic en una docena de consolas de administración, le dices al agente lo que quieres en lenguaje natural ; él lee archivos, ejecuta comandos y habla con los servicios por ti.
 
 Todo lo que hace funcionar la plataforma vive en tu máquina como **código, configuración y datos** — servicios de Docker Compose, archivos `.env`, APIs de administración y las bases/archivos con el estado real — así que un agente puede verlo y cambiarlo todo :

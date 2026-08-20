@@ -55,7 +55,7 @@ Side channel: LiteLLM success_callback → Langfuse (prompt/response/latency/tok
 ### 4.3 Other chains
 - Auto-update: GitHub → Gitea Actions → Update Server(:8091) → DeepChat auto-download & install
 - RAG: DeepChat → MCP Gateway(:3100/mcp) → Dify Knowledge API → knowledge base
-- Auth: Keycloak OIDC → all web products
+- Auth: Keycloak OIDC SSO → SSO-wired web products (Admin Center/NewAPI/Dify/Gitea/Grafana/Langfuse/LiteLLM; Ghost uses local accounts + email codes, other tools use API keys/tokens)
 - Logs: Promtail collects → Loki aggregates → AI Admin Center queries
 
 ## 5. The 16 Open-Source Components
