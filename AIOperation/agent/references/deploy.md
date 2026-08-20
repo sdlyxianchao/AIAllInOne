@@ -1,73 +1,71 @@
-# 部署与初始化参考
+# Deployment and Initialization Reference
 
-> 通用部署流程，不绑定特定服务器。部署参数（内网 IP、AD 域控、管理员账号、模型 API Key）由
-> 部署者提供，AI Agent 部署时**逐项向用户询问，不允许猜测**。详细端口表/数据流见各形态部署指南。
+> Generic deployment flow, not bound to a specific server. Deployment parameters (intranet IP, AD domain controller, admin account, model API key) are provided by the deployer; when deploying, the AI Agent must **ask the user for each parameter — guessing is not allowed**. See each flavor's deployment guide for detailed port tables / data flows.
 
-## 1. 部署形态选择
+## 1. Deployment Flavor Selection
 
-| 形态 | 适用 | 编排目录 |
+| Flavor | Suitable For | Orchestration Directory |
 |---|---|---|
-| Windows | 单机、公司内网（Docker Desktop + WSL2），含 AD 域控对接示例 | `windows/` |
-| Linux | 单机 Linux（Docker Engine） | `linux/` |
-| Docker | 纯 Docker 编排参考 | `docker/` |
+| Windows | Single-host, corporate intranet (Docker Desktop + WSL2), includes an AD domain controller integration example | `windows/` |
+| Linux | Single-host Linux (Docker Engine) | `linux/` |
+| Docker | Pure Docker orchestration reference | `docker/` |
 
-## 2. 标准部署流程（以 Windows 为例）
+## 2. Standard Deployment Flow (Windows Example)
 
-1. **前置**：机器装 Docker Desktop（WSL2 引擎），网络能访问镜像仓库
-2. **取代码**：clone 项目或拷贝部署目录
-3. **配 .env**：把 `.env.example` 复制为 `.env` 并填入全部凭据（各产品密码、API Key、AD/LDAP 配置、服务器内网 IP）
-4. **起编排**：
+1. **Prerequisites**: Install Docker Desktop (WSL2 engine) on the machine; the network must be able to reach the image registry
+2. **Get the code**: Clone the project or copy the deployment directory
+3. **Configure .env**: Copy `.env.example` to `.env` and fill in all credentials (each product's password, API key, AD/LDAP configuration, server intranet IP)
+4. **Start the stack**:
    ```bash
-   cd <形态目录>
+   cd <flavor directory>
    docker compose up -d
    ```
-5. **初始化**（容器起来 ≠ 平台可用，必须初始化）：
-   - Keycloak：创建 realm、OIDC client、`ai-platform-admin` 角色、统一管理员
-   - NewAPI：配置渠道（LiteLLM/直连）、生成应用令牌（deepchat-key / dify-key）、SSO
-   - Dify：独立 compose 启动、模型供应商指向 NewAPI、SSO
-   - Ghost：初始化 + 部署 Corp Portal 主题 + 导入示例内容
-   - Gitea：安装 + Runner 注册 + Actions 工作流
-   - 监控/日志/可观测：确认抓取目标与日志管道
-6. **验证**：跑健康检查脚本 → 9 阶段全过；Admin Center 可用性测试全测通过
+5. **Initialize** (containers running ≠ platform usable; initialization is mandatory):
+   - Keycloak: create the realm, OIDC client, `ai-platform-admin` role, unified admin
+   - NewAPI: configure channels (LiteLLM / direct), generate app tokens (deepchat-key / dify-key), SSO
+   - Dify: start the standalone compose, point model providers to NewAPI, SSO
+   - Ghost: initialize + deploy the Corp Portal theme + import sample content
+   - Gitea: install + Runner registration + Actions workflows
+   - Monitoring / logging / observability: confirm scrape targets and log pipelines
+6. **Verify**: Run the health check script → all 9 stages pass; run all Admin Center availability tests
 
-> 初始化细节见 `<形态>/*-deploy-guide-v2.md`（含 AD 集成、端口表、许可审查）和
-> `docs/admin-manual/`（30 章管理员手册，含运维/备份/故障排查，9 语言）。
+> Initialization details: see `<flavor>/*-deploy-guide-v2.md` (includes AD integration, port tables, license review) and `docs/admin-manual/` (30-chapter admin manual, includes operations / backup / troubleshooting, 9 languages).
 
-## 3. AI Agent 部署（推荐）
+## 3. AI Agent Deployment (Recommended)
 
-项目提供**部署提示词**，把部署目录和提示词交给 AI Agent（WorkBuddy 等），它就能照着部署文档逐步配置：
+The project provides a **deployment prompt**. Hand the deployment directory and the prompt to an AI Agent (WorkBuddy, etc.), and it can configure everything step by step following the deployment docs:
 
-1. Agent 先读部署指南、核对清单、docker-compose、.env 模板、自动化脚本
-2. 提示词要求 Agent **逐项向用户要参数**：内网 IP、AD 域控配置、管理员账号、模型 API Key——一项都不许猜
-3. 按章节推进，能用脚本用脚本；某步失败先查日志找原因再改
-4. 最后端到端验证：SSO 登录、真实对话、监控、备份恢复，逐项报告结果
+1. The Agent first reads the deployment guide, checklist, docker-compose, `.env` template, and automation scripts
+2. The prompt requires the Agent to **ask the user for each parameter**: intranet IP, AD domain controller configuration, admin account, model API key — none of them may be guessed
+3. Proceed chapter by chapter; use scripts whenever available; if a step fails, check the logs first to find the cause, then make changes
+4. Finally verify end-to-end: SSO login, real conversation, monitoring, backup / restore; report the results item by item
 
-## 4. 部署后核对
+## 4. Post-deployment Verification
 
-- 核心容器全部 Up：Keycloak / NewAPI / LiteLLM / Ghost / Gitea / Update Server / Admin Center / MCP Gateway / 监控全家桶
-- 用内网 IP 访问（不要用 127.0.0.1——OIDC redirect_uri 会报 `invalid_grant`）
-- `*-checklist.html` 可作部署进度核对（浏览器勾选、自动保存）
+- All core containers Up: Keycloak / NewAPI / LiteLLM / Ghost / Gitea / Update Server / Admin Center / MCP Gateway / the full monitoring stack
+- Access via the intranet IP (do not use 127.0.0.1 — the OIDC redirect_uri will fail with `invalid_grant`)
+- `*-checklist.html` can be used as a deployment progress checklist (browser checkboxes, auto-saved)
 
-## 5. 升级流程
+## 5. Upgrade Flow
 
-1. 先备份（`scripts/backup.ps1`）
-2. 更新代码/拉新镜像：`git pull`（或替换部署目录）→ `docker compose pull`
-3. 重建受影响服务：`docker compose up -d`
-4. 健康检查验证（`health-check.ps1` / Admin Center 可用性测试）
-5. 升级后检查管理门户（Admin Center）功能完整性
+1. Back up first (`scripts/backup.ps1`)
+2. Update the code / pull new images: `git pull` (or replace the deployment directory) → `docker compose pull`
+3. Rebuild affected services: `docker compose up -d`
+4. Verify with a health check (`health-check.ps1` / Admin Center availability tests)
+5. After the upgrade, check the management portal (Admin Center) for functional completeness
 
-## 6. 发布新版本（维护者）
+## 6. Publishing a New Version (Maintainers)
 
 ```powershell
-# 项目根目录
-.\publish.ps1 -Gitee -CommitMessage "<说明>" -Version "vX.Y" -ReleaseNotes "<发布说明>"
+# project root
+.\publish.ps1 -Gitee -CommitMessage "<description>" -Version "vX.Y" -ReleaseNotes "<release notes>"
 ```
 
-- 自动同步 windows → windows-github（脱敏密码）、构建发布目录、推 GitHub（main）+ Gitee（master）、打 tag
-- 不带 `-Version` 不更新版本号
-- GitHub 推送依赖网络/代理；失败时用 PowerShell 环境补推（Bash 非交互取不到凭据）
+- Auto-syncs windows → windows-github (redacted passwords), builds the release directory, pushes GitHub (main) + Gitee (master), and tags
+- Omitting `-Version` does not bump the version number
+- GitHub push depends on the network/proxy; if it fails, push with the PowerShell environment as a fallback (Bash cannot obtain credentials non-interactively)
 
-## 7. 多语言文档
+## 7. Multilingual Documentation
 
-- README / AI-AGENT-OPS / 部署指南 / 管理员手册均支持 9 语言（zh/zh-TW/en/fr/es/pt/ja/ko/ar）
-- 管理员手册在 `docs/admin-manual/`（英文主版）+ `docs/i18n/admin-manual-*`（翻译版）
+- README / AI-AGENT-OPS / deployment guides / admin manual all support 9 languages (zh/zh-TW/en/fr/es/pt/ja/ko/ar)
+- The admin manual is in `docs/admin-manual/` (English master) + `docs/i18n/admin-manual-*` (translated versions)

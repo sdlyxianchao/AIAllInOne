@@ -114,7 +114,7 @@ New-Item -ItemType Directory -Force -Path $kcDir | Out-Null
 $KcDbPass = Get-EnvValue "KEYCLOAK_DB_PASSWORD" "$DeployDir\.env"
 if ($KcDbPass) {
     docker stop keycloak 2>$null | Out-Null
-    docker run --rm --network ai-platform -v "$kcDir:/backup" `
+    docker run --rm --network ai-platform -v "${kcDir}:/backup" `
         -e KC_DB=postgres -e "KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak" `
         -e KC_DB_USERNAME=keycloak -e "KC_DB_PASSWORD=$KcDbPass" `
         quay.io/keycloak/keycloak:25.0 export --dir /backup --realm enterprise-ai --users realm_file 2>$null

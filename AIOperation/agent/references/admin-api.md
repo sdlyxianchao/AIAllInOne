@@ -1,138 +1,138 @@
-# AI Admin Center API 参考
+# AI Admin Center API Reference
 
-> AI Admin Center（`admin-portal`，Express）全部管理 API 前缀 `/api`，经 Keycloak OIDC 保护，
-> 管理类端点需 `ai-platform-admin` 角色。基地址 `<admin-portal>` 以实际部署为准（compose 端口映射）。
-> 请求需携带登录会话 Cookie；无会话时返回 302 跳 Keycloak 登录。
+> AI Admin Center (`admin-portal`, Express) prefixes all management APIs with `/api`, protected by Keycloak OIDC;
+> admin endpoints require the `ai-platform-admin` role. The base address `<admin-portal>` depends on the actual deployment (compose port mapping).
+> Requests must carry a logged-in session Cookie; without a session, return 302 redirect to Keycloak login.
 
-## 1. 会话与系统
+## 1. Session and System
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/me` | 当前登录用户与角色 |
-| GET | `/api/urls` | 各产品入口 URL（由服务器公开地址派生） |
-| GET | `/api/health` | 全平台健康聚合 |
-| GET | `/api/health/:name` | 单服务健康 |
-| GET | `/api/system` | 系统信息（Docker 版本/CPU/内存/镜像/容器数） |
-| GET | `/api/metrics` | 产品业务指标聚合（NewAPI/Gitea/Ghost/Dify/Keycloak/MCP/LiteLLM/PII/监控/Langfuse） |
+| GET | `/api/me` | Current logged-in user and roles |
+| GET | `/api/urls` | Entry URLs of each product (derived from the server public address) |
+| GET | `/api/health` | Aggregated health of the whole platform |
+| GET | `/api/health/:name` | Health of a single service |
+| GET | `/api/system` | System info (Docker version/CPU/memory/images/container count) |
+| GET | `/api/metrics` | Aggregated product business metrics (NewAPI/Gitea/Ghost/Dify/Keycloak/MCP/LiteLLM/PII/Monitoring/Langfuse) |
 
-## 2. 管理员与权限
+## 2. Admins and Permissions
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/admins` / `/api/admins/search` | 管理员列表 / 搜索 |
-| POST | `/api/admins` | 新增管理员 |
-| PUT/DELETE | `/api/admins/:id` | 修改 / 删除管理员 |
-| GET/PUT | `/api/admins/:id/products`、`/api/admins/:id/products/:product` | 产品级授权 |
-| PUT | `/api/admins/:id/credentials` | 各产品应用凭据管理 |
+| GET | `/api/admins` / `/api/admins/search` | List admins / search |
+| POST | `/api/admins` | Add admin |
+| PUT/DELETE | `/api/admins/:id` | Update / delete admin |
+| GET/PUT | `/api/admins/:id/products`、`/api/admins/:id/products/:product` | Product-level authorization |
+| PUT | `/api/admins/:id/credentials` | Manage application credentials per product |
 
-## 3. 认证与 Keycloak
+## 3. Authentication and Keycloak
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/auth/overview` | SSO/认证总览 |
-| GET | `/api/keycloak/overview` | Keycloak 概览（realm/用户数/客户端） |
-| GET | `/api/keycloak/clients` | OIDC 客户端列表 |
-| GET | `/api/keycloak/users` / `/api/keycloak/users/:id` | 用户列表 / 详情 |
-| GET/POST | `/api/keycloak/roles`、`/api/keycloak/roles/:name` | 角色管理 |
-| GET | `/api/keycloak/roles/:name/users` | 角色成员 |
-| POST | `/api/keycloak/sync` | 触发 AD/LDAP 用户同步 |
+| GET | `/api/auth/overview` | SSO/auth overview |
+| GET | `/api/keycloak/overview` | Keycloak overview (realm/user count/clients) |
+| GET | `/api/keycloak/clients` | OIDC client list |
+| GET | `/api/keycloak/users` / `/api/keycloak/users/:id` | User list / details |
+| GET/POST | `/api/keycloak/roles`、`/api/keycloak/roles/:name` | Role management |
+| GET | `/api/keycloak/roles/:name/users` | Role members |
+| POST | `/api/keycloak/sync` | Trigger AD/LDAP user sync |
 
-## 4. NewAPI（模型网关）
+## 4. NewAPI (Model Gateway)
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/newapi/overview` | 渠道/令牌/用户总数 |
-| GET/POST | `/api/newapi/channels` | 渠道列表 / 新增渠道 |
-| GET/POST | `/api/newapi/tokens` | API 密钥列表 / 生成 |
-| GET | `/api/newapi/users` | 用户 |
-| GET | `/api/newapi/audit` | 调用审计 |
-| GET | `/api/newapi/cost` | 成本统计 |
+| GET | `/api/newapi/overview` | Channel/token/user totals |
+| GET/POST | `/api/newapi/channels` | List channels / add channel |
+| GET/POST | `/api/newapi/tokens` | List API keys / generate |
+| GET | `/api/newapi/users` | Users |
+| GET | `/api/newapi/audit` | Call audit |
+| GET | `/api/newapi/cost` | Cost statistics |
 
-## 5. Gitea（源码 + DeepChat 同步）
+## 5. Gitea (Source Code + DeepChat Sync)
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/gitea/overview` | 仓库/用户/版本概览 |
-| GET | `/api/gitea/open` | 生成免登录打开地址 |
-| GET/POST | `/api/gitea/sync/config` | 同步配置（目标平台/保留版本数） |
-| GET | `/api/gitea/sync/history` | 同步历史 |
-| GET/POST | `/api/gitea/sync/schedule` | 自动同步计划（cron） |
-| POST | `/api/gitea/sync/trigger` | 手动触发同步 |
-| GET | `/api/gitea/sync/versions` | 已同步版本 |
-| DELETE | `/api/gitea/sync/version/:ver` | 删除某版本 |
+| GET | `/api/gitea/overview` | Repo/user/version overview |
+| GET | `/api/gitea/open` | Generate login-free open URL |
+| GET/POST | `/api/gitea/sync/config` | Sync config (target platform/number of versions to retain) |
+| GET | `/api/gitea/sync/history` | Sync history |
+| GET/POST | `/api/gitea/sync/schedule` | Auto sync schedule (cron) |
+| POST | `/api/gitea/sync/trigger` | Manually trigger sync |
+| GET | `/api/gitea/sync/versions` | Synced versions |
+| DELETE | `/api/gitea/sync/version/:ver` | Delete a version |
 
-## 6. Ghost 门户 / Dify
+## 6. Ghost Portal / Dify
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/ghost/overview` | 文章/页面/成员/标签统计 |
-| POST | `/api/ghost/auto-login` | 管理员免登录进入 Ghost 后台 |
-| GET | `/api/dify/overview` | Dify 应用/工作区/版本 |
-| POST | `/api/dify/retrieve` | 知识库检索测试 |
+| GET | `/api/ghost/overview` | Post/page/member/tag statistics |
+| POST | `/api/ghost/auto-login` | Admin login-free entry to Ghost admin |
+| GET | `/api/dify/overview` | Dify apps/workspaces/versions |
+| POST | `/api/dify/retrieve` | Knowledge base retrieval test |
 
 ## 7. MCP Gateway
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET/POST | `/api/mcp-gateway/servers` | 已注册 MCP server 列表 / 新增 |
-| PUT/DELETE | `/api/mcp-gateway/servers/:name` | 修改 / 删除 server |
-| GET/POST | `/api/mcp-gateway/skills` | 技能列表 / 新增 |
-| DELETE | `/api/mcp-gateway/skills/:name` | 删除技能 |
-| POST | `/api/mcp-gateway/skills/upload` | 上传技能包 |
-| GET | `/api/mcp-gateway/tools` | 可用工具聚合列表 |
+| GET/POST | `/api/mcp-gateway/servers` | List registered MCP servers / add |
+| PUT/DELETE | `/api/mcp-gateway/servers/:name` | Update / delete server |
+| GET/POST | `/api/mcp-gateway/skills` | List skills / add |
+| DELETE | `/api/mcp-gateway/skills/:name` | Delete skill |
+| POST | `/api/mcp-gateway/skills/upload` | Upload skill package |
+| GET | `/api/mcp-gateway/tools` | Aggregated list of available tools |
 
-## 8. 监控 / 日志 / PII / 更新
+## 8. Monitoring / Logs / PII / Updates
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/monitoring/overview` | Prometheus 抓取目标与健康 |
-| GET | `/api/alerts` | 当前告警 |
-| GET | `/api/logs/query` | Loki 统一日志查询 |
-| GET | `/api/pii/overview` | PII 脱敏规则与模型接入 |
-| GET | `/api/litellm` / `/api/litellm/models` | LiteLLM 状态 / 模型列表 |
-| GET | `/api/langfuse/overview` | Langfuse 调用量/成本概览 |
-| GET | `/api/update/overview` | 更新服务器状态与 DeepChat 版本 |
+| GET | `/api/monitoring/overview` | Prometheus scrape targets and health |
+| GET | `/api/alerts` | Current alerts |
+| GET | `/api/logs/query` | Unified Loki log query |
+| GET | `/api/pii/overview` | PII redaction rules and model integration |
+| GET | `/api/litellm` / `/api/litellm/models` | LiteLLM status / model list |
+| GET | `/api/langfuse/overview` | Langfuse call volume/cost overview |
+| GET | `/api/update/overview` | Update server status and DeepChat version |
 
-## 9. 可用性测试
+## 9. Availability Tests
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/availability` | 测试项清单 + 最近结果 + 统计 |
-| POST | `/api/availability/run` | 全量测试（返回全部结果） |
-| POST | `/api/availability/test/:id` | 单项测试（回写缓存并重算统计，返回 `{...result, summary}`） |
+| GET | `/api/availability` | Test item list + latest results + statistics |
+| POST | `/api/availability/run` | Run full test suite (returns all results) |
+| POST | `/api/availability/test/:id` | Single-item test (writes back cache and recomputes statistics, returns `{...result, summary}`) |
 
-## 10. 备份 / 报告 / IM 告警
+## 10. Backup / Reports / IM Alerts
 
-| 方法 | 端点 | 用途 |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/backup/list` | 备份列表 |
-| POST | `/api/backup/run` | 立即全量备份 |
-| POST | `/api/backup/restore` | 从指定备份恢复 |
-| GET | `/api/report?days=&lang=&sections=` | 生成报告（返回 markdown + 保存到服务器） |
-| GET | `/api/report/list` | 历史报告 + 保留设置 |
-| GET | `/api/report/settings` / POST | 读取 / 更新保留策略（count/days） |
-| GET | `/api/report/file/:name` | 查看历史报告内容 |
-| GET | `/api/report/file/:name/download` | 下载 .md |
-| DELETE | `/api/report/file/:name` | 删除单份报告 |
-| GET/POST | `/api/imalert/config` | 告警配置（开关等） |
-| GET/PUT | `/api/imalert/rules` | 告警规则 |
-| GET | `/api/imalert/receivers`、POST/PUT/DELETE `/api/imalert/receivers/:id` | 接收人管理 |
-| GET | `/api/imalert/history` | 告警发送历史 |
-| POST | `/api/imalert/test/:id` | 测试某接收人 |
-| POST | `/api/alert-webhook` | Alertmanager 告警回调入口 |
+| GET | `/api/backup/list` | Backup list |
+| POST | `/api/backup/run` | Run full backup immediately |
+| POST | `/api/backup/restore` | Restore from a specified backup |
+| GET | `/api/report?days=&lang=&sections=` | Generate report (returns markdown + saves to server) |
+| GET | `/api/report/list` | Historical reports + retention settings |
+| GET | `/api/report/settings` / POST | Read / update retention policy (count/days) |
+| GET | `/api/report/file/:name` | View historical report content |
+| GET | `/api/report/file/:name/download` | Download .md |
+| DELETE | `/api/report/file/:name` | Delete a single report |
+| GET/POST | `/api/imalert/config` | Alert config (switch, etc.) |
+| GET/PUT | `/api/imalert/rules` | Alert rules |
+| GET | `/api/imalert/receivers`、POST/PUT/DELETE `/api/imalert/receivers/:id` | Receiver management |
+| GET | `/api/imalert/history` | Alert send history |
+| POST | `/api/imalert/test/:id` | Test a receiver |
+| POST | `/api/alert-webhook` | Alertmanager alert callback entry |
 
-## 调用示例
+## Call Examples
 
 ```bash
-# 生成 7 天中文全章节报告
+# Generate 7-day full-section report in Chinese
 curl -b <session-cookie> "<admin-portal>/api/report?days=7&lang=zh&sections=system,usage,client,issues,avail,backup,pii"
 
-# 单项可用性测试（如 ghost）
+# Single-item availability test (e.g. ghost)
 curl -b <session-cookie> -X POST "<admin-portal>/api/availability/test/ghost"
 
-# 触发 Gitea 同步
+# Trigger Gitea sync
 curl -b <session-cookie> -X POST "<admin-portal>/api/gitea/sync/trigger"
 
-# 查询最近日志（Loki）
+# Query recent logs (Loki)
 curl -b <session-cookie> "<admin-portal>/api/logs/query?q=error&since=1h"
 ```

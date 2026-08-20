@@ -1,76 +1,76 @@
-# 故障排查手册
+# Troubleshooting Manual
 
-> 通用排查思路，所有命令在部署目录下执行；端口/路径按实际部署为准。
+> General troubleshooting approach; run all commands from the deployment directory; ports/paths follow the actual deployment.
 
-## 1. 容器起不来 / 反复重启
+## 1. Containers Won't Start / Restart Looping
 
-排查顺序：
-1. `docker ps -a` 看状态（Exited / Restarting）和退出码
-2. `docker logs <svc> --tail 100` 看报错（找 `Error`、`FATAL`、连接失败）
-3. 常见原因：
-   - **端口冲突**：宿主机端口被占用 → `netstat -ano | findstr <端口>` 查占用，改 compose 映射或停冲突进程
-   - **依赖没起来**：DB 先于应用 → 确认依赖服务健康（`docker compose ps`）
-   - **配置/环境变量错**：.env 缺项或格式错 → 检查对应变量
-   - **镜像拉取失败**：网络/仓库 → 重试或换镜像源
-4. 修复后 `docker restart <svc>` 或 `docker compose up -d <svc>`，再 `docker ps` 验证
+Investigation order:
+1. `docker ps -a` to check status (`Exited` / `Restarting`) and exit codes
+2. `docker logs <svc> --tail 100` to check errors (look for `Error`, `FATAL`, connection failures)
+3. Common causes:
+   - **Port conflict**: host port already in use → `netstat -ano | findstr <port>` to find the occupant, change the compose mapping or stop the conflicting process
+   - **Dependency not up**: DB before app → confirm the dependency service is healthy (`docker compose ps`)
+   - **Config/env var wrong**: `.env` missing entries or wrong format → check the corresponding variables
+   - **Image pull failure**: network/registry → retry or switch mirror source
+4. After fixing, `docker restart <svc>` or `docker compose up -d <svc>`, then verify with `docker ps`
 
-## 2. 登录/OIDC 问题
+## 2. Login / OIDC Issues
 
-| 现象 | 排查 |
+| Symptom | Investigation |
 |---|---|
-| 登录后报 `invalid_grant - Incorrect redirect_uri` | 用内网 IP 访问，不要用 127.0.0.1/localhost；检查 Keycloak client 的 Valid Redirect URIs |
-| 产品里 SSO 登录无反应 | Keycloak 客户端配置（client id/secret、redirect）、realm 是否正确；`/api/keycloak/overview` 查状态 |
-| AD 用户同步不上 | `POST /api/keycloak/sync` 触发，查同步日志；检查 LDAP 连接（域控地址/凭据在 .env） |
-| 管理员进不了管理功能 | 账号是否分配 `ai-platform-admin` 角色（`/api/keycloak/roles/:name/users` 查看） |
+| `invalid_grant - Incorrect redirect_uri` after login | Access via the internal IP, not 127.0.0.1/localhost; check the Valid Redirect URIs of the Keycloak client |
+| SSO login does nothing in a product | Check Keycloak client config (client id/secret, redirect), realm correctness; query status via `/api/keycloak/overview` |
+| AD users won't sync | Trigger via `POST /api/keycloak/sync`, check the sync log; check the LDAP connection (domain controller address/credentials in .env) |
+| Admin cannot access admin features | Check whether the account has the `ai-platform-admin` role (`/api/keycloak/roles/:name/users`) |
 
-## 3. 改代码/配置不生效
+## 3. Code/Config Changes Not Taking Effect
 
-- **前端（index.html）**：改完刷新浏览器，必要时 Ctrl+F5（缓存）
-- **后端（server.js 等卷内代码）**：必须 `docker restart admin-portal`；`docker compose up -d` 不重载卷内代码
-- **compose 配置/环境变量**：`docker compose up -d`（会重建变更服务）；确认 `docker compose config` 无误
-- **典型症状**：改后端后前端调接口返回 HTML 而非 JSON（`Unexpected token '<'`）→ 说明容器还在跑旧代码，restart
+- **Frontend (index.html)**: refresh the browser after editing, use Ctrl+F5 if needed (cache)
+- **Backend (in-volume code such as server.js)**: must run `docker restart admin-portal`; `docker compose up -d` does not reload in-volume code
+- **Compose config / env vars**: `docker compose up -d` (rebuilds changed services); confirm `docker compose config` is valid
+- **Typical symptom**: after a backend change, the frontend API returns HTML instead of JSON (`Unexpected token '<'`) → the container is still running old code, restart it
 
-## 4. 模型调用异常
+## 4. Model Call Issues
 
-- **调用报错/超时**：`POST /api/availability/test/chat-deepchat` 单测链路（DeepChat → NewAPI → LiteLLM → 外部模型）；`GET /api/litellm/models` 查模型注册；NewAPI 渠道状态 `/api/newapi/channels`
-- **脱敏误伤**：Presidio 规则过严 → `/api/pii/overview` 查规则，调整 `litellm-config.yaml` guardrails
-- **成本/配额异常**：`/api/newapi/cost`、`/api/newapi/audit` 查调用明细
-- **语义缓存**：litellm-redis 健康（`docker exec litellm-redis redis-cli ping` → PONG）；缓存命中走 0.4s 级返回
+- **Call errors/timeouts**: `POST /api/availability/test/chat-deepchat` to test the chain (DeepChat → NewAPI → LiteLLM → external model); `GET /api/litellm/models` to check model registration; NewAPI channel status `/api/newapi/channels`
+- **Redaction false positives**: Presidio rules too strict → check rules via `/api/pii/overview`, adjust `litellm-config.yaml` guardrails
+- **Cost/quota anomalies**: `/api/newapi/cost`、`/api/newapi/audit` to check call details
+- **Semantic cache**: litellm-redis health (`docker exec litellm-redis redis-cli ping` → PONG); cache hits return at ~0.4s level
 
-## 5. 监控/告警/日志异常
+## 5. Monitoring / Alerting / Logging Issues
 
-- **Grafana 无数据**：Prometheus 抓取目标 `/api/monitoring/overview`（targets up 数）；`docker logs prometheus --tail`
-- **告警轰炸/漏报**：`monitoring/alerts.yml` + `alertmanager.yml` 规则；`/api/alerts` 当前状态；IM 接收人 `/api/imalert/receivers` 配置与 `/api/imalert/test/:id` 测试
-- **Loki 查不到日志**：promtail 是否在跑（`docker ps`）；`promtail.yml` 标签与查询匹配
+- **Grafana no data**: Prometheus scrape targets `/api/monitoring/overview` (targets up count); `docker logs prometheus --tail`
+- **Alert flooding/missed alerts**: `monitoring/alerts.yml` + `alertmanager.yml` rules; current state via `/api/alerts`; IM recipients config `/api/imalert/receivers` and `/api/imalert/test/:id` tests
+- **Loki can't find logs**: check whether promtail is running (`docker ps`); `promtail.yml` labels must match the query
 
-## 6. 磁盘空间不足
+## 6. Disk Space Low
 
-1. `docker system df` 看 Docker 占用；`Get-PSDrive`（Windows）/ `df -h`（Linux）看磁盘
-2. 清理候选（**列清单给用户确认后删**）：悬挂镜像 `docker image prune`、停止容器、旧备份 `backups/backup_*`、旧报告
-3. 健康检查脚本 Stage 9 会检查磁盘；告警规则含磁盘阈值
+1. `docker system df` to check Docker usage; `Get-PSDrive` (Windows) / `df -h` (Linux) to check the disk
+2. Cleanup candidates (**list them for user confirmation before deleting**): dangling images `docker image prune`, stopped containers, old backups `backups/backup_*`, old reports
+3. Stage 9 of the health check script checks disk; alert rules include disk thresholds
 
-## 7. 网络与代理
+## 7. Network and Proxy
 
-- **GitHub push/拉取失败**：确认代理（如 `127.0.0.1:33210`）在运行；git 配置了 GitHub 走代理时代理不可用会导致连接失败（Gitee 不受影响）
-- **容器拉镜像慢/失败**：镜像加速或换源
-- **产品互访失败**：compose 内网网络（`ai-platform` 等）是否正常；用容器名互访
+- **GitHub push/pull failures**: confirm the proxy (e.g., `127.0.0.1:33210`) is running; if git routes GitHub through a proxy and the proxy is unavailable, connections fail (Gitee is unaffected)
+- **Slow/failed image pulls**: use a mirror accelerator or switch source
+- **Products can't reach each other**: check the compose internal network (e.g., `ai-platform`); access each other by container name
 
-## 8. 备份恢复相关
+## 8. Backup / Restore Issues
 
-- **备份失败**：查 `backups/backup.log`；数据库容器是否健康（mysqldump/pg_dump 依赖）
-- **恢复后起不来**：恢复操作先备份当前状态；数据库恢复后重启对应容器；验证数据（登录、查询）
-- **备份目录磁盘满**：缩短保留天数或手动清理旧备份
+- **Backup failed**: check `backups/backup.log`; check whether the database containers are healthy (mysqldump/pg_dump dependencies)
+- **Won't start after restore**: restore first backs up the current state; restart the corresponding containers after database restore; verify the data (login, query)
+- **Backup directory disk full**: shorten the retention days or manually clean old backups
 
-## 9. 管理门户（Admin Center）自身问题
+## 9. Admin Portal (Admin Center) Issues
 
-- **页面白屏/接口 302**：会话过期 → 重新登录
-- **改完 server.js 不生效**：`docker restart admin-portal`（见 §3）
-- **功能页报错**：`docker logs admin-portal --tail 50` 看服务端报错；对应产品 API 是否可达（`/api/health/:name`）
-- **UI 显示旧内容**：Ctrl+F5 硬刷新
+- **Blank page / endpoint 302**: session expired → log in again
+- **server.js changes not taking effect**: `docker restart admin-portal` (see §3)
+- **Function page errors**: `docker logs admin-portal --tail 50` to see server-side errors; check whether the corresponding product API is reachable (`/api/health/:name`)
+- **UI shows old content**: hard refresh with Ctrl+F5
 
-## 10. 通用排查纪律
+## 10. General Troubleshooting Discipline
 
-1. 先看健康检查报告（`health-check.ps1` / `health-check.sh`），定位失败 Stage
-2. 每步操作后验证（`docker ps`、HTTP 状态、日志）
-3. 破坏性操作（删除、恢复、重建）先备份 + 用户确认
-4. 报结论带证据：状态码、日志片段、命令输出
+1. Start with the health check report (`health-check.ps1` / `health-check.sh`) to locate the failing stage
+2. Verify after every step (`docker ps`, HTTP status, logs)
+3. Destructive operations (delete, restore, rebuild) require a backup first + user confirmation
+4. Report conclusions with evidence: status codes, log excerpts, command output
