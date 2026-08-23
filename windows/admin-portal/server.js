@@ -2354,26 +2354,40 @@ const availabilityTestDefs = [
   { id: 'chat-deepchat', name: 'DeepChat 聊天（经 NewAPI）', run: async () => {
       const tokens = await getNewApiTokens();
       if (!tokens.deepchat) throw new Error('未找到 deepchat-key token');
+      // 查询 NewAPI 实际可用的模型，不假定后端是 DeepSeek 或其他特定渠道
+      const modelsR = await fetch(`${NEWAPI_URL}/v1/models`, { headers: { Authorization: `Bearer ${tokens.deepchat}` } });
+      if (!modelsR.ok) throw new Error('获取模型列表失败 HTTP ' + modelsR.status);
+      const modelsD = await modelsR.json();
+      const models = (modelsD.data || []).map(m => m.id);
+      if (!models.length) throw new Error('无可用模型（请在 NewAPI 中配置渠道）');
+      const model = models[0];
       const r = await fetch(`${NEWAPI_URL}/v1/chat/completions`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokens.deepchat}` },
-        body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 }),
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 }),
       });
       if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + ((await r.text()).slice(0, 120)));
       const d = await r.json();
       const u = d.usage || {};
-      return `模型 deepseek-chat · tokens ${u.total_tokens ?? '—'} · ${((d.choices || [{}])[0].message || {}).content ? '有回复' : '无回复'}`;
+      return `模型 ${model} · tokens ${u.total_tokens ?? '—'} · ${((d.choices || [{}])[0].message || {}).content ? '有回复' : '无回复'}`;
     } },
   { id: 'chat-dify', name: 'Dify 聊天（经 NewAPI）', run: async () => {
       const tokens = await getNewApiTokens();
       if (!tokens.dify) throw new Error('未找到 dify-key token');
+      // 查询 NewAPI 实际可用的模型，不假定后端是 DeepSeek 或其他特定渠道
+      const modelsR = await fetch(`${NEWAPI_URL}/v1/models`, { headers: { Authorization: `Bearer ${tokens.dify}` } });
+      if (!modelsR.ok) throw new Error('获取模型列表失败 HTTP ' + modelsR.status);
+      const modelsD = await modelsR.json();
+      const models = (modelsD.data || []).map(m => m.id);
+      if (!models.length) throw new Error('无可用模型（请在 NewAPI 中配置渠道）');
+      const model = models[0];
       const r = await fetch(`${NEWAPI_URL}/v1/chat/completions`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokens.dify}` },
-        body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 }),
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 }),
       });
       if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + ((await r.text()).slice(0, 120)));
       const d = await r.json();
       const u = d.usage || {};
-      return `模型 deepseek-chat · tokens ${u.total_tokens ?? '—'} · ${((d.choices || [{}])[0].message || {}).content ? '有回复' : '无回复'}`;
+      return `模型 ${model} · tokens ${u.total_tokens ?? '—'} · ${((d.choices || [{}])[0].message || {}).content ? '有回复' : '无回复'}`;
     } },
   { id: 'dify', name: 'Dify 平台', run: async () => {
       const r = await fetch(`${DIFY_URL}/`, { redirect: 'manual' });

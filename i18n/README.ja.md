@@ -107,17 +107,7 @@ windows-deploy-guide-v2.html を熟読してください——これが今回の
 
 2. **手動デプロイ**——[Windows デプロイガイド](../windows/windows-deploy-guide-v2.md) に従って順に操作します（`windows-checklist.html` 進捗チェックリストと併用）。
 
-```bash
-# Linux (Debian/Ubuntu)
-cd AIAllInOne/linux
-# 詳細は linux-deploy-guide-debian.ja.html を参照
-
-# Linux (RHEL/CentOS/Rocky)
-cd AIAllInOne/linux
-# 詳細は linux-deploy-guide-rpm.ja.html を参照
-```
-
-> **プラットフォームの状態**：Windows（Windows 11 + Docker Desktop）と **Linux**（Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+）は**実測中**です。オンラインサーバー（`docker/`）は計画中です——[ロードマップ](#roadmap)をご覧ください。
+> **プラットフォームの状態**：Windows（Windows 11 + Docker Desktop）は**実測中**です。Linux/macOS（`linux/`）とオンラインサーバー（`docker/`）は計画中です——[ロードマップ](#roadmap)をご覧ください。
 
 ## 🖼️ 画面スクリーンショット
 
@@ -168,41 +158,10 @@ cd AIAllInOne/linux
 
 <h2 id="roadmap">🗺️ ロードマップ</h2>
 
-- ✅ v1.00 — オールインワン：Windows + Linux（Debian/RPM）+ Dify + オフラインデプロイ + AI 管理センター + 階層別管理者権限 + 企業 IM アラート + セマンティックキャッシュ（LiteLLM redis-semantic）
+- ✅ v0.9x — Windows プラットフォーム：オールインワン + AI 管理センター + 階層別管理者権限 + 企業 IM アラート + セマンティックキャッシュ（LiteLLM redis-semantic）
+- 🚧 **Linux / macOS** — セルフホスト Linux サーバー対応（`linux/`）
 - 🚧 **オンラインサーバー** — 純 Docker / クラウドでの本番デプロイ（`docker/`）
 - 🚧 **共創者プログラム** — タスクボード、毎週の同期ミーティング、デプロイパートナー認定
-
-## 📋 変更履歴
-
-### v1.00（2026-08-23）
-
-**新機能：Linux プラットフォーム対応**
-- 完全な Linux デプロイ対応：Debian 系（Debian 12+ / Ubuntu 22.04+）および RPM 系（RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+）
-- オフラインデプロイ用のビルド済み Docker イメージパッケージ（6.2GB メイン + Dify）
-- Linux bash スクリプト：backup.sh、restore.sh、health-check.sh、ghost-setup.sh、dify-setup.sh
-- Windows（PowerShell）と Linux（bash）両平台のインポートスクリプト
-
-**新機能：Dify AI アプリケーションプラットフォーム**
-- Dify スタンドアロンデプロイ対応（専用 Docker Compose）
-- 自動初期化スクリプト：デフォルトチャットアプリ、ナレッジベース、API キーを自動作成
-- Keycloak SSO 統合による統一ログイン
-
-**新機能：Gitea 同期ワークフロー**
-- DeepChat 自動更新同期スクリプトのエクスポートとドキュメント化
-- デスクトップクライアント配布の自動化 Gitea Actions ワークフロー
-
-**改善：デプロイガイド**
-- Windows デプロイガイド v2：オフラインイメージインポート、タスクスケジュール、ポート早見表、検証済み修正ログを追加
-- Linux デプロイガイド（Debian/RPM）：Windows ガイドと完全に同等
-- 全ガイドに Keycloak IdP アンケート（7 種類の IdP タイプ）と Admin REST API 自動設定を追加
-- 全ガイドに Dify 自動セットアップと Gitea 同期インポート手順を追加
-
-**改善：AI Admin Center**
-- 可用性テストが DeepSeek モデルをハードコードしなくなり、NewAPI 経由で利用可能なモデルを動的にクエリ
-- あらゆる LLM バックエンドに対応（DeepSeek、OpenAI、Claude、ローカル Ollama など）
-
-**改善：GitHub Pages**
-- 新しいプロジェクトランディングページ：https://sdlyxianchao.github.io/AIAllInOne/
 
 ## 🔒 セキュリティについて
 
@@ -245,7 +204,7 @@ AI AllInOne が時間やお金の節約になっているなら、Star は無料
    ```bash
    cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
-3. **使用** — デプロイディレクトリでエージェントを開き、たとえば「健康チェックを実行して」「プラットフォームをバックアップして」「Ghost が落ちているのはなぜ？」「v1.00 をリリースして」と指示するだけ。スキルは `.env` から自分で認証情報を読み取ります——パスワードを貼り付ける必要は一切なく、指定したどのマシンにも自動で適応します。
+3. **使用** — デプロイディレクトリでエージェントを開き、たとえば「健康チェックを実行して」「プラットフォームをバックアップして」「Ghost が落ちているのはなぜ？」「v0.96 をリリースして」と指示するだけ。スキルは `.env` から自分で認証情報を読み取ります——パスワードを貼り付ける必要は一切なく、指定したどのマシンにも自動で適応します。
 
 本プラットフォームは、**AI エージェントによる運用・保守**を前提に設計されています — WorkBuddy、OpenClaw、Microsoft Scout、または同等のツールです。多数の管理コンソールをクリックして回る代わりに、エージェントに自然言語でやりたいことを伝えるだけで、エージェントがファイルを読み、コマンドを実行し、サービスと通信してくれます。
 

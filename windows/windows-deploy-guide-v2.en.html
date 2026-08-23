@@ -125,6 +125,7 @@
     <li><a href="#overview">1. Overview &amp; Port Allocation</a></li>
     <li><a href="#prereq">2. Prerequisites (Docker Desktop + Directory + Network)</a></li>
     <li><a href="#files">3. Configuration Files</a></li>
+    <li><a href="#offline-import">3.5 Offline Image Import (Recommended for intranet)</a></li>
     <li><a href="#start">4. Start Core Services</a></li>
     <li><a href="#dify">5. Standalone Dify Deployment</a></li>
     <li><a href="#config">6. Per-Product Web UI Configuration</a></li>
@@ -135,7 +136,10 @@
     <li><a href="#admin-portal">11. AI Admin Center — Unified Admin Portal</a></li>
     <li><a href="#ops">12. Operations — Health Checks &amp; Startup Self-Check</a></li>
     <li><a href="#security">13. Security, Compliance &amp; Observability</a></li>
+    <li><a href="#scheduled-tasks">14. Scheduled Tasks (Windows Task Scheduler)</a></li>
+    <li><a href="#port-reference">15. Windows Firewall — Port Quick Reference</a></li>
     <li><a href="#identity-sources">N. Appendix: Keycloak Enterprise Identity Source Integration</a></li>
+    <li><a href="#fixlog">O. Appendix: Verified Fix Log</a></li>
   </ul>
 </div>
 
@@ -762,6 +766,57 @@ docker network ls | findstr ai-platform</code></pre>
 <h4>Password change policy</h4>
 <div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> involves the already-created database; changing it requires deleting the corresponding volume and recreating it (data loss). Set it once at the start and don't change it later.</div>
 <p><code>KEYCLOAK_ADMIN_PASSWORD</code>, <code>ADMIN_PASSWORD</code> and other admin passwords can be changed in each product's admin UI; sync the change back to <code>.env</code> afterwards (doesn't affect runtime, just a memo).</p>
+
+<!-- ==================== 3.5 Offline Image Import ==================== -->
+<h2 id="offline-import">3.5 Offline Image Import (Recommended for intranet / air-gapped environments)</h2>
+
+<div class="callout callout-warn">
+  <strong>⚠️ If the target machine cannot access Docker Hub / ghcr.io (e.g. intranet, restricted network), you must use offline image packages to deploy.</strong>
+  Image packages are exported from a source machine (<code>linux-image/export-images.sh</code>), copied to the target machine, then imported.
+  Even if internet access is available, importing images first is recommended (version-locked, avoids unexpected upgrades).
+</div>
+
+<p><strong>Step 0: Copy the following to the target machine (same directory structure)</strong></p>
+<pre><code>C:\AIAllInOne\
+├── windows\                         # Main platform deploy dir (docker-compose.yml, .env, admin-portal\, etc.)
+│   ├── docker-compose.yml
+│   ├── .env                         # Copied from .env.windows and customized
+│   ├── .env.windows                 # Windows template (all ports/passwords/URLs)
+│   ├── .env.example                 # Example env file
+│   ├── admin-portal\                # Source + node_modules (can skip npm install if pre-built)
+│   ├── mcp-gateway\
+│   ├── monitoring\                  # prometheus.yml / promtail.yml / alerts.yml
+│   └── scripts\                     # ghost-setup.ps1 / ghost-theme-setup.ps1 / health-check.ps1 / backup.ps1 / restore.ps1
+├── linux-image\                     # Offline image packages (copied from source machine)
+│   ├── ai-all-in-one-images.tar.gz        # Main platform images (~3.8 GB)
+│   ├── ai-all-in-one-dify-images.tar.gz   # Dify images (~2.5 GB)
+│   ├── export-images.sh                   # Source machine export script (reference only)
+│   └── import-images.sh                   # Target machine import script
+└── dify\                            # Dify standalone (separate compose)
+    └── docker\
+        ├── docker-compose.yaml
+        └── .env</code></pre>
+
+<p><strong>Step 1: Import main platform images</strong></p>
+<pre><code><span class="comment"># PowerShell or Git Bash</span>
+cd C:\AIAllInOne\linux-image
+
+<span class="comment"># If using Git Bash:</span>
+chmod +x import-images.sh
+./import-images.sh        # Auto-checks and imports all images; idempotent, safe to re-run
+
+<span class="comment"># If using PowerShell, import manually:</span>
+docker load -i ai-all-in-one-images.tar.gz
+docker load -i ai-all-in-one-dify-images.tar.gz</code></pre>
+<p>The script automatically verifies all 28 main platform images + 9 Dify images are present, importing any missing ones (<code>docker load</code> is idempotent).</p>
+
+<p><strong>Step 2: Verify image import</strong></p>
+<pre><code>docker images | findstr "keycloak gitea ghost langfuse new-api prometheus"
+<span class="comment"># Should show 7+ rows for core platform images</span></code></pre>
+
+<div class="callout callout-info">
+  <strong>Offline deployment note:</strong> If the target machine has no internet, <code>npm install</code> will fail. Copy <code>admin-portal\node_modules\</code> and <code>mcp-gateway\node_modules\</code> from the source machine (directory structure must match), and skip npm install. Also, <code>docker compose up -d</code> <b>must be run after completing §3.5 image import</b> (otherwise compose will try to pull from the internet and time out).
+</div>
 
 <h2 id="start">4. Start Core Services</h2>
 
@@ -1452,6 +1507,21 @@ litellm_settings:
 
 <div class="callout callout-info"><strong>🔍 Using Dify as the unified knowledge base (RAG):</strong> to let DeepChat search the Dify knowledge base over MCP, in addition to the LLM provider above you need to add an <b>embedding model</b> (e.g. <code>bge-m3</code>) in Model Providers and set it as default, then create a knowledge base + Knowledge API Key. Full steps in <a href="#mcp-rag">8.9 RAG — unified knowledge-base retrieval</a>.</div>
 
+<h4>Auto-Initialize Dify (CLI, no browser needed)</h4>
+<div class="callout callout-info">
+  <strong>🤖 Automated setup (new installations only):</strong> create the Dify admin account via API, equivalent to the <code>/install</code> page wizard. Already-initialized systems return 403 (normal, safe to ignore).
+</div>
+<pre><code><span class="comment"># Create Dify admin (equivalent to /install page; returns 403 if already initialized)</span>
+curl -s -X POST http://&lt;server-IP&gt;/console/api/setup ^
+  -H "Content-Type: application/json" ^
+  -d "{\"email\":\"ai_all_in_one_admin@&lt;company-domain&gt;\",\"name\":\"admin\",\"password\":\"&lt;ADMIN_PASSWORD&gt;\"}"
+
+<span class="comment"># Then configure model provider via API (same as UI step above)</span>
+<span class="comment"># Settings → Model Providers → OpenAI-API-compatible</span>
+<span class="comment"># API endpoint: http://host.docker.internal:3000/v1</span>
+<span class="comment"># API Key: dify-key's sk-xxx</span></code></pre>
+<div class="note">⚠️ On Windows, use PowerShell or Git Bash to run <code>curl</code> commands. If <code>curl</code> is not available, use <code>Invoke-RestMethod</code> in PowerShell instead. The Dify auto-setup script (<code>scripts/dify-setup.sh</code>) is a bash script; on Windows, run it via Git Bash or WSL.</div>
+
 <h3 id="config-ghost">6.5 Ghost — configure the portal</h3>
 <div class="step">
   <span class="step-num">1</span>Open the admin entry <code>http://&lt;server-IP&gt;:8090/ghost/</code> in a browser (<b>note the /ghost/ suffix, this is the admin console</b>)
@@ -1538,6 +1608,39 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
 <div class="callout callout-info">
   <strong>🔐 Gitea Keycloak SSO auto-registration (v0.91):</strong> Gitea is connected to Keycloak OIDC (the <code>/user/login</code> page shows a "Sign in with keycloak" button). To auto-create new SSO users on first login and stop redirecting to the <code>link_account</code> page, append an <code>[oauth2_client]</code> section to <code>app.ini</code> (docker-compose already sets the <code>GITEA__oauth2_client__*</code> env vars): <code>ENABLE_AUTO_REGISTRATION=true</code>, <code>ACCOUNT_LINKING=auto</code>, <code>USERNAME=preferred_username</code>. ⚠️ The local Gitea admin email must match Keycloak/AD (<code>@&lt;company-domain&gt;</code>), otherwise SSO can't match by email and will "cross-link" accounts or create duplicates.
 </div>
+
+<h4>Import DeepChat Sync Scripts</h4>
+<p>The <code>deepchat-sync</code> repo contains the automated sync workflow for distributing DeepChat installers. After initializing Gitea (step above), import the sync scripts:</p>
+<div class="step">
+  <span class="step-num">1</span><strong>Create the <code>deepchat-sync</code> repository</strong>
+  <pre><code>curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/create" ^
+  -u "ai_all_in_one_admin:&lt;password&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"deepchat-sync\",\"description\":\"DeepChat release sync + Ghost download page updater\",\"auto_init\":true}"</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>Upload sync workflow and scripts</strong>
+  <p>The repo should contain these files (same as the Linux version — scripts are platform-agnostic):</p>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>.gitea/workflows/sync.yml</code></td><td>Gitea Actions workflow: daily 2 AM check + manual dispatch</td></tr>
+    <tr><td><code>sync_download.py</code></td><td>Download engine: queries GitHub API, downloads only newer releases</td></tr>
+    <tr><td><code>update_ghost.py</code></td><td>Updates Ghost download page with new installer links</td></tr>
+    <tr><td><code>sync-config.json</code></td><td>Configuration: version source, download prefix, keep count, market URL</td></tr>
+    <tr><td><code>version.txt</code></td><td>Tracks the last synced version number</td></tr>
+  </table>
+  <p>Upload via Gitea web UI (<code>http://&lt;server-IP&gt;:3002/ai_all_in_one_admin/deepchat-sync</code>) or use the API:</p>
+  <pre><code><span class="comment"># Example: upload sync-config.json via API</span>
+curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/contents/sync-config.json" ^
+  -u "ai_all_in_one_admin:&lt;password&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"content\":\"base64-encoded-content\",\"message\":\"Add sync config\"}"</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>Configure the Runner for the sync workflow</strong>
+  <p>Ensure <code>gitea-runner-config.yaml</code> has <code>container.network: ai-platform</code> so job containers can resolve the <code>gitea</code> hostname. Also set <code>force_pull: false</code> and pre-pull <code>node:20</code> on the host (intranet can't reach Docker Hub).</p>
+</div>
+<div class="note">⚠️ <b>Key pitfalls</b>: ① The <code>deepchat-sync</code> repo must be a <b>normal repo</b> (not a mirror, which is read-only); ② the checkout step in <code>sync.yml</code> must include <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code>, otherwise checkout fails with an empty token; ③ <code>sync_download.py</code> uses the Docker Engine API (via <code>/var/run/docker.sock</code>) rather than the Docker CLI (CLI downloads timeout on intranet); ④ <code>sync-config.json</code> controls version source (<code>github</code> vs <code>official</code>), download acceleration prefix, and release retention count.</div>
 
 <!-- ==================== 7. DeepChat ==================== -->
 
@@ -2490,6 +2593,181 @@ mail__options__port: 1025</code></pre>
   <li>Write the <code>ghost-admin-api-session</code> cookie into the browser (<code>Path=/ghost</code>, cookies shared by domain across ports on the same host), redirect to <code>:8090/ghost/</code> straight into the admin.</li>
 </ol>
 <div class="note">⚠️ <b>Key pitfalls</b>: ① Ghost 5's backend <b>still supports password login</b> (<code>POST /session/</code>), but a correct password triggers "new device 2FA" (returns 403 <code>Needs2FAError</code> + sends a code), so the verification step is required; ② the code is TOTP, reproducible exactly with <code>crypto.createHmac('sha1', secret+userId)</code>, verified to match the emailed code digit-for-digit; ③ even computing the code yourself, Ghost still really "sends email", so MailHog (or any SMTP) must be kept, otherwise login returns <code>Failed to send email</code>; ④ <code>/session/verify</code> has brute-force rate limiting; a normal single click won't trigger it, but don't spam it repeatedly in a short time.</div>
+
+<!-- ==================== 14. Scheduled Tasks ==================== -->
+<h2 id="scheduled-tasks">14. Scheduled Tasks (Windows Task Scheduler)</h2>
+
+<p>On Linux, scheduled tasks use <code>crontab</code>. On Windows, use <b>Windows Task Scheduler</b> or <b>PowerShell scheduled tasks</b> to achieve the same automation.</p>
+
+<div class="step">
+  <span class="step-num">1</span><strong>Health check (daily at 03:00)</strong>
+  <pre><code><span class="comment"># Create a scheduled task for daily health check</span>
+schtasks /create /tn "AI-HealthCheck" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1" /sc daily /st 03:00 /f
+
+<span class="comment"># Verify the task was created</span>
+schtasks /query /tn "AI-HealthCheck" /v /fo list</code></pre>
+  <div class="verify"><code>schtasks /query /tn "AI-HealthCheck"</code> shows the task with status "Ready"</div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>Daily backup (daily at 02:00)</strong>
+  <pre><code><span class="comment"># Create a scheduled task for daily backup</span>
+schtasks /create /tn "AI-Backup" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1" /sc daily /st 02:00 /f
+
+<span class="comment"># Verify</span>
+schtasks /query /tn "AI-Backup" /v /fo list</code></pre>
+  <div class="verify"><code>schtasks /query /tn "AI-Backup"</code> shows the task with status "Ready"</div>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>Log rotation (weekly, Sunday at 00:00)</strong>
+  <pre><code><span class="comment"># Create a log rotation task (truncate logs > 50 MB)</span>
+schtasks /create /tn "AI-LogRotation" /tr "powershell -NoProfile -Command \"Get-ChildItem 'C:\AIAllInOne\windows\scripts\health_check_*.log' | Where-Object {$_.Length -gt 50MB} | ForEach-Object {$_.Delete()}\"" /sc weekly /d SUN /st 00:00 /f</code></pre>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>Startup health check (on boot, with 2-minute delay)</strong>
+  <pre><code><span class="comment"># Create a task that runs health check 2 minutes after system startup</span>
+schtasks /create /tn "AI-StartupHealthCheck" /tr "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Start-Sleep -Seconds 120; & C:\AIAllInOne\windows\scripts\health-check.ps1\"" /sc onstart /f</code></pre>
+</div>
+
+<div class="callout callout-info">
+  <strong>Useful Task Scheduler commands:</strong>
+  <pre><code>schtasks /query                          <span class="comment"># List all tasks</span>
+schtasks /query /tn "AI-HealthCheck"    <span class="comment"># View specific task</span>
+schtasks /run /tn "AI-HealthCheck"      <span class="comment"># Run task immediately</span>
+schtasks /delete /tn "AI-HealthCheck" /f <span class="comment"># Delete a task</span>
+schtasks /change /tn "AI-Backup" /disable  <span class="comment"># Disable a task</span>
+schtasks /change /tn "AI-Backup" /enable   <span class="comment"># Enable a task</span></code></pre>
+</div>
+
+<!-- ==================== 15. Port Quick Reference ==================== -->
+<h2 id="port-reference">15. Windows Firewall — Port Quick Reference</h2>
+
+<div class="callout callout-warn">
+  <strong>⚠️ Windows Firewall may block Docker container ports.</strong> If employees on the intranet cannot access a service, check Windows Firewall rules first. The commands below open inbound TCP ports for each service.
+</div>
+
+<table>
+  <tr><th>Port</th><th>Service</th><th>Required</th><th>Windows Firewall Command</th></tr>
+  <tr><td>9090/tcp</td><td>Keycloak SSO</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Keycloak" dir=in action=allow protocol=tcp localport=9090</code></td></tr>
+  <tr><td>3000/tcp</td><td>NewAPI LLM Router</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-NewAPI" dir=in action=allow protocol=tcp localport=3000</code></td></tr>
+  <tr><td>4001/tcp</td><td>LiteLLM Proxy</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-LiteLLM" dir=in action=allow protocol=tcp localport=4001</code></td></tr>
+  <tr><td>8090/tcp</td><td>Ghost Portal</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Ghost" dir=in action=allow protocol=tcp localport=8090</code></td></tr>
+  <tr><td>3002/tcp</td><td>Gitea</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Gitea" dir=in action=allow protocol=tcp localport=3002</code></td></tr>
+  <tr><td>10086/tcp</td><td>AI Admin Center</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-AdminCenter" dir=in action=allow protocol=tcp localport=10086</code></td></tr>
+  <tr><td>3100/tcp</td><td>MCP Gateway</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-MCP" dir=in action=allow protocol=tcp localport=3100</code></td></tr>
+  <tr><td>3030/tcp</td><td>Grafana</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Grafana" dir=in action=allow protocol=tcp localport=3030</code></td></tr>
+  <tr><td>3010/tcp</td><td>Langfuse</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Langfuse" dir=in action=allow protocol=tcp localport=3010</code></td></tr>
+  <tr><td>80/tcp</td><td>Dify</td><td>If using Dify</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Dify" dir=in action=allow protocol=tcp localport=80</code></td></tr>
+  <tr><td>8025/tcp</td><td>MailHog</td><td>Optional (dev)</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-MailHog" dir=in action=allow protocol=tcp localport=8025</code></td></tr>
+  <tr><td>8091/tcp</td><td>Update Server</td><td>Yes</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-UpdateServer" dir=in action=allow protocol=tcp localport=8091</code></td></tr>
+</table>
+
+<h4>Open all ports at once (PowerShell script)</h4>
+<pre><code><span class="comment"># Run as Administrator</span>
+$ports = @{
+    "AI-Platform-Keycloak"     = 9090
+    "AI-Platform-NewAPI"       = 3000
+    "AI-Platform-LiteLLM"      = 4001
+    "AI-Platform-Ghost"        = 8090
+    "AI-Platform-Gitea"        = 3002
+    "AI-Platform-AdminCenter"  = 10086
+    "AI-Platform-MCP"          = 3100
+    "AI-Platform-Grafana"      = 3030
+    "AI-Platform-Langfuse"     = 3010
+    "AI-Platform-Dify"         = 80
+    "AI-Platform-MailHog"      = 8025
+    "AI-Platform-UpdateServer" = 8091
+}
+foreach ($entry in $ports.GetEnumerator()) {
+    netsh advfirewall firewall add rule name=$entry.Key dir=in action=allow protocol=tcp localport=$entry.Value
+}
+Write-Host "All AI Platform firewall rules added."</code></pre>
+
+<div class="callout callout-info">
+  <strong>Useful Windows Firewall commands:</strong>
+  <pre><code>netsh advfirewall firewall show rule name=all | findstr "AI-Platform"  <span class="comment"># List all AI Platform rules</span>
+netsh advfirewall firewall delete rule name="AI-Platform-MailHog"     <span class="comment"># Delete a rule</span>
+netsh advfirewall set allprofiles state off                            <span class="comment"># Disable firewall (emergency only)</span>
+netsh advfirewall set allprofiles state on                             <span class="comment"># Re-enable firewall</span></code></pre>
+</div>
+
+<!-- ==================== Appendix O. Verified Fix Log ==================== -->
+<h2 id="fixlog">Appendix O. Verified Fix Log (Verified on 2026-08-23 on real hardware)</h2>
+
+<div class="callout callout-warn">
+  <strong>📋 The following issues all occurred and were fixed in the current environment. When deploying to a new machine, verify each item in this checklist to avoid repeating known pitfalls.</strong>
+</div>
+
+<h3>O.1 Port Mapping &amp; Access Addresses (Common Confusion Points)</h3>
+<table>
+  <tr><th>Service</th><th>External Port</th><th>Container Internal Port</th><th>Notes</th></tr>
+  <tr><td>AI Admin Center (admin-portal)</td><td><strong>10086</strong></td><td>3000</td><td>External access: 10086; container-to-container: <code>admin-portal:3000</code></td></tr>
+  <tr><td>Keycloak</td><td>9090</td><td>8080</td><td>External 9090 → container 8080</td></tr>
+  <tr><td>Gitea</td><td>3002</td><td>3000</td><td>External 3002 → container 3000</td></tr>
+  <tr><td>NewAPI</td><td>3000</td><td>3000</td><td>Direct passthrough</td></tr>
+  <tr><td>Langfuse</td><td>3010</td><td>3000</td><td>External 3010 → container 3000</td></tr>
+  <tr><td>Grafana</td><td>3030</td><td>3000</td><td>External 3030 → container 3000</td></tr>
+  <tr><td>LiteLLM</td><td>4001</td><td>4000</td><td>External 4001 → container 4000</td></tr>
+  <tr><td>Ghost</td><td>8090</td><td>2368</td><td>External 8090 → container 2368</td></tr>
+  <tr><td>Update Server</td><td>8091</td><td>80</td><td>External 8091 → container 80</td></tr>
+  <tr><td>Loki</td><td>3110</td><td>3100</td><td>External 3110 → container 3100</td></tr>
+  <tr><td>Prometheus</td><td>9091</td><td>9090</td><td>External 9091 → container 9090</td></tr>
+  <tr><td>Alertmanager</td><td>9093</td><td>9093</td><td>Direct passthrough</td></tr>
+  <tr><td>MCP Gateway</td><td>3100</td><td>3100</td><td>Direct passthrough</td></tr>
+  <tr><td>Dify</td><td>80</td><td>80</td><td>Separate compose, direct passthrough</td></tr>
+</table>
+<p>⚠️ <b>Most common pitfall:</b> admin-portal is <b>10086</b>, not 8080. Using 8080 hits the Gitea port and returns a misleading "unsupported API version gitea" error.</p>
+
+<h3>O.2 Keycloak SSO Login Testing Notes</h3>
+<ul>
+  <li>You must use the real server IP (e.g. <code>http://192.168.1.100:10086</code>) to initiate requests. <b>Do not use 127.0.0.1</b> — Keycloak client redirect URIs do not include 127.0.0.1, so you'll get <code>Invalid parameter: redirect_uri</code></li>
+  <li>SSO flow (Python urllib + cookiejar): GET protected endpoint → auto-follow 302 to Keycloak login page (200 HTML) → extract <code>&lt;form action&gt;</code> + hidden fields → POST username/password → auto-follow callback</li>
+  <li>Detect login page: URL contains <code>openid-connect/auth</code> or <code>login-actions</code></li>
+</ul>
+
+<h3>O.3 Ghost Custom Theme (corp-portal) Issues</h3>
+<ul>
+  <li>Theme source directory: <code>C:\AIAllInOne\windows\ghost-theme-corp-portal\</code> (complete theme, 15 files)</li>
+  <li>Deploy script: <code>scripts\ghost-theme-setup.ps1</code> (docker cp → sqlite change <code>active_theme</code> → restart)</li>
+  <li>After activation, verify: homepage shows capability cards + navigation + latest news (5 articles) + CSS/JS return 200</li>
+  <li>SQLite operation: <code>/var/lib/ghost/versions/&lt;ver&gt;/node_modules/sqlite3</code>, <code>SELECT value FROM settings WHERE key='active_theme'</code></li>
+  <li>Navigation helper: <code>partials/navigation.hbs</code> must use <code>{{#foreach navigation}}</code> (without <code>@site.</code> prefix)</li>
+  <li>⚠️ <code>ghost-theme-attila\</code> is only a 3-file patch overlay, <b>not a complete theme</b> — cannot be activated standalone</li>
+</ul>
+
+<h3>O.4 Gitea OIDC Login Source</h3>
+<ul>
+  <li>Keycloak client <code>gitea</code>, callback <code>http://&lt;server-IP&gt;:3002/user/oauth2/{client_id}/callback</code></li>
+  <li>Gitea auth source type: select <b>OAuth2 → provider OpenID Connect</b> (not directly OIDC type, otherwise "type is not allowed")</li>
+  <li>Discovery endpoint: <code>http://host.docker.internal:9090/realms/enterprise-ai/.well-known/openid-configuration</code></li>
+</ul>
+
+<h3>O.5 Langfuse SSO</h3>
+<ul>
+  <li>Keycloak client <code>langfuse</code>, IdP-initiated SSO (need to manually link account in Langfuse settings once)</li>
+  <li>After login, go to Langfuse user settings to do account linking with Keycloak account</li>
+</ul>
+
+<h3>O.6 Gitea Sync Repo (deepchat-sync)</h3>
+<ul>
+  <li><code>.gitea/workflows/sync.yml</code>: checkout step must include <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code></li>
+  <li>act_runner: label <code>ubuntu-latest:docker://node:20</code>, mount <code>/var/run/docker.sock</code>, network <code>ai-platform</code></li>
+  <li><code>sync_download.py</code> uses Docker Engine API (unix socket) not Docker CLI (CLI downloads timeout); response needs demux parsing for multiplexed stream</li>
+  <li><code>sync-config.json</code>: <code>{"targets":["windows-x64",...],"keep_releases":3}</code>; sync strategy: only download releases newer than local highest version (skip prerelease); <code>REBUILD_ONLY=1</code> only rebuilds versions.json</li>
+</ul>
+
+<h3>O.7 Monitoring Alert Pipeline</h3>
+<ul>
+  <li>Full pipeline verified: Prometheus rules → Alertmanager (9093) → webhook <code>admin-portal:3000/api/alert-webhook</code> → <code>/api/alerts</code> + imalert forwarding</li>
+  <li>All 16 imalert API tests passed (receiver CRUD / rules / history / test send / 404 / 400 validation)</li>
+  <li>imalert storage: <code>admin-session-redis</code> (<b>not</b> <code>docker-redis-1</code>! The latter is for Dify)</li>
+  <li>Redis keys: <code>imalert:receivers</code> (JSON) / <code>imalert:rules</code> / <code>imalert:history</code> (List)</li>
+  <li>receivers defaulting to empty array is normal initial state, not a fault</li>
+</ul>
+
+<div class="nav-top"><a href="#">↑ Back to top</a></div>
 
 </body>
 </html>

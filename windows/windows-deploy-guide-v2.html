@@ -125,6 +125,7 @@
     <li><a href="#overview">1. 环境概览与端口分配</a></li>
     <li><a href="#prereq">2. 前置准备（Docker Desktop + 目录 + 网络）</a></li>
     <li><a href="#files">3. 配置文件说明</a></li>
+    <li><a href="#offline-import">3.5 离线镜像导入（推荐：无外网环境）</a></li>
     <li><a href="#start">4. 启动核心服务</a></li>
     <li><a href="#dify">5. Dify 独立部署</a></li>
     <li><a href="#config">6. 各产品 Web UI 配置</a></li>
@@ -135,7 +136,10 @@
     <li><a href="#admin-portal">11. AI 管理中心 — 统一管理员门户</a></li>
     <li><a href="#ops">12. 运维 — 健康检查与开机自检</a></li>
     <li><a href="#security">13. 安全合规与可观测</a></li>
+    <li><a href="#scheduled-tasks">14. 定时任务（Windows 任务计划程序）</a></li>
+    <li><a href="#port-reference">15. Windows 防火墙 — 端口速查表</a></li>
     <li><a href="#identity-sources">N. 附录：Keycloak 企业身份源集成</a></li>
+    <li><a href="#fixlog">O. 附录：已验证修复记录</a></li>
   </ul>
 </div>
 
@@ -149,7 +153,60 @@
 <pre><code>你是企业内网 AI 平台的部署工程师。请根据本目录下的《windows-deploy-guide-v2.html》部署指南、windows-checklist.html 进度清单、docker-compose.yml 与 .env.example 配置，在当前这台 Windows 机器上完整部署并验证这套「AI AllInOne」平台。全程用中文与我沟通。
 
 ## 第一步：收集必要参数（逐项问我，不要跳过、不要擅自猜测）
-开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 &lt;市场主机名&gt;，并在 hosts/DNS 里解析）；3) 身份源（接 AD 域控则要域名/域控 IP/LDAP base DN/bind DN/bind 密码/sAMAccountName，或接其他 IdP 的配置，不接则确认）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+开始前向我收集：1) 对外服务的内网 IP；2) Skill 市场主机名（域名，用于替换 mcp-gateway/skills/skill-market/config.json 与 SKILL.md 里的 &lt;市场主机名&gt;，并在 hosts/DNS 里解析）；3) 身份源（见下方详细问卷）；4) 统一管理员账号密码；5) 大模型 API Key（DeepSeek/OpenAI/Claude 等）；6) 按需询问告警 webhook、HTTPS、备份保留策略。
+
+### 身份源（IdP）详细问卷
+先问用户：「您是否有外部身份源（IdP）需要对接？」提供以下选项：
+  A) Windows Active Directory（LDAP）
+  B) Microsoft Entra ID（Azure AD，OIDC）
+  C) Google Workspace（OIDC）
+  D) GitHub（OAuth2）
+  E) 通用 LDAP 服务器
+  F) 通用 SAML 2.0
+  G) 不接外部身份源（使用 Keycloak 本地账号）
+
+用户选择后，按对应 IdP 类型逐项收集以下参数（一项都不许猜、不许跳过）：
+
+**选 A）Windows Active Directory（LDAP）时收集：**
+  - AD 域名（FQDN，如 chxia.lab）
+  - 域控 IP（如 192.168.99.10）
+  - LDAP 端口：389（明文）或 636（加密），默认 389
+  - Base DN（如 DC=chxia,DC=lab）
+  - Bind DN（服务账号 DN，必须 LDAP 格式，如 CN=svc_keycloak,CN=Users,DC=chxia,DC=lab）
+  - Bind 密码
+  - Username 属性：默认 sAMAccountName
+  - 用户搜索基 DN（如 CN=Users,DC=chxia,DC=lab）
+  - 用户对象类：默认 person,organizationalPerson,user
+  - 是否同步 AD 组到 Keycloak（是/否）
+  - 组搜索基 DN（如果同步组，如 CN=Users,DC=chxia,DC=lab）
+  - 同步模式：READ_ONLY（推荐）/ WRITABLE / UNSYNCED
+
+**选 B）Microsoft Entra ID（OIDC）时收集：**
+  - Tenant ID（Azure Portal → Azure Active Directory → 概述）
+  - Client ID（Azure Portal → 应用注册 → Application ID）
+  - Client Secret（Azure Portal → 应用注册 → 证书和密钥 → Secret Value）
+  - 回调 URL 默认为 http://&lt;SERVER_IP&gt;:9090/realms/enterprise-ai/broker/entra-id/endpoint
+
+**选 C）Google Workspace（OIDC）时收集：**
+  - Client ID（Google Cloud Console → APIs & Services → Credentials）
+  - Client Secret
+  - 回调 URL 默认为 http://&lt;SERVER_IP&gt;:9090/realms/enterprise-ai/broker/google/endpoint
+
+**选 D）GitHub（OAuth2）时收集：**
+  - Client ID（GitHub → Settings → Developer settings → OAuth Apps）
+  - Client Secret
+  - 回调 URL 默认为 http://&lt;SERVER_IP&gt;:9090/realms/enterprise-ai/broker/github/endpoint
+
+**选 E）通用 LDAP 时收集：**
+  与 AD 相同参数，但 Vendor 选 Other；默认属性不同：Username 属性=uid，RDN 属性=uid，UUID 属性=entryUUID，用户对象类=inetOrgPerson,organizationalPerson
+
+**选 F）通用 SAML 2.0 时收集：**
+  - Entity ID（IdP 的 Entity ID）
+  - SSO URL（IdP 的 SSO 登录 URL）
+  - X.509 Certificate（IdP 签名证书，PEM 格式）
+  - NameID Format（通常 urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress）
+
+收集完成后，Agent 应使用 Keycloak Admin REST API 自动完成 IdP 配置（无需手动点 UI），详见附录 N 中的 API 配置方法。
 
 ## 第二步：生成本地进度文件
 基于 windows-checklist.html 的内容，在本目录生成「部署进度-&lt;日期&gt;.md」，所有条目复制为未完成（- [ ]）。每完成一项、每解决一个问题就更新它并简要汇报。
@@ -762,6 +819,57 @@ docker network ls | findstr ai-platform</code></pre>
 <div class="warn">⚠️ <code>NEWAPI_DB_PASSWORD</code> 涉及已创建的数据库，修改后需要删除对应 volume 重新创建（数据会丢失）。建议首次就定好，不要后续改。</div>
 <p><code>KEYCLOAK_ADMIN_PASSWORD</code>、<code>ADMIN_PASSWORD</code>、<code>ADMIN_PASSWORD</code> 等管理密码可以在各产品的后台界面修改，改完后同步更新 <code>.env</code>（不影响运行，只是备忘）。</p>
 
+<!-- ==================== 3.5 离线镜像导入 ==================== -->
+<h2 id="offline-import">3.5 离线镜像导入（推荐：无外网环境用镜像包部署）</h2>
+
+<div class="callout callout-warn">
+  <strong>⚠️ 如果目标机器无法访问 Docker Hub / ghcr.io（如内网、受限网络），必须使用离线镜像包方式部署。</strong>
+  镜像包由源机器导出（<code>linux-image/export-images.sh</code>），拷贝到目标机器后导入。
+  即使能访问外网，也建议先导入镜像包（版本锁定，避免意外升级）。
+</div>
+
+<p><strong>Step 0: 拷贝以下内容到目标机器（保持目录结构）</strong></p>
+<pre><code>C:\AIAllInOne\
+├── windows\                         # 主平台部署目录（docker-compose.yml、.env、admin-portal\ 等）
+│   ├── docker-compose.yml
+│   ├── .env                         # 由 .env.windows 复制并修改
+│   ├── .env.windows                 # Windows 模板（含端口/密码/URL 全部变量）
+│   ├── .env.example                 # 示例环境变量
+│   ├── admin-portal\                # 源码 + node_modules（可跳过 npm install）
+│   ├── mcp-gateway\
+│   ├── monitoring\                  # prometheus.yml / promtail.yml / alerts.yml
+│   └── scripts\                     # ghost-setup.ps1 / ghost-theme-setup.ps1 / health-check.ps1 / backup.ps1 / restore.ps1
+├── linux-image\                     # 离线镜像包（从源机器拷贝）
+│   ├── ai-all-in-one-images.tar.gz        # 主平台镜像包（约 3.8GB）
+│   ├── ai-all-in-one-dify-images.tar.gz   # Dify 镜像包（约 2.5GB）
+│   ├── export-images.sh                   # 源机器导出脚本（仅参考）
+│   └── import-images.sh                   # 目标机器导入脚本
+└── dify\                            # Dify 独立部署（独立 compose）
+    └── docker\
+        ├── docker-compose.yaml
+        └── .env</code></pre>
+
+<p><strong>Step 1: 导入主平台镜像</strong></p>
+<pre><code><span class="comment"># PowerShell 或 Git Bash</span>
+cd C:\AIAllInOne\linux-image
+
+<span class="comment"># 使用 Git Bash：</span>
+chmod +x import-images.sh
+./import-images.sh        # 自动检查并导入全部镜像，幂等可重复执行
+
+<span class="comment"># 使用 PowerShell 手动导入：</span>
+docker load -i ai-all-in-one-images.tar.gz
+docker load -i ai-all-in-one-dify-images.tar.gz</code></pre>
+<p>脚本会自动校验 28 个主平台镜像 + 9 个 Dify 镜像是否齐全，缺哪个导哪个（<code>docker load</code> 幂等）。</p>
+
+<p><strong>Step 2: 确认镜像导入成功</strong></p>
+<pre><code>docker images | findstr "keycloak gitea ghost langfuse new-api prometheus"
+<span class="comment"># 输出 7+ 行即主平台核心镜像已就位</span></code></pre>
+
+<div class="callout callout-info">
+  <strong>离线部署注意：</strong>若目标机器无外网，<code>npm install</code> 会失败。此时应把源机器上 <code>admin-portal\node_modules\</code>、<code>mcp-gateway\node_modules\</code> 目录一并拷贝过来（源码目录结构一致即可），跳过 npm install。同样地，<code>docker compose up -d</code> 之前<strong>必须先完成 §3.5 的镜像导入</strong>（否则 compose 会尝试从外网拉镜像而超时）。
+</div>
+
 <h2 id="start">4. 启动核心服务</h2>
 
 <div class="step">
@@ -1017,6 +1125,9 @@ docker compose up -d web</code></pre>
 <div class="verify">可以用刚创建的本地用户在 Keycloak 登录页面登录成功。</div>
 
 <h4>6.1.2 方式 B：从 Active Directory 导入账号</h4>
+<div class="callout callout-info">
+  <p><strong>💡 AI Agent 可通过 Keycloak Admin REST API 自动完成以上配置，无需手动点击 UI。</strong>详见附录 N.9。</p>
+</div>
 <p>适用于公司已有 Windows AD 域控的环境。员工用域账号登录，无需在 Keycloak 中手动创建账号。</p>
 <p><strong>前置条件：</strong>Docker 容器到 DC 域控的网络已互通。如未配置网络（端口转发、防火墙），先参考独立文档：
 <a href="windows-ad-integration.html" style="color:#58a6ff;">📄 Keycloak AD 集成完整指南 — 含网络拓扑、Hyper-V Internal Switch、端口转发、故障排查</a></p>
@@ -1451,6 +1562,21 @@ litellm_settings:
 
 <div class="callout callout-info"><strong>🔍 用 Dify 承载统一知识库（RAG）：</strong>如需让 DeepChat 通过 MCP 检索 Dify 知识库，除上面的 LLM 供应商外，还需在「模型供应商」里加一个 <b>embedding 模型</b>（如 <code>bge-m3</code>）并设为默认，再创建知识库 + Knowledge API Key。完整步骤见 <a href="#mcp-rag">8.9 RAG — 统一知识库检索</a>。</div>
 
+<h4>自动初始化 Dify（CLI 方式，无需浏览器）</h4>
+<div class="callout callout-info">
+  <strong>🤖 自动化初始化（仅新装系统时）：</strong>通过 API 创建 Dify 管理员账号，等价于 <code>/install</code> 页面向导。已初始化的系统返回 403（属正常，可忽略）。
+</div>
+<pre><code><span class="comment"># 创建 Dify 管理员（等价 /install 页面；已初始化时返回 403）</span>
+curl -s -X POST http://&lt;服务器IP&gt;/console/api/setup ^
+  -H "Content-Type: application/json" ^
+  -d "{\"email\":\"ai_all_in_one_admin@&lt;公司域名&gt;\",\"name\":\"admin\",\"password\":\"&lt;ADMIN_PASSWORD&gt;\"}"
+
+<span class="comment"># 然后通过 API 配置模型供应商（同上面 UI 步骤）</span>
+<span class="comment"># 设置 → 模型供应商 → OpenAI-API-compatible</span>
+<span class="comment"># API endpoint: http://host.docker.internal:3000/v1</span>
+<span class="comment"># API Key: dify-key 的 sk-xxx</span></code></pre>
+<div class="note">⚠️ Windows 上用 PowerShell 或 Git Bash 执行 <code>curl</code> 命令。若 <code>curl</code> 不可用，可用 PowerShell 的 <code>Invoke-RestMethod</code> 替代。Dify 自动初始化脚本（<code>scripts/dify-setup.sh</code>）为 bash 脚本，Windows 上需通过 Git Bash 或 WSL 运行。</div>
+
 <h3 id="config-ghost">6.5 Ghost — 配置门户</h3>
 <div class="step">
   <span class="step-num">1</span>浏览器打开后台入口 <code>http://&lt;服务器IP&gt;:8090/ghost/</code>（<b>注意 /ghost/ 后缀，这是管理员后台</b>）
@@ -1534,6 +1660,39 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
 <div class="callout callout-info">
   <strong>🔐 Gitea Keycloak SSO 自动注册（v0.91）：</strong>Gitea 已接 Keycloak OIDC（<code>/user/login</code> 页有「Sign in with keycloak」按钮）。为让新 SSO 用户首次登录<b>自动建号、不再跳 <code>link_account</code></b>（关联账号）页，需在 <code>app.ini</code> 追加 <code>[oauth2_client]</code> 段（docker-compose 已配 <code>GITEA__oauth2_client__*</code> 环境变量）：<code>ENABLE_AUTO_REGISTRATION=true</code>、<code>ACCOUNT_LINKING=auto</code>、<code>USERNAME=preferred_username</code>。⚠️ Gitea 本地管理员邮箱必须与 Keycloak/AD 一致（<code>@&lt;公司域名&gt;</code>），否则 SSO 按邮箱匹配不到会「串号」或生成重复账号。
 </div>
+
+<h4>导入 DeepChat 同步脚本</h4>
+<p><code>deepchat-sync</code> 仓库包含自动同步 DeepChat 安装包的工作流。Gitea 初始化完成后，导入同步脚本：</p>
+<div class="step">
+  <span class="step-num">1</span><strong>创建 <code>deepchat-sync</code> 仓库</strong>
+  <pre><code>curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/create" ^
+  -u "ai_all_in_one_admin:&lt;密码&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"deepchat-sync\",\"description\":\"DeepChat release 同步 + Ghost 下载页更新\",\"auto_init\":true}"</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">2</span><strong>上传同步工作流和脚本</strong>
+  <p>仓库应包含以下文件（与 Linux 版相同——脚本是跨平台的）：</p>
+  <table>
+    <tr><th>文件</th><th>用途</th></tr>
+    <tr><td><code>.gitea/workflows/sync.yml</code></td><td>Gitea Actions 工作流：每天凌晨 2 点检查 + 手动触发</td></tr>
+    <tr><td><code>sync_download.py</code></td><td>下载引擎：查询 GitHub API，仅下载比本地更新的版本</td></tr>
+    <tr><td><code>update_ghost.py</code></td><td>更新 Ghost 下载页的安装包链接</td></tr>
+    <tr><td><code>sync-config.json</code></td><td>配置：版本源、下载加速前缀、保留版本数、市场地址</td></tr>
+    <tr><td><code>version.txt</code></td><td>记录上次同步的版本号</td></tr>
+  </table>
+  <p>通过 Gitea 网页上传（<code>http://&lt;服务器IP&gt;:3002/ai_all_in_one_admin/deepchat-sync</code>）或用 API：</p>
+  <pre><code><span class="comment"># 示例：通过 API 上传 sync-config.json</span>
+curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/contents/sync-config.json" ^
+  -u "ai_all_in_one_admin:&lt;密码&gt;" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"content\":\"base64编码内容\",\"message\":\"Add sync config\"}"</code></pre>
+</div>
+<div class="step">
+  <span class="step-num">3</span><strong>为同步工作流配置 Runner</strong>
+  <p>确保 <code>gitea-runner-config.yaml</code> 中 <code>container.network: ai-platform</code> 已配置，以便 job 容器能解析 <code>gitea</code> 主机名。同时设置 <code>force_pull: false</code>，并在宿主机预拉取 <code>node:20</code>（内网访问不了 Docker Hub）。</p>
+</div>
+<div class="note">⚠️ <b>关键坑</b>：① <code>deepchat-sync</code> 仓库必须是<b>普通仓库</b>（不能用 mirror 仓库，mirror 只读）；② <code>sync.yml</code> 中 checkout 步骤必须带 <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code>，否则 checkout 因空 token 失败；③ <code>sync_download.py</code> 使用 Docker Engine API（通过 <code>/var/run/docker.sock</code>）而非 Docker CLI（CLI 在内网下载会超时）；④ <code>sync-config.json</code> 控制版本源（<code>github</code> vs <code>official</code>）、下载加速前缀和版本保留数。</div>
 
 <!-- ==================== 7. DeepChat ==================== -->
 
@@ -2045,6 +2204,115 @@ Claim: name                →  User Attribute: firstName</code></pre>
 </ol>
 </div>
 
+<h3>N.9 AI Agent 自动配置（Keycloak Admin REST API）</h3>
+<div class="callout callout-info">
+  <p><strong>AI Agent 可通过 Keycloak Admin REST API 自动完成以上全部身份源配置，无需手动点击 UI。</strong>Agent 收集完用户提供的 IdP 参数后，按以下 API 调用顺序自动配置。</p>
+</div>
+
+<h4>步骤 1：获取 Admin Token</h4>
+<pre><code>curl -X POST "http://&lt;SERVER_IP&gt;:9090/realms/master/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&client_id=admin-cli&username=ai_all_in_one_admin&password=&lt;管理员密码&gt;"</code></pre>
+<p>返回的 <code>access_token</code> 用于后续所有请求的 <code>Authorization: Bearer &lt;token&gt;</code> 头。</p>
+
+<h4>步骤 2A：创建 LDAP 用户联合（AD / 通用 LDAP）</h4>
+<pre><code>curl -X POST "http://&lt;SERVER_IP&gt;:9090/admin/realms/enterprise-ai/components" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "name": "ad",
+  "providerId": "ldap",
+  "providerType": "org.keycloak.storage.UserStorageProvider",
+  "config": {
+    "enabled": ["true"],
+    "vendor": ["ad"],
+    "connectionUrl": ["ldap://&lt;域控IP&gt;:&lt;端口&gt;"],
+    "bindDn": ["&lt;Bind DN&gt;"],
+    "bindCredential": ["&lt;Bind 密码&gt;"],
+    "usersDn": ["&lt;用户搜索基DN&gt;"],
+    "usernameLDAPAttribute": ["sAMAccountName"],
+    "rdnLDAPAttribute": ["cn"],
+    "uuidLDAPAttribute": ["objectGUID"],
+    "userObjectClasses": ["person, organizationalPerson, user"],
+    "editMode": ["READ_ONLY"],
+    "syncRegistrations": ["true"],
+    "importEnabled": ["true"],
+    "fullSyncPeriod": ["-1"],
+    "changedSyncPeriod": ["-1"],
+    "pagination": ["true"],
+    "referral": ["ignore"],
+    "trustEmail": ["true"],
+    "connectionPooling": ["false"],
+    "useTruststoreSpi": ["always"],
+    "searchScope": ["2"]
+  }
+}'</code></pre>
+<p><strong>通用 LDAP 差异：</strong>vendor 改为 <code>"other"</code>，usernameLDAPAttribute 改为 <code>"uid"</code>，rdnLDAPAttribute 改为 <code>"uid"</code>，uuidLDAPAttribute 改为 <code>"entryUUID"</code>，userObjectClasses 改为 <code>"inetOrgPerson, organizationalPerson"</code>。</p>
+
+<h4>步骤 2B：创建 OIDC 身份源（Entra ID / Google / 通用 OIDC）</h4>
+<pre><code><span class="comment"># Entra ID 示例</span>
+curl -X POST "http://&lt;SERVER_IP&gt;:9090/admin/realms/enterprise-ai/identity-provider/instances" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "alias": "entra-id",
+  "providerId": "oidc",
+  "enabled": true,
+  "config": {
+    "clientId": ["&lt;Client ID&gt;"],
+    "clientSecret": ["&lt;Client Secret&gt;"],
+    "authorizationUrl": ["https://login.microsoftonline.com/&lt;Tenant ID&gt;/oauth2/v2.0/authorize"],
+    "tokenUrl": ["https://login.microsoftonline.com/&lt;Tenant ID&gt;/oauth2/v2.0/token"],
+    "userInfoUrl": ["https://graph.microsoft.com/oidc/userinfo"],
+    "jwksUrl": ["https://login.microsoftonline.com/&lt;Tenant ID&gt;/discovery/v2.0/keys"],
+    "syncMode": ["IMPORT"],
+    "clientAuthMethod": ["client_secret_post"],
+    "defaultScope": ["openid email profile"]
+  }
+}'</code></pre>
+<p><strong>Google 差异：</strong>alias 改为 <code>"google"</code>，providerId 改为 <code>"google"</code>，authorizationUrl/tokenUrl/userInfoUrl/jwksUrl 使用 Google 端点。</p>
+
+<h4>步骤 2C：创建 GitHub 身份源</h4>
+<pre><code>curl -X POST "http://&lt;SERVER_IP&gt;:9090/admin/realms/enterprise-ai/identity-provider/instances" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "alias": "github",
+  "providerId": "github",
+  "enabled": true,
+  "config": {
+    "clientId": ["&lt;Client ID&gt;"],
+    "clientSecret": ["&lt;Client Secret&gt;"],
+    "syncMode": ["IMPORT"],
+    "defaultScope": ["user:email"]
+  }
+}'</code></pre>
+
+<h4>步骤 2D：创建 SAML 身份源</h4>
+<pre><code>curl -X POST "http://&lt;SERVER_IP&gt;:9090/admin/realms/enterprise-ai/identity-provider/instances" \
+  -H "Authorization: Bearer &lt;token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "alias": "saml-idp",
+  "providerId": "saml",
+  "enabled": true,
+  "config": {
+    "singleSignOnServiceUrl": ["&lt;SSO URL&gt;"],
+    "entityId": ["&lt;Entity ID&gt;"],
+    "nameIDPolicyFormat": ["urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"],
+    "syncMode": ["IMPORT"],
+    "signatureAlgorithm": ["RSA_SHA256"],
+    "wantAssertionsSigned": ["true"],
+    "wantAuthnRequestsSigned": ["true"]
+  }
+}'</code></pre>
+
+<h4>步骤 3：触发 LDAP 同步（仅 LDAP 类型）</h4>
+<pre><code><span class="comment"># 触发全量同步</span>
+curl -X POST "http://&lt;SERVER_IP&gt;:9090/admin/realms/enterprise-ai/user-storage/&lt;component-id&gt;/sync?action=triggerFullSync" \
+  -H "Authorization: Bearer &lt;token&gt;"</code></pre>
+<p><code>&lt;component-id&gt;</code> 从步骤 2A 的响应中获取，或通过 <code>GET /admin/realms/enterprise-ai/components</code> 查询。</p>
+
 <h2 id="admin-portal">11. AI 管理中心 — 统一管理员门户</h2>
 <div class="note"><strong>定位：</strong>不是 Docker 管理平台（1Panel/Portainer 那种），而是一个面向管理员的统一后台——用 Keycloak 鉴权，左侧菜单链接全部产品，Dashboard 展示集群状态，统一管理所有平台的管理员账号。</div>
 
@@ -2486,6 +2754,181 @@ mail__options__port: 1025</code></pre>
   <li>把 <code>ghost-admin-api-session</code> cookie 写进浏览器（<code>Path=/ghost</code>，同 host 不同端口 cookie 按域名共享），跳转 <code>:8090/ghost/</code> 直接进后台。</li>
 </ol>
 <div class="note">⚠️ <b>关键坑</b>：① Ghost 5 后端<b>仍支持密码登录</b>（<code>POST /session/</code>），但密码对后会触发「新设备 2FA」（返回 403 <code>Needs2FAError</code> + 发码），所以必须补验证码这步；② 验证码就是 TOTP，可用 <code>crypto.createHmac('sha1', secret+userId)</code> 精确复现，实测与邮件里的码逐位一致；③ 就算自己算码，Ghost 仍会真的「发邮件」，因此 MailHog（或任意 SMTP）必须保留，否则登录报 <code>Failed to send email</code>；④ <code>/session/verify</code> 有 brute 限流，正常单次点击不会触发，但别短时间反复刷。</div>
+
+<!-- ==================== 14. 定时任务 ==================== -->
+<h2 id="scheduled-tasks">14. 定时任务（Windows 任务计划程序）</h2>
+
+<p>Linux 上定时任务用 <code>crontab</code>。Windows 上使用<b>任务计划程序</b>或 <b>PowerShell 计划任务</b>实现同样的自动化。</p>
+
+<div class="step">
+  <span class="step-num">1</span><strong>健康检查（每天 03:00）</strong>
+  <pre><code><span class="comment"># 创建每日健康检查计划任务</span>
+schtasks /create /tn "AI-HealthCheck" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\health-check.ps1" /sc daily /st 03:00 /f
+
+<span class="comment"># 验证任务已创建</span>
+schtasks /query /tn "AI-HealthCheck" /v /fo list</code></pre>
+  <div class="verify"><code>schtasks /query /tn "AI-HealthCheck"</code> 显示任务状态为 "Ready"</div>
+</div>
+
+<div class="step">
+  <span class="step-num">2</span><strong>每日备份（每天 02:00）</strong>
+  <pre><code><span class="comment"># 创建每日备份计划任务</span>
+schtasks /create /tn "AI-Backup" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1" /sc daily /st 02:00 /f
+
+<span class="comment"># 验证</span>
+schtasks /query /tn "AI-Backup" /v /fo list</code></pre>
+  <div class="verify"><code>schtasks /query /tn "AI-Backup"</code> 显示任务状态为 "Ready"</div>
+</div>
+
+<div class="step">
+  <span class="step-num">3</span><strong>日志轮转（每周日凌晨 00:00）</strong>
+  <pre><code><span class="comment"># 创建日志轮转任务（删除超过 50MB 的日志文件）</span>
+schtasks /create /tn "AI-LogRotation" /tr "powershell -NoProfile -Command \"Get-ChildItem 'C:\AIAllInOne\windows\scripts\health_check_*.log' | Where-Object {$_.Length -gt 50MB} | ForEach-Object {$_.Delete()}\"" /sc weekly /d SUN /st 00:00 /f</code></pre>
+</div>
+
+<div class="step">
+  <span class="step-num">4</span><strong>开机健康检查（启动后延迟 2 分钟执行）</strong>
+  <pre><code><span class="comment"># 创建开机时延迟 2 分钟执行健康检查的任务</span>
+schtasks /create /tn "AI-StartupHealthCheck" /tr "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Start-Sleep -Seconds 120; & C:\AIAllInOne\windows\scripts\health-check.ps1\"" /sc onstart /f</code></pre>
+</div>
+
+<div class="callout callout-info">
+  <strong>常用任务计划命令：</strong>
+  <pre><code>schtasks /query                          <span class="comment"># 列出所有任务</span>
+schtasks /query /tn "AI-HealthCheck"    <span class="comment"># 查看指定任务</span>
+schtasks /run /tn "AI-HealthCheck"      <span class="comment"># 立即运行任务</span>
+schtasks /delete /tn "AI-HealthCheck" /f <span class="comment"># 删除任务</span>
+schtasks /change /tn "AI-Backup" /disable  <span class="comment"># 禁用任务</span>
+schtasks /change /tn "AI-Backup" /enable   <span class="comment"># 启用任务</span></code></pre>
+</div>
+
+<!-- ==================== 15. 端口速查表 ==================== -->
+<h2 id="port-reference">15. Windows 防火墙 — 端口速查表</h2>
+
+<div class="callout callout-warn">
+  <strong>⚠️ Windows 防火墙可能拦截 Docker 容器端口。</strong>如果内网员工无法访问某个服务，优先检查 Windows 防火墙规则。以下命令开放各服务的入站 TCP 端口。
+</div>
+
+<table>
+  <tr><th>端口</th><th>服务</th><th>是否必须</th><th>Windows 防火墙命令</th></tr>
+  <tr><td>9090/tcp</td><td>Keycloak SSO</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Keycloak" dir=in action=allow protocol=tcp localport=9090</code></td></tr>
+  <tr><td>3000/tcp</td><td>NewAPI LLM 路由</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-NewAPI" dir=in action=allow protocol=tcp localport=3000</code></td></tr>
+  <tr><td>4001/tcp</td><td>LiteLLM 代理</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-LiteLLM" dir=in action=allow protocol=tcp localport=4001</code></td></tr>
+  <tr><td>8090/tcp</td><td>Ghost 门户</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Ghost" dir=in action=allow protocol=tcp localport=8090</code></td></tr>
+  <tr><td>3002/tcp</td><td>Gitea</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Gitea" dir=in action=allow protocol=tcp localport=3002</code></td></tr>
+  <tr><td>10086/tcp</td><td>AI 管理中心</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-AdminCenter" dir=in action=allow protocol=tcp localport=10086</code></td></tr>
+  <tr><td>3100/tcp</td><td>MCP Gateway</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-MCP" dir=in action=allow protocol=tcp localport=3100</code></td></tr>
+  <tr><td>3030/tcp</td><td>Grafana</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Grafana" dir=in action=allow protocol=tcp localport=3030</code></td></tr>
+  <tr><td>3010/tcp</td><td>Langfuse</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Langfuse" dir=in action=allow protocol=tcp localport=3010</code></td></tr>
+  <tr><td>80/tcp</td><td>Dify</td><td>使用 Dify 时必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-Dify" dir=in action=allow protocol=tcp localport=80</code></td></tr>
+  <tr><td>8025/tcp</td><td>MailHog</td><td>可选（开发用）</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-MailHog" dir=in action=allow protocol=tcp localport=8025</code></td></tr>
+  <tr><td>8091/tcp</td><td>更新服务器</td><td>必须</td><td><code>netsh advfirewall firewall add rule name="AI-Platform-UpdateServer" dir=in action=allow protocol=tcp localport=8091</code></td></tr>
+</table>
+
+<h4>一键开放全部端口（PowerShell 脚本）</h4>
+<pre><code><span class="comment"># 以管理员身份运行</span>
+$ports = @{
+    "AI-Platform-Keycloak"     = 9090
+    "AI-Platform-NewAPI"       = 3000
+    "AI-Platform-LiteLLM"      = 4001
+    "AI-Platform-Ghost"        = 8090
+    "AI-Platform-Gitea"        = 3002
+    "AI-Platform-AdminCenter"  = 10086
+    "AI-Platform-MCP"          = 3100
+    "AI-Platform-Grafana"      = 3030
+    "AI-Platform-Langfuse"     = 3010
+    "AI-Platform-Dify"         = 80
+    "AI-Platform-MailHog"      = 8025
+    "AI-Platform-UpdateServer" = 8091
+}
+foreach ($entry in $ports.GetEnumerator()) {
+    netsh advfirewall firewall add rule name=$entry.Key dir=in action=allow protocol=tcp localport=$entry.Value
+}
+Write-Host "所有 AI 平台防火墙规则已添加。"</code></pre>
+
+<div class="callout callout-info">
+  <strong>常用 Windows 防火墙命令：</strong>
+  <pre><code>netsh advfirewall firewall show rule name=all | findstr "AI-Platform"  <span class="comment"># 列出所有 AI 平台规则</span>
+netsh advfirewall firewall delete rule name="AI-Platform-MailHog"     <span class="comment"># 删除规则</span>
+netsh advfirewall set allprofiles state off                            <span class="comment"># 关闭防火墙（仅紧急情况）</span>
+netsh advfirewall set allprofiles state on                             <span class="comment"># 重新开启防火墙</span></code></pre>
+</div>
+
+<!-- ==================== 附录 O. 已验证修复记录 ==================== -->
+<h2 id="fixlog">附录 O. 已验证修复记录（2026-08-23 实机验证）</h2>
+
+<div class="callout callout-warn">
+  <strong>📋 以下问题均在当前环境真实发生并已修复验证。新机器部署时按此清单逐一确认，可避免重复踩坑。</strong>
+</div>
+
+<h3>O.1 端口映射与访问地址（易混点）</h3>
+<table>
+  <tr><th>服务</th><th>对外端口</th><th>容器内端口</th><th>说明</th></tr>
+  <tr><td>AI 管理中心 (admin-portal)</td><td><strong>10086</strong></td><td>3000</td><td>外部访问用 10086；容器间用 <code>admin-portal:3000</code></td></tr>
+  <tr><td>Keycloak</td><td>9090</td><td>8080</td><td>外部 9090 → 容器 8080</td></tr>
+  <tr><td>Gitea</td><td>3002</td><td>3000</td><td>外部 3002 → 容器 3000</td></tr>
+  <tr><td>NewAPI</td><td>3000</td><td>3000</td><td>直通</td></tr>
+  <tr><td>Langfuse</td><td>3010</td><td>3000</td><td>外部 3010 → 容器 3000</td></tr>
+  <tr><td>Grafana</td><td>3030</td><td>3000</td><td>外部 3030 → 容器 3000</td></tr>
+  <tr><td>LiteLLM</td><td>4001</td><td>4000</td><td>外部 4001 → 容器 4000</td></tr>
+  <tr><td>Ghost</td><td>8090</td><td>2368</td><td>外部 8090 → 容器 2368</td></tr>
+  <tr><td>更新服务器</td><td>8091</td><td>80</td><td>外部 8091 → 容器 80</td></tr>
+  <tr><td>Loki</td><td>3110</td><td>3100</td><td>外部 3110 → 容器 3100</td></tr>
+  <tr><td>Prometheus</td><td>9091</td><td>9090</td><td>外部 9091 → 容器 9090</td></tr>
+  <tr><td>Alertmanager</td><td>9093</td><td>9093</td><td>直通</td></tr>
+  <tr><td>MCP Gateway</td><td>3100</td><td>3100</td><td>直通</td></tr>
+  <tr><td>Dify</td><td>80</td><td>80</td><td>独立 compose，直通</td></tr>
+</table>
+<p>⚠️ <b>最易踩坑：</b>admin-portal 是 <b>10086</b> 不是 8080。用 8080 访问会命中 Gitea 端口并返回误导性的 "unsupported API version gitea" 错误。</p>
+
+<h3>O.2 Keycloak SSO 登录（脚本/API 测试要点）</h3>
+<ul>
+  <li>必须用真实服务器 IP（如 <code>http://192.168.1.100:10086</code>）发起请求，<b>不能用 127.0.0.1</b> — Keycloak 客户端注册的 redirect URI 不含 127.0.0.1，会返回 <code>Invalid parameter: redirect_uri</code></li>
+  <li>SSO 流程（Python urllib + cookiejar）：GET 受保护端点 → 自动跟随 302 到 Keycloak 登录页（200 HTML）→ 提取 <code>&lt;form action&gt;</code> + 隐藏字段 → POST username/password → 自动跟随回调</li>
+  <li>判断是否在登录页：URL 含 <code>openid-connect/auth</code> 或 <code>login-actions</code></li>
+</ul>
+
+<h3>O.3 Ghost 定制主题（corp-portal）</h3>
+<ul>
+  <li>主题源目录：<code>C:\AIAllInOne\windows\ghost-theme-corp-portal\</code>（完整主题 15 文件）</li>
+  <li>部署脚本：<code>scripts\ghost-theme-setup.ps1</code>（docker cp → sqlite 改 <code>active_theme</code> → 重启）</li>
+  <li>激活后验证：首页能力卡片 + 导航 + 最新动态（5 篇文章）+ CSS/JS 200</li>
+  <li>sqlite 操作：<code>/var/lib/ghost/versions/&lt;ver&gt;/node_modules/sqlite3</code>，<code>SELECT value FROM settings WHERE key='active_theme'</code></li>
+  <li>导航 helper：<code>partials/navigation.hbs</code> 必须用 <code>{{#foreach navigation}}</code>（不带 <code>@site.</code> 前缀）</li>
+  <li>⚠️ <code>ghost-theme-attila\</code> 只是 3 个覆盖文件的补丁，<b>不是完整主题</b>，无法单独激活</li>
+</ul>
+
+<h3>O.4 Gitea OIDC 登录源</h3>
+<ul>
+  <li>Keycloak 客户端 <code>gitea</code>，回调 <code>http://&lt;服务器IP&gt;:3002/user/oauth2/{client_id}/callback</code></li>
+  <li>Gitea 认证源类型选 <b>OAuth2 → 提供者 OpenID Connect</b>（不是直接选 OIDC，否则 "type is not allowed"）</li>
+  <li>发现端点：<code>http://host.docker.internal:9090/realms/enterprise-ai/.well-known/openid-configuration</code></li>
+</ul>
+
+<h3>O.5 Langfuse SSO</h3>
+<ul>
+  <li>Keycloak 客户端 <code>langfuse</code>，IdP-initiated SSO（需要手动在 Langfuse 后台 link 账号一次）</li>
+  <li>登录后需在 Langfuse 用户设置里做 account linking 关联 Keycloak 账号</li>
+</ul>
+
+<h3>O.6 Gitea 同步仓库（deepchat-sync）</h3>
+<ul>
+  <li><code>.gitea/workflows/sync.yml</code>：checkout step 必须带 <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code></li>
+  <li>act_runner：label <code>ubuntu-latest:docker://node:20</code>，挂载 <code>/var/run/docker.sock</code>，网络 <code>ai-platform</code></li>
+  <li><code>sync_download.py</code> 用 Docker Engine API（unix socket）而非 docker CLI（CLI 下载会超时）；响应需 demux 解析 multiplexed stream</li>
+  <li><code>sync-config.json</code>：<code>{"targets":["windows-x64",...],"keep_releases":3}</code>；同步策略：只下载比本地最高版本更新的 release（跳过 prerelease）；<code>REBUILD_ONLY=1</code> 仅重建 versions.json</li>
+</ul>
+
+<h3>O.7 监控告警链路</h3>
+<ul>
+  <li>全链路已验证：Prometheus 规则 → Alertmanager (9093) → webhook <code>admin-portal:3000/api/alert-webhook</code> → <code>/api/alerts</code> + imalert 转发</li>
+  <li>imalert API 全部 16 项测试通过（receiver CRUD / rules / history / test send / 404 / 400 校验）</li>
+  <li>imalert 存储：<code>admin-session-redis</code>（<b>不是</b> <code>docker-redis-1</code>！后者是 Dify 的）</li>
+  <li>Redis 键：<code>imalert:receivers</code>（JSON）/ <code>imalert:rules</code> / <code>imalert:history</code>（List）</li>
+  <li>receivers 默认空数组是正常初始状态，非故障</li>
+</ul>
+
+<div class="nav-top"><a href="#">↑ 回到顶部</a></div>
 
 </body>
 </html>

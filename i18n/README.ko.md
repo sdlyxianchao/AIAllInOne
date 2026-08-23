@@ -107,17 +107,7 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 2. **수동 배포**——[Windows 배포 가이드](../windows/windows-deploy-guide-v2.md)에 따라 단계별로 진행합니다(`windows-checklist.html` 진행 체크리스트 활용).
 
-```bash
-# Linux (Debian/Ubuntu)
-cd AIAllInOne/linux
-# 전체 지침은 linux-deploy-guide-debian.ko.html 참조
-
-# Linux (RHEL/CentOS/Rocky)
-cd AIAllInOne/linux
-# 전체 지침은 linux-deploy-guide-rpm.ko.html 참조
-```
-
-> **플랫폼 상태**: Windows(Windows 11 + Docker Desktop) 및 **Linux**(Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+)는 **실측 테스트 중**입니다. 온라인 서버(`docker/`)는 계획 중입니다——[로드맵](#roadmap) 참조.
+> **플랫폼 상태**: Windows(Windows 11 + Docker Desktop)는 **실측 테스트 중**입니다. Linux/macOS(`linux/`) 및 온라인 서버(`docker/`)는 계획 중입니다——[로드맵](#roadmap) 참조.
 
 ## 🖼️ 인터페이스 스크린샷
 
@@ -168,41 +158,10 @@ cd AIAllInOne/linux
 
 <h2 id="roadmap">🗺️ 로드맵</h2>
 
-- ✅ v1.00 — 올인원: Windows + Linux(Debian/RPM) + Dify + 오프라인 배포 + AI 관리 센터 + 등급별 관리자 권한 + 기업 IM 알림 + 시맨틱 캐시(LiteLLM redis-semantic)
+- ✅ v0.9x — Windows 플랫폼: 올인원 + AI 관리 센터 + 등급별 관리자 권한 + 기업 IM 알림 + 시맨틱 캐시(LiteLLM redis-semantic)
+- 🚧 **Linux / macOS** — 자가 호스팅 Linux 서버 지원(`linux/`)
 - 🚧 **온라인 서버** — 순수 Docker / 클라우드 프로덕션 배포(`docker/`)
 - 🚧 **공동 구축 프로그램** — 작업 보드, 주간 동기화 미팅, 배포 파트너 인증
-
-## 📋 변경 이력
-
-### v1.00 (2026-08-23)
-
-**신규: Linux 플랫폼 지원**
-- 완전한 Linux 배포 지원: Debian 계열(Debian 12+ / Ubuntu 22.04+) 및 RPM 계열(RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+)
-- 오프라인 배포용 사전 빌드 Docker 이미지 패키지(6.2GB 메인 + Dify)
-- Linux bash 스크립트: backup.sh, restore.sh, health-check.sh, ghost-setup.sh, dify-setup.sh
-- Windows(PowerShell) 및 Linux(bash) 양 플랫폼 가져오기 스크립트
-
-**신규: Dify AI 애플리케이션 플랫폼**
-- Dify 독립 배포 지원(별도 Docker Compose)
-- 자동 초기화 스크립트: 기본 채팅 앱, 지식 베이스, API 키 자동 생성
-- Keycloak SSO 통합으로 통합 로그인
-
-**신규: Gitea 동기화 워크플로우**
-- DeepChat 자동 업데이트 동기화 스크립트 내보내기 및 문서화
-- 데스크톱 클라이언트 배포를 위한 Gitea Actions 워크플로우
-
-**개선: 배포 가이드**
-- Windows 배포 가이드 v2: 오프라인 이미지 가져오기, 예약 작업, 포트 빠른 참조, 검증된 수정 로그 추가
-- Linux 배포 가이드(Debian/RPM): Windows 가이드와 완전 동일
-- 모든 가이드에 Keycloak IdP 설문(7가지 IdP 유형) 및 Admin REST API 자동 구성 추가
-- 모든 가이드에 Dify 자동 설정 및 Gitea 동기화 가져오기 단계 추가
-
-**개선: AI 관리 센터**
-- 가용성 테스트가 DeepSeek 모델을 하드코딩하지 않고 NewAPI를 통해 사용 가능한 모델을 동적으로 쿼리
-- 모든 LLM 백엔드 지원(DeepSeek, OpenAI, Claude, 로컬 Ollama 등)
-
-**개선: GitHub Pages**
-- 새로운 프로젝트 랜딩 페이지: https://sdlyxianchao.github.io/AIAllInOne/
 
 ## 🔒 보안 안내
 
@@ -245,7 +204,7 @@ AI AllInOne이 시간이나 비용을 절약해 준다면, Star 하나는 비용
    ```bash
    cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
-3. **사용** — 배포 디렉토리에서 에이전트를 열고 그냥 요청하세요. 예: "헬스 체크 실행", "플랫폼 백업", "Ghost가 왜 다운됐지?", "v1.00 릴리스". 스킬이 `.env`에서 자격 증명을 직접 읽으므로 — 비밀번호를 붙여넣을 필요가 전혀 없고, 지정한 어떤 머신에도 자동으로 적응합니다.
+3. **사용** — 배포 디렉토리에서 에이전트를 열고 그냥 요청하세요. 예: "헬스 체크 실행", "플랫폼 백업", "Ghost가 왜 다운됐지?", "v0.96 릴리스". 스킬이 `.env`에서 자격 증명을 직접 읽으므로 — 비밀번호를 붙여넣을 필요가 전혀 없고, 지정한 어떤 머신에도 자동으로 적응합니다.
 
 이 플랫폼은 **AI 에이전트를 통한 운영·유지보수**를 염두에 두고 설계되었습니다 — WorkBuddy, OpenClaw, Microsoft Scout 또는 이와 동등한 도구입니다. 수십 개의 관리 콘솔을 클릭하는 대신, 에이전트에게 자연어로 원하는 것을 말하면 에이전트가 파일을 읽고, 명령을 실행하고, 서비스와 통신해 줍니다.
 
