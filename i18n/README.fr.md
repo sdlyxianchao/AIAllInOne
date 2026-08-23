@@ -107,7 +107,17 @@ Une fois tout terminé, exécutez des tests de bout en bout : tous les conteneur
 
 2. **Déploiement manuel** — suivez pas à pas le [guide de déploiement Windows](../windows/windows-deploy-guide-v2.md) (avec la liste de contrôle de progression `windows-checklist.html`).
 
-> **État de la plateforme** : Windows (Windows 11 + Docker Desktop) **en cours de test réel**. Linux/macOS (`linux/`) et serveur en ligne (`docker/`) sont prévus — voir la [feuille de route](#roadmap).
+```bash
+# Linux (Debian/Ubuntu)
+cd AIAllInOne/linux
+# Voir linux-deploy-guide-debian.fr.html pour les instructions complètes
+
+# Linux (RHEL/CentOS/Rocky)
+cd AIAllInOne/linux
+# Voir linux-deploy-guide-rpm.fr.html pour les instructions complètes
+```
+
+> **État de la plateforme** : Windows (Windows 11 + Docker Desktop) et **Linux** (Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+) **en cours de test réel**. Serveur en ligne (`docker/`) est prévu — voir la [feuille de route](#roadmap).
 
 ## 🖼️ Captures d'écran
 
@@ -158,8 +168,7 @@ Le guide complet figure dans [CONTRIBUTING.md](../CONTRIBUTING.md) ; la [feuille
 
 <h2 id="roadmap">🗺️ Feuille de route</h2>
 
-- ✅ v0.9x — Plateforme Windows : suite complète + centre d'administration IA + autorisations administrateur hiérarchisées + alertes IM d'entreprise + cache sémantique (LiteLLM redis-semantic)
-- 🚧 **Linux / macOS** — prise en charge des serveurs Linux auto-hébergés (`linux/`)
+- ✅ v1.00 — Suite complète : Windows + Linux (Debian/RPM) + Dify + déploiement hors ligne + centre d'administration IA + autorisations administrateur hiérarchisées + alertes IM d'entreprise + cache sémantique (LiteLLM redis-semantic)
 - 🚧 **Serveur en ligne** — déploiement de production en Docker pur / cloud (`docker/`)
 - 🚧 **Programme de co-construction** — tableau de tâches, réunion de synchronisation hebdomadaire, certification des partenaires de déploiement
 
@@ -204,7 +213,7 @@ Une étoile en haut à droite est le plus grand soutien pour ce projet.
    ```bash
    cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
-3. **Utilisez-la** — ouvrez l'agent dans votre répertoire de déploiement et demandez simplement, par ex. *« Faites la vérification de santé »*, *« Sauvegardez la plateforme »*, *« Pourquoi Ghost est-il en panne ? »*, *« Publiez v0.96 »*. La compétence lit elle-même les identifiants dans `.env` — vous n'avez jamais à coller de mot de passe, et elle s'adapte à la machine que vous lui indiquez.
+3. **Utilisez-la** — ouvrez l'agent dans votre répertoire de déploiement et demandez simplement, par ex. *« Faites la vérification de santé »*, *« Sauvegardez la plateforme »*, *« Pourquoi Ghost est-il en panne ? »*, *« Publiez v1.00 »*. La compétence lit elle-même les identifiants dans `.env` — vous n'avez jamais à coller de mot de passe, et elle s'adapte à la machine que vous lui indiquez.
 
 La plateforme est conçue pour être **exploitée et maintenue via un agent IA** — WorkBuddy, OpenClaw, Microsoft Scout ou tout outil équivalent. Au lieu de cliquer dans une dizaine de consoles d'administration, vous dites à l'agent ce que vous voulez en langage naturel ; il lit les fichiers, exécute les commandes et dialogue avec les services pour vous.
 

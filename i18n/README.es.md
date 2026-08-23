@@ -107,7 +107,7 @@ Cuando todo esté hecho, ejecuta pruebas de extremo a extremo: todos los contene
 
 2. **Despliegue manual** — sigue paso a paso la [guía de despliegue de Windows](../windows/windows-deploy-guide-v2.md) (junto con la lista de verificación de progreso `windows-checklist.html`).
 
-> **Estado de la plataforma**: Windows (Windows 11 + Docker Desktop) **en pruebas reales**. Linux/macOS (`linux/`) y los servidores en línea (`docker/`) están planificados — consulta la [hoja de ruta](#roadmap).
+> **Estado de la plataforma**: Windows (Windows 11 + Docker Desktop) y **Linux** (Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+) **en pruebas activas**. Los servidores en línea (`docker/`) están planificados — consulta la [hoja de ruta](#roadmap).
 
 ## 🖼️ Capturas de pantalla
 
@@ -158,10 +158,41 @@ Consulta la guía completa en [CONTRIBUTING.md](../CONTRIBUTING.md); en la [hoja
 
 <h2 id="roadmap">🗺️ Hoja de ruta</h2>
 
-- ✅ v0.9x — Plataforma Windows: todo en uno + AI Admin Center + autorización de administradores por niveles + alertas de IM empresarial + caché semántica (redis-semantic de LiteLLM)
-- 🚧 **Linux / macOS** — soporte para servidores Linux autoalojados (`linux/`)
+- ✅ v1.00 — Pila completa: Windows + Linux (Debian/RPM) + Dify + despliegue offline + AI Admin Center + autorización de administradores por niveles + alertas de IM + caché semántica (redis-semantic de LiteLLM)
 - 🚧 **Servidores en línea** — despliegue de producción solo con Docker / en la nube (`docker/`)
 - 🚧 **Programa de colaboradores** — tablero de tareas, reuniones semanales de sincronización, certificación de socios de despliegue
+
+## 📋 Registro de cambios
+
+### v1.00 (2026-08-23)
+
+**Nuevo: Soporte de plataforma Linux**
+- Soporte completo de despliegue en Linux: Debian (Debian 12+ / Ubuntu 22.04+) y RPM (RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+)
+- Paquetes de imágenes Docker preconstruidos para despliegue offline (6.2 GB principales + Dify)
+- Scripts bash para Linux: backup.sh, restore.sh, health-check.sh, ghost-setup.sh, dify-setup.sh
+- Scripts de importación para Windows (PowerShell) y Linux (bash)
+
+**Nuevo: Plataforma de aplicaciones de IA Dify**
+- Soporte de despliegue independiente de Dify con Docker Compose separado
+- Script de autoinicialización: crea una aplicación de chat predeterminada, base de conocimiento y clave de API
+- Integración SSO con Keycloak para inicio de sesión unificado
+
+**Nuevo: Flujo de trabajo de sincronización de Gitea**
+- Scripts de sincronización de actualización automática de DeepChat exportados y documentados
+- Flujo de trabajo de Gitea Actions para la distribución automatizada del cliente de escritorio
+
+**Mejorado: Guías de despliegue**
+- Guía de despliegue de Windows v2: añadida importación de imágenes offline, tareas programadas, referencia rápida de puertos, registro de correcciones verificadas
+- Guía de despliegue de Linux (Debian/RPM): paridad completa con la guía de Windows
+- Todas las guías incluyen ahora el cuestionario de IdP de Keycloak (7 tipos de IdP) y autoconfiguración de la API REST de administración
+- Se añadieron los pasos de configuración automática de Dify e importación de sincronización de Gitea a todas las guías
+
+**Mejorado: Centro de Administración de IA**
+- Las pruebas de disponibilidad ya no codifican el modelo DeepSeek — consulta dinámicamente los modelos disponibles a través de NewAPI
+- Funciona con cualquier backend de LLM (DeepSeek, OpenAI, Claude, Ollama local, etc.)
+
+**Mejorado: Páginas de GitHub**
+- Nueva página de aterrizaje del proyecto en https://sdlyxianchao.github.io/AIAllInOne/
 
 ## 🔒 Notas de seguridad
 
@@ -204,7 +235,7 @@ Una estrella en la esquina superior derecha es el mayor apoyo para este proyecto
    ```bash
    cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
-3. **Úsala** — abre el agente en tu directorio de despliegue y solo pregunta, p. ej. *«Ejecuta la comprobación de salud»*, *«Haz una copia de seguridad»*, *«¿Por qué está caído Ghost?»*, *«Publica v0.96»*. La habilidad lee las credenciales de `.env` por sí misma — nunca tienes que pegar contraseñas, y se adapta a cualquier máquina que le indiques.
+3. **Úsala** — abre el agente en tu directorio de despliegue y solo pregunta, p. ej. *«Ejecuta la comprobación de salud»*, *«Haz una copia de seguridad»*, *«¿Por qué está caído Ghost?»*, *«Publica v1.00»*. La habilidad lee las credenciales de `.env` por sí misma — nunca tienes que pegar contraseñas, y se adapta a cualquier máquina que le indiques.
 
 La plataforma está diseñada para **operarse y mantenerse mediante un agente de IA** — WorkBuddy, OpenClaw, Microsoft Scout o cualquier herramienta equivalente. En lugar de hacer clic en una docena de consolas de administración, le dices al agente lo que quieres en lenguaje natural ; él lee archivos, ejecuta comandos y habla con los servicios por ti.
 

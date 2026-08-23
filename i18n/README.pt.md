@@ -107,7 +107,7 @@ Quando tudo estiver pronto, execute testes de ponta a ponta: todos os contêiner
 
 2. **Implantação manual** — siga o [Guia de implantação do Windows](../windows/windows-deploy-guide-v2.md) passo a passo (use a checklist de progresso `windows-checklist.html`).
 
-> **Status da plataforma**: Windows (Windows 11 + Docker Desktop) **em testes reais**. Linux/macOS (`linux/`) e servidores online (`docker/`) estão planejados — veja o [roteiro](#roadmap).
+> **Status da plataforma**: Windows (Windows 11 + Docker Desktop) e **Linux** (Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+) **em testes ativos**. Servidores online (`docker/`) estão planejados — veja o [roteiro](#roadmap).
 
 ## 🖼️ Capturas de tela
 
@@ -158,10 +158,41 @@ O guia completo está no [CONTRIBUTING.md](../CONTRIBUTING.md), e o [roteiro](#r
 
 <h2 id="roadmap">🗺️ Roteiro</h2>
 
-- ✅ v0.9x — Plataforma Windows: pacote completo + AI Admin Center + autorização de administradores em níveis + alertas via IM corporativo + cache semântica (LiteLLM redis-semantic)
-- 🚧 **Linux / macOS** — suporte a servidor Linux auto-hospedado (`linux/`)
+- ✅ v1.00 — Pilha completa: Windows + Linux (Debian/RPM) + Dify + implantação offline + AI Admin Center + autorização de administradores em níveis + alertas IM + cache semântica (LiteLLM redis-semantic)
 - 🚧 **Servidores online** — implantação de produção puramente Docker / em nuvem (`docker/`)
 - 🚧 **Programa de colaboradores** — quadro de tarefas, reuniões semanais de sincronização, certificação de parceiros de implantação
+
+## 📋 Registro de alterações
+
+### v1.00 (2026-08-23)
+
+**Novo: Suporte à plataforma Linux**
+- Suporte completo de implantação em Linux: Debian (Debian 12+ / Ubuntu 22.04+) e RPM (RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+)
+- Pacotes de imagens Docker pré-construídos para implantação offline (6.2 GB principal + Dify)
+- Scripts bash para Linux: backup.sh, restore.sh, health-check.sh, ghost-setup.sh, dify-setup.sh
+- Scripts de importação para Windows (PowerShell) e Linux (bash)
+
+**Novo: Plataforma de aplicações de IA Dify**
+- Suporte a implantação independente do Dify com Docker Compose separado
+- Script de auto-inicialização: cria aplicativo de chat padrão, base de conhecimento e chave de API
+- Integração SSO com Keycloak para login unificado
+
+**Novo: Fluxo de trabalho de sincronização do Gitea**
+- Scripts de sincronização de atualização automática do DeepChat exportados e documentados
+- Fluxo de trabalho Gitea Actions para distribuição automatizada do cliente desktop
+
+**Melhorado: Guias de implantação**
+- Guia de implantação Windows v2: adicionada importação de imagens offline, tarefas agendadas, referência rápida de portas, registro de correções verificadas
+- Guia de implantação Linux (Debian/RPM): paridade completa com o guia do Windows
+- Todos os guias agora incluem questionário de IdP do Keycloak (7 tipos de IdP) e autoconfiguração da API REST de Administração
+- Etapas de configuração automática do Dify e importação de sincronização do Gitea adicionadas a todos os guias
+
+**Melhorado: Centro de Administração de IA**
+- Os testes de disponibilidade não codificam mais o modelo DeepSeek — consulta dinamicamente os modelos disponíveis via NewAPI
+- Funciona com qualquer backend de LLM (DeepSeek, OpenAI, Claude, Ollama local, etc.)
+
+**Melhorado: Páginas do GitHub**
+- Nova página de apresentação do projeto em https://sdlyxianchao.github.io/AIAllInOne/
 
 ## 🔒 Notas de segurança
 
@@ -204,7 +235,7 @@ Uma estrela no canto superior direito é o maior apoio para este projeto.
    ```bash
    cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
-3. **Use** — abra o agente no seu diretório de implantação e apenas pergunte, p. ex. *«Execute a verificação de saúde»*, *«Faça um backup»*, *«Por que o Ghost está fora?»*, *«Publique a v0.96»*. A habilidade lê as credenciais do `.env` sozinha — você nunca precisa colar senhas, e ela se adapta a qualquer máquina que você indicar.
+3. **Use** — abra o agente no seu diretório de implantação e apenas pergunte, p. ex. *«Execute a verificação de saúde»*, *«Faça um backup»*, *«Por que o Ghost está fora?»*, *«Publique a v1.00»*. A habilidade lê as credenciais do `.env` sozinha — você nunca precisa colar senhas, e ela se adapta a qualquer máquina que você indicar.
 
 A plataforma é projetada para ser **operada e mantida por meio de um agente de IA** — WorkBuddy, OpenClaw, Microsoft Scout ou qualquer ferramenta equivalente. Em vez de clicar em uma dúzia de consoles de administração, você diz ao agente o que quer em linguagem natural ; ele lê arquivos, executa comandos e fala com os serviços por você.
 

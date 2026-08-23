@@ -107,7 +107,17 @@ docker compose up -d
 
 2. **手動部署**——依照 [Windows 部署指南](../windows/windows-deploy-guide-v2.md) 逐步操作（搭配 `windows-checklist.html` 進度清單）。
 
-> **平台狀態**：Windows（Windows 11 + Docker Desktop）**實測中**。Linux/macOS（`linux/`）與線上伺服器（`docker/`）已在規劃中——見[路線圖](#roadmap)。
+```bash
+# Linux (Debian/Ubuntu)
+cd AIAllInOne/linux
+# 完整說明見 linux-deploy-guide-debian.zh-TW.html
+
+# Linux (RHEL/CentOS/Rocky)
+cd AIAllInOne/linux
+# 完整說明見 linux-deploy-guide-rpm.zh-TW.html
+```
+
+> **平台狀態**：Windows（Windows 11 + Docker Desktop）與 **Linux**（Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+）**實測中**。線上伺服器（`docker/`）已在規劃中——見[路線圖](#roadmap)。
 
 ## 🖼️ 介面截圖
 
@@ -158,10 +168,41 @@ docker compose up -d
 
 <h2 id="roadmap">🗺️ 路線圖</h2>
 
-- ✅ v0.9x — Windows 平台：全家桶 + AI 管理中心 + 分級管理員授權 + 企業 IM 告警 + 語意快取（LiteLLM redis-semantic）
-- 🚧 **Linux / macOS** — 自託管 Linux 伺服器支援（`linux/`）
+- ✅ v1.00 — 全家桶：Windows + Linux（Debian/RPM）+ Dify + 離線部署 + AI 管理中心 + 分級管理員授權 + 企業 IM 告警 + 語意快取（LiteLLM redis-semantic）
 - 🚧 **線上伺服器** — 純 Docker / 雲端生產部署（`docker/`）
 - 🚧 **共建者計畫** — 任務看板、每週同步會議、部署夥伴認證
+
+## 📋 更新日誌
+
+### v1.00（2026-08-23）
+
+**新增：Linux 平台支援**
+- 完整的 Linux 部署支援：Debian 系（Debian 12+ / Ubuntu 22.04+）和 RPM 系（RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+）
+- 預建置 Docker 映像檔套件，支援離線部署（6.2GB 主體 + Dify）
+- Linux bash 腳本：backup.sh、restore.sh、health-check.sh、ghost-setup.sh、dify-setup.sh
+- Windows（PowerShell）和 Linux（bash）雙平台匯入腳本
+
+**新增：Dify AI 應用平台**
+- Dify 獨立部署支援，配備獨立 Docker Compose
+- 自動初始化腳本：建立預設聊天應用、知識庫和 API Key
+- Keycloak SSO 整合，統一登入
+
+**新增：Gitea 同步工作流程**
+- DeepChat 自動更新同步腳本已匯出並文件化
+- Gitea Actions 工作流程，自動化桌面用戶端發佈
+
+**改進：部署指南**
+- Windows 部署指南 v2：新增離線映像匯入、排程工作、連接埠速查、已驗證修復日誌
+- Linux 部署指南（Debian/RPM）：與 Windows 指南完全對齊
+- 所有指南新增 Keycloak IdP 問卷（7 種 IdP 類型）和 Admin REST API 自動設定
+- 所有指南新增 Dify 自動設定和 Gitea 同步匯入步驟
+
+**改進：AI 管理中心**
+- 可用性測試不再硬編碼 DeepSeek 模型——透過 NewAPI 動態查詢可用模型
+- 支援任意 LLM 後端（DeepSeek、OpenAI、Claude、本機 Ollama 等）
+
+**改進：GitHub Pages**
+- 全新專案首頁：https://sdlyxianchao.github.io/AIAllInOne/
 
 ## 🔒 安全說明
 
@@ -204,7 +245,7 @@ docker compose up -d
    ```bash
    cp -r AIAllInOne/AIOperation/agent ~/.workbuddy/skills/ai-all-in-one-deploy-ops
    ```
-3. **使用**——在部署目錄裡打開 Agent 直接說，例如"跑一下健康檢查"、"備份平台"、"為什麼 Ghost 掛了"、"發布 v0.96"。技能會自己從 `.env` 讀取憑據——你永遠不需要貼上密碼，而且會自動適應你指向的任何機器。
+3. **使用**——在部署目錄裡打開 Agent 直接說，例如"跑一下健康檢查"、"備份平台"、"為什麼 Ghost 掛了"、"發布 v1.00"。技能會自己從 `.env` 讀取憑據——你永遠不需要貼上密碼，而且會自動適應你指向的任何機器。
 
 本平台從設計上就支援**透過 AI Agent 運維**——WorkBuddy、OpenClaw、Microsoft Scout 或任何同類工具。你不再需要逐一登入十幾個管理後台點點點，而是用自然語言告訴 Agent 你想做什麼，它負責讀檔案、執行指令、呼叫服務。
 
