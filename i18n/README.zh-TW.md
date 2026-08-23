@@ -107,7 +107,6 @@ docker compose up -d
 
 2. **手動部署**——依照 [Windows 部署指南](../windows/windows-deploy-guide-v2.md) 逐步操作（搭配 `windows-checklist.html` 進度清單）。
 
-> **平台狀態**：Windows（Windows 11 + Docker Desktop）**實測中**。Linux/macOS（`linux/`）與線上伺服器（`docker/`）已在規劃中——見[路線圖](#roadmap)。
 
 ## 🖼️ 介面截圖
 
@@ -160,7 +159,6 @@ docker compose up -d
 
 - ✅ v0.9x — Windows 平台：全家桶 + AI 管理中心 + 分級管理員授權 + 企業 IM 告警 + 語意快取（LiteLLM redis-semantic）
 - 🚧 **Linux / macOS** — 自託管 Linux 伺服器支援（`linux/`）
-- 🚧 **線上伺服器** — 純 Docker / 雲端生產部署（`docker/`）
 - 🚧 **共建者計畫** — 任務看板、每週同步會議、部署夥伴認證
 
 ## 🔒 安全說明

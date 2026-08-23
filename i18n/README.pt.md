@@ -107,7 +107,6 @@ Quando tudo estiver pronto, execute testes de ponta a ponta: todos os contêiner
 
 2. **Implantação manual** — siga o [Guia de implantação do Windows](../windows/windows-deploy-guide-v2.md) passo a passo (use a checklist de progresso `windows-checklist.html`).
 
-> **Status da plataforma**: Windows (Windows 11 + Docker Desktop) **em testes reais**. Linux/macOS (`linux/`) e servidores online (`docker/`) estão planejados — veja o [roteiro](#roadmap).
 
 ## 🖼️ Capturas de tela
 
@@ -160,7 +159,6 @@ O guia completo está no [CONTRIBUTING.md](../CONTRIBUTING.md), e o [roteiro](#r
 
 - ✅ v0.9x — Plataforma Windows: pacote completo + AI Admin Center + autorização de administradores em níveis + alertas via IM corporativo + cache semântica (LiteLLM redis-semantic)
 - 🚧 **Linux / macOS** — suporte a servidor Linux auto-hospedado (`linux/`)
-- 🚧 **Servidores online** — implantação de produção puramente Docker / em nuvem (`docker/`)
 - 🚧 **Programa de colaboradores** — quadro de tarefas, reuniões semanais de sincronização, certificação de parceiros de implantação
 
 ## 🔒 Notas de segurança

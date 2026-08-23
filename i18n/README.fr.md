@@ -107,7 +107,6 @@ Une fois tout terminé, exécutez des tests de bout en bout : tous les conteneur
 
 2. **Déploiement manuel** — suivez pas à pas le [guide de déploiement Windows](../windows/windows-deploy-guide-v2.md) (avec la liste de contrôle de progression `windows-checklist.html`).
 
-> **État de la plateforme** : Windows (Windows 11 + Docker Desktop) **en cours de test réel**. Linux/macOS (`linux/`) et serveur en ligne (`docker/`) sont prévus — voir la [feuille de route](#roadmap).
 
 ## 🖼️ Captures d'écran
 
@@ -160,7 +159,6 @@ Le guide complet figure dans [CONTRIBUTING.md](../CONTRIBUTING.md) ; la [feuille
 
 - ✅ v0.9x — Plateforme Windows : suite complète + centre d'administration IA + autorisations administrateur hiérarchisées + alertes IM d'entreprise + cache sémantique (LiteLLM redis-semantic)
 - 🚧 **Linux / macOS** — prise en charge des serveurs Linux auto-hébergés (`linux/`)
-- 🚧 **Serveur en ligne** — déploiement de production en Docker pur / cloud (`docker/`)
 - 🚧 **Programme de co-construction** — tableau de tâches, réunion de synchronisation hebdomadaire, certification des partenaires de déploiement
 
 ## 🔒 Considérations de sécurité

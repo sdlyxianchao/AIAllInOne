@@ -107,7 +107,6 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 2. **수동 배포**——[Windows 배포 가이드](../windows/windows-deploy-guide-v2.md)에 따라 단계별로 진행합니다(`windows-checklist.html` 진행 체크리스트 활용).
 
-> **플랫폼 상태**: Windows(Windows 11 + Docker Desktop)는 **실측 테스트 중**입니다. Linux/macOS(`linux/`) 및 온라인 서버(`docker/`)는 계획 중입니다——[로드맵](#roadmap) 참조.
 
 ## 🖼️ 인터페이스 스크린샷
 
@@ -160,7 +159,6 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 - ✅ v0.9x — Windows 플랫폼: 올인원 + AI 관리 센터 + 등급별 관리자 권한 + 기업 IM 알림 + 시맨틱 캐시(LiteLLM redis-semantic)
 - 🚧 **Linux / macOS** — 자가 호스팅 Linux 서버 지원(`linux/`)
-- 🚧 **온라인 서버** — 순수 Docker / 클라우드 프로덕션 배포(`docker/`)
 - 🚧 **공동 구축 프로그램** — 작업 보드, 주간 동기화 미팅, 배포 파트너 인증
 
 ## 🔒 보안 안내

@@ -107,7 +107,6 @@ Cuando todo esté hecho, ejecuta pruebas de extremo a extremo: todos los contene
 
 2. **Despliegue manual** — sigue paso a paso la [guía de despliegue de Windows](../windows/windows-deploy-guide-v2.md) (junto con la lista de verificación de progreso `windows-checklist.html`).
 
-> **Estado de la plataforma**: Windows (Windows 11 + Docker Desktop) **en pruebas reales**. Linux/macOS (`linux/`) y los servidores en línea (`docker/`) están planificados — consulta la [hoja de ruta](#roadmap).
 
 ## 🖼️ Capturas de pantalla
 
@@ -160,7 +159,6 @@ Consulta la guía completa en [CONTRIBUTING.md](../CONTRIBUTING.md); en la [hoja
 
 - ✅ v0.9x — Plataforma Windows: todo en uno + AI Admin Center + autorización de administradores por niveles + alertas de IM empresarial + caché semántica (redis-semantic de LiteLLM)
 - 🚧 **Linux / macOS** — soporte para servidores Linux autoalojados (`linux/`)
-- 🚧 **Servidores en línea** — despliegue de producción solo con Docker / en la nube (`docker/`)
 - 🚧 **Programa de colaboradores** — tablero de tareas, reuniones semanales de sincronización, certificación de socios de despliegue
 
 ## 🔒 Notas de seguridad

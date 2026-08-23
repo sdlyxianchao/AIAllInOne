@@ -107,7 +107,6 @@ windows-deploy-guide-v2.html を熟読してください——これが今回の
 
 2. **手動デプロイ**——[Windows デプロイガイド](../windows/windows-deploy-guide-v2.md) に従って順に操作します（`windows-checklist.html` 進捗チェックリストと併用）。
 
-> **プラットフォームの状態**：Windows（Windows 11 + Docker Desktop）は**実測中**です。Linux/macOS（`linux/`）とオンラインサーバー（`docker/`）は計画中です——[ロードマップ](#roadmap)をご覧ください。
 
 ## 🖼️ 画面スクリーンショット
 
@@ -160,7 +159,6 @@ windows-deploy-guide-v2.html を熟読してください——これが今回の
 
 - ✅ v0.9x — Windows プラットフォーム：オールインワン + AI 管理センター + 階層別管理者権限 + 企業 IM アラート + セマンティックキャッシュ（LiteLLM redis-semantic）
 - 🚧 **Linux / macOS** — セルフホスト Linux サーバー対応（`linux/`）
-- 🚧 **オンラインサーバー** — 純 Docker / クラウドでの本番デプロイ（`docker/`）
 - 🚧 **共創者プログラム** — タスクボード、毎週の同期ミーティング、デプロイパートナー認定
 
 ## 🔒 セキュリティについて

@@ -110,7 +110,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
 2. **Manual** — follow the [Windows deployment guide](windows/windows-deploy-guide-v2.md) step by step (or `windows/README.md` + `windows-checklist.html`).
 
-> **Platform status**: Windows (Windows 11 + Docker Desktop) is **actively tested**. Linux/macOS (`linux/`) and online-server (`docker/`) are planned — see the [Roadmap](#roadmap).
+> **Platform status**: Windows (Windows 11 + Docker Desktop) and **Linux** (Debian 12+ / Ubuntu 22.04+ / RHEL 9+ / Rocky 9+ / Fedora 39+) are **actively tested**.
 
 ## 🖼️ Screenshots
 
@@ -163,9 +163,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 
 <h2 id="roadmap">🗺️ Roadmap</h2>
 
-- ✅ v0.9x — Windows platform: full stack + AI Admin Center + scoped admin authorization + IM alerting + semantic caching (LiteLLM redis-semantic)
-- 🚧 **Linux / macOS** — self-hosted Linux server support (`linux/`)
-- 🚧 **Online server** — pure Docker / cloud production deployment (`docker/`)
+- ✅ v1.00 — Full stack: Windows + Linux (Debian/RPM) + Dify + offline deployment + AI Admin Center + scoped admin authorization + IM alerting + semantic caching (LiteLLM redis-semantic)
 - 🚧 **Contributor program** — task board, weekly sync calls, certification for deployment partners
 
 ## 🔒 Security & notes
@@ -173,6 +171,37 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 - This repository contains **no real secrets**; real values live in each runtime `.env` (only `.env.example` templates are committed).
 - Default is plain HTTP on the intranet; HTTPS guidance is in each platform's deployment guide.
 - Per-platform gotchas, port tables, and data flows are in the corresponding `*-deploy-guide*` docs (Markdown / HTML, e.g. `windows/windows-deploy-guide-v2.md`).
+
+## 📋 Changelog
+
+### v1.00 (2026-08-23)
+
+**New: Linux Platform Support**
+- Complete Linux deployment: Debian-based (Debian 12+ / Ubuntu 22.04+) and RPM-based (RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+)
+- Pre-built Docker image packages for offline deployment (6.2GB main + 2.5GB Dify)
+- Linux bash scripts: backup.sh, restore.sh, health-check.sh, ghost-setup.sh, dify-setup.sh
+- Import scripts for Windows (PowerShell) and Linux (bash)
+
+**New: Dify AI Application Platform**
+- Standalone deployment with separate Docker Compose
+- Auto-initialization script: creates default chat app, knowledge base, and API key
+- Keycloak SSO integration for unified login
+
+**New: Gitea Sync Workflow**
+- DeepChat auto-update sync scripts exported and documented
+- Gitea Actions workflow for automated desktop client distribution
+
+**Improved: Deployment Guides**
+- Windows deploy guide: offline image import, scheduled tasks, port quick reference, verified fix log
+- Linux deploy guide (Debian/RPM): full parity with Windows guide
+- Keycloak IdP questionnaire (7 types) + Admin REST API auto-configuration
+- Dify auto-setup and Gitea sync import steps
+
+**Improved: AI Admin Center**
+- Availability tests dynamically query available models via NewAPI (no hardcoded DeepSeek)
+
+**Improved: GitHub Pages**
+- New project landing page at https://sdlyxianchao.github.io/AIAllInOne/
 
 ## ⭐ Support the project
 

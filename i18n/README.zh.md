@@ -109,7 +109,6 @@ docker compose up -d
 
 2. **手动部署**——按 [Windows 部署指南](../windows/windows-deploy-guide-v2.md) 逐步操作（配合 `windows-checklist.html` 进度清单）。
 
-> **平台状态**：Windows（Windows 11 + Docker Desktop）**实测中**。Linux/macOS（`linux/`）与在线服务器（`docker/`）已在规划中——见[路线图](#roadmap)。
 
 ## 🖼️ 界面截图
 
@@ -162,9 +161,7 @@ docker compose up -d
 
 <h2 id="roadmap">🗺️ 路线图</h2>
 
-- ✅ v0.9x — Windows 平台：全家桶 + AI 管理中心 + 分级管理员授权 + 企业 IM 告警 + 语义缓存（LiteLLM redis-semantic）
-- 🚧 **Linux / macOS** — 自托管 Linux 服务器支持（`linux/`）
-- 🚧 **在线服务器** — 纯 Docker / 云上生产部署（`docker/`）
+- ✅ v1.00 — 全家桶：Windows + Linux（Debian/RPM）+ Dify + 离线部署 + AI 管理中心 + 分级管理员授权 + 企业 IM 告警 + 语义缓存（LiteLLM redis-semantic）
 - 🚧 **共建者计划** — 任务看板、每周同步例会、部署伙伴认证
 
 ## 🔒 安全说明
@@ -172,6 +169,37 @@ docker compose up -d
 - 本仓库**不含任何真实密钥**；真实值只存在各运行环境的 `.env`（仓库只提交 `.env.example` 模板）。
 - 默认内网明文 HTTP；HTTPS 配置见各平台部署指南。
 - 各平台的坑位、端口表、数据流见对应 `*-deploy-guide*.html` 文档。
+
+## 📋 更新日志
+
+### v1.00（2026-08-23）
+
+**新增：Linux 平台支持**
+- 完整 Linux 部署：Debian 系（Debian 12+ / Ubuntu 22.04+）和 RPM 系（RHEL 9+ / CentOS Stream 9+ / Rocky 9+ / Fedora 39+）
+- 预构建 Docker 镜像包，支持离线部署（主平台 6.2GB + Dify 2.5GB）
+- Linux bash 脚本：backup.sh、restore.sh、health-check.sh、ghost-setup.sh、dify-setup.sh
+- Windows（PowerShell）和 Linux（bash）导入脚本
+
+**新增：Dify AI 应用平台**
+- 独立 Docker Compose 部署
+- 自动初始化脚本：创建默认聊天应用、知识库和 API Key
+- Keycloak SSO 集成统一登录
+
+**新增：Gitea 同步工作流**
+- DeepChat 自动更新同步脚本导出并文档化
+- Gitea Actions 工作流自动分发桌面客户端
+
+**改进：部署指南**
+- Windows 部署指南：离线镜像导入、定时任务、端口速查、已验证踩坑记录
+- Linux 部署指南（Debian/RPM）：与 Windows 指南完全对等
+- Keycloak IdP 信息收集问卷（7 种身份源）+ Admin REST API 自动配置
+- Dify 自动初始化和 Gitea 同步导入步骤
+
+**改进：AI 管理中心**
+- 可用性测试动态查询 NewAPI 可用模型（不再硬编码 DeepSeek）
+
+**改进：GitHub Pages**
+- 新项目主页上线：https://sdlyxianchao.github.io/AIAllInOne/
 
 ## ⭐ 支持这个项目
 
