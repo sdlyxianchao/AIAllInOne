@@ -4,7 +4,7 @@
 
 > Inicialización y configuración de interconexión de cada uno de los tres productos.
 
-[← Capítulo 8: LiteLLM: verificación y caché](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribución de DeepChat y CI/CD →](ch10-deepchat.md)
+[← Capítulo 8: LiteLLM: verificación y caché](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribución de DSH Desktop y CI/CD →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | Banco de trabajo de IA | Enlace personalizado | `http://<IP-del-servidor>` |
 | Documentación de ayuda | Categoría | `/category/docs` |
 
-1. **Página del centro de descargas**: Página → crea «Centro de descargas» (slug `downloads`), con el enlace de intranet del instalador de DeepChat en el contenido.
+1. **Página del centro de descargas**: Página → crea «Centro de descargas» (slug `downloads`), con el enlace de intranet del instalador de DSH Desktop en el contenido.
 
 ```
-## DeepChat Edición empresarial
+## DSH Desktop Edición empresarial
 ### Windows
-- [DeepChat v1.1.0 (Windows x64)](http://<IP-del-servidor>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0 (Windows x64)](http://<IP-del-servidor>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0 (macOS x64)](http://<IP-del-servidor>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0 (macOS x64)](http://<IP-del-servidor>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ No hagas clic en «Registrarse» en la portada del portal `/` — es el registro de suscriptores visitantes (sin SMTP configurado da 500); la entrada del administrador es `/ghost/`. No instales temas de última versión desde GitHub (pueden ser para Ghost 6.x y dar incompatible con 5.x).
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← Capítulo 8: LiteLLM: verificación y caché](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribución de DeepChat y CI/CD →](ch10-deepchat.md)
+[← Capítulo 8: LiteLLM: verificación y caché](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribución de DSH Desktop y CI/CD →](ch10-dsh.md)

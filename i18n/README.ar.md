@@ -46,8 +46,8 @@ AI AllInOne هي منصة ذكاء اصطناعي **مفتوحة المصدر و
 | تطبيقات الذكاء الاصطناعي | Dify | تطبيقات ذكاء اصطناعي مرئية / منصة وكلاء + قاعدة معرفة موحّدة (RAG) |
 | بوابة المؤسسة | Ghost | بوابة إعلانات وأخبار الشركة (تتضمن قالب Corp Portal مخصصًا مدمجًا) |
 | الشيفرة المصدرية / CI | Gitea + Runner | Git داخلي + أتمتة Actions |
-| العميل | DeepChat | عميل ذكاء اصطناعي محلي لسطح المكتب (Windows / macOS / Linux) |
-| توزيع العميل | Update Server | استضافة حزم تثبيت DeepChat وتحديثها تلقائيًا |
+| العميل | DSH Desktop (Windows/macOS) · Linux (قريبًا) | عميل ذكاء اصطناعي محلي لسطح المكتب — DSH Desktop على Windows/macOS؛ إصدار Linux قريبًا |
+| توزيع العميل | Update Server | استضافة حزم تثبيت عميل سطح المكتب وتحديثها تلقائيًا (DSH Desktop لنظامي Windows/macOS) |
 | الإدارة الموحّدة | AI Admin Center | نقطة دخول موحّدة: لوحة تحكم + منتجات مدمجة + تدقيق/تكاليف/تقارير + تفويض إداري متدرج + مزامنة/أدوار Keycloak |
 | البوابة | MCP Gateway | سوق المهارات/MCP + استرجاع معرفة Dify (RAG) |
 | المراقبة | Prometheus + Grafana + Alertmanager | مراقبة موارد الحاويات + إشعارات التنبيه |
@@ -110,9 +110,9 @@ docker compose up -d
 
 ## 🖼️ لقطات الشاشة
 
-**Dify** — منصة تطبيقات الذكاء الاصطناعي · **سوق MCP/المهارات** — دمج الأدوات والمهارات بنقرة واحدة · **DeepChat** — عميل ذكاء اصطناعي لسطح المكتب
+**Dify** — منصة تطبيقات الذكاء الاصطناعي · **سوق MCP/المهارات** — دمج الأدوات والمهارات بنقرة واحدة · **DSH Desktop** — عميل ذكاء اصطناعي لسطح المكتب
 
-![Dify](<../pics/Dify.png>) ![سوق MCP/SKILL](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
+![Dify](<../pics/Dify.png>) ![سوق MCP/SKILL](<../pics/Market.png>) ![DSH Desktop](<../pics/dsh.png>)
 
 لقطات شاشة إضافية (48 لقطة شاشة حقيقية للواجهة) مدمجة في [دليل المسؤول](../docs/admin-manual/index.md).
 
@@ -233,10 +233,10 @@ docker compose up -d
 | Stage 2 | حالة 41 حاوية (Up/Exited/Restarting) | `docker ps -a` |
 | Stage 3 | استجابة 10 نقاط HTTP (بما فيها MCP Gateway) | `curl.exe 127.0.0.1:المنفذ` |
 | Stage 4 | LiteLLM /readiness + **تسجيل النماذج**، litellm-redis PING، Dify API /health، حالة MySQL/PostgreSQL/Redis/Sandbox | `docker exec` + `docker inspect` |
-| Stage 5 | **سلسلة LLM كاملة** : حالة قنوات NewAPI + طلب حقيقي واحد باسم DeepChat و Dify (NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
+| Stage 5 | **سلسلة LLM كاملة** : حالة قنوات NewAPI + طلب حقيقي واحد باسم DSH Desktop و Dify (NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
 | Stage 6 | **سلسلة مصادقة AD** : Keycloak well-known + مزامنة مستخدمي AD (aitest1) + إعداد OIDC في NewAPI + سلامة عملاء OIDC + **تسجيل دخول مدير NewAPI** | curl + Admin API + mysql |
 | Stage 7 | **MCP Gateway + Skill** : /health + tools/list + tools/call + تجميع Skills الخارجية | curl (بروتوكول MCP) |
-| Stage 8 | **متطلبات تسجيل دخول DeepChat / Dify** : توفر NewAPI + تهيئة Dify | curl + psql |
+| Stage 8 | **متطلبات تسجيل دخول DSH Desktop / Dify** : توفر NewAPI + تهيئة Dify | curl + psql |
 | Stage 9 | **مساحة القرص** : المتبقي في قرص النظام + استخدام Docker | `Get-PSDrive` + `docker system df` |
 
 **التشغيل اليدوي** (PowerShell) :

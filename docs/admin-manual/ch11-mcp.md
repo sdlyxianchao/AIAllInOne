@@ -2,9 +2,9 @@
 
 *Part 1 · Deployment*
 
-> A gateway that centrally manages Skills and MCP tools; DeepChat/Dify connect to one address to get all tools.
+> A gateway that centrally manages Skills and MCP tools; DSH Desktop/Dify connect to one address to get all tools.
 
-[← Chapter 10: DeepChat Distribution and CI/CD](ch10-deepchat.md) · [📖 Index](index.md) · [Chapter 12: AI Admin Center →](ch12-admin-center.md)
+[← Chapter 10: DSH Desktop Distribution and CI/CD](ch10-dsh.md) · [📖 Index](index.md) · [Chapter 12: AI Admin Center →](ch12-admin-center.md)
 
 ---
 
@@ -36,7 +36,7 @@ Aggregated tools automatically get the `{serverName}_` prefix to avoid name coll
 
 ## 11.3 Client Integration
 
-1. DeepChat: Settings → MCP → add server → type "Streamable HTTP", URL `http://<server-IP>:3100/mcp`;
+1. DSH Desktop: Settings → MCP → add server → type "Streamable HTTP", URL `http://<server-IP>:3100/mcp`;
 
 2. Dify workflow: custom tool / MCP tool configuration points to the same address.
 
@@ -52,13 +52,13 @@ Aggregated tools automatically get the `{serverName}_` prefix to avoid name coll
 
 Skills are placed in the `mcp-gateway/skills/` directory (subdirectories containing SKILL.md), and **are automatically scanned on each request with no restart needed**. The `skill-market` bootstrap skill is built in.
 
-> 📌 In DeepChat, MCP and Skill are two concepts: MCP is a "tool" (function calling), while a Skill is an "agent skill package" (SKILL.md + scripts). DeepChat's Skill has no "custom marketplace URL"; it only supports three install methods — folder / ZIP / URL — and intranet distribution is achieved indirectly via "URL install".
+> 📌 In DSH Desktop, MCP and Skill are two concepts: MCP is a "tool" (function calling), while a Skill is an "agent skill package" (SKILL.md + scripts). DSH Desktop's Skill has no "custom marketplace URL"; it only supports three install methods — folder / ZIP / URL — and intranet distribution is achieved indirectly via "URL install".
 
 ## 11.5 ⚠️ Skill Marketplace Hostname (deployment parameter, must be replaced)
 
 "Skill Butler" reads `market_url` in `config.json` to request the `/skills` catalog. Two key points:
 
-- **Use a hostname, not an IP**: DeepChat's agent environment redacts the IP into `[IP_ADDRESS_REDACTED]`, making the real address unreadable;
+- **Use a hostname, not an IP**: DSH Desktop's agent environment redacts the IP into `[IP_ADDRESS_REDACTED]`, making the real address unreadable;
 
 - **The hostname is a deployment parameter**: it differs for each deployment and must not be copied verbatim.
 
@@ -93,4 +93,4 @@ Requires the `X-Admin-Token` header (`MCP_ADMIN_TOKEN` in `.env`). Proxied by th
 
 ---
 
-[← Chapter 10: DeepChat Distribution and CI/CD](ch10-deepchat.md) · [📖 Index](index.md) · [Chapter 12: AI Admin Center →](ch12-admin-center.md)
+[← Chapter 10: DSH Desktop Distribution and CI/CD](ch10-dsh.md) · [📖 Index](index.md) · [Chapter 12: AI Admin Center →](ch12-admin-center.md)

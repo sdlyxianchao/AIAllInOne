@@ -35,7 +35,7 @@ Port `10086` (container `admin-portal`); source `../../windows/admin-portal/` (s
 | 🔀 NewAPI mgmt | channels/users/tokens + 💰 cost report + 📋 audit log (1 USD = 500000 quota) |
 | 🔌 MCP Gateway | endpoints + MCP server CRUD + Skill upload/delete (ai-platform-admin) |
 | 🛡️ LiteLLM+PII | copy master key + health + guardrails list |
-| ⬇️ Update Server | DeepChat version + installer list |
+| ⬇️ Update Server | DSH Desktop version + installer list |
 | 📈 Monitoring / 🔍 Observability | Grafana / Langfuse entries (auto-login) |
 | 🔐 Centralized auth / 👥 Admin accounts | unified account notes + delegated authorization (ai-platform-admin) |
 | ⚙️ Settings | env var notes + product entry URLs + **9 UI languages** (Arabic RTL) |
@@ -56,7 +56,7 @@ Provision table (awareness): Gitea SSO auto-reg + admin; NewAPI SSO + role=10; D
 
 **5. Backup & restore**: page "Backup & restore": list → run → restore (docker.sock + mounted `C:\AIAllInOne\backups`). Same format as backup.ps1 (NewAPI MySQL / Dify PG / Ghost SQLite / Gitea SQLite / configs). ⚠️ Binary safety: Admin Center backup uses base64 + tar-fs/putArchive (docker exec stdout utf8 would corrupt SQLite .db). ⚠️ restore needs `yes` confirm (-Force skips); sync backups/ off-box for DR.
 
-**6. Availability (16 checks)**: scheduled (AVAILABILITY_INTERVAL_MIN) + "Test all" + per-item: Keycloak auth / NewAPI / LiteLLM / DeepChat·Dify chat (real request via NewAPI) / Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / Update Server / backup / Docker / Redis. Each card shows result + key logs.
+**6. Availability (16 checks)**: scheduled (AVAILABILITY_INTERVAL_MIN) + "Test all" + per-item: Keycloak auth / NewAPI / LiteLLM / DSH Desktop·Dify chat (real request via NewAPI) / Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / Update Server / backup / Docker / Redis. Each card shows result + key logs.
 
 **7. Ghost auto-login (awareness)**: "Open Ghost admin" → `/api/ghost/auto-login`: password login → read `admin_session_secret` + userId → local TOTP (HMAC-SHA1, matches emailed code) → `/session/verify` → cookie → redirect. ⚠️ don't spam (brute rate-limit).
 
@@ -97,7 +97,7 @@ Provision table (awareness): Gitea SSO auto-reg + admin; NewAPI SSO + role=10; D
 
 ## Exam (theory 10 Q/30 + hands-on 50 + defense 20; ≥70)
 
-**Single choice (3×6)**: 1. vs Portainer → B app-layer unified auth; 2. init role → B ai-platform-admin; 3. per-module role naming → B admin:<product>; 4. Keycloak revocation → B revoke role (never delete IdP account); 5. SQLite backup corruption cause → B docker exec stdout utf8 → need base64+tar-fs; 6. availability "DeepChat·Dify chat" → B real request via NewAPI.
+**Single choice (3×6)**: 1. vs Portainer → B app-layer unified auth; 2. init role → B ai-platform-admin; 3. per-module role naming → B admin:<product>; 4. Keycloak revocation → B revoke role (never delete IdP account); 5. SQLite backup corruption cause → B docker exec stdout utf8 → need base64+tar-fs; 6. availability "DSH Desktop·Dify chat" → B real request via NewAPI.
 
 **True/False (3×4)**: 7. homepage must be Keycloak-protected. T; 8. index.html edits need container restart. F; 9. non-admin sees "not an admin". T; 10. backups should be mirrored off-box. T.
 

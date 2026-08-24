@@ -48,7 +48,7 @@ swap=4GB
 
 ```
 # PowerShell
-mkdir deepchat-updates
+mkdir dsh-updates
 ```
 
 ```
@@ -56,7 +56,7 @@ C:\ai-platform\windows\          # 假設的部署根目錄
 ├─ docker-compose.yml           # 核心服務編排
 ├─ .env.windows                 # 環境變數（需填入 API Key）
 ├─ litellm-config.yaml          # LiteLLM PII 遮蔽配置
-├─ deepchat-updates\            # DeepChat 安裝包託管目錄
+├─ dsh-updates\            # DSH Desktop 安裝包託管目錄
 ├─ admin-portal\                # AI 管理中心實現
 ├─ mcp-gateway\                 # Skill / MCP 閘道器
 ├─ monitoring\                  # Prometheus / Loki 配置

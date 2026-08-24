@@ -48,7 +48,7 @@ Après enregistrement, exécutez `wsl --shutdown` dans PowerShell, puis redémar
 
 ```
 # PowerShell
-mkdir deepchat-updates
+mkdir dsh-updates
 ```
 
 ```
@@ -56,7 +56,7 @@ C:\ai-platform\windows\          # Racine de déploiement supposée
 ├─ docker-compose.yml           # Orchestration des services principaux
 ├─ .env.windows                 # Variables d'environnement (à renseigner avec la clé API)
 ├─ litellm-config.yaml          # Configuration d'anonymisation PII de LiteLLM
-├─ deepchat-updates\            # Répertoire d'hébergement des paquets DeepChat
+├─ dsh-updates\            # Répertoire d'hébergement des paquets DSH Desktop
 ├─ admin-portal\                # Implémentation du Centre d'administration IA
 ├─ mcp-gateway\                 # Passerelle Skill / MCP
 ├─ monitoring\                  # Configuration Prometheus / Loki

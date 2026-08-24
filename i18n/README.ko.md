@@ -46,8 +46,8 @@ AI AllInOne은 **오픈소스 무료**이며 바로 사용 가능한 기업 인�
 | AI 애플리케이션 | Dify | 비주얼 AI 애플리케이션 / Agent 플랫폼 + 통합 지식 베이스(RAG) |
 | 기업 포털 | Ghost | 사내 공지 및 뉴스 포털(커스텀 Corp Portal 테마 내장) |
 | 소스코드 / CI | Gitea + Runner | 사내 Git + Actions 자동화 |
-| 클라이언트 | DeepChat | 로컬 AI 데스크톱 클라이언트(Windows / macOS / Linux) |
-| 클라이언트 배포 | Update Server | DeepChat 설치 패키지 호스팅 및 자동 업데이트 |
+| 클라이언트 | DSH Desktop (Windows/macOS) · Linux (곧 제공 예정) | 로컬 AI 데스크톱 클라이언트 — Windows/macOS는 DSH Desktop, Linux 버전은 곧 제공 예정 |
+| 클라이언트 배포 | Update Server | 데스크톱 클라이언트 설치 패키지 호스팅 및 자동 업데이트 (Windows/macOS는 DSH Desktop) |
 | 통합 관리 | AI Admin Center | 통합 진입점: 대시보드 + 내장 제품 + 감사/비용/리포트 + 등급별 관리자 권한 + Keycloak 동기화/역할 |
 | 게이트웨이 | MCP Gateway | 스킬 / MCP 마켓 + Dify 지식 검색(RAG) |
 | 모니터링 | Prometheus + Grafana + Alertmanager | 컨테이너 리소스 모니터링 + 알림 통지 |
@@ -110,9 +110,9 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 ## 🖼️ 인터페이스 스크린샷
 
-**Dify** — AI 애플리케이션 플랫폼 · **MCP/스킬 마켓** — 도구와 스킬을 원클릭으로 연동 · **DeepChat** — 데스크톱 AI 클라이언트
+**Dify** — AI 애플리케이션 플랫폼 · **MCP/스킬 마켓** — 도구와 스킬을 원클릭으로 연동 · **DSH Desktop** — 데스크톱 AI 클라이언트
 
-![Dify](<../pics/Dify.png>) ![MCP/스킬 마켓](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
+![Dify](<../pics/Dify.png>) ![MCP/스킬 마켓](<../pics/Market.png>) ![DSH Desktop](<../pics/dsh.png>)
 
 더 많은 스크린샷(48장의 실제 인터페이스 화면)이 [관리자 매뉴얼](../docs/admin-manual/index.md)에 포함되어 있습니다.
 
@@ -233,10 +233,10 @@ AI AllInOne이 시간이나 비용을 절약해 준다면, Star 하나는 비용
 | Stage 2 | 41개 컨테이너 상태(Up/Exited/Restarting) | `docker ps -a` |
 | Stage 3 | HTTP 엔드포인트 10개 응답(MCP Gateway 포함) | `curl.exe 127.0.0.1:포트` |
 | Stage 4 | LiteLLM /readiness + **모델 등록**, litellm-redis PING, Dify API /health, MySQL/PostgreSQL/Redis/Sandbox 상태 | `docker exec` + `docker inspect` |
-| Stage 5 | **LLM 전체 체인** : NewAPI 채널 상태 + DeepChat 및 Dify 명의로 각 1건 실요청(NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
+| Stage 5 | **LLM 전체 체인** : NewAPI 채널 상태 + DSH Desktop 및 Dify 명의로 각 1건 실요청(NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
 | Stage 6 | **AD 인증 체인** : Keycloak well-known + AD 사용자 동기화(aitest1) + NewAPI OIDC 설정 + OIDC 클라이언트 무결성 + **NewAPI 관리자 로그인** | curl + Admin API + mysql |
 | Stage 7 | **MCP Gateway + Skill** : /health + tools/list + tools/call + 외부 Skill 집계 | curl(MCP 프로토콜) |
-| Stage 8 | **DeepChat / Dify 로그인 전제조건** : NewAPI 사용 가능 + Dify 초기화됨 | curl + psql |
+| Stage 8 | **DSH Desktop / Dify 로그인 전제조건** : NewAPI 사용 가능 + Dify 초기화됨 | curl + psql |
 | Stage 9 | **디스크 공간** : 시스템 디스크 여유 + Docker 사용량 | `Get-PSDrive` + `docker system df` |
 
 **수동 실행** (PowerShell) :

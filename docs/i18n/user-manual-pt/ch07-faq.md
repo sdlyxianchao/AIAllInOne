@@ -22,9 +22,9 @@
 | --- | --- |
 | Aviso de cota insuficiente? | Verifique o saldo no painel do NewAPI; quando acabar, peça ao administrador para recarregar/aumentar |
 | Conteúdo enviado foi bloqueado? | Acionou palavra sensível ou contém informação sensível; ajuste conforme as normas do capítulo 6 e tente de novo |
-| DeepChat dá tempo de conexão esgotado? | Configurações → rede/proxy → «não usar proxy / conexão direta» |
+| DSH Desktop dá tempo de conexão esgotado? | Configurações → rede/proxy → «não usar proxy / conexão direta» |
 | Resposta do modelo com baixa qualidade? | Troque de modelo ou otimize a pergunta (dê contexto, deixe claro o que quer, forneça exemplo) |
-| Esqueceu onde baixar o DeepChat? | Central de downloads do portal `http://IP:8090/downloads/` |
+| Esqueceu onde baixar o DSH Desktop? | Central de downloads do portal `http://IP:8090/downloads/` |
 | Dify fica carregando ao criar aplicação? | Geralmente é problema de rede/WebSocket; fale com o administrador; no navegador, force com Ctrl+F5 |
 
 ## 7.3 Cognição

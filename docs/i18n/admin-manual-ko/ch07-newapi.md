@@ -38,13 +38,13 @@ NewAPI 최초 실행 시 4단계 시스템 설정 마법사가 표시됩니다:
 
 ## 7.3 API 키 생성
 
-Dify와 DeepChat용으로 각각 만들어 사용량을 분리 집계합니다:
+Dify와 DSH Desktop용으로 각각 만들어 사용량을 분리 집계합니다:
 
 1. 좌측 **API 키** → 새로 만들기;
 
 2. 이름 `dify-key` → 저장 → `sk-xxx` 복사 (Dify 모델 공급자에 입력);
 
-3. 이어서 `deepchat-key` 생성 → `sk-xxx` 복사 (DeepChat 사용자에게 배포).
+3. 이어서 `dsh-key` 생성 → `sk-xxx` 복사 (DSH Desktop 사용자에게 배포).
 
 ## 7.4 일반 사용자 셀프 Key 신청 허용
 

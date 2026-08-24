@@ -35,7 +35,7 @@
 ## 23.3 查看追踪（项目相关）
 
 1. **Traces 列表**：看每次调用（用户/模型/延迟/token/成本），点进去看提示词/响应全文；
-2. **Session 关联**：用 Session 把多轮对话串起来（DeepChat 多轮提问按会话看）；
+2. **Session 关联**：用 Session 把多轮对话串起来（DSH Desktop 多轮提问按会话看）；
 3. **数据链路**：LiteLLM `success_callback: ["langfuse"]` 自动上报（`.env` 的 `LANGFUSE_*`），无需手工配置。
 
 ## 23.4 组件与排错

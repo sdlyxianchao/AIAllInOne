@@ -15,7 +15,7 @@ Everything that makes the platform run lives on your local machine as **code, co
 - **Docker Compose** defines all the containers.
 - **`.env` files** (e.g. `windows/.env.windows`) hold the credentials the services use.
 - **Admin APIs** expose management endpoints (Keycloak, Gitea, NewAPI, and more).
-- **Files & databases** (the Ghost SQLite DB, DeepChat installer files, sync-history JSON, etc.) are the actual state.
+- **Files & databases** (the Ghost SQLite DB, DSH Desktop installer files, sync-history JSON, etc.) are the actual state.
 
 The agent can:
 
@@ -81,9 +81,9 @@ The agent runs `docker restart admin-portal`. Note: a **backend** code change (`
 
 > "Show me the last 50 lines of the Gitea runner log and tell me if there are errors."
 
-### 4.5 Manage the DeepChat sync (Gitea)
+### 4.5 Manage the DSH Desktop sync (Gitea)
 
-> "Trigger the deepchat-sync workflow and show me its progress — phase, files downloaded, MB, ETA."
+> "Trigger the dsh-sync workflow and show me its progress — phase, files downloaded, MB, ETA."
 
 The agent calls the Gitea API to trigger the workflow, then polls the run status and reads `sync-progress.json`.
 
@@ -138,6 +138,6 @@ The agent scans (`docker system df`, unused images, volumes, old backups) and li
 | Restart a service | `docker restart <name>` |
 | Start all services | `docker compose up -d` |
 | Compose status | `docker compose ps` |
-| Trigger Gitea sync | `POST /api/v1/repos/<user>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| Trigger Gitea sync | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | Run a backup | `powershell .\scripts\backup.ps1` |
 | Publish a release | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

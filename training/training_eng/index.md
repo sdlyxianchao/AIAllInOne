@@ -50,8 +50,8 @@
 | **D3** | M03 Keycloak part 1 (Realm/users/groups/roles/OIDC Client) | M03 part 2 (AD/LDAP federation + Entra ID/SAML multi-IdP + troubleshooting) | Keycloak SSO login verified |
 | **D4** | M04 NewAPI (init/channels/tokens/quota/OIDC/promote) | M05 LiteLLM + Presidio (model list/PII redaction/semantic cache/Langfuse) | LLM chain (NewAPI→LiteLLM→DeepSeek) green |
 | **D5** | M06 Dify part 1 (model providers/chatbot/agent) | M06 part 2 (knowledge base RAG/Knowledge API/workflows/publish) | Dify app + KB retrieval usable |
-| **D6** | M07 Ghost (init/Corp Portal theme/content seed/download center) | M08 Gitea + Runner (Actions/deepchat-sync/workflow syntax/SSO) | Portal article published; CI green |
-| **D7** | M09 DeepChat (install/models/MCP/Skills/update chain) | M10 MCP Gateway (built-ins/external MCP/Skill market/RAG) | DeepChat calls search_knowledge |
+| **D6** | M07 Ghost (init/Corp Portal theme/content seed/download center) | M08 Gitea + Runner (Actions/dsh-sync/workflow syntax/SSO) | Portal article published; CI green |
+| **D7** | M09 DSH Desktop (install/models/MCP/Skills/update chain) | M10 MCP Gateway (built-ins/external MCP/Skill market/RAG) | DSH Desktop calls search_knowledge |
 | **D8** | M11 AI Admin Center (init/menus/delegated admin/backup) | M12–M16 ops modules (Update Server/monitoring/observability/logs/MailHog) | Admin Center fully usable; alerts configured |
 | **D9** | Integrated practice 1 (12 interconnect checks + health-check ALL CLEAR) | Integrated practice 2 · M17 AI ops (agent-driven inspection/backup/failure drill/release) | 12 interconnects green; health check ALL CLEAR |
 | **D10** | Review + Q&A + mock defense | Final exams (theory 100 Q 90min + hands-on 120min + defense) | All three assessed & graded |
@@ -73,8 +73,8 @@
 | M05 | LiteLLM + Presidio | Core | 3 | config.yaml, regex redaction + BLOCK, Presidio endpoint pitfall, Redis semantic cache (bge-m3), Langfuse reporting | [Package](03-litellm-presidio/package.md) · [Refs](03-litellm-presidio/references.md) |
 | M06 | Dify AI Application Platform | Core | 6 | Standalone deploy pitfalls, model providers, five app types, High-quality KB, Knowledge API, Chatflow support bot, publish | [Package](04-dify/package.md) · [Refs](04-dify/references.md) |
 | M07 | Ghost Enterprise Portal | Core | 3 | SQLite pitfall, Corp Portal theme, content seed, posts/nav, MailHog code, Admin Center auto-login (TOTP) | [Package](05-ghost/package.md) · [Refs](05-ghost/references.md) |
-| M08 | Gitea + Runner | Core | 3 | Runner registration + 4 pitfalls, deepchat-sync (sync-config.json), Actions syntax, SSO auto-registration, ROOT_URL | [Package](06-gitea-runner/package.md) · [Refs](06-gitea-runner/references.md) |
-| M09 | DeepChat Desktop Client | Core | 3 | Install/config, manual MCP (Skip to manual config), SSE notice, Skill URL install, skill-market (hostname), auto-update | [Package](07-deepchat/package.md) · [Refs](07-deepchat/references.md) |
+| M08 | Gitea + Runner | Core | 3 | Runner registration + 4 pitfalls, dsh-sync (sync-config.json), Actions syntax, SSO auto-registration, ROOT_URL | [Package](06-gitea-runner/package.md) · [Refs](06-gitea-runner/references.md) |
+| M09 | DSH Desktop Desktop Client | Core | 3 | Install/config, manual MCP (Skip to manual config), SSE notice, Skill URL install, skill-market (hostname), auto-update | [Package](07-dsh/package.md) · [Refs](07-dsh/references.md) |
 | M10 | MCP Gateway | Core | 3 | MCP protocol, 4 built-ins, external server aggregation, Skill market, search_knowledge chain (3 pitfalls), admin API | [Package](09-mcp-gateway/package.md) · [Refs](09-mcp-gateway/references.md) |
 | M11 | AI Admin Center | Core | 4 | Global Admin init, menu map, delegated admin (admin:product + provisioning), backup/restore, availability, reports, IM alerts | [Package](10-admin-center/package.md) · [Refs](10-admin-center/references.md) |
 | M12 | Update Server | Foundation | 1 | Distribution chain, upload/verify, latest.yml/version.txt/publish.url, 403 is normal, rollback guard | [Package](08-update-server/package.md) · [Refs](08-update-server/references.md) |

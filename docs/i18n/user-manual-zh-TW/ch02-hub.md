@@ -4,7 +4,7 @@
 
 > 進入 AI 平台的起點：看新聞、下軟體、跳到 Dify。
 
-[← 第1章：認識平台](ch01-about.md) · [📖 目錄](index.md) · [第3章：工具一：DeepChat →](ch03-deepchat.md)
+[← 第1章：認識平台](ch01-about.md) · [📖 目錄](index.md) · [第3章：工具一：DSH Desktop →](ch03-dsh.md)
 
 ---
 
@@ -28,11 +28,11 @@ flowchart TB
 
 2. 首頁就是最新新聞、公告列表，點標題讀全文。
 
-## 2.3 下載中心（裝 DeepChat）
+## 2.3 下載中心（裝 DSH Desktop）
 
 1. 點門戶頂部「**下載中心**」選單，或直接開啟 `http://IP:8090/downloads/`；
 
-2. 按系統選 **Windows** / **macOS** 安裝包，下載 **DeepChat**；
+2. 按系統選 **Windows** / **macOS** 安裝包，下載 **DSH Desktop**；
 
 3. 安裝：Windows 雙擊 .exe 按嚮導；macOS 開啟 .dmg 拖進「應用程式」。
 
@@ -48,4 +48,4 @@ flowchart TB
 
 ---
 
-[← 第1章：認識平台](ch01-about.md) · [📖 目錄](index.md) · [第3章：工具一：DeepChat →](ch03-deepchat.md)
+[← 第1章：認識平台](ch01-about.md) · [📖 目錄](index.md) · [第3章：工具一：DSH Desktop →](ch03-dsh.md)

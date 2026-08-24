@@ -17,8 +17,8 @@ Ce manuel est divisé en trois parties : **Déploiement** (chapitres 1–13, mis
 | 7 | [NewAPI : initialisation, canaux et OIDC](ch07-newapi.md) | Terminer l'assistant d'installation initiale, configurer le canal pointant vers LiteLLM, distribuer les clés API, intégrer Keycloak OIDC. |
 | 8 | [LiteLLM : vérification et cache](ch08-litellm.md) | Vérifier que le proxy LiteLLM fonctionne et activer le cache de réponses pour économiser des tokens. |
 | 9 | [Configuration de Dify / Ghost / Gitea](ch09-products.md) | L'initialisation et la configuration d'interconnexion de chacun des trois produits. |
-| 10 | [Distribution de DeepChat et CI/CD](ch10-deepchat.md) | Distribuer les paquets d'installation DeepChat aux employés, et synchroniser automatiquement les nouvelles versions officielles avec Gitea Actions. |
-| 11 | [MCP Gateway et marché de Skills](ch11-mcp.md) | La passerelle qui centralise la gestion des Skills et des outils MCP ; DeepChat/Dify se connecte à une seule adresse pour obtenir tous les outils. |
+| 10 | [Distribution de DSH Desktop et CI/CD](ch10-dsh.md) | Distribuer les paquets d'installation DSH Desktop aux employés, et synchroniser automatiquement les nouvelles versions officielles avec Gitea Actions. |
+| 11 | [MCP Gateway et marché de Skills](ch11-mcp.md) | La passerelle qui centralise la gestion des Skills et des outils MCP ; DSH Desktop/Dify se connecte à une seule adresse pour obtenir tous les outils. |
 | 12 | [Centre d'administration IA](ch12-admin-center.md) | Portail d'administration unifié : authentification Keycloak, menu de gauche intégrant tous les produits, état du cluster dans le Dashboard. |
 | 13 | [Liste de vérification de l'interconnexion](ch13-interconnect.md) | Après le déploiement, confirmez un à un que les 12 chaînes d'interconnexion sont toutes opérationnelles. |
 
@@ -33,7 +33,7 @@ Ce manuel est divisé en trois parties : **Déploiement** (chapitres 1–13, mis
 | 18 | [Administration quotidienne de Ghost](ch18-ops-ghost.md) | Portail d'entreprise / Hub : articles, pages, navigation, thèmes, membres. |
 | 19 | [Administration quotidienne de Gitea](ch19-ops-gitea.md) | Git interne + CI/CD : dépôts, organisations, Runners, Actions. |
 | 20 | [Administration quotidienne de MCP Gateway](ch20-ops-mcp.md) | Ajouter/supprimer des MCP Server, téléverser/supprimer des Skills, étendre les outils intégrés. |
-| 21 | [Administration du serveur de mise à jour](ch21-ops-update.md) | Hébergement des paquets d'installation DeepChat et mise à jour automatique. |
+| 21 | [Administration du serveur de mise à jour](ch21-ops-update.md) | Hébergement des paquets d'installation DSH Desktop et mise à jour automatique. |
 | 22 | [Administration de la surveillance et des alertes](ch22-ops-monitoring.md) | Prometheus + Grafana + Alertmanager : surveillance des ressources des conteneurs et notifications d'alerte. |
 | 23 | [Observabilité LLM (Langfuse)](ch23-ops-langfuse.md) | Tracer le prompt, la réponse, la latence, les tokens et le coût de chaque appel au modèle. |
 | 24 | [Journaux unifiés (Loki)](ch24-ops-loki.md) | Agréger les journaux de tous les conteneurs et les interroger par conteneur + mot-clé + temps. |

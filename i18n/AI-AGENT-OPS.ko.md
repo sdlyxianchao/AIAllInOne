@@ -15,7 +15,7 @@
 - **Docker Compose**가 모든 컨테이너를 정의합니다.
 - **`.env` 파일**(예: `windows/.env.windows`)이 서비스가 사용하는 자격 증명을 보관합니다.
 - **관리 API**가 관리 엔드포인트를 노출합니다(Keycloak, Gitea, NewAPI 등).
-- **파일과 데이터베이스**(Ghost SQLite DB, DeepChat 설치 파일, 동기화 이력 JSON 등)가 실제 상태입니다.
+- **파일과 데이터베이스**(Ghost SQLite DB, DSH Desktop 설치 파일, 동기화 이력 JSON 등)가 실제 상태입니다.
 
 에이전트가 할 수 있는 일:
 
@@ -81,9 +81,9 @@
 
 > "Gitea runner 로그의 마지막 50줄을 보여주고 오류가 있는지 알려줘."
 
-### 4.5 DeepChat 동기화 관리(Gitea)
+### 4.5 DSH Desktop 동기화 관리(Gitea)
 
-> "deepchat-sync 워크플로를 트리거하고 진행 상황을 보여줘 — 단계, 다운로드된 파일 수, MB, 남은 시간."
+> "dsh-sync 워크플로를 트리거하고 진행 상황을 보여줘 — 단계, 다운로드된 파일 수, MB, 남은 시간."
 
 에이전트는 Gitea API를 호출해 워크플로를 트리거한 뒤, 실행 상태를 폴링하고 `sync-progress.json`을 읽습니다.
 
@@ -138,6 +138,6 @@
 | 서비스 재시작 | `docker restart <이름>` |
 | 모든 서비스 시작 | `docker compose up -d` |
 | Compose 상태 | `docker compose ps` |
-| Gitea 동기화 트리거 | `POST /api/v1/repos/<user>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| Gitea 동기화 트리거 | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | 백업 실행 | `powershell .\scripts\backup.ps1` |
 | 릴리스 게시 | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

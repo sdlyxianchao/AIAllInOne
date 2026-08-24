@@ -21,7 +21,7 @@
 | Stage 5 | LLM full chain (NewAPI → LiteLLM → DeepSeek real request) |
 | Stage 6 | AD account authentication chain + NewAPI admin login |
 | Stage 7 | MCP Gateway + Skill functionality |
-| Stage 8 | DeepChat/Dify login prerequisites |
+| Stage 8 | DSH Desktop/Dify login prerequisites |
 | Stage 9 | disk space |
 
 ## 28.2 Manual Execution

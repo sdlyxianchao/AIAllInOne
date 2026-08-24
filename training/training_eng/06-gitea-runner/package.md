@@ -2,13 +2,13 @@
 
 ## Outline
 
-**Positioning**: internal Git hosting + CI/CD (Actions). Hosts the DeepChat source mirror and the `deepchat-sync` auto-sync workflow (GitHub → installers → update server → portal), plus build/release pipelines.
+**Positioning**: internal Git hosting + CI/CD (Actions). Hosts the DSH Desktop source mirror and the `dsh-sync` auto-sync workflow (GitHub → installers → update server → portal), plus build/release pipelines.
 
-**Objectives**: explain role (port 3002 / SSH 2222 / Runner / Actions); init, enable Actions, create & register Runner; understand & troubleshoot `deepchat-sync` (schedule + workflow_dispatch, sync-config.json, update_ghost.py); wire Keycloak SSO auto-registration; write simple workflows (.gitea/workflows/*.yml); fix common issues (readonly database, ROOT_URL, runner registration, force_pull).
+**Objectives**: explain role (port 3002 / SSH 2222 / Runner / Actions); init, enable Actions, create & register Runner; understand & troubleshoot `dsh-sync` (schedule + workflow_dispatch, sync-config.json, update_ghost.py); wire Keycloak SSO auto-registration; write simple workflows (.gitea/workflows/*.yml); fix common issues (readonly database, ROOT_URL, runner registration, force_pull).
 
 **Prereq**: M02, M03 (optional SSO part).
 
-**Content (3 h, D6 PM)**: overview (0.5) → init + Actions + Runner (0.75) → deepchat-sync deep-dive (0.75) → Actions syntax (0.5) → SSO + troubleshooting (0.5).
+**Content (3 h, D6 PM)**: overview (0.5) → init + Actions + Runner (0.75) → dsh-sync deep-dive (0.75) → Actions syntax (0.5) → SSO + troubleshooting (0.5).
 
 **Pass**: init → Runner Idle → trigger sync → read logs; write a push workflow; explain the 4 Runner pitfalls.
 
@@ -18,7 +18,7 @@
 
 Ports `3002` (web) / `2222` (Git SSH); containers `gitea`, `gitea-runner` (act_runner, GitHub Actions compatible).
 
-**1. Uses**: source mirror (optional audit/2nd-dev); **deepchat-sync** (daily check GitHub for new DeepChat → download installers → update Ghost download page — core); build/release; Ghost announcement via Actions.
+**1. Uses**: source mirror (optional audit/2nd-dev); **dsh-sync** (daily check GitHub for new DSH Desktop → download installers → update Ghost download page — core); build/release; Ghost announcement via Actions.
 
 **2. Init & Runner**
 - Init: `http://<SERVER_IP>:3002` → installer (SQLite preset) → admin `ai_all_in_one_admin`. ⚠️ **ROOT_URL must be intranet** (`GITEA__server__ROOT_URL=http://<SERVER_IP>:3002/`) or repo links/API html_url are localhost.
@@ -38,11 +38,11 @@ Ports `3002` (web) / `2222` (Git SSH); containers `gitea`, `gitea-runner` (act_r
 | `force_pull: false` | intranet Docker may not reach Docker Hub; pre-pull `node:20` on host or configure a mirror |
 | GitHub network | add `--http1.1 --retry 5` for occasional HTTP/2 drops |
 
-**4. deepchat-sync workflow**
-- Repo `deepchat-sync` (**normal repo**; mirrors are read-only): `.gitea/workflows/sync.yml` + `update_ghost.py` + `version_cmp.py` + `sync-config.json`.
+**4. dsh-sync workflow**
+- Repo `dsh-sync` (**normal repo**; mirrors are read-only): `.gitea/workflows/sync.yml` + `update_ghost.py` + `version_cmp.py` + `sync-config.json`.
 - Triggers: `schedule` (daily UTC 2:00) + `workflow_dispatch` (manual).
 - Logic: check GitHub latest tag → compare `version.txt` → **download only if latest > deployed** → update Ghost download page + write version.
-- Manual: `POST /api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches` (basic auth) or UI.
+- Manual: `POST /api/v1/repos/ai_all_in_one_admin/dsh-sync/actions/workflows/sync.yml/dispatches` (basic auth) or UI.
 - `sync-config.json`: `version_source` (`github` accurate / `official` CN-reachable but lagging), `download_prefix` (ghproxy etc.), `keep_releases` (default 5), `market_url`.
 - ⚠️ Only download when newer — the official cache lags; downloading on "different version" would **downgrade** clients.
 
@@ -68,7 +68,7 @@ Ports `3002` (web) / `2222` (Git SSH); containers `gitea`, `gitea-runner` (act_r
 |---|---|---|
 | 14:00-14:30 | Overview + Actions concept | lecture |
 | 14:30-15:15 | Lab 1: init + enable Actions + Runner + token | lab |
-| 15:15-16:00 | Lab 2: manual trigger deepchat-sync, read logs/artifacts | lab |
+| 15:15-16:00 | Lab 2: manual trigger dsh-sync, read logs/artifacts | lab |
 | 16:00-16:30 | Lab 3: write a push workflow and run it | lab |
 | 16:30-17:00 | SSO + pitfalls + FAQ | lecture |
 
@@ -78,7 +78,7 @@ Ports `3002` (web) / `2222` (Git SSH); containers `gitea`, `gitea-runner` (act_r
 
 **Failure drills**: restart instead of up -d → stale token; force_pull on → image pull fail; ROOT_URL localhost → wrong links.
 
-**Handoff**: sync output → Update Server (M12) → Ghost download page (M07) → DeepChat update (M09).
+**Handoff**: sync output → Update Server (M12) → Ghost download page (M07) → DSH Desktop update (M09).
 
 ---
 
@@ -90,4 +90,4 @@ Ports `3002` (web) / `2222` (Git SSH); containers `gitea`, `gitea-runner` (act_r
 
 **Hands-on (50)**: 1. register Runner → Idle (20); 2. trigger sync + explain 3 switches (15); 3. write & run push workflow (15).
 
-**Defense (20)**: "How does DeepChat sync in from GitHub, and speed up in CN?"; "Runner jobs fail — debug path?"; "A dev team wants CI — where to start?"
+**Defense (20)**: "How does DSH Desktop sync in from GitHub, and speed up in CN?"; "Runner jobs fail — debug path?"; "A dev team wants CI — where to start?"

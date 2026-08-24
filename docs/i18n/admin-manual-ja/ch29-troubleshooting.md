@@ -33,7 +33,7 @@
 | SSO ログインで unknown_error | AD ポート転送失効（iphlpsvc） | iphlpsvc + Hyper-V ネットワークを確認 |
 | Keycloak でドメインユーザーが見えない | Search scope = One Level | Subtree に変更 |
 | Langfuse でデータが見えない | V4_WRITE_MODE または SSO アカウントが組織未所属 | dual に設定。SQL で組織に追加（第 23 章） |
-| DeepChat モデル接続タイムアウト | クライアントが停止したシステムプロキシ経由 | プロキシ不使用/直接接続に設定 |
+| DSH Desktop モデル接続タイムアウト | クライアントが停止したシステムプロキシ経由 | プロキシ不使用/直接接続に設定 |
 | Loki でログが見つからない | job ラベルを使用 | `{container=~".+"}` を使用 |
 | Presidio 404 /analyze/analyze | エンドポイントにパス付き | base URL のみ記入 |
 | server.js 変更後の新インターフェースが 404 | up -d は volume 変更を再読み込みしない | docker restart admin-portal |

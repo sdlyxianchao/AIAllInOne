@@ -14,10 +14,10 @@
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | NewAPI 채널 테스트에서 OK 수신 |
 | 2 | Dify → NewAPI | Dify 모델 공급자 테스트에서 응답 수신 |
-| 3 | DeepChat → NewAPI | DeepChat 메시지 전송 시 응답 수신 |
+| 3 | DSH Desktop → NewAPI | DSH Desktop 메시지 전송 시 응답 수신 |
 | 4 | Keycloak → NewAPI | Keycloak 계정으로 OIDC 로그인 NewAPI |
 | 5 | Keycloak → Dify | Keycloak 계정으로 SSO 로그인 Dify |
-| 6 | MCP Gateway → DeepChat | DeepChat이 MCP 도구 목록 조회 및 호출 |
+| 6 | MCP Gateway → DSH Desktop | DSH Desktop이 MCP 도구 목록 조회 및 호출 |
 | 7 | MCP Gateway → Dify | Dify 워크플로에서 MCP 도구 호출 |
 | 8 | Gitea Runner → Docker | Runner가 CI/CD 작업 실행 가능 |
 | 9 | Gitea → 업데이트 서버 | CI 산출물을 업데이트 서버에 업로드 가능 |

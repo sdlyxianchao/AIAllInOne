@@ -33,7 +33,7 @@
 | SSO 登入報 unknown_error | AD 埠轉發失效（iphlpsvc） | 檢查 iphlpsvc + Hyper-V 網路 |
 | Keycloak 看不到網域使用者 | Search scope = One Level | 改 Subtree |
 | Langfuse 看不到資料 | V4_WRITE_MODE 或 SSO 帳號未入組織 | 設 dual；SQL 加組織（第 23 章） |
-| DeepChat 模型連線超時 | 客戶端走了掛掉的系統代理 | 設為不使用代理/直連 |
+| DSH Desktop 模型連線超時 | 客戶端走了掛掉的系統代理 | 設為不使用代理/直連 |
 | Loki 查不到日誌 | 用了 job 標籤 | 用 `{container=~".+"}` |
 | Presidio 404 /analyze/analyze | 端點帶了路徑 | 只填 base URL |
 | 改 server.js 後新介面 404 | up -d 不重讀 volume 變化 | docker restart admin-portal |

@@ -2,9 +2,9 @@
 
 *第一部分 · 部署篇*
 
-> 集中管理 Skill 和 MCP 工具的閘道器，DeepChat/Dify 連一個地址即可拿到所有工具。
+> 集中管理 Skill 和 MCP 工具的閘道器，DSH Desktop/Dify 連一個地址即可拿到所有工具。
 
-[← 第10章：DeepChat 分發與 CI/CD](ch10-deepchat.md) · [📖 目錄](index.md) · [第12章：AI 管理中心 →](ch12-admin-center.md)
+[← 第10章：DSH Desktop 分發與 CI/CD](ch10-dsh.md) · [📖 目錄](index.md) · [第12章：AI 管理中心 →](ch12-admin-center.md)
 
 ---
 
@@ -36,7 +36,7 @@
 
 ## 11.3 客戶端接入
 
-1. DeepChat：設定 → MCP → 新增伺服器 → 型別「可流式傳輸的 HTTP」，URL `http://<伺服器IP>:3100/mcp`；
+1. DSH Desktop：設定 → MCP → 新增伺服器 → 型別「可流式傳輸的 HTTP」，URL `http://<伺服器IP>:3100/mcp`；
 
 2. Dify 工作流：自定義工具 / MCP 工具配置指向同地址。
 
@@ -52,13 +52,13 @@
 
 技能放在 `mcp-gateway/skills/` 目錄（含 SKILL.md 的子目錄），**每次請求自動掃描，無需重啟**。內建 `skill-market` 引導技能。
 
-> 📌 DeepChat 裡 MCP 和 Skill 是兩個概念：MCP 是「工具」（function calling），Skill 是「智慧體技能包」（SKILL.md + 指令碼）。DeepChat 的 Skill 沒有「自定義市場 URL」，只支援資料夾/ZIP/URL 三種安裝，內網分發靠「URL 安裝」變相實現。
+> 📌 DSH Desktop 裡 MCP 和 Skill 是兩個概念：MCP 是「工具」（function calling），Skill 是「智慧體技能包」（SKILL.md + 指令碼）。DSH Desktop 的 Skill 沒有「自定義市場 URL」，只支援資料夾/ZIP/URL 三種安裝，內網分發靠「URL 安裝」變相實現。
 
 ## 11.5 ⚠️ Skill 市場主機名（部署參數，必須替換）
 
 「技能管家」讀 `config.json` 的 `market_url` 請求 `/skills` 清單。兩個關鍵點：
 
-- **用主機名，不能用 IP**：DeepChat 的 agent 環境會把 IP 遮蔽成 `[IP_ADDRESS_REDACTED]`，導致讀不到真實地址；
+- **用主機名，不能用 IP**：DSH Desktop 的 agent 環境會把 IP 遮蔽成 `[IP_ADDRESS_REDACTED]`，導致讀不到真實地址；
 
 - **主機名是部署參數**：每套部署都不同，不能照抄。
 
@@ -93,4 +93,4 @@ Agent 在收集參數時會問「Skill 市場主機名」，自動替換 `config
 
 ---
 
-[← 第10章：DeepChat 分發與 CI/CD](ch10-deepchat.md) · [📖 目錄](index.md) · [第12章：AI 管理中心 →](ch12-admin-center.md)
+[← 第10章：DSH Desktop 分發與 CI/CD](ch10-dsh.md) · [📖 目錄](index.md) · [第12章：AI 管理中心 →](ch12-admin-center.md)

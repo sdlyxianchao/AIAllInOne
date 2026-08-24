@@ -14,10 +14,10 @@
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | اختبار قناة NewAPI يعيد OK |
 | 2 | Dify → NewAPI | اختبار مزوّد النماذج في Dify يعيد ردًا |
-| 3 | DeepChat → NewAPI | إرسال رسالة من DeepChat يعيد ردًا |
+| 3 | DSH Desktop → NewAPI | إرسال رسالة من DSH Desktop يعيد ردًا |
 | 4 | Keycloak → NewAPI | تسجيل الدخول إلى NewAPI عبر OIDC بحساب Keycloak |
 | 5 | Keycloak → Dify | تسجيل الدخول إلى Dify عبر SSO بحساب Keycloak |
-| 6 | MCP Gateway → DeepChat | يحصل DeepChat على قائمة أدوات MCP ويستدعيها |
+| 6 | MCP Gateway → DSH Desktop | يحصل DSH Desktop على قائمة أدوات MCP ويستدعيها |
 | 7 | MCP Gateway → Dify | يستدعي سير عمل Dify أداة MCP |
 | 8 | Gitea Runner → Docker | يمكن لـ Runner تنفيذ مهام CI/CD |
 | 9 | Gitea → خادم التحديثات | يمكن رفع نواتج CI إلى خادم التحديثات |

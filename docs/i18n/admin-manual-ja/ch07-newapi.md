@@ -38,13 +38,13 @@ NewAPI は初回起動時に 4 ステップのシステム設定ウィザード�
 
 ## 7.3 API キーの作成
 
-Dify と DeepChat 用に 1 つずつ作成し、利用量を分けて集計します：
+Dify と DSH Desktop 用に 1 つずつ作成し、利用量を分けて集計します：
 
 1. 左側 **API キー** → 新規作成；
 
 2. 名前 `dify-key` → 保存 → `sk-xxx` をコピー（Dify モデルプロバイダーに記入）；
 
-3. さらに `deepchat-key` を作成 → `sk-xxx` をコピー（DeepChat ユーザーに配布）。
+3. さらに `dsh-key` を作成 → `sk-xxx` をコピー（DSH Desktop ユーザーに配布）。
 
 ## 7.4 一般ユーザーの自己申告 Key 申請を許可
 

@@ -38,13 +38,13 @@ Si plusieurs fournisseurs sont configurés, répétez l'ajout : Claude type `Ant
 
 ## 7.3 Créer des clés API
 
-Créez-en une pour Dify et une pour DeepChat, pour séparer la statistique de consommation :
+Créez-en une pour Dify et une pour DSH Desktop, pour séparer la statistique de consommation :
 
 1. À gauche **Clés API** → nouvelle ;
 
 2. Nom `dify-key` → enregistrer → copier `sk-xxx` (à renseigner dans le fournisseur de modèles de Dify) ;
 
-3. Puis `deepchat-key` → copier `sk-xxx` (à distribuer aux utilisateurs DeepChat).
+3. Puis `dsh-key` → copier `sk-xxx` (à distribuer aux utilisateurs DSH Desktop).
 
 ## 7.4 Autoriser les utilisateurs à demander une clé en libre-service
 

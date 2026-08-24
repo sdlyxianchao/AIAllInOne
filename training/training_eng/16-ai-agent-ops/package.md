@@ -17,7 +17,7 @@
 | investigate | "LiteLLM is stopped. Find out why and fix it, then confirm it's back up." |
 | restart | "Restart the admin portal so my server.js change takes effect." |
 | logs | "Show me the last 50 lines of the Gitea runner log and tell me if there are errors." |
-| trigger sync | "Trigger the deepchat-sync workflow and show me its progress — phase, files downloaded, MB, ETA." |
+| trigger sync | "Trigger the dsh-sync workflow and show me its progress — phase, files downloaded, MB, ETA." |
 | edit Admin Center | "Add pagination to the Gitea repositories list — 10 per page, adjustable." |
 | portal seed | "Import the example content seed into the portal, using address 192.168.1.100 and Chinese." |
 | backup | "Run a full backup now and confirm it succeeded." |
@@ -41,7 +41,7 @@
 | restart | `docker restart <name>` |
 | start all | `docker compose up -d` |
 | compose status | `docker compose ps` |
-| trigger Gitea sync | `POST /api/v1/repos/<user>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| trigger Gitea sync | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | backup | `powershell .\scripts\backup.ps1` |
 | release | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |
 

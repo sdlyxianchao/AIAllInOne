@@ -68,7 +68,7 @@
 
 ### 14.3.4 OIDC 客户端（项目清单）
 
-项目使用的客户端：`AI-all-in-one-admin-portal`（管理中心）、`gitea`、`newapi`、`litellm`（SSO 跳转）、`deepchat` 等。改回调地址在 Clients → 该客户端 → Valid redirect URIs。
+项目使用的客户端：`AI-all-in-one-admin-portal`（管理中心）、`gitea`、`newapi`、`litellm`（SSO 跳转）、`dsh` 等。改回调地址在 Clients → 该客户端 → Valid redirect URIs。
 
 > ⚠️ 常见问题：改客户端回调后浏览器仍报 redirect_uri 错误 → 清浏览器缓存或换隐身窗口；AD 抖动时登录报 `unknown_error` → 等 AD 恢复后重试（见第 29 章）。
 

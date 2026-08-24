@@ -38,13 +38,13 @@ NewAPI 首次啟動彈 4 步系統設定嚮導：
 
 ## 7.3 建立 API 金鑰
 
-為 Dify 和 DeepChat 各建一把，分開統計用量：
+為 Dify 和 DSH Desktop 各建一把，分開統計用量：
 
 1. 左側 **API 金鑰** → 新建；
 
 2. 名稱 `dify-key` → 儲存 → 複製 `sk-xxx`（填到 Dify 模型供應商）；
 
-3. 再建 `deepchat-key` → 複製 `sk-xxx`（分發給 DeepChat 使用者）。
+3. 再建 `dsh-key` → 複製 `sk-xxx`（分發給 DSH Desktop 使用者）。
 
 ## 7.4 允許普通使用者自助申請 Key
 

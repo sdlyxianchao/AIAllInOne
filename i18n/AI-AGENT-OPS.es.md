@@ -15,7 +15,7 @@ Todo lo que hace funcionar la plataforma vive en tu máquina como **código, con
 - **Docker Compose** define todos los contenedores.
 - Los **archivos `.env`** (p. ej. `windows/.env.windows`) contienen las credenciales que usan los servicios.
 - Las **API de administración** exponen los endpoints de gestión (Keycloak, Gitea, NewAPI, etc.).
-- Los **archivos y bases de datos** (la base SQLite de Ghost, los instaladores de DeepChat, el JSON del historial de sincronización, etc.) son el estado real.
+- Los **archivos y bases de datos** (la base SQLite de Ghost, los instaladores de DSH Desktop, el JSON del historial de sincronización, etc.) son el estado real.
 
 El agente puede:
 
@@ -81,9 +81,9 @@ El agente ejecuta `docker restart admin-portal`. Nota: un cambio en el **backend
 
 > "Muéstrame las últimas 50 líneas del registro del runner de Gitea y dime si hay errores."
 
-### 4.5 Gestionar la sincronización de DeepChat (Gitea)
+### 4.5 Gestionar la sincronización de DSH Desktop (Gitea)
 
-> "Dispara el workflow deepchat-sync y muéstrame su progreso: fase, archivos descargados, MB, ETA."
+> "Dispara el workflow dsh-sync y muéstrame su progreso: fase, archivos descargados, MB, ETA."
 
 El agente llama a la API de Gitea para disparar el workflow, luego consulta el estado de ejecución y lee `sync-progress.json`.
 
@@ -138,6 +138,6 @@ El agente escanea (`docker system df`, imágenes no usadas, volúmenes, copias a
 | Reiniciar un servicio | `docker restart <nombre>` |
 | Iniciar todos los servicios | `docker compose up -d` |
 | Estado de Compose | `docker compose ps` |
-| Disparar la sincronización de Gitea | `POST /api/v1/repos/<user>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| Disparar la sincronización de Gitea | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | Ejecutar una copia | `powershell .\scripts\backup.ps1` |
 | Publicar una versión | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

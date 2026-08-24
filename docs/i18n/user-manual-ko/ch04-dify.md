@@ -4,7 +4,7 @@
 
 > 웹 AI 앱 플랫폼: 기존 앱 사용, 지식베이스 Q&amp;A 구축.
 
-[← 제3장: 도구 1: DeepChat](ch03-deepchat.md) · [📖 목차](index.md) · [제5장: API Key 신청 →](ch05-key.md)
+[← 제3장: 도구 1: DSH Desktop](ch03-dsh.md) · [📖 목차](index.md) · [제5장: API Key 신청 →](ch05-key.md)
 
 ---
 
@@ -50,4 +50,4 @@
 
 ---
 
-[← 제3장: 도구 1: DeepChat](ch03-deepchat.md) · [📖 목차](index.md) · [제5장: API Key 신청 →](ch05-key.md)
+[← 제3장: 도구 1: DSH Desktop](ch03-dsh.md) · [📖 목차](index.md) · [제5장: API Key 신청 →](ch05-key.md)

@@ -4,7 +4,7 @@
 
 > تهيئة كل منتج من المنتجات الثلاثة وإعدادات الترابط الخاصة به.
 
-[← الفصل 8: LiteLLM: التحقق والتخزين المؤقت](ch08-litellm.md) · [📖 الفهرس](index.md) · [الفصل 10: توزيع DeepChat و CI/CD →](ch10-deepchat.md)
+[← الفصل 8: LiteLLM: التحقق والتخزين المؤقت](ch08-litellm.md) · [📖 الفهرس](index.md) · [الفصل 10: توزيع DSH Desktop و CI/CD →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | منضدة عمل AI | رابط مخصص | `http://<عنوان-IP-الخادم>` |
 | مستندات المساعدة | تصنيف | `/category/docs` |
 
-1. **صفحة مركز التنزيلات**: الصفحات ← أنشئ «مركز التنزيلات» (slug `downloads`) وضع فيه الروابط الداخلية لحزم تثبيت DeepChat.
+1. **صفحة مركز التنزيلات**: الصفحات ← أنشئ «مركز التنزيلات» (slug `downloads`) وضع فيه الروابط الداخلية لحزم تثبيت DSH Desktop.
 
 ```
-## DeepChat إصدار المؤسسات
+## DSH Desktop إصدار المؤسسات
 ### Windows
-- [DeepChat v1.1.0 (Windows x64)](http://<عنوان-IP-الخادم>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0 (Windows x64)](http://<عنوان-IP-الخادم>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0 (macOS x64)](http://<عنوان-IP-الخادم>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0 (macOS x64)](http://<عنوان-IP-الخادم>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ لا تنقر «التسجيل» في الصفحة الرئيسية للبوابة `/` — فهي مخصصة لتسجيل الزوار المشتركين (وستظهر خطأ 500 إن لم يُضبط SMTP)؛ مدخل المدير هو `/ghost/`. ولا تثبّت أحدث إصدار من القوالب من GitHub (لأنها قد تكون متوافقة مع Ghost 6.x وستظهر رسالة incompatible مع 5.x).
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← الفصل 8: LiteLLM: التحقق والتخزين المؤقت](ch08-litellm.md) · [📖 الفهرس](index.md) · [الفصل 10: توزيع DeepChat و CI/CD →](ch10-deepchat.md)
+[← الفصل 8: LiteLLM: التحقق والتخزين المؤقت](ch08-litellm.md) · [📖 الفهرس](index.md) · [الفصل 10: توزيع DSH Desktop و CI/CD →](ch10-dsh.md)

@@ -21,7 +21,7 @@
 | Stage 5 | Chaîne LLM complète (requête réelle NewAPI → LiteLLM → DeepSeek) |
 | Stage 6 | Chaîne d'authentification des comptes AD + connexion administrateur NewAPI |
 | Stage 7 | MCP Gateway + fonctionnalités Skill |
-| Stage 8 | Préconditions de connexion DeepChat/Dify |
+| Stage 8 | Préconditions de connexion DSH Desktop/Dify |
 | Stage 9 | Espace disque |
 
 ## 28.2 Exécution manuelle

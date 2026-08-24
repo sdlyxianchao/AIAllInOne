@@ -22,9 +22,9 @@
 | --- | --- |
 | Quota insuffisant ? | Consultez le solde dans l'interface NewAPI ; une fois épuisé, contactez l'administrateur pour recharger/augmenter le quota |
 | Contenu envoyé bloqué ? | Il a touché un mot sensible ou contient des informations sensibles ; ajustez selon les règles du chapitre 6 puis réessayez |
-| DeepChat signale un délai de connexion ? | Paramètres → Réseau / proxy → choisir « Pas de proxy / connexion directe » |
+| DSH Desktop signale un délai de connexion ? | Paramètres → Réseau / proxy → choisir « Pas de proxy / connexion directe » |
 | Qualité de réponse du modèle médiocre ? | Changez de modèle, ou améliorez la question (fournir le contexte, préciser les exigences, donner des exemples) |
-| Oublié où télécharger DeepChat ? | Centre de téléchargement du portail `http://IP:8090/downloads/` |
+| Oublié où télécharger DSH Desktop ? | Centre de téléchargement du portail `http://IP:8090/downloads/` |
 | La création d'application Dify tourne en boucle ? | Généralement un problème réseau/WebSocket, contactez l'administrateur ; forcez l'actualisation avec Ctrl+F5 |
 
 ## 7.3 Compréhension

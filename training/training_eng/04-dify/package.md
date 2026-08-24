@@ -37,7 +37,7 @@ Dify deploys **standalone** (official compose, ~15 containers), port 80 (`http:/
 **4. Knowledge base (unified RAG)**
 - Create KB → upload docs → index mode **High quality** (needs embedding).
 - Chunking & retrieval params (top_k, score_threshold, hybrid).
-- **Knowledge API key**: KB → API Access → create → record `key` (dataset-...) + `dataset_id` (UUID in URL). Fill `.env`: `DIFY_API_BASE=http://<SERVER_IP>/v1`, `DIFY_KNOWLEDGE_API_KEY`, `DIFY_DEFAULT_DATASET_ID` → restart mcp-gateway → DeepChat gets `search_knowledge` (M10).
+- **Knowledge API key**: KB → API Access → create → record `key` (dataset-...) + `dataset_id` (UUID in URL). Fill `.env`: `DIFY_API_BASE=http://<SERVER_IP>/v1`, `DIFY_KNOWLEDGE_API_KEY`, `DIFY_DEFAULT_DATASET_ID` → restart mcp-gateway → DSH Desktop gets `search_knowledge` (M10).
 - RAG app: new Chatflow → knowledge retrieval node → LLM with retrieved context → debug → publish.
 
 **5. Agent & Workflow**: Agent = model + tools (built-in/custom/MCP); Workflow = drag nodes (start → KB retrieval → LLM → condition → direct reply/HTTP). MCP tools point to `http://<SERVER_IP>:3100/mcp`.
@@ -73,7 +73,7 @@ Dify deploys **standalone** (official compose, ~15 containers), port 80 (`http:/
 
 **Lab checklist**: provider (deepseek-chat via host.docker.internal:3000/v1 + bge-m3 default) tested (S); chatbot replies; KB High quality indexed; Chatflow retrieval hits (S); Knowledge API key recorded; Agent with ≥1 tool; Workflow with retrieval node; app published with WebApp/embed; (bonus) Service API call.
 
-**Homework**: 10+ item "Dify FAQ card"; read `../../Dify-RAG-接入实现方案.md` → draw RAG chain (DeepChat → MCP → Dify Knowledge API); tune retrieval params and note effect.
+**Homework**: 10+ item "Dify FAQ card"; read `../../Dify-RAG-接入实现方案.md` → draw RAG chain (DSH Desktop → MCP → Dify Knowledge API); tune retrieval params and note effect.
 
 **Failure drills**: endpoint missing /v1 → fail; embedding not default → KB error; WebSocket localhost → debug hangs; wrong dataset → search_knowledge empty.
 

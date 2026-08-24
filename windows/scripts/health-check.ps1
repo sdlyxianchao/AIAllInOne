@@ -11,10 +11,10 @@
 #   2. 容器启动状态（全部关键组件）
 #   3. HTTP 端点可达性
 #   4. 内部健康（LiteLLM 模型注册 / Dify / Redis / MySQL / MCP）
-#   5. LLM 全链路 —— 以 DeepChat 和 Dify 名义各发一个真实请求
+#   5. LLM 全链路 —— 以 DSH Desktop 和 Dify 名义各发一个真实请求
 #   6. NewAPI AD 账号认证链路 + 管理员登录（Keycloak SSO）
 #   7. MCP Gateway + Skill（tools/list + tools/call）
-#   8. DeepChat / Dify 登录前置条件
+#   8. DSH Desktop / Dify 登录前置条件
 #   9. 磁盘空间
 #
 # 凭据从上级目录（windows/.env）读取，脚本本身不硬编码任何密码/密钥。
@@ -179,7 +179,7 @@ foreach ($cn in $hc.Keys) {
     else { F "$label  -  $h" }
 }
 
-# ===== Stage 5: LLM 全链路（DeepChat / Dify 名义）=====
+# ===== Stage 5: LLM 全链路（DSH Desktop / Dify 名义）=====
 Head "Stage 5: LLM 全链路（NewAPI -> LiteLLM -> DeepSeek）"
 
 # NewAPI 渠道状态（LLM 链路前置）
@@ -194,7 +194,7 @@ function Get-TokenKey($name) {
     $k = docker exec new-api-db mysql -uroot "-p$DbPass" new-api -N -e $sql 2>$null
     return ($k -join '').Trim()
 }
-$deepchatKey = Get-TokenKey "deepchat-key"
+$dshKey = Get-TokenKey "dsh-key"
 $difyKey     = Get-TokenKey "dify-key"
 
 function Test-LLM($label, $key) {
@@ -211,7 +211,7 @@ function Test-LLM($label, $key) {
     }
 }
 
-Test-LLM "DeepChat 名义 (deepchat-key)" $deepchatKey
+Test-LLM "DSH Desktop 名义 (dsh-key)" $dshKey
 Test-LLM "Dify 名义 (dify-key)"       $difyKey
 
 # ===== Stage 6: NewAPI AD 账号认证（Keycloak SSO）=====
@@ -291,12 +291,12 @@ if (Test-Path $serversFile) {
     } catch { W "mcp-servers.json 解析失败" }
 } else { W "mcp-servers.json 不存在" }
 
-# ===== Stage 8: DeepChat / Dify 登录前置条件 =====
-Head "Stage 8: DeepChat / Dify 登录前置条件"
+# ===== Stage 8: DSH Desktop / Dify 登录前置条件 =====
+Head "Stage 8: DSH Desktop / Dify 登录前置条件"
 
-# DeepChat 登录 = 走 NewAPI OIDC（Keycloak SSO），检查 NewAPI 服务 + OIDC
+# DSH Desktop 登录 = 走 NewAPI OIDC（Keycloak SSO），检查 NewAPI 服务 + OIDC
 $naStatus = curl.exe -sS -o NUL -w "%{http_code}" "$NewApiAddr/api/status" --max-time 8 2>&1
-if ($naStatus -match "^[23]\d\d") { P "NewAPI /api/status  -  HTTP $naStatus（DeepChat 登录入口可用）" }
+if ($naStatus -match "^[23]\d\d") { P "NewAPI /api/status  -  HTTP $naStatus（DSH Desktop 登录入口可用）" }
 else { W "NewAPI /api/status  -  $naStatus" }
 
 # Dify 登录：Dify 已初始化 + 管理员账号存在

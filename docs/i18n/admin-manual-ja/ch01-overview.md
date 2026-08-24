@@ -20,8 +20,8 @@
 | AI アプリケーション | Dify | ビジュアル AI アプリ / Agent / ナレッジベースプラットフォーム |
 | 企業ポータル | Ghost | お知らせ、ニュース、ダウンロードセンター、従業員 Hub |
 | ソースコード / CI | Gitea + Runner | 社内 Git リポジトリ + Actions 自動化 |
-| クライアント | DeepChat | ローカル AI デスクトップクライアント（Win/macOS/Linux） |
-| クライアント配布 | 更新サーバー | DeepChat インストーラのホスティングと自動更新 |
+| クライアント | DSH Desktop | ローカル AI デスクトップクライアント（Win/macOS/Linux） |
+| クライアント配布 | 更新サーバー | DSH Desktop インストーラのホスティングと自動更新 |
 | 統合管理 | AI 管理センター | 唯一の管理エントリ：Dashboard + 製品埋め込み + 監査/コスト/レポート |
 | ゲートウェイ | MCP Gateway | スキル / MCP マーケット管理 |
 | 監視・アラート | Prometheus + Grafana + Alertmanager | コンテナリソース監視 + アラート通知 |
@@ -54,7 +54,7 @@
 | 5 | Dify | AI アプリケーションプラットフォーム | `127.0.0.1` | `<サーバーIP>`（80 ポート） |
 | 6 | Ghost | 企業ポータル | `127.0.0.1:8090` | `<サーバーIP>:8090` |
 | 7 | Gitea | ソースコード + CI/CD | `127.0.0.1:3002` | `<サーバーIP>:3002` |
-| 8 | 更新サーバー | DeepChat インストーラ | `127.0.0.1:8091` | `<サーバーIP>:8091` |
+| 8 | 更新サーバー | DSH Desktop インストーラ | `127.0.0.1:8091` | `<サーバーIP>:8091` |
 | 9 | MCP Gateway | スキル / MCP ゲートウェイ | `127.0.0.1:3100` | `<サーバーIP>:3100` |
 | 10 | Grafana | 監視ダッシュボード | `127.0.0.1:3030` | `<サーバーIP>:3030` |
 | 11 | Prometheus | メトリクス収集 / アラート | `127.0.0.1:9091` | `<サーバーIP>:9091` |
@@ -70,7 +70,7 @@
 
 ```mermaid
 flowchart LR
-    A["DeepChat / Dify"] --> B["NewAPI（ルーティング）"]
+    A["DSH Desktop / Dify"] --> B["NewAPI（ルーティング）"]
     B["NewAPI（ルーティング）"] --> C["LiteLLM（マスキング）"]
     C["LiteLLM（マスキング）"] --> D["外部大規模モデル"]
 ```
@@ -79,7 +79,7 @@ flowchart LR
 
 *リクエスト方向 →；レスポンス方向 ←（LiteLLM が PII を復元して返却）；LiteLLM はサイドチャネルで Langfuse に報告*
 
-1. **① 転送**：DeepChat / Dify がリクエストを NewAPI に送信（`:3000/v1`）；
+1. **① 転送**：DSH Desktop / Dify がリクエストを NewAPI に送信（`:3000/v1`）；
 
 2. **② マスキング**：NewAPI が LiteLLM へ転送し、LiteLLM が正規表現 + Presidio で携帯番号/身分証番号/メールなどを `[xxx_REDACTED]` に置換；
 
@@ -95,7 +95,7 @@ flowchart LR
 
 - **可観測性フロー**：LiteLLM `success_callback` → Langfuse が各呼び出しを追跡；
 
-- **自動更新フロー**：Gitea Actions ビルド → 更新サーバー（:8091）→ DeepChat が `version.txt` を確認して自動ダウンロード・インストール；
+- **自動更新フロー**：Gitea Actions ビルド → 更新サーバー（:8091）→ DSH Desktop が `version.txt` を確認して自動ダウンロード・インストール；
 
 - **統合ログフロー**：Promtail が各コンテナログを収集 → Loki に集約 → AI 管理センター「統合ログ」ページで照会。
 

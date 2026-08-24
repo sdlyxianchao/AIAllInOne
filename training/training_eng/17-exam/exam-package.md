@@ -16,11 +16,11 @@ Rules: closed book; hands-on may consult the deployed machine + offline material
 ## 2. Theory Question Bank (100 Q, answers inline)
 
 ### Single choice (50 × 1 pt)
-1. [M01] DeepChat API address → B http://<IP>:3000/v1
+1. [M01] DSH Desktop API address → B http://<IP>:3000/v1
 2. [M01] Unified login via → A Keycloak SSO
 3. [M01] Grafana port → B 3030
 4. [M01] Redaction happens at → C LiteLLM (before leaving)
-5. [M01] DeepChat download entry → C Ghost /deepchat/
+5. [M01] DSH Desktop download entry → C Ghost /dsh/
 6. [M02] .env change effective via → B docker compose up -d
 7. [M02] container-to-container → B container name (ai-platform)
 8. [M02] Windows Docker backend → C WSL2
@@ -77,7 +77,7 @@ Rules: closed book; hands-on may consult the deployed machine + offline material
 57. [M06] Dify app types (ABCD) — chatbot / text gen / agent / workflow+chatflow
 58. [M06] RAG params tunable (ABC) — top_k / score_threshold / hybrid
 59. [M08] Runner pitfalls (ABC) — container.network / docker.sock duplicate / force_pull
-60. [M09] DeepChat features (ABCD) — multi-model / MCP tools / Skills / local file IO
+60. [M09] DSH Desktop features (ABCD) — multi-model / MCP tools / Skills / local file IO
 61. [M10] built-in tools (ABCD) — platform_time / echo / services / search_knowledge
 62. [M10] RAG 3 pitfalls (ABC) — network gap / account-level key / full path+encoding
 63. [M11] Admin Center features (ABCD) — container status / cost-audit / backup / unified logs
@@ -98,7 +98,7 @@ Rules: closed book; hands-on may consult the deployed machine + offline material
 76. [M06] profile 401 means backend down. F
 77. [M07] install latest official themes from GitHub. F
 78. [M07] delete ghost-data volume to fix MySQL error. F
-79. [M08] deepchat-sync uses a normal repo, not mirror. T
+79. [M08] dsh-sync uses a normal repo, not mirror. T
 80. [M08] mount docker.sock again in options. F
 81. [M09] SSE "legacy-only" notice is normal. T
 82. [M09] Skills install only via marketplace. F (folder/ZIP/URL)
@@ -118,7 +118,7 @@ Rules: closed book; hands-on may consult the deployed machine + offline material
 94. [M06] KB no hits? default embedding → index completed → retrieval params → doc/chunk quality.
 95. [M07] Ghost admin login? email → code to MailHog :8025; or Admin Center TOTP auto-login.
 96. [M08] Runner job fails? docker logs runner → force_pull image → container.network → docker.sock.
-97. [M09] DeepChat can't connect? Base URL (intranet+/v1) → NewAPI reachable → token/quota → model name.
+97. [M09] DSH Desktop can't connect? Base URL (intranet+/v1) → NewAPI reachable → token/quota → model name.
 98. [M10] RAG 404/empty? DIFY_API_BASE /v1 → key/dataset_id → network (host IP) → UTF-8.
 99. [M11] Revoked admin still works? revocation includes product-side delete (SSO revoke / API delete); check provisioning result.
 100. [M17] "verify, don't believe" in practice? demand command proof (HTTP codes, log lines, ls) especially "fixed" claims.
@@ -136,7 +136,7 @@ Rules: closed book; hands-on may consult the deployed machine + offline material
 | 4 | Keycloak new local user → ai-user group | ⭐ | 6 |
 | 5 | AD sync & Account-Console login | ⭐ | 8 |
 | 6 | NewAPI channel → LiteLLM, test OK | ⭐ | 8 |
-| 7 | real chat via DeepChat/curl, chain works | ⭐ | 8 |
+| 7 | real chat via DSH Desktop/curl, chain works | ⭐ | 8 |
 
 ### Phase 3 Apps & content (30 min, 25 pts)
 | 8 | Dify KB (high quality) + Chatflow retrieval hit | ⭐ | 10 |

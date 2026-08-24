@@ -10,7 +10,7 @@ Keycloak (Red Hat) is an open-source **Identity & Access Management (IAM)** solu
 - **User Federation**: connect AD/LDAP/Entra ID/Google without duplicating accounts.
 - **Admin console**: manage realms, users, clients, roles, sessions.
 
-In this platform Keycloak is the **unified auth entry (SSO)**: for the **products wired into SSO** (AI Admin Center, NewAPI, Dify, Gitea, Grafana, Langfuse, LiteLLM — 7 in total), clicking "Login" redirects to Keycloak (`http://<SERVER_IP>:9090`) and back on success. **Not every product uses SSO**: Ghost uses local accounts + email codes, DeepChat (desktop) connects directly with API base + key, MCP Gateway uses the `X-Admin-Token` header, and Update Server / MailHog / Ollama have no login or use API keys (full list in §5).
+In this platform Keycloak is the **unified auth entry (SSO)**: for the **products wired into SSO** (AI Admin Center, NewAPI, Dify, Gitea, Grafana, Langfuse, LiteLLM — 7 in total), clicking "Login" redirects to Keycloak (`http://<SERVER_IP>:9090`) and back on success. **Not every product uses SSO**: Ghost uses local accounts + email codes, DSH Desktop (desktop) connects directly with API base + key, MCP Gateway uses the `X-Admin-Token` header, and Update Server / MailHog / Ollama have no login or use API keys (full list in §5).
 
 ## 2. Platform Conventions
 
@@ -99,7 +99,7 @@ Keycloak can host several IdPs at once (AD + Entra ID + Google + GitHub + SAML) 
 | LiteLLM | `LITELLM_UI_CLIENT_ID` (.env) | Generic OIDC | unified-account basic auth; optional `AUTO_REDIRECT_UI_LOGIN_TO_SSO` |
 | Ghost | — (local account) | none | unified account + email code (MailHog) |
 
-> **Products NOT using SSO** (no Keycloak Client needed): **DeepChat** (desktop client, direct API base + key), **MCP Gateway** (`X-Admin-Token` header, value from `MCP_ADMIN_TOKEN` in `.env`), **Update Server** (nginx static hosting, no login), **MailHog** (mail test tool, no login), **Ollama** (local inference, no login).
+> **Products NOT using SSO** (no Keycloak Client needed): **DSH Desktop** (desktop client, direct API base + key), **MCP Gateway** (`X-Admin-Token` header, value from `MCP_ADMIN_TOKEN` in `.env`), **Update Server** (nginx static hosting, no login), **MailHog** (mail test tool, no login), **Ollama** (local inference, no login).
 
 ## 6. Troubleshooting
 

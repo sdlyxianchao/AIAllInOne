@@ -25,7 +25,7 @@
 
 ## 25.3 项目相关配置
 
-数据流：**DeepChat/Dify → NewAPI → LiteLLM（Presidio 脱敏）→ 外部大模型**，响应回来后再还原 PII（见第 1 章数据流图）。
+数据流：**DSH Desktop/Dify → NewAPI → LiteLLM（Presidio 脱敏）→ 外部大模型**，响应回来后再还原 PII（见第 1 章数据流图）。
 
 启用/调整脱敏的步骤：
 

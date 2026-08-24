@@ -10,7 +10,7 @@
 
 | Layer | Components | Notes |
 |---|---|---|
-| User | DeepChat desktop client / browser | employee entry points |
+| User | DSH Desktop desktop client / browser | employee entry points |
 | Portal & Apps | Ghost enterprise portal / Dify AI app platform | content + AI apps |
 | LLM Routing | NewAPI → LiteLLM(+Presidio) → external LLMs | routing/billing/redaction |
 | Observability | Langfuse | traces/tokens/cost per call |
@@ -28,11 +28,11 @@
 | Dify | 80 | everyone |
 | Ghost | 8090 | everyone |
 | Gitea | 3002 / SSH 2222 | developers |
-| Update Server | 8091 | DeepChat download/update |
+| Update Server | 8091 | DSH Desktop download/update |
 | Grafana | 3030 | admins |
 | Prometheus | 9091 | admins |
 | Langfuse | 3010 | admins |
-| MCP Gateway | 3100 | DeepChat/Dify tool access |
+| MCP Gateway | 3100 | DSH Desktop/Dify tool access |
 | MailHog | 8025 | view verification-code emails |
 | cadvisor | 8080 | internal (scraped by Prometheus) |
 | Loki | 3110 | internal (unified log queries) |
@@ -42,7 +42,7 @@
 
 ### 4.1 LLM request flow (the core chain)
 ```
-DeepChat / Dify → ① NewAPI(:3000) → ② LiteLLM (PII redaction) → ③ external LLM
+DSH Desktop / Dify → ① NewAPI(:3000) → ② LiteLLM (PII redaction) → ③ external LLM
                  ← ⑤ return w/ PII restored ← ④ response
 Side channel: LiteLLM success_callback → Langfuse (prompt/response/latency/tokens/cost)
 ```
@@ -53,14 +53,14 @@ Side channel: LiteLLM success_callback → Langfuse (prompt/response/latency/tok
 - Browser → Grafana(:3030) / Langfuse(:3010) → monitoring / observability
 
 ### 4.3 Other chains
-- Auto-update: GitHub → Gitea Actions → Update Server(:8091) → DeepChat auto-download & install
-- RAG: DeepChat → MCP Gateway(:3100/mcp) → Dify Knowledge API → knowledge base
+- Auto-update: GitHub → Gitea Actions → Update Server(:8091) → DSH Desktop auto-download & install
+- RAG: DSH Desktop → MCP Gateway(:3100/mcp) → Dify Knowledge API → knowledge base
 - Auth: Keycloak OIDC SSO → SSO-wired web products (Admin Center/NewAPI/Dify/Gitea/Grafana/Langfuse/LiteLLM; Ghost uses local accounts + email codes, other tools use API keys/tokens)
 - Logs: Promtail collects → Loki aggregates → AI Admin Center queries
 
 ## 5. The 16 Open-Source Components
 
-Keycloak / NewAPI / LiteLLM+Presidio / Dify / Ghost / Gitea+Runner / DeepChat / Update Server (nginx) / MCP Gateway / AI Admin Center (self-built) / Prometheus+Grafana+Alertmanager+cadvisor / Langfuse / Loki+Promtail / MailHog / MySQL+Redis+PostgreSQL (foundation) / Ollama (optional)
+Keycloak / NewAPI / LiteLLM+Presidio / Dify / Ghost / Gitea+Runner / DSH Desktop / Update Server (nginx) / MCP Gateway / AI Admin Center (self-built) / Prometheus+Grafana+Alertmanager+cadvisor / Langfuse / Loki+Promtail / MailHog / MySQL+Redis+PostgreSQL (foundation) / Ollama (optional)
 
 ## 6. Security Model (3 points)
 

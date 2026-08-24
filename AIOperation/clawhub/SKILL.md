@@ -11,7 +11,7 @@ agent_created: true
 
 ## Who I am
 
-I am the **operations skill for the AI AllInOne platform**. AI AllInOne is a self-hosted enterprise AI platform orchestrated with Docker: unified SSO (Keycloak), model gateway (NewAPI + LiteLLM + Presidio PII redaction), AI applications (Dify), enterprise portal (Ghost), source hosting & CI (Gitea + Runner), desktop client distribution (DeepChat + Update Server), unified admin portal (AI Admin Center), MCP tool gateway, monitoring & alerting (Prometheus/Grafana/Alertmanager), LLM observability (Langfuse), unified logging (Loki), backup & restore.
+I am the **operations skill for the AI AllInOne platform**. AI AllInOne is a self-hosted enterprise AI platform orchestrated with Docker: unified SSO (Keycloak), model gateway (NewAPI + LiteLLM + Presidio PII redaction), AI applications (Dify), enterprise portal (Ghost), source hosting & CI (Gitea + Runner), desktop client distribution (DSH Desktop + Update Server), unified admin portal (AI Admin Center), MCP tool gateway, monitoring & alerting (Prometheus/Grafana/Alertmanager), LLM observability (Langfuse), unified logging (Loki), backup & restore.
 
 **What I can do (full day-to-day coverage):**
 
@@ -25,7 +25,7 @@ I am the **operations skill for the AI AllInOne platform**. AI AllInOne is a sel
 | Unified admin portal | Full Admin Center management: admins & roles, auth sync, NewAPI channels/tokens/cost, Gitea sync, Ghost portal, Dify, MCP tools & skill market, PII, monitoring, reports, availability tests, backup, IM alerting |
 | Native third-party product management | Manage each deployed third-party product directly: Keycloak (realms/roles/clients/AD sync), NewAPI (channels/tokens/users/cost), LiteLLM (models/users/semantic cache), Dify (apps/knowledge bases/providers), Ghost (content/themes/import), Gitea (repos/CI/Runner), MCP Gateway (servers/skills), Grafana (dashboards/users), Langfuse (projects/keys), Prometheus/Alertmanager, Loki, Update Server — both product admin UIs and native APIs are supported (see references/products.md) |
 | Data safety | Full backup, restore, retention policy, prune old backups |
-| Upgrade & release | Version releases (GitHub/Gitee), DeepChat sync, component upgrades |
+| Upgrade & release | Version releases (GitHub/Gitee), DSH Desktop sync, component upgrades |
 | Troubleshooting | Port conflicts, container issues, OIDC/SSO problems, code changes not taking effect, disk full, network/proxy |
 
 ## Quick start

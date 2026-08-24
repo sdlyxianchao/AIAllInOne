@@ -38,13 +38,13 @@ Se houver vários providers, repita a adição: tipo `Anthropic Claude` para Cla
 
 ## 7.3 Criar API Keys
 
-Crie uma para o Dify e outra para o DeepChat, com estatísticas de consumo separadas:
+Crie uma para o Dify e outra para o DSH Desktop, com estatísticas de consumo separadas:
 
 1. À esquerda **API Keys** → criar;
 
 2. Nome `dify-key` → salvar → copiar `sk-xxx` (preencher no provedor de modelos do Dify);
 
-3. Crie também `deepchat-key` → copiar `sk-xxx` (distribuir aos usuários do DeepChat).
+3. Crie também `dsh-key` → copiar `sk-xxx` (distribuir aos usuários do DSH Desktop).
 
 ## 7.4 Permitir que usuários comuns solicitem Keys por conta própria
 

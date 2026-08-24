@@ -16,19 +16,19 @@
 
 ```mermaid
 flowchart TB
-    A["📰 AI All In One Hub (portal)"] --> B["💬 DeepChat (conversación de escritorio)<br/>Instalar desde el centro de descargas del portal"]
+    A["📰 AI All In One Hub (portal)"] --> B["💬 DSH Desktop (conversación de escritorio)<br/>Instalar desde el centro de descargas del portal"]
     A["📰 AI All In One Hub (portal)"] --> C["🤖 Dify (aplicaciones web / base de conocimiento)<br/>http://IP"]
 ```
 
 *Figura 1: relación entre los tres puntos de entrada*
 
-*Tres puntos de entrada: el portal (Hub) es el punto de partida; DeepChat y Dify son las dos herramientas*
+*Tres puntos de entrada: el portal (Hub) es el punto de partida; DSH Desktop y Dify son las dos herramientas*
 
 ## 1.2 Qué puedo hacer con la plataforma
 
 | Qué quieres hacer | Cuál usar | Dónde abrirlo |
 | --- | --- | --- |
-| Conversar a diario como con ChatGPT, redactar documentos, traducir, corregir código | 💬 DeepChat | Cliente de escritorio (primero descárgalo e instálalo desde el portal) |
+| Conversar a diario como con ChatGPT, redactar documentos, traducir, corregir código | 💬 DSH Desktop | Cliente de escritorio (primero descárgalo e instálalo desde el portal) |
 | Usar aplicaciones de IA ya preparadas por la empresa (respuestas de atención al cliente, asistentes de aprobación, etc.) | 🤖 Dify | Navegador `http://IP` |
 | Subir documentos para hacer «respuestas con base de conocimiento» (preguntar sobre material interno) | 🤖 Dify | Navegador `http://IP` |
 | Ver noticias, anuncios de la empresa y descargar software | 📰 Portal (Hub) | Navegador `http://IP:8090` |
@@ -36,13 +36,13 @@ flowchart TB
 
 ## 1.3 Cómo elegir entre los tres puntos de entrada
 
-> ✅ **Para recordarlo en una frase**: **chatear/redactar/traducir → DeepChat**; **aplicaciones preparadas por la empresa / base de conocimiento → Dify**; **buscar cosas / ver anuncios / descargar software → portal Hub**. Los tres usan la misma cuenta para iniciar sesión.
+> ✅ **Para recordarlo en una frase**: **chatear/redactar/traducir → DSH Desktop**; **aplicaciones preparadas por la empresa / base de conocimiento → Dify**; **buscar cosas / ver anuncios / descargar software → portal Hub**. Los tres usan la misma cuenta para iniciar sesión.
 
 Método de inicio de sesión: todos los productos usan la **cuenta unificada de Keycloak** (algunos admiten la cuenta de dominio AD de la empresa, es decir, la misma cuenta con la que enciendes tu equipo). Al hacer clic en «Iniciar sesión» salta automáticamente a la página de inicio unificado; introduces la cuenta una vez y después no hace falta volver a iniciar sesión en los demás productos.
 
 ## 1.4 Cómo usar este manual
 
-- **Si eres nuevo**: lee en orden los capítulos 2~4 y empieza instalando DeepChat para usarlo;
+- **Si eres nuevo**: lee en orden los capítulos 2~4 y empieza instalando DSH Desktop para usarlo;
 
 - **Para conectar herramientas de terceros**: lee el capítulo 5 para solicitar la Key;
 

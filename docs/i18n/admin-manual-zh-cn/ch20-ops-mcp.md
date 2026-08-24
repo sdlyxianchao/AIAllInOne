@@ -25,7 +25,7 @@
 
 ## 20.2 登录 MCP Gateway 市场页
 
-- **市场页**：浏览器打开 `http://<服务器IP>:3100/market`——DeepChat / Dify 用户从这里浏览与一键接入 MCP 工具与技能（不需要登录管理）。
+- **市场页**：浏览器打开 `http://<服务器IP>:3100/market`——DSH Desktop / Dify 用户从这里浏览与一键接入 MCP 工具与技能（不需要登录管理）。
 
 ![MCP 市场页](../../images/admin-manual/product-mcp-market.png)
 
@@ -49,8 +49,8 @@
 ### 20.3.2 管理技能（技能包）
 
 1. **上传**：AI 管理中心 → MCP Gateway → 上传技能 zip（zip 内须含 `SKILL.md`）；
-2. **删除**：对应技能删除（DeepChat 用户端下次拉取即消失）；
-3. **市场地址**：技能管家 `market_url` 在 `mcp-gateway/skills/skill-market/config.json` + `SKILL.md`，**必须用主机名**（如 `http://skillmarket.<公司域名>:3100`，不能用 IP——DeepChat 的 agent 环境会把 IP 脱敏），是部署参数（详见第 11 章）。
+2. **删除**：对应技能删除（DSH Desktop 用户端下次拉取即消失）；
+3. **市场地址**：技能管家 `market_url` 在 `mcp-gateway/skills/skill-market/config.json` + `SKILL.md`，**必须用主机名**（如 `http://skillmarket.<公司域名>:3100`，不能用 IP——DSH Desktop 的 agent 环境会把 IP 脱敏），是部署参数（详见第 11 章）。
 
 ### 20.3.3 扩展内置工具
 

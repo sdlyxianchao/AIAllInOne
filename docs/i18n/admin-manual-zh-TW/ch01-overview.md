@@ -20,8 +20,8 @@
 | AI 應用 | Dify | 視覺化 AI 應用 / Agent / 知識庫平台 |
 | 企業門戶 | Ghost | 公告、新聞、下載中心、員工 Hub |
 | 原始碼 / CI | Gitea + Runner | 內部 Git 倉庫 + Actions 自動化 |
-| 客戶端 | DeepChat | 本地 AI 桌面客戶端（Win/macOS/Linux） |
-| 客戶端分發 | 更新伺服器 | DeepChat 安裝包託管與自動更新 |
+| 客戶端 | DSH Desktop | 本地 AI 桌面客戶端（Win/macOS/Linux） |
+| 客戶端分發 | 更新伺服器 | DSH Desktop 安裝包託管與自動更新 |
 | 統一管理 | AI 管理中心 | 唯一管理入口：Dashboard + 產品內嵌 + 審計/成本/報告 |
 | 閘道器 | MCP Gateway | Skill / MCP 市場管理 |
 | 監控告警 | Prometheus + Grafana + Alertmanager | 容器資源監控 + 告警通知 |
@@ -54,7 +54,7 @@
 | 5 | Dify | AI 應用平台 | `127.0.0.1` | `<伺服器IP>`（80 埠） |
 | 6 | Ghost | 企業門戶 | `127.0.0.1:8090` | `<伺服器IP>:8090` |
 | 7 | Gitea | 原始碼 + CI/CD | `127.0.0.1:3002` | `<伺服器IP>:3002` |
-| 8 | 更新伺服器 | DeepChat 安裝包 | `127.0.0.1:8091` | `<伺服器IP>:8091` |
+| 8 | 更新伺服器 | DSH Desktop 安裝包 | `127.0.0.1:8091` | `<伺服器IP>:8091` |
 | 9 | MCP Gateway | Skill / MCP 閘道器 | `127.0.0.1:3100` | `<伺服器IP>:3100` |
 | 10 | Grafana | 監控大盤 | `127.0.0.1:3030` | `<伺服器IP>:3030` |
 | 11 | Prometheus | 指標採集 / 告警 | `127.0.0.1:9091` | `<伺服器IP>:9091` |
@@ -70,7 +70,7 @@
 
 ```mermaid
 flowchart LR
-    A["DeepChat / Dify"] --> B["NewAPI（路由）"]
+    A["DSH Desktop / Dify"] --> B["NewAPI（路由）"]
     B["NewAPI（路由）"] --> C["LiteLLM（遮蔽）"]
     C["LiteLLM（遮蔽）"] --> D["外部大模型"]
 ```
@@ -79,7 +79,7 @@ flowchart LR
 
 *請求方向 →；響應方向 ←（LiteLLM 還原 PII 後返回）；LiteLLM 旁路上報 Langfuse*
 
-1. **① 轉發**：DeepChat / Dify 把請求發給 NewAPI（`:3000/v1`）；
+1. **① 轉發**：DSH Desktop / Dify 把請求發給 NewAPI（`:3000/v1`）；
 
 2. **② 遮蔽**：NewAPI 轉發到 LiteLLM，LiteLLM 用正則 + Presidio 把手機號/身分證/郵箱等替換成 `[xxx_REDACTED]`；
 
@@ -95,7 +95,7 @@ flowchart LR
 
 - **可觀測流**：LiteLLM `success_callback` → Langfuse 追蹤每次呼叫；
 
-- **自動更新流**：Gitea Actions 構建 → 更新伺服器（:8091）→ DeepChat 檢查 `version.txt` 自動下載安裝；
+- **自動更新流**：Gitea Actions 構建 → 更新伺服器（:8091）→ DSH Desktop 檢查 `version.txt` 自動下載安裝；
 
 - **統一日誌流**：Promtail 採集各容器日誌 → Loki 聚合 → AI 管理中心「統一日誌」頁查詢。
 

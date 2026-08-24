@@ -20,8 +20,8 @@
 | Aplicaciones de IA | Dify | Plataforma visual de aplicaciones de IA / Agentes / bases de conocimiento |
 | Portal corporativo | Ghost | Anuncios, noticias, centro de descargas, Hub de empleados |
 | Código fuente / CI | Gitea + Runner | Repositorio Git interno + automatización con Actions |
-| Cliente | DeepChat | Cliente de escritorio local de IA (Win/macOS/Linux) |
-| Distribución de clientes | Servidor de actualización | Alojamiento del instalador de DeepChat y actualización automática |
+| Cliente | DSH Desktop | Cliente de escritorio local de IA (Win/macOS/Linux) |
+| Distribución de clientes | Servidor de actualización | Alojamiento del instalador de DSH Desktop y actualización automática |
 | Administración unificada | Centro de administración de IA | Punto de entrada único de administración: Dashboard + productos integrados + auditoría/costos/informes |
 | Gateway | MCP Gateway | Gestión del mercado de Skills / MCP |
 | Monitoreo y alertas | Prometheus + Grafana + Alertmanager | Monitoreo de recursos de contenedores + notificaciones de alerta |
@@ -54,7 +54,7 @@ En adelante se usa `<IP-del-servidor>` para representar la dirección externa de
 | 5 | Dify | Plataforma de aplicaciones de IA | `127.0.0.1` | `<IP-del-servidor>` (puerto 80) |
 | 6 | Ghost | Portal corporativo | `127.0.0.1:8090` | `<IP-del-servidor>:8090` |
 | 7 | Gitea | Código fuente + CI/CD | `127.0.0.1:3002` | `<IP-del-servidor>:3002` |
-| 8 | Servidor de actualización | Instalador de DeepChat | `127.0.0.1:8091` | `<IP-del-servidor>:8091` |
+| 8 | Servidor de actualización | Instalador de DSH Desktop | `127.0.0.1:8091` | `<IP-del-servidor>:8091` |
 | 9 | MCP Gateway | Gateway de Skill / MCP | `127.0.0.1:3100` | `<IP-del-servidor>:3100` |
 | 10 | Grafana | Panel de monitoreo | `127.0.0.1:3030` | `<IP-del-servidor>:3030` |
 | 11 | Prometheus | Recolección de métricas / alertas | `127.0.0.1:9091` | `<IP-del-servidor>:9091` |
@@ -70,7 +70,7 @@ En adelante se usa `<IP-del-servidor>` para representar la dirección externa de
 
 ```mermaid
 flowchart LR
-    A["DeepChat / Dify"] --> B["NewAPI (enrutamiento)"]
+    A["DSH Desktop / Dify"] --> B["NewAPI (enrutamiento)"]
     B["NewAPI (enrutamiento)"] --> C["LiteLLM (enmascarado)"]
     C["LiteLLM (enmascarado)"] --> D["Modelo externo"]
 ```
@@ -79,7 +79,7 @@ flowchart LR
 
 *Dirección de la petición →; dirección de la respuesta ← (LiteLLM restaura la PII antes de devolverla); LiteLLM informa a Langfuse por un canal lateral*
 
-1. **① Reenvío**: DeepChat / Dify envía la petición a NewAPI (`:3000/v1`);
+1. **① Reenvío**: DSH Desktop / Dify envía la petición a NewAPI (`:3000/v1`);
 
 2. **② Enmascarado**: NewAPI la reenvía a LiteLLM, que con expresiones regulares + Presidio sustituye números de teléfono / DNI / correos por `[xxx_REDACTED]`;
 
@@ -95,7 +95,7 @@ flowchart LR
 
 - **Flujo de observabilidad**: `success_callback` de LiteLLM → Langfuse rastrea cada llamada;
 
-- **Flujo de actualización automática**: Gitea Actions compila → servidor de actualización (:8091) → DeepChat comprueba `version.txt` y descarga e instala automáticamente;
+- **Flujo de actualización automática**: Gitea Actions compila → servidor de actualización (:8091) → DSH Desktop comprueba `version.txt` y descarga e instala automáticamente;
 
 - **Flujo de registro unificado**: Promtail recolecta los registros de cada contenedor → Loki los agrega → se consultan en la página «Registro unificado» del Centro de administración de IA.
 

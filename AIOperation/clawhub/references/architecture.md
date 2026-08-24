@@ -33,7 +33,7 @@ Inside each deployment directory:
 | `ghost` | Enterprise portal (includes a custom Corp Portal theme) | SQLite |
 | `mailhog` | Email testing (development) | None |
 | `gitea` + `gitea-runner` | Code hosting + CI/Actions Runner | SQLite |
-| `update-server` | DeepChat installer hosting and auto-update | Static files + version.txt |
+| `update-server` | DSH Desktop installer hosting and auto-update | Static files + version.txt |
 | `admin-session-redis` | Admin Center session storage | Redis |
 | `admin-portal` | Unified management portal (AI Admin Center) | None (calls each product's API) |
 | `mcp-gateway` | MCP tool gateway (built-in tools + aggregated business MCP + skill marketplace) | JSON config |
@@ -59,7 +59,7 @@ Inside each deployment directory:
 |---|---|
 | `scripts/backup.ps1` | Full backup: NewAPI MySQL (mysqldump), Dify PostgreSQL (pg_dump), Ghost/Gitea SQLite (copied after WAL checkpoint), config files; auto-cleanup retaining N days |
 | `scripts/restore.ps1` | Restore databases and config files from a specified backup directory |
-| `scripts/health-check.ps1` (Windows) / `health-check.sh` (Linux) | One-command health check: Docker readiness, container status, HTTP endpoints, internal health, full LLM chain, AD authentication chain, MCP+Skill, DeepChat/Dify prerequisites, disk space; produces a 9-stage report |
+| `scripts/health-check.ps1` (Windows) / `health-check.sh` (Linux) | One-command health check: Docker readiness, container status, HTTP endpoints, internal health, full LLM chain, AD authentication chain, MCP+Skill, DSH Desktop/Dify prerequisites, disk space; produces a 9-stage report |
 | `scripts/setup-autostart.ps1` | Register a startup self-check scheduled task (runs the health check after login with a delay) |
 | `scripts/ghost-setup.ps1` / `ghost-theme-setup.ps1` / `ghost-activate-theme.js` | Ghost initialization, theme installation and activation |
 | `scripts/ghost-content-import.ps1` / `.js` | Import portal sample content (requires the publish URL and language) |

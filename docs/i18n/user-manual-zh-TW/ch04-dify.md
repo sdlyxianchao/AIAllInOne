@@ -4,7 +4,7 @@
 
 > Web AI 應用平台：用現成應用、建知識庫問答。
 
-[← 第3章：工具一：DeepChat](ch03-deepchat.md) · [📖 目錄](index.md) · [第5章：申請 API Key →](ch05-key.md)
+[← 第3章：工具一：DSH Desktop](ch03-dsh.md) · [📖 目錄](index.md) · [第5章：申請 API Key →](ch05-key.md)
 
 ---
 
@@ -50,4 +50,4 @@
 
 ---
 
-[← 第3章：工具一：DeepChat](ch03-deepchat.md) · [📖 目錄](index.md) · [第5章：申請 API Key →](ch05-key.md)
+[← 第3章：工具一：DSH Desktop](ch03-dsh.md) · [📖 目錄](index.md) · [第5章：申請 API Key →](ch05-key.md)

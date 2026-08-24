@@ -16,7 +16,7 @@
 
 ```mermaid
 flowchart TB
-    A["📰 AI All In One Hub (Portal)"] -->|install from the portal download center| B["💬 DeepChat (desktop chat)"]
+    A["📰 AI All In One Hub (Portal)"] -->|install from the portal download center| B["💬 DSH Desktop (desktop chat)"]
     A -->|http://IP| C["🤖 Dify (web apps / knowledge base)"]
 ```
 
@@ -26,7 +26,7 @@ flowchart TB
 
 | What you want to do | Which to use | Where to open |
 | --- | --- | --- |
-| Daily chat, writing documents, translation, editing code like ChatGPT | 💬 DeepChat | desktop client (download and install from the portal first) |
+| Daily chat, writing documents, translation, editing code like ChatGPT | 💬 DSH Desktop | desktop client (download and install from the portal first) |
 | Use company-built AI apps (customer service Q&A, approval assistant, etc.) | 🤖 Dify | browser `http://IP` |
 | Upload documents for "knowledge base Q&A" (ask about internal material) | 🤖 Dify | browser `http://IP` |
 | Read company news and announcements, download software | 📰 Portal (Hub) | browser `http://IP:8090` |
@@ -34,13 +34,13 @@ flowchart TB
 
 ## 1.3 How to Choose Among the Three Entry Points
 
-> ✅ **Remember in one sentence**: **chat/writing/translation → DeepChat**; **company-built apps/knowledge base → Dify**; **find things / read announcements / download software → the Hub portal**. All three use the same account to log in.
+> ✅ **Remember in one sentence**: **chat/writing/translation → DSH Desktop**; **company-built apps/knowledge base → Dify**; **find things / read announcements / download software → the Hub portal**. All three use the same account to log in.
 
 Login: all products use the **Keycloak unified account** (some also support the company AD domain account, i.e. the account you use to log in to your computer). Click "Log in" to be redirected to the unified login page; enter the account once and you won't need to log in again for each product.
 
 ## 1.4 How to Use This Manual
 
-- **Beginners**: read Chapters 2~4 in order, install DeepChat first and start using it;
+- **Beginners**: read Chapters 2~4 in order, install DSH Desktop first and start using it;
 
 - **Want to connect third-party tools**: read Chapter 5 to request a Key;
 

@@ -1,6 +1,6 @@
 # AI AllInOne — Windows 内网 AI 平台（v2）
 
-一套在 **Windows 11 + Docker Desktop** 上自托管的「企业内网 AI 全家桶」：统一认证（Keycloak SSO）、LLM 路由（NewAPI + LiteLLM）、PII 脱敏（Presidio）、应用平台（Dify）、企业门户（Ghost）、源码与 CI/CD（Gitea）、客户端分发（DeepChat + 更新服务器）、MCP/Skill 管理、统一管理门户（AI 管理中心）、监控告警（Prometheus + Grafana + cadvisor）、LLM 可观测（Langfuse）、统一日志（Loki + Promtail）、备份与恢复。
+一套在 **Windows 11 + Docker Desktop** 上自托管的「企业内网 AI 全家桶」：统一认证（Keycloak SSO）、LLM 路由（NewAPI + LiteLLM）、PII 脱敏（Presidio）、应用平台（Dify）、企业门户（Ghost）、源码与 CI/CD（Gitea）、客户端分发（DSH Desktop + 更新服务器）、MCP/Skill 管理、统一管理门户（AI 管理中心）、监控告警（Prometheus + Grafana + cadvisor）、LLM 可观测（Langfuse）、统一日志（Loki + Promtail）、备份与恢复。
 
 > 本目录是**脱敏的完整可复现副本**。手动部署 + 把本目录喂给 AI 自动配置，两种方式都能搭出同一套环境。真实密钥一律不提交（见 `.env.example`）。
 
@@ -16,7 +16,7 @@
 | 应用 | Dify | 80/443 | Web AI 应用平台 |
 | 门户 | Ghost | 8090 | 企业门户 |
 | 源码 | Gitea + Runner | 3002 / 2222 | Git + Actions CI/CD |
-| 分发 | Update Server | 8091 | DeepChat 安装包托管 |
+| 分发 | Update Server | 8091 | DSH Desktop 安装包托管 |
 | 管理 | AI 管理中心 | 10086 | 统一管理员门户 |
 | 网关 | MCP Gateway | 3100 | Skill / MCP 管理 |
 | 监控 | Prometheus / Grafana / cadvisor | 9091 / 3030 / 8080 | 容器资源 + 告警 |
@@ -41,7 +41,7 @@ windows-github-v2/
 ├── monitoring/                 # prometheus.yml / alerts.yml / loki.yml / promtail.yml / grafana/
 ├── dify/                       # Dify 官方 compose 部署目录（docker-compose.yaml + .env.example + nginx/ssrf_proxy 等）
 ├── assets/                     # 品牌图片（logo.png + Ghost 封面 ghost-cover.jpg）
-├── deepchat-updates/           # DeepChat 更新包（version.txt + assets/ 下载页图片）
+├── dsh-updates/           # DSH Desktop 更新包（version.txt + assets/ 下载页图片）
 ├── bootstrap.ps1               # ★ 一键部署脚本（替换 IP→生成密钥→起 compose→Keycloak→NewAPI→备份任务）
 ├── scripts/                    # backup.ps1 / restore.ps1 / keycloak-realm-init.ps1 / health-check.ps1 / setup-hyperv-dc-network.ps1
 ├── credentials.html.example    # 账号密码清单模板（脱敏）

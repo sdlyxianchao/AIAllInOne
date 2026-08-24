@@ -22,7 +22,7 @@
 
 ## 15.2 Gerenciamento de tokens (API Keys)
 
-1. **Criar**: API Keys → criar token → nomear (como `deepchat-key`) → pode definir cota/expiração/limite de modelo → salvar;
+1. **Criar**: API Keys → criar token → nomear (como `dsh-key`) → pode definir cota/expiração/limite de modelo → salvar;
 
 2. **Copiar a Key**: começa com `sk-`, **é exibida só uma vez, salve imediatamente**;
 

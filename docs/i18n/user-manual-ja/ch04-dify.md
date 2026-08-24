@@ -4,7 +4,7 @@
 
 > Web AI アプリケーションプラットフォーム：既存アプリの利用、ナレッジベースQ&Aの構築。
 
-[← 第3章：ツール1：DeepChat](ch03-deepchat.md) · [📖 目次](index.md) · [第5章：API Key の申請 →](ch05-key.md)
+[← 第3章：ツール1：DSH Desktop](ch03-dsh.md) · [📖 目次](index.md) · [第5章：API Key の申請 →](ch05-key.md)
 
 ---
 
@@ -50,4 +50,4 @@
 
 ---
 
-[← 第3章：ツール1：DeepChat](ch03-deepchat.md) · [📖 目次](index.md) · [第5章：API Key の申請 →](ch05-key.md)
+[← 第3章：ツール1：DSH Desktop](ch03-dsh.md) · [📖 目次](index.md) · [第5章：API Key の申請 →](ch05-key.md)

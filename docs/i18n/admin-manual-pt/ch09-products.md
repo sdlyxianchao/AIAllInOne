@@ -4,7 +4,7 @@
 
 > Inicialização e configuração de interconexão de cada um dos três produtos.
 
-[← Capítulo 8: LiteLLM: validação e cache](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribuição e CI/CD do DeepChat →](ch10-deepchat.md)
+[← Capítulo 8: LiteLLM: validação e cache](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribuição e CI/CD do DSH Desktop →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | Workbench de IA | Link personalizado | `http://<IP-do-servidor>` |
 | Documentação de ajuda | Categoria | `/category/docs` |
 
-1. **Página da central de downloads**: páginas → criar «Central de downloads» (slug `downloads`), com o link de intranet do instalador do DeepChat no conteúdo.
+1. **Página da central de downloads**: páginas → criar «Central de downloads» (slug `downloads`), com o link de intranet do instalador do DSH Desktop no conteúdo.
 
 ```
-## DeepChat Enterprise
+## DSH Desktop Enterprise
 ### Windows
-- [DeepChat v1.1.0 (Windows x64)](http://<IP-do-servidor>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0 (Windows x64)](http://<IP-do-servidor>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0 (macOS x64)](http://<IP-do-servidor>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0 (macOS x64)](http://<IP-do-servidor>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ Não clique em «Registrar» na página inicial `/` — é o registro de visitantes/assinantes (dá 500 sem SMTP configurado); a entrada do administrador é `/ghost/`. Não instale temas da versão mais recente pelo GitHub (podem ser compatíveis com Ghost 6.x, e no 5.x dão incompatible).
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← Capítulo 8: LiteLLM: validação e cache](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribuição e CI/CD do DeepChat →](ch10-deepchat.md)
+[← Capítulo 8: LiteLLM: validação e cache](ch08-litellm.md) · [📖 Índice](index.md) · [Capítulo 10: Distribuição e CI/CD do DSH Desktop →](ch10-dsh.md)

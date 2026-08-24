@@ -48,7 +48,7 @@ swap=4GB
 
 ```
 # PowerShell
-mkdir deepchat-updates
+mkdir dsh-updates
 ```
 
 ```
@@ -56,7 +56,7 @@ C:\ai-platform\windows\          # 想定するデプロイのルートディレ
 ├─ docker-compose.yml           # コアサービスオーケストレーション
 ├─ .env.windows                 # 環境変数（API Key の記入が必要）
 ├─ litellm-config.yaml          # LiteLLM PII マスキング設定
-├─ deepchat-updates\            # DeepChat インストーラのホスティングディレクトリ
+├─ dsh-updates\            # DSH Desktop インストーラのホスティングディレクトリ
 ├─ admin-portal\                # AI 管理センター実装
 ├─ mcp-gateway\                 # スキル / MCP ゲートウェイ
 ├─ monitoring\                  # Prometheus / Loki 設定

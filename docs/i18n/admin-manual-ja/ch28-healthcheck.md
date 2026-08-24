@@ -21,7 +21,7 @@
 | Stage 5 | LLM 全経路（NewAPI → LiteLLM → DeepSeek 実リクエスト） |
 | Stage 6 | AD アカウント認証経路 + NewAPI 管理者ログイン |
 | Stage 7 | MCP Gateway + スキル機能 |
-| Stage 8 | DeepChat/Dify ログイン前提条件 |
+| Stage 8 | DSH Desktop/Dify ログイン前提条件 |
 | Stage 9 | ディスク空き容量 |
 
 ## 28.2 手動実行

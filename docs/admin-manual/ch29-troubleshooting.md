@@ -33,7 +33,7 @@
 | SSO login reports unknown_error | AD port forwarding broken (iphlpsvc) | check iphlpsvc + Hyper-V network |
 | Keycloak can't see domain users | Search scope = One Level | change to Subtree |
 | Langfuse shows no data | V4_WRITE_MODE or SSO account not in the organization | set dual; SQL to add organization (Chapter 23) |
-| DeepChat model connection timeout | client goes through a dead system proxy | set to no proxy/direct |
+| DSH Desktop model connection timeout | client goes through a dead system proxy | set to no proxy/direct |
 | Loki can't find logs | used the job label | use `{container=~".+"}` |
 | Presidio 404 /analyze/analyze | endpoint has a path | fill base URL only |
 | new endpoint 404 after changing server.js | up -d does not re-read volume changes | docker restart admin-portal |

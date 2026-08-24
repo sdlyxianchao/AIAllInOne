@@ -1144,7 +1144,7 @@ async function giteaApi(path) {
 async function giteaJobError(jobId) {
   try {
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/jobs/${jobId}/logs`, {
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/jobs/${jobId}/logs`, {
       headers: { 'Authorization': `Basic ${auth}` },
     });
     const text = await resp.text();
@@ -1176,16 +1176,16 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
       default_branch: r.default_branch || '',
       html_url: r.html_url || '',
     }));
-    // deepchat-sync 仓库最近一次 workflow 执行时间
+    // dsh-sync 仓库最近一次 workflow 执行时间
     let sync_last_run = null;
     try {
-      const runs = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/runs?limit=1`);
+      const runs = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=1`);
       const run = (runs.data && runs.data.workflow_runs && runs.data.workflow_runs[0]) || null;
       if (run) {
         let failure_reason = null;
         if (run.conclusion === 'failure' && run.id) {
           try {
-            const jobs = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/runs/${run.id}/jobs`);
+            const jobs = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/jobs`);
             const jobList = (jobs.data && jobs.data.jobs) || [];
             const failedJob = jobList.find(j => j.conclusion === 'failure');
             if (failedJob) {
@@ -1208,10 +1208,10 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
         };
       }
     } catch (e) { sync_last_run = null; }
-    // 同步进度（sync_download.py 写的 /deepchat/sync-progress.json）
+    // 同步进度（sync_download.py 写的 /dsh/sync-progress.json）
     let sync_progress = null;
     try {
-      const pr = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-progress.json']);
+      const pr = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-progress.json']);
       sync_progress = JSON.parse(pr.stdout);
     } catch (e) { sync_progress = null; }
     res.json({
@@ -1227,11 +1227,11 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 手动触发 deepchat-sync 工作流（workflow_dispatch）
+// 手动触发 dsh-sync 工作流（workflow_dispatch）
 app.post('/api/gitea/sync/trigger', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/workflows/sync.yml/dispatches`, {
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ ref: 'main' }),
@@ -1245,10 +1245,10 @@ app.post('/api/gitea/sync/trigger', keycloak.protect(), protectAdmin('gitea'), a
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 读取 deepchat-sync 的自动同步计划（sync.yml 里的 cron）
+// 读取 dsh-sync 的自动同步计划（sync.yml 里的 cron）
 app.get('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml?ref=main`);
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/.gitea/workflows/sync.yml?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync.yml' });
     const content = Buffer.from(r.data.content, 'base64').toString('utf8');
     const m = content.match(/cron:\s*["']([^"']+)["']/);
@@ -1256,7 +1256,7 @@ app.get('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), a
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 更新 deepchat-sync 的自动同步计划（改 sync.yml 里的 cron）
+// 更新 dsh-sync 的自动同步计划（改 sync.yml 里的 cron）
 app.post('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const cron = ((req.body && req.body.cron) || '').trim();
@@ -1264,14 +1264,14 @@ app.post('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), 
     if (cron.split(/\s+/).filter(Boolean).length !== 5) {
       return res.status(400).json({ error: 'cron 表达式必须是 5 段（分 时 日 月 周）' });
     }
-    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml?ref=main`);
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/.gitea/workflows/sync.yml?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync.yml' });
     const content = Buffer.from(r.data.content, 'base64').toString('utf8');
     const newContent = content.replace(/cron:\s*["'][^"']+["']/, `cron: "${cron}"`);
     if (newContent === content) return res.status(400).json({ error: '未找到 cron 配置行' });
 
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/.gitea/workflows/sync.yml`, {
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/.gitea/workflows/sync.yml`, {
       method: 'PUT',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1293,7 +1293,7 @@ app.post('/api/gitea/sync/schedule', keycloak.protect(), protectAdmin('gitea'), 
 // 读取 sync-config.json（targets / keep_releases 等）
 app.get('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json?ref=main`);
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync-config.json' });
     const cfg = JSON.parse(Buffer.from(r.data.content, 'base64').toString('utf8'));
     res.json({ ...cfg, sha: r.data.sha });
@@ -1303,7 +1303,7 @@ app.get('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), asy
 // 更新 sync-config.json（targets / keep_releases）
 app.post('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json?ref=main`);
+    const r = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json?ref=main`);
     if (!r.data || !r.data.content) return res.status(404).json({ error: '无法读取 sync-config.json' });
     const cfg = JSON.parse(Buffer.from(r.data.content, 'base64').toString('utf8'));
     if (Array.isArray(req.body && req.body.targets)) cfg.targets = req.body.targets;
@@ -1313,7 +1313,7 @@ app.post('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), as
     }
     const newContent = JSON.stringify(cfg, null, 2) + '\n';
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/contents/sync-config.json`, {
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json`, {
       method: 'PUT',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1337,14 +1337,14 @@ async function appendSyncHistory(status, detail) {
   try {
     let hist = { history: [] };
     try {
-      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-history.json']);
+      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
       hist = JSON.parse(stdout || '{"history":[]}');
     } catch (e) { hist = { history: [] }; }
     if (!Array.isArray(hist.history)) hist.history = [];
     hist.history.push({ time: new Date().toISOString(), status, detail: detail || '' });
     hist.history = hist.history.slice(-200);
     const b64 = Buffer.from(JSON.stringify(hist, null, 2)).toString('base64');
-    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/deepchat/sync-history.json`]);
+    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/dsh/sync-history.json`]);
   } catch (e) {
     console.error('记录同步历史失败:', e.message);
   }
@@ -1353,7 +1353,7 @@ async function appendSyncHistory(status, detail) {
 // 读取 update-server 上的版本清单（versions.json）
 app.get('/api/gitea/sync/versions', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/versions.json']);
+    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
     const d = JSON.parse(stdout || '{"versions":[]}');
     res.json({ versions: d.versions || [] });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -1362,7 +1362,7 @@ app.get('/api/gitea/sync/versions', keycloak.protect(), protectAdmin('gitea'), a
 // 读取同步历史（sync-history.json，由同步脚本维护）
 app.get('/api/gitea/sync/history', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/sync-history.json']);
+    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
     const d = JSON.parse(stdout || '{"history":[]}');
     res.json({ history: d.history || [] });
   } catch (e) {
@@ -1376,21 +1376,21 @@ app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('git
     const ver = (req.params.ver || '').replace(/[^a-zA-Z0-9.\-]/g, '');
     if (!ver) return res.status(400).json({ error: '无效版本号' });
     // 1. 删除版本目录
-    await dockerExec('update-server', ['sh', '-c', `rm -rf "/usr/share/nginx/html/deepchat/${ver}"`]);
+    await dockerExec('update-server', ['sh', '-c', `rm -rf "/usr/share/nginx/html/dsh/${ver}"`]);
     // 2. 更新 versions.json（移除该版本）
     let d;
     try {
-      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/deepchat/versions.json']);
+      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
       d = JSON.parse(stdout || '{"versions":[]}');
     } catch (e) { d = { versions: [] }; }
     d.versions = (d.versions || []).filter(v => v.version !== ver);
     const b64 = Buffer.from(JSON.stringify(d, null, 2)).toString('base64');
-    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/deepchat/versions.json`]);
+    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/dsh/versions.json`]);
     // 3. 记录删除历史（软件信息已变化）
     await appendSyncHistory('success', `删除版本 ${ver}`);
     // 4. 触发 rebuild_only 重建页面
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/deepchat-sync/actions/workflows/sync.yml/dispatches`, {
+    await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ ref: 'main', inputs: { rebuild_only: 'true' } }),
@@ -1714,12 +1714,12 @@ app.post('/api/dify/retrieve', keycloak.protect(), async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ---- Update Server（DeepChat 分发：安装包清单 + 更新时间）----
+// ---- Update Server（DSH Desktop 分发：安装包清单 + 更新时间）----
 app.get('/api/update/overview', keycloak.protect(), async (req, res) => {
   try {
     const [verRes, statRes] = await Promise.all([
       dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']),
-      dockerExec(UPDATE_CONTAINER, ['sh', '-c', 'for f in /usr/share/nginx/html/deepchat/*; do stat -c "%n|%s|%Y" "$f" 2>/dev/null; done']),
+      dockerExec(UPDATE_CONTAINER, ['sh', '-c', 'for f in /usr/share/nginx/html/dsh/*; do stat -c "%n|%s|%Y" "$f" 2>/dev/null; done']),
     ]);
     const version = (verRes.stdout || '').trim() || '—';
     const files = [];
@@ -1942,12 +1942,12 @@ app.get('/api/metrics', keycloak.protect(), async (req, res) => {
         metrics.litellm = ok({ models: names.length, model_names: names });
       } catch (e) { metrics.litellm = err(e); }
     })(),
-    // Update Server（DeepChat 版本 + 更新时间）
+    // Update Server（DSH Desktop 版本 + 更新时间）
     (async () => {
       try {
         const [verRes, statRes] = await Promise.all([
           dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']),
-          dockerExec(UPDATE_CONTAINER, ['sh', '-c', 'for f in /usr/share/nginx/html/deepchat/*; do stat -c "%Y" "$f" 2>/dev/null; done']),
+          dockerExec(UPDATE_CONTAINER, ['sh', '-c', 'for f in /usr/share/nginx/html/dsh/*; do stat -c "%Y" "$f" 2>/dev/null; done']),
         ]);
         const version = (verRes.stdout || '').trim() || '—';
         let last_updated = 0;
@@ -2299,12 +2299,12 @@ app.get('/api/logs/query', keycloak.protect(), async (req, res) => {
 
 // ═══════════════════════════════════════════
 // 可用性测试（Availability Check）
-// 覆盖：Keycloak 认证 / NewAPI / LiteLLM / DeepChat·Dify 聊天 / Ghost / Gitea / MCP /
+// 覆盖：Keycloak 认证 / NewAPI / LiteLLM / DSH Desktop·Dify 聊天 / Ghost / Gitea / MCP /
 //       Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / 更新服务器 / 备份 / Docker / Redis
 // ═══════════════════════════════════════════
 const AVAILABILITY_INTERVAL_MIN = parseInt(process.env.AVAILABILITY_INTERVAL_MIN || '10', 10);
 
-// 从 NewAPI DB 取 deepchat / dify 的完整 token key（base64 中转避免 shell 转义）
+// 从 NewAPI DB 取 dsh / dify 的完整 token key（base64 中转避免 shell 转义）
 async function getNewApiTokens() {
   const sql = "SELECT name, `key` FROM `new-api`.tokens WHERE status=1";
   const b64 = Buffer.from(sql).toString('base64');
@@ -2312,10 +2312,10 @@ async function getNewApiTokens() {
     'sh', '-c',
     `MYSQL_PWD="${NEWAPI_DB_PASSWORD}" mysql -uroot -N -B -e "$(echo ${b64} | base64 -d)" 2>/dev/null`,
   ]);
-  const out = { deepchat: null, dify: null };
+  const out = { dsh: null, dify: null };
   for (const line of stdout.split('\n')) {
     const [name, key] = line.split('\t');
-    if (name === 'deepchat-key' && key) out.deepchat = 'sk-' + key.trim();
+    if (name === 'dsh-key' && key) out.dsh = 'sk-' + key.trim();
     if (name === 'dify-key' && key) out.dify = 'sk-' + key.trim();
   }
   return out;
@@ -2351,18 +2351,18 @@ const availabilityTestDefs = [
       const d = await r.json();
       return `模型 ${((d.data || []).map(m => m.id).join(', ') || '无')}`;
     } },
-  { id: 'chat-deepchat', name: 'DeepChat 聊天（经 NewAPI）', run: async () => {
+  { id: 'chat-dsh', name: 'DSH Desktop 聊天（经 NewAPI）', run: async () => {
       const tokens = await getNewApiTokens();
-      if (!tokens.deepchat) throw new Error('未找到 deepchat-key token');
+      if (!tokens.dsh) throw new Error('未找到 dsh-key token');
       // 查询 NewAPI 实际可用的模型，不假定后端是 DeepSeek 或其他特定渠道
-      const modelsR = await fetch(`${NEWAPI_URL}/v1/models`, { headers: { Authorization: `Bearer ${tokens.deepchat}` } });
+      const modelsR = await fetch(`${NEWAPI_URL}/v1/models`, { headers: { Authorization: `Bearer ${tokens.dsh}` } });
       if (!modelsR.ok) throw new Error('获取模型列表失败 HTTP ' + modelsR.status);
       const modelsD = await modelsR.json();
       const models = (modelsD.data || []).map(m => m.id);
       if (!models.length) throw new Error('无可用模型（请在 NewAPI 中配置渠道）');
       const model = models[0];
       const r = await fetch(`${NEWAPI_URL}/v1/chat/completions`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokens.deepchat}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tokens.dsh}` },
         body: JSON.stringify({ model, messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 }),
       });
       if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + ((await r.text()).slice(0, 120)));
@@ -2459,7 +2459,7 @@ const availabilityTestDefs = [
     } },
   { id: 'update-server', name: '更新服务器', run: async () => {
       const { stdout } = await dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']);
-      return `DeepChat 版本 ${(stdout || '').trim() || '—'}`;
+      return `DSH Desktop 版本 ${(stdout || '').trim() || '—'}`;
     } },
   { id: 'backup', name: '备份', run: async () => {
       if (!fs.existsSync(BACKUP_DIR)) throw new Error('备份目录不存在');
@@ -2615,7 +2615,7 @@ async function collectProductStatus() {
     add('langfuse', async () => { const r = await fetch(`${LANGFUSE_INTERNAL_URL}/api/public/health`); const d = await r.json(); return `v${d.version || '—'}`; }),
     add('loki', async () => { const r = await fetch(`${LOKI_URL}/ready`); if (!r.ok) throw new Error('HTTP ' + r.status); return 'ready'; }),
     add('presidio', async () => { const [a, an] = await Promise.all([fetch(`${PRESIDIO_ANALYZER_URL}/health`), fetch(`${PRESIDIO_ANONYMIZER_URL}/health`)]); if (!a.ok || !an.ok) throw new Error(`analyzer=${a.status} anonymizer=${an.status}`); return 'OK'; }),
-    add('update', async () => { const { stdout } = await dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']); return `DeepChat ${(stdout || '').trim() || '—'}`; }),
+    add('update', async () => { const { stdout } = await dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']); return `DSH Desktop ${(stdout || '').trim() || '—'}`; }),
     add('redis', async () => { const { stdout } = await dockerExec('admin-session-redis', ['redis-cli', 'ping']); if (!/PONG/i.test(stdout)) throw new Error('no PONG'); return 'PONG'; }),
   ]);
   return items.sort((a, b) => Number(b.ok) - Number(a.ok));

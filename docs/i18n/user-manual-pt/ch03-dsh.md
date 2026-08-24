@@ -1,4 +1,4 @@
-# Capítulo 3: Ferramenta 1: DeepChat
+# Capítulo 3: Ferramenta 1: DSH Desktop
 
 *Início rápido*
 
@@ -14,13 +14,13 @@
 
 2. Baixe e instale o instalador conforme seu sistema;
 
-3. Inicie o DeepChat.
+3. Inicie o DSH Desktop.
 
 ## 3.2 Configurar o modelo (conectar ao gateway da empresa)
 
-No primeiro uso, é preciso dizer ao DeepChat onde está o modelo. A empresa já centralizou os modelos no gateway **NewAPI**; você só precisa preencher três valores:
+No primeiro uso, é preciso dizer ao DSH Desktop onde está o modelo. A empresa já centralizou os modelos no gateway **NewAPI**; você só precisa preencher três valores:
 
-**1.** Abra o DeepChat → canto inferior esquerdo **Configurações (⚙️)** → **serviço de modelos / provedor de modelos**.
+**1.** Abra o DSH Desktop → canto inferior esquerdo **Configurações (⚙️)** → **serviço de modelos / provedor de modelos**.
 
 **2.** Adicione «**Provider personalizado**» ou «**compatível com OpenAI**».
 
@@ -44,7 +44,7 @@ No primeiro uso, é preciso dizer ao DeepChat onde está o modelo. A empresa já
 
 3. Receber a resposta indica que a cadeia está normal.
 
-> 💡 **Experimente**: envie «escreva um e-mail educado de cobrança para um cliente» e veja como a IA responde. Depois tente «traduza o texto abaixo para inglês: ……». O DeepChat suporta conversas de várias rodadas; você pode continuar perguntando e pedir à IA para alterar.
+> 💡 **Experimente**: envie «escreva um e-mail educado de cobrança para um cliente» e veja como a IA responde. Depois tente «traduza o texto abaixo para inglês: ……». O DSH Desktop suporta conversas de várias rodadas; você pode continuar perguntando e pedir à IA para alterar.
 
 ## 3.4 Funções e dicas comuns
 
@@ -69,7 +69,7 @@ No primeiro uso, é preciso dizer ao DeepChat onde está o modelo. A empresa já
 
 - **Pergunte por etapas**: se não gostar, «ajuste de novo», «mude o tom».
 
-> 📖 Documentação oficial:guia rápido do DeepChat https://deepchatai.cn/docs/guide/getting-started/ · repositório open source https://github.com/ThinkInAIXYZ/deepchat
+> 📖 Documentação oficial:guia rápido do DSH Desktop https://www.dshdesktop.com/docs/guide/getting-started/ · repositório open source https://github.com/dataelement/dsh-desktop
 
 ---
 

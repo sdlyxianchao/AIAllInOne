@@ -33,7 +33,7 @@
 | El inicio de sesión SSO da unknown_error | Fallo del reenvío de puertos de AD (iphlpsvc) | Revisa iphlpsvc + red de Hyper-V |
 | Keycloak no ve los usuarios de dominio | Search scope = One Level | Cambiar a Subtree |
 | Langfuse no muestra datos | V4_WRITE_MODE o cuenta SSO no añadida a la organización | Configurar dual; añadir organización por SQL (capítulo 23) |
-| DeepChat: tiempo de conexión del modelo agotado | El cliente pasa por un proxy del sistema caído | Configurar sin proxy / conexión directa |
+| DSH Desktop: tiempo de conexión del modelo agotado | El cliente pasa por un proxy del sistema caído | Configurar sin proxy / conexión directa |
 | Loki no encuentra registros | Se usó la label job | Usa `{container=~".+"}` |
 | Presidio 404 /analyze/analyze | El endpoint llevaba ruta | Rellenar solo la base URL |
 | Tras cambiar server.js, la interfaz nueva da 404 | up -d no relee los cambios del volumen | docker restart admin-portal |

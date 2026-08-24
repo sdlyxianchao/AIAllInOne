@@ -14,10 +14,10 @@
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | NewAPI チャネルテストで OK を受信 |
 | 2 | Dify → NewAPI | Dify モデルプロバイダーテストで応答を受信 |
-| 3 | DeepChat → NewAPI | DeepChat でメッセージ送信し応答を受信 |
+| 3 | DSH Desktop → NewAPI | DSH Desktop でメッセージ送信し応答を受信 |
 | 4 | Keycloak → NewAPI | Keycloak アカウントで OIDC ログイン NewAPI |
 | 5 | Keycloak → Dify | Keycloak アカウントで SSO ログイン Dify |
-| 6 | MCP Gateway → DeepChat | DeepChat が MCP ツールリストを取得し呼び出し |
+| 6 | MCP Gateway → DSH Desktop | DSH Desktop が MCP ツールリストを取得し呼び出し |
 | 7 | MCP Gateway → Dify | Dify ワークフローが MCP ツールを呼び出し |
 | 8 | Gitea Runner → Docker | Runner が CI/CD タスクを実行可能 |
 | 9 | Gitea → 更新サーバー | CI 成果物を更新サーバーにアップロード可能 |

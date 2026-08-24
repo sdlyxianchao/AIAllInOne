@@ -4,7 +4,7 @@
 
 > Initialization and interconnect configuration for each of the three products.
 
-[← Chapter 8: LiteLLM: Verification and Caching](ch08-litellm.md) · [📖 Index](index.md) · [Chapter 10: DeepChat Distribution and CI/CD →](ch10-deepchat.md)
+[← Chapter 8: LiteLLM: Verification and Caching](ch08-litellm.md) · [📖 Index](index.md) · [Chapter 10: DSH Desktop Distribution and CI/CD →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | AI Workbench | Custom link | `http://<server-IP>` |
 | Help Docs | Category | `/category/docs` |
 
-1. **Downloads page**: Pages → New page "Downloads" (slug `downloads`), put the DeepChat installer intranet links in the content.
+1. **Downloads page**: Pages → New page "Downloads" (slug `downloads`), put the DSH Desktop installer intranet links in the content.
 
 ```
-## DeepChat Enterprise Edition
+## DSH Desktop Enterprise Edition
 ### Windows
-- [DeepChat v1.1.0 (Windows x64)](http://<server-IP>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0 (Windows x64)](http://<server-IP>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0 (macOS x64)](http://<server-IP>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0 (macOS x64)](http://<server-IP>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ Don't click "Sign up" on the portal home page `/` — that's visitor/subscriber registration (with no SMTP configured it returns 500); the admin entry is `/ghost/`. Don't install the latest theme from GitHub (it may target Ghost 6.x and report incompatible on 5.x).
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← Chapter 8: LiteLLM: Verification and Caching](ch08-litellm.md) · [📖 Index](index.md) · [Chapter 10: DeepChat Distribution and CI/CD →](ch10-deepchat.md)
+[← Chapter 8: LiteLLM: Verification and Caching](ch08-litellm.md) · [📖 Index](index.md) · [Chapter 10: DSH Desktop Distribution and CI/CD →](ch10-dsh.md)

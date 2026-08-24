@@ -15,7 +15,7 @@
 - **Docker Compose** 定義了所有容器。
 - **`.env` 檔案**（如 `windows/.env.windows`）保存各服務用的憑證。
 - **Admin API** 暴露管理端點（Keycloak、Gitea、NewAPI 等）。
-- **檔案與資料庫**（Ghost 的 SQLite 庫、DeepChat 安裝檔、sync-history JSON 等）是真正的狀態。
+- **檔案與資料庫**（Ghost 的 SQLite 庫、DSH Desktop 安裝檔、sync-history JSON 等）是真正的狀態。
 
 Agent 能做的：
 
@@ -81,9 +81,9 @@ Agent 執行 `docker restart admin-portal`。注意：**後端**程式碼（`ser
 
 > "顯示 Gitea runner 日誌最後 50 行，告訴我有沒有錯誤。"
 
-### 4.5 管理 DeepChat 同步（Gitea）
+### 4.5 管理 DSH Desktop 同步（Gitea）
 
-> "觸發 deepchat-sync 工作流程，並把它的進度給我看——階段、已下載檔案數、MB、預計剩餘時間。"
+> "觸發 dsh-sync 工作流程，並把它的進度給我看——階段、已下載檔案數、MB、預計剩餘時間。"
 
 Agent 呼叫 Gitea API 觸發工作流程，然後輪詢執行狀態、讀 `sync-progress.json`。
 
@@ -138,6 +138,6 @@ Agent 會掃描（`docker system df`、未使用映像、卷、舊備份）並�
 | 重啟服務 | `docker restart <名稱>` |
 | 啟動全部服務 | `docker compose up -d` |
 | Compose 狀態 | `docker compose ps` |
-| 觸發 Gitea 同步 | `POST /api/v1/repos/<使用者>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| 觸發 Gitea 同步 | `POST /api/v1/repos/<使用者>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | 跑備份 | `powershell .\scripts\backup.ps1` |
 | 發佈版本 | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

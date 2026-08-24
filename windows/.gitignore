@@ -15,8 +15,8 @@ backups/
 # 运行时产物
 *.log
 health_check_*.log
-deepchat-updates/deepchat/
-deepchat-updates/assets/
+dsh-updates/dsh/
+dsh-updates/assets/
 
 # bootstrap / keycloak 运行时产物
 scripts/keycloak-secrets.json

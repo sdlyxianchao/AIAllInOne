@@ -38,13 +38,13 @@ If you configured multiple providers, add them the same way: Claude type `Anthro
 
 ## 7.3 Create API Keys
 
-Create one for Dify and one for DeepChat to track usage separately:
+Create one for Dify and one for DSH Desktop to track usage separately:
 
 1. Left-side **API Keys** → New;
 
 2. Name `dify-key` → Save → copy `sk-xxx` (fill into Dify's model provider);
 
-3. Create `deepchat-key` → copy `sk-xxx` (distribute to DeepChat users).
+3. Create `dsh-key` → copy `sk-xxx` (distribute to DSH Desktop users).
 
 ## 7.4 Allow Regular Users to Self-Service Request Keys
 

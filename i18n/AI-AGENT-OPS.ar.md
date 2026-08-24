@@ -15,7 +15,7 @@
 - **Docker Compose** يحدّد جميع الحاويات.
 - **ملفات `.env`** (مثل `windows/.env.windows`) تحفظ بيانات الاعتماد التي تستخدمها الخدمات.
 - **واجهات الإدارة (Admin APIs)** تكشف نقاط الإدارة (Keycloak وGitea وNewAPI وغيرها).
-- **الملفات وقواعد البيانات** (قاعدة SQLite الخاصة بـ Ghost، وملفات تثبيت DeepChat، وملف JSON لسجلّ المزامنة، إلخ) هي الحالة الفعلية.
+- **الملفات وقواعد البيانات** (قاعدة SQLite الخاصة بـ Ghost، وملفات تثبيت DSH Desktop، وملف JSON لسجلّ المزامنة، إلخ) هي الحالة الفعلية.
 
 يستطيع الوكيل:
 
@@ -81,9 +81,9 @@
 
 > «أرني آخر 50 سطرًا من سجل Gitea runner وأخبرني إن كانت هناك أخطاء.»
 
-### 4.5 إدارة مزامنة DeepChat (Gitea)
+### 4.5 إدارة مزامنة DSH Desktop (Gitea)
 
-> «شغّل مسار عمل deepchat-sync وأرني تقدّمه — المرحلة، وعدد الملفات المنزّلة، والميجابايت، والوقت المتبقي.»
+> «شغّل مسار عمل dsh-sync وأرني تقدّمه — المرحلة، وعدد الملفات المنزّلة، والميجابايت، والوقت المتبقي.»
 
 يستدعي الوكيل واجهة Gitea لتشغيل مسار العمل، ثم يستقصي حالة التشغيل ويقرأ `sync-progress.json`.
 
@@ -138,6 +138,6 @@
 | إعادة تشغيل خدمة | `docker restart <الاسم>` |
 | تشغيل جميع الخدمات | `docker compose up -d` |
 | حالة Compose | `docker compose ps` |
-| تشغيل مزامنة Gitea | `POST /api/v1/repos/<user>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| تشغيل مزامنة Gitea | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | تنفيذ نسخة احتياطية | `powershell .\scripts\backup.ps1` |
 | نشر إصدار | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

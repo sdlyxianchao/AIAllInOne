@@ -14,10 +14,10 @@ A parte de implantação termina aqui. Por fim, valide os 12 itens abaixo um a u
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | Teste de canal do NewAPI recebe OK |
 | 2 | Dify → NewAPI | Teste do provedor de modelos do Dify recebe resposta |
-| 3 | DeepChat → NewAPI | Enviar mensagem no DeepChat recebe resposta |
+| 3 | DSH Desktop → NewAPI | Enviar mensagem no DSH Desktop recebe resposta |
 | 4 | Keycloak → NewAPI | Login OIDC no NewAPI com conta Keycloak |
 | 5 | Keycloak → Dify | Login SSO no Dify com conta Keycloak |
-| 6 | MCP Gateway → DeepChat | DeepChat obtém a lista de ferramentas MCP e as chama |
+| 6 | MCP Gateway → DSH Desktop | DSH Desktop obtém a lista de ferramentas MCP e as chama |
 | 7 | MCP Gateway → Dify | Fluxo de trabalho do Dify chama a ferramenta MCP |
 | 8 | Gitea Runner → Docker | Runner executa tarefas de CI/CD |
 | 9 | Gitea → Servidor de Atualização | Artefatos de CI podem ser enviados ao Servidor de Atualização |

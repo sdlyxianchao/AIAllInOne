@@ -24,5 +24,5 @@ This module's "materials" are really **a set of reusable prompts & habits** — 
 4. Turn the ops playbooks into Skills (SKILL.md + scripts) distributed via the Skill marketplace (M10).
 
 ## Advanced
-- Fix the "platform health check / backup / release" playbooks as Skills for employee DeepChat — see M10.
+- Fix the "platform health check / backup / release" playbooks as Skills for employee DSH Desktop — see M10.
 - Watch each agent product's official updates (OpenClaw iterates fast; follow its releases).

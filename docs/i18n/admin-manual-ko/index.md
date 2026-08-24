@@ -17,8 +17,8 @@
 | 7 | [NewAPI: 초기화, 채널 및 OIDC](ch07-newapi.md) | 초기 설치 마법사 완료, LiteLLM을 가리키는 채널 설정, API Key 발급, Keycloak OIDC 연동. |
 | 8 | [LiteLLM: 검증 및 캐시](ch08-litellm.md) | LiteLLM 프록시 사용 가능 여부 검증, 응답 캐시 활성화로 token 절약. |
 | 9 | [Dify / Ghost / Gitea 설정](ch09-products.md) | 세 제품 각각의 초기화 및 상호 연결 설정. |
-| 10 | [DeepChat 배포 및 CI/CD](ch10-deepchat.md) | DeepChat 설치 패키지를 직원에게 배포하고, Gitea Actions로 공식 새 버전을 자동 동기화. |
-| 11 | [MCP Gateway 및 Skill 마켓](ch11-mcp.md) | Skill과 MCP 도구를 중앙에서 관리하는 게이트웨이, DeepChat/Dify가 주소 하나만 연결하면 모든 도구를 얻을 수 있습니다. |
+| 10 | [DSH Desktop 배포 및 CI/CD](ch10-dsh.md) | DSH Desktop 설치 패키지를 직원에게 배포하고, Gitea Actions로 공식 새 버전을 자동 동기화. |
+| 11 | [MCP Gateway 및 Skill 마켓](ch11-mcp.md) | Skill과 MCP 도구를 중앙에서 관리하는 게이트웨이, DSH Desktop/Dify가 주소 하나만 연결하면 모든 도구를 얻을 수 있습니다. |
 | 12 | [AI 관리 센터](ch12-admin-center.md) | 통합 관리자 포털: Keycloak 인증, 좌측 메뉴에 모든 제품 임베드, Dashboard 클러스터 상태. |
 | 13 | [상호 연결 검증 체크리스트](ch13-interconnect.md) | 배포 완료 후 12개 상호 연결 링크를 항목별로 모두 연결되었는지 확인. |
 
@@ -33,7 +33,7 @@
 | 18 | [Ghost 일상 관리](ch18-ops-ghost.md) | 기업 포털 / Hub: 글, 페이지, 내비게이션, 테마, 멤버. |
 | 19 | [Gitea 일상 관리](ch19-ops-gitea.md) | 내부 Git + CI/CD: 저장소, 조직, Runner, Actions. |
 | 20 | [MCP Gateway 일상 관리](ch20-ops-mcp.md) | MCP Server 증감, Skill 업로드/삭제, 내장 도구 확장. |
-| 21 | [업데이트 서버 관리](ch21-ops-update.md) | DeepChat 설치 패키지 호스팅 및 자동 업데이트. |
+| 21 | [업데이트 서버 관리](ch21-ops-update.md) | DSH Desktop 설치 패키지 호스팅 및 자동 업데이트. |
 | 22 | [모니터링 및 알림 관리](ch22-ops-monitoring.md) | Prometheus + Grafana + Alertmanager: 컨테이너 리소스 모니터링 및 알림 통지. |
 | 23 | [LLM 관측 (Langfuse)](ch23-ops-langfuse.md) | 매 모델 호출의 프롬프트, 응답, 지연시간, token, 비용 추적. |
 | 24 | [통합 로그 (Loki)](ch24-ops-loki.md) | 모든 컨테이너 로그를 집계해 컨테이너 + 키워드 + 시간으로 검색. |

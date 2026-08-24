@@ -4,7 +4,7 @@
 
 > Web AI app platform: use ready-made apps and build knowledge base Q&amp;A.
 
-[← Chapter 3: Tool 1: DeepChat](ch03-deepchat.md) · [📖 Index](index.md) · [Chapter 5: Requesting an API Key →](ch05-key.md)
+[← Chapter 3: Tool 1: DSH Desktop](ch03-dsh.md) · [📖 Index](index.md) · [Chapter 5: Requesting an API Key →](ch05-key.md)
 
 ---
 
@@ -50,4 +50,4 @@ To "feed" internal documents to the AI so it can answer, use Dify's **knowledge 
 
 ---
 
-[← Chapter 3: Tool 1: DeepChat](ch03-deepchat.md) · [📖 Index](index.md) · [Chapter 5: Requesting an API Key →](ch05-key.md)
+[← Chapter 3: Tool 1: DSH Desktop](ch03-dsh.md) · [📖 Index](index.md) · [Chapter 5: Requesting an API Key →](ch05-key.md)

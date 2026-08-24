@@ -18,13 +18,13 @@
 | **D3** | M03 Keycloak (Realm/users/clients/OIDC) | M03 cont.: AD/LDAP federation + Entra ID/SAML multi-IdP | Keycloak SSO login verified |
 | **D4** | M04 NewAPI (init/channels/tokens/quota/OIDC) | M05 LiteLLM + Presidio (model list/redaction/semantic cache/Langfuse) | LLM chain (NewAPI→LiteLLM→DeepSeek) works |
 | **D5** | M06 Dify (model providers/apps/agents) | M06 cont.: knowledge base RAG + Dify API + workflows | Dify app + KB retrieval usable |
-| **D6** | M07 Ghost (init/theme/content seed/download center) | M08 Gitea + Runner + Actions (deepchat-sync workflow) | Portal article published; CI workflow green |
-| **D7** | M09 DeepChat (install/models/MCP/Skills/update chain) | M10 MCP Gateway (tools/external MCP/Skill market/RAG) | DeepChat calls search_knowledge |
+| **D6** | M07 Ghost (init/theme/content seed/download center) | M08 Gitea + Runner + Actions (dsh-sync workflow) | Portal article published; CI workflow green |
+| **D7** | M09 DSH Desktop (install/models/MCP/Skills/update chain) | M10 MCP Gateway (tools/external MCP/Skill market/RAG) | DSH Desktop calls search_knowledge |
 | **D8** | M11 AI Admin Center (init/menus/delegated admin/backup) | M12–M16 ops modules (Update Server/monitoring/observability/logs/MailHog) | Admin Center fully usable; alerts configured |
 | **D9** | Integrated practice 1: 12-item interconnect check + health-check script | Integrated practice 2 · M17 AI-driven ops (agent-driven inspection/backup/failure drill) | 12 interconnects green; health check ALL CLEAR |
 | **D10** | Review + Q&A + mock defense | Final exams: theory (100 Q, 90 min) + hands-on (120 min) + defense | All three assessments graded |
 
-> Tier B (ops): follow D1–D2 half-day, trim D3–D6, focus D7–D8 on Dify/Ghost/NewAPI/DeepChat user side & KB — about 5 days.
+> Tier B (ops): follow D1–D2 half-day, trim D3–D6, focus D7–D8 on Dify/Ghost/NewAPI/DSH Desktop user side & KB — about 5 days.
 > Tier C (support): D1 full + half-days of D5–D7 — about 2.5 days.
 
 ## 3. Daily Routine

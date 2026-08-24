@@ -12,7 +12,7 @@ version: 1.0.0
 
 市场地址写在同目录 `config.json` 的 `market_url` 字段里。**先读它**，别硬编码。若 `config.json` 缺失，默认用 `http://skillmarket.local:3100`。
 
-> ⚠️ 用**主机名**而非 IP 作为市场地址：DeepChat 的 agent 环境会把 IP 地址打码（隐私保护），导致读不到真实 IP 而无法发起请求。`<市场主机名>` 是**部署参数**，部署时须替换成实际可解析的主机名（例如 `skillmarket.<公司域名>`）——单机在 `C:\Windows\System32\drivers\etc\hosts` 加 `<服务器IP>  <市场主机名>`；公司内网则在 DNS 加 A 记录 `<市场主机名>` → `<服务器IP>`。
+> ⚠️ 用**主机名**而非 IP 作为市场地址：DSH Desktop 的 agent 环境会把 IP 地址打码（隐私保护），导致读不到真实 IP 而无法发起请求。`<市场主机名>` 是**部署参数**，部署时须替换成实际可解析的主机名（例如 `skillmarket.<公司域名>`）——单机在 `C:\Windows\System32\drivers\etc\hosts` 加 `<服务器IP>  <市场主机名>`；公司内网则在 DNS 加 A 记录 `<市场主机名>` → `<服务器IP>`。
 
 - 技能清单：`{market_url}/skills`
 - 市场页面：`{market_url}/market`
@@ -28,7 +28,7 @@ version: 1.0.0
 
 ## 安装方法（告诉用户）
 
-DeepChat：设置 → Skills → **从 URL 安装**，填 `{market_url}/skills/<技能名>.zip`。
+DSH Desktop：设置 → Skills → **从 URL 安装**，填 `{market_url}/skills/<技能名>.zip`。
 （也可打开 `{market_url}/market` 页面下载 zip，再「从 ZIP 安装」。）
 
 ## 输出约定

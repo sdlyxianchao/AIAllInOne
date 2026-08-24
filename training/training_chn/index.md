@@ -50,8 +50,8 @@
 | **D3** | M03 Keycloak 上（Realm/用户/组/角色/OIDC Client） | M03 Keycloak 下（AD/LDAP 联邦 + Entra ID / SAML 多身份源 + 排错） | Keycloak SSO 登录验证通过 |
 | **D4** | M04 NewAPI（初始化/渠道/令牌/额度/OIDC 接入/提权） | M05 LiteLLM + Presidio（模型列表/PII 脱敏/语义缓存/Langfuse 上报） | LLM 全链路（NewAPI→LiteLLM→DeepSeek）打通 |
 | **D5** | M06 Dify 上（模型供应商/聊天助手/Agent） | M06 Dify 下（知识库 RAG / Knowledge API / 工作流 / 发布） | Dify 应用 + 知识库检索可用 |
-| **D6** | M07 Ghost（初始化/Corp Portal 主题/内容种子/下载中心） | M08 Gitea + Runner（Actions / deepchat-sync / 工作流语法 / SSO） | 门户发布文章；CI 工作流跑通 |
-| **D7** | M09 DeepChat（安装/模型配置/MCP/Skill/更新链路） | M10 MCP Gateway（内置工具/外部 MCP/Skill 市场/RAG 检索） | DeepChat 调 search_knowledge 成功 |
+| **D6** | M07 Ghost（初始化/Corp Portal 主题/内容种子/下载中心） | M08 Gitea + Runner（Actions / dsh-sync / 工作流语法 / SSO） | 门户发布文章；CI 工作流跑通 |
+| **D7** | M09 DSH Desktop（安装/模型配置/MCP/Skill/更新链路） | M10 MCP Gateway（内置工具/外部 MCP/Skill 市场/RAG 检索） | DSH Desktop 调 search_knowledge 成功 |
 | **D8** | M11 AI 管理中心（初始化/菜单/分模块授权/备份恢复） | M12~M16 运维模块（Update Server/监控告警/Langfuse/Loki/MailHog） | 管理中心全功能可用；告警配置完成 |
 | **D9** | 综合实战一（12 项互连验证 + health-check.ps1 全绿） | 综合实战二 · M17 AI 运维（Agent 驱动巡检/备份/故障演练/发布） | 12 项互连全绿；健康检查 ALL CLEAR |
 | **D10** | 总复习 + 答疑 + 模拟答辩 | 结业考核（理论 100 题 90min + 实操 120min + 答辩） | 三项考核完成并评分、结业 |
@@ -73,8 +73,8 @@
 | M05 | LiteLLM + Presidio | 核心 | 3 | config.yaml 结构、内置正则脱敏 + 敏感词 BLOCK、Presidio 端点坑、Redis 语义缓存（bge-m3）、Langfuse 上报 | [大纲](03-litellm-presidio/培训大纲.md) · [教材](03-litellm-presidio/教材.md) · [计划](03-litellm-presidio/培训计划.md) · [考试](03-litellm-presidio/考试考察.md) · [资料](03-litellm-presidio/参考资料清单.md) |
 | M06 | Dify AI 应用平台 | 核心 | 6 | 独立部署排错、模型供应商、五类应用、知识库高质量索引、Knowledge API、Chatflow 智能客服、发布嵌入 | [大纲](04-dify/培训大纲.md) · [教材](04-dify/教材.md) · [计划](04-dify/培训计划.md) · [考试](04-dify/考试考察.md) · [资料](04-dify/参考资料清单.md) |
 | M07 | Ghost 企业门户 | 核心 | 3 | SQLite 坑、Corp Portal 主题、内容种子导入、文章/导航、MailHog 验证码、AI 管理中心免登录（TOTP） | [大纲](05-ghost/培训大纲.md) · [教材](05-ghost/教材.md) · [计划](05-ghost/培训计划.md) · [考试](05-ghost/考试考察.md) · [资料](05-ghost/参考资料清单.md) |
-| M08 | Gitea + Runner | 核心 | 3 | Runner 注册与 4 个坑、deepchat-sync 工作流（sync-config.json 三开关）、Actions 语法、SSO 自动注册、ROOT_URL | [大纲](06-gitea-runner/培训大纲.md) · [教材](06-gitea-runner/教材.md) · [计划](06-gitea-runner/培训计划.md) · [考试](06-gitea-runner/考试考察.md) · [资料](06-gitea-runner/参考资料清单.md) |
-| M09 | DeepChat 桌面客户端 | 核心 | 3 | 安装配置、手动 MCP（跳过至手动配置）、SSE 提示、Skill URL 安装、技能管家（主机名坑）、自动更新链路 | [大纲](07-deepchat/培训大纲.md) · [教材](07-deepchat/教材.md) · [计划](07-deepchat/培训计划.md) · [考试](07-deepchat/考试考察.md) · [资料](07-deepchat/参考资料清单.md) |
+| M08 | Gitea + Runner | 核心 | 3 | Runner 注册与 4 个坑、dsh-sync 工作流（sync-config.json 三开关）、Actions 语法、SSO 自动注册、ROOT_URL | [大纲](06-gitea-runner/培训大纲.md) · [教材](06-gitea-runner/教材.md) · [计划](06-gitea-runner/培训计划.md) · [考试](06-gitea-runner/考试考察.md) · [资料](06-gitea-runner/参考资料清单.md) |
+| M09 | DSH Desktop 桌面客户端 | 核心 | 3 | 安装配置、手动 MCP（跳过至手动配置）、SSE 提示、Skill URL 安装、技能管家（主机名坑）、自动更新链路 | [大纲](07-dsh/培训大纲.md) · [教材](07-dsh/教材.md) · [计划](07-dsh/培训计划.md) · [考试](07-dsh/考试考察.md) · [资料](07-dsh/参考资料清单.md) |
 | M10 | MCP Gateway | 核心 | 3 | MCP 协议、内置 4 工具、外部 Server 聚合、Skill 市场、search_knowledge 全链路（3 个坑）、管理 API | [大纲](09-mcp-gateway/培训大纲.md) · [教材](09-mcp-gateway/教材.md) · [计划](09-mcp-gateway/培训计划.md) · [考试](09-mcp-gateway/考试考察.md) · [资料](09-mcp-gateway/参考资料清单.md) |
 | M11 | AI 管理中心 | 核心 | 4 | Global Admin 初始化、菜单全览、分模块授权（admin:产品 + 产品侧 provision）、备份恢复、可用性测试、报告、IM 告警 | [大纲](10-admin-center/培训大纲.md) · [教材](10-admin-center/教材.md) · [计划](10-admin-center/培训计划.md) · [考试](10-admin-center/考试考察.md) · [资料](10-admin-center/参考资料清单.md) |
 | M12 | Update Server | 基础 | 1 | 分发链路、手工上传验证、latest.yml/version.txt/publish.url、403 属正常、防版本回退 | [大纲](08-update-server/培训大纲.md) · [教材](08-update-server/教材.md) · [计划/考试](08-update-server/培训计划与考试.md) · [资料](08-update-server/参考资料清单.md) |

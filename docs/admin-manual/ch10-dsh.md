@@ -1,8 +1,8 @@
-# Chapter 10: DeepChat Distribution and CI/CD
+# Chapter 10: DSH Desktop Distribution and CI/CD
 
 *Part 1 · Deployment*
 
-> Distribute the DeepChat installer to employees, and use Gitea Actions to auto-sync new official versions.
+> Distribute the DSH Desktop installer to employees, and use Gitea Actions to auto-sync new official versions.
 
 [← Chapter 9: Dify / Ghost / Gitea Configuration](ch09-products.md) · [📖 Index](index.md) · [Chapter 11: MCP Gateway and Skill Marketplace →](ch11-mcp.md)
 
@@ -10,33 +10,33 @@
 
 ## 10.1 Distribution Chain
 
-Distribution chain = GitHub Releases installers → Gitea Actions of the `deepchat-sync` repo → update server (:8091) → Ghost download page → employee download.
+Distribution chain = GitHub Releases installers → Gitea Actions of the `dsh-sync` repo → update server (:8091) → Ghost download page → employee download.
 
-> 📌 The `deepchat` source mirror repo has been deleted — a mirror only syncs git source, not release installers, so it is useless for distribution. Create it separately only if you need source auditing / secondary development.
+> 📌 The `dsh` source mirror repo has been deleted — a mirror only syncs git source, not release installers, so it is useless for distribution. Create it separately only if you need source auditing / secondary development.
 
 ## 10.2 Download the Installers to the Update Server
 
 ```
-mkdir -p deepchat-updates/deepchat
-curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-windows-x64.exe \
-  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-windows-x64.exe
-curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
-  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-mac-x64.dmg
+mkdir -p dsh-updates/dsh
+curl -L -o dsh-updates/dsh/dsh-desktop-windows-x64-setup.exe \
+  https://github.com/dataelement/dsh-desktop/releases/download/v0.5.0/dsh-desktop-windows-x64-setup.exe
+curl -L -o dsh-updates/dsh/dsh-desktop-mac-x64.dmg \
+  https://github.com/dataelement/dsh-desktop/releases/download/v0.5.0/dsh-desktop-mac-x64.dmg
 ```
 
-Verify: `curl -I http://<server-IP>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe` → 200/206. Then update the Ghost download page (see Chapter 9).
+Verify: `curl -I http://<server-IP>:8091/dsh/dsh-desktop-windows-x64-setup.exe` → 200/206. Then update the Ghost download page (see Chapter 9).
 
 ## 10.3 Auto Sync (Gitea Actions, recommended)
 
 | Component | Description |
 | --- | --- |
-| `deepchat-sync` repo | Regular repo (cannot use mirror), containing `.gitea/workflows/sync.yml` + `update_ghost.py` |
+| `dsh-sync` repo | Regular repo (cannot use mirror), containing `.gitea/workflows/sync.yml` + `update_ghost.py` |
 | Trigger | `schedule` (daily at UTC 2 AM) + `workflow_dispatch` (manual) |
 | Logic | Check the latest GitHub tag → compare with `version.txt` → if newer, download + update the Ghost download page + write the version |
 
 ```
 # trigger once manually
-curl -X POST "http://<server-IP>:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+curl -X POST "http://<server-IP>:3002/api/v1/repos/ai_all_in_one_admin/dsh-sync/actions/workflows/sync.yml/dispatches" \
   -u "ai_all_in_one_admin:<password>" -H "Content-Type: application/json" -d '{"ref":"main"}'
 ```
 
@@ -44,7 +44,7 @@ curl -X POST "http://<server-IP>:3002/api/v1/repos/ai_all_in_one_admin/deepchat-
 
 ## 10.4 Mainland-China Download Source Configuration (sync-config.json)
 
-The installers on the official `deepchatai.cn` download page still point to GitHub, which is basically unreachable in mainland China. The real solution is `sync-config.json`:
+The installers on the official `www.dshdesktop.com` download page still point to GitHub, which is basically unreachable in mainland China. The real solution is `sync-config.json`:
 
 | Field | Purpose | Default |
 | --- | --- | --- |
@@ -65,26 +65,26 @@ The installers on the official `deepchatai.cn` download page still point to GitH
 ## 10.5 Approach B: Build a Custom Version with Docker (optional)
 
 ```
-mkdir deepchat-build
-docker run -it --rm -v ${PWD}/deepchat-build:/app -w /app node:20 bash
+mkdir dsh-build
+docker run -it --rm -v ${PWD}/dsh-build:/app -w /app node:20 bash
 # inside the container
-git clone https://github.com/ThinkInAIXYZ/deepchat.git .
+git clone https://github.com/dataelement/dsh-desktop.git .
 npm ci
 npx electron-builder --win --x64
-# output is in dist/, copy it to deepchat-updates/ after exiting
+# output is in dist/, copy it to dsh-updates/ after exiting
 ```
 
-## 10.6 Configure the DeepChat Client (employee side)
+## 10.6 Configure the DSH Desktop Client (employee side)
 
-1. DeepChat → Settings → Model Service → custom Provider / OpenAI-compatible;
+1. DSH Desktop → Settings → Model Service → custom Provider / OpenAI-compatible;
 
 2. API Base URL: `http://<server-IP>:3000/v1` (must be intranet IP);
 
-3. API Key: the `sk-xxx` of `deepchat-key`;
+3. API Key: the `sk-xxx` of `dsh-key`;
 
 4. Model: `deepseek-chat`, save then test a conversation.
 
-> 📖 Vendor docs:DeepChat quick start https://deepchatai.cn/docs/guide/getting-started/ · open-source repo https://github.com/ThinkInAIXYZ/deepchat
+> 📖 Vendor docs:DSH Desktop quick start https://www.dshdesktop.com/docs/guide/getting-started/ · open-source repo https://github.com/dataelement/dsh-desktop
 
 ---
 

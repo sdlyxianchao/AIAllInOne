@@ -33,7 +33,7 @@
 | Connexion SSO renvoie unknown_error | Échec de redirection de ports AD (iphlpsvc) | Vérifier iphlpsvc + réseau Hyper-V |
 | Keycloak ne voit pas les utilisateurs du domaine | Search scope = One Level | Passer à Subtree |
 | Langfuse ne montre pas les données | V4_WRITE_MODE ou compte SSO non rattaché à l'organisation | Régler dual ; SQL pour ajouter à l'organisation (chapitre 23) |
-| Délai de connexion au modèle dans DeepChat | Le client est passé par un proxy système planté | Régler sur Pas de proxy / connexion directe |
+| Délai de connexion au modèle dans DSH Desktop | Le client est passé par un proxy système planté | Régler sur Pas de proxy / connexion directe |
 | Loki ne trouve pas les journaux | Utilisation du label job | Utiliser `{container=~".+"}` |
 | Presidio 404 /analyze/analyze | Le point de terminaison contient un chemin | Ne renseigner que la base URL |
 | Nouvelles interfaces 404 après modification de server.js | up -d ne relit pas les changements de volume | docker restart admin-portal |

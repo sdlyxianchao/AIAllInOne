@@ -1,4 +1,4 @@
-# 第3章：工具一：DeepChat
+# 第3章：工具一：DSH Desktop
 
 *快速開始*
 
@@ -14,13 +14,13 @@
 
 2. 按系統下載安裝包並安裝；
 
-3. 啟動 DeepChat。
+3. 啟動 DSH Desktop。
 
 ## 3.2 配置模型（連公司閘道器）
 
-首次使用需要告訴 DeepChat 模型在哪。公司已把模型統一收口到閘道器 **NewAPI**，你只需填三個值：
+首次使用需要告訴 DSH Desktop 模型在哪。公司已把模型統一收口到閘道器 **NewAPI**，你只需填三個值：
 
-**1.** 開啟 DeepChat → 左下角 **設定（⚙️）** → **模型服務 / 模型提供商**。
+**1.** 開啟 DSH Desktop → 左下角 **設定（⚙️）** → **模型服務 / 模型提供商**。
 
 **2.** 新增「**自定義 Provider**」或「**OpenAI 相容**」。
 
@@ -44,7 +44,7 @@
 
 3. 收到回覆即鏈路正常。
 
-> 💡 **試一試**：傳送「幫我寫一封給客戶的催款郵件，語氣委婉」看 AI 如何回答。再試試「把下面這段話翻譯成英文：……」。DeepChat 支援多輪對話，可繼續追問、讓 AI 修改。
+> 💡 **試一試**：傳送「幫我寫一封給客戶的催款郵件，語氣委婉」看 AI 如何回答。再試試「把下面這段話翻譯成英文：……」。DSH Desktop 支援多輪對話，可繼續追問、讓 AI 修改。
 
 ## 3.4 常用功能與技巧
 
@@ -69,7 +69,7 @@
 
 - **分步追問**：不滿意就「再改改」「換個語氣」。
 
-> 📖 原廠文件：DeepChat 快速開始 https://deepchatai.cn/docs/guide/getting-started/ · 開源倉庫 https://github.com/ThinkInAIXYZ/deepchat
+> 📖 原廠文件：DSH Desktop 快速開始 https://www.dshdesktop.com/docs/guide/getting-started/ · 開源倉庫 https://github.com/dataelement/dsh-desktop
 
 ---
 

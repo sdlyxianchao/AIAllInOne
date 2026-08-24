@@ -46,8 +46,8 @@ AI AllInOne is a ready-to-use, **open-source** enterprise intranet AI platform: 
 | AI applications | Dify | Visual AI app / Agent platform + unified knowledge base (RAG) |
 | Enterprise portal | Ghost | Company announcements & news portal (custom Corp Portal theme included) |
 | Source / CI | Gitea + Runner | Internal Git + Actions automation |
-| Client | DeepChat | Local AI desktop client (Windows / macOS / Linux) |
-| Client distribution | Update Server | DeepChat installer hosting & auto-update |
+| Client | DSH Desktop (Windows/macOS) · Linux (Coming Soon) | Local AI desktop client — DSH Desktop on Windows/macOS; Linux build coming soon |
+| Client distribution | Update Server | Desktop client installer hosting & auto-update (DSH Desktop for Windows/macOS) |
 | Unified admin | AI Admin Center | Single entry: dashboard + embedded products + audit/cost/reports + scoped admin authorization + Keycloak sync/roles |
 | Gateway | MCP Gateway | Skill / MCP market + Dify knowledge retrieval (RAG) |
 | Monitoring | Prometheus + Grafana + Alertmanager | Container resource monitoring + alert notifications |
@@ -114,9 +114,9 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
 ## 🖼️ Screenshots
 
-**Dify** — AI application platform · **MCP/Skill Market** — one-click tool & skill access · **DeepChat** — desktop AI client
+**Dify** — AI application platform · **MCP/Skill Market** — one-click tool & skill access · **DSH Desktop** — desktop AI client
 
-![Dify](<pics/Dify.png>) ![MCP/SKILL Market](<pics/Market.png>) ![DeepChat](<pics/DeepChat.png>)
+![Dify](<pics/Dify.png>) ![MCP/SKILL Market](<pics/Market.png>) ![DSH Desktop](<pics/dsh.png>)
 
 More screenshots (48 real UI captures) are embedded in the [Admin Manual](docs/admin-manual/index.md).
 
@@ -188,7 +188,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 - Keycloak SSO integration for unified login
 
 **New: Gitea Sync Workflow**
-- DeepChat auto-update sync scripts exported and documented
+- DSH Desktop auto-update sync scripts exported and documented
 - Gitea Actions workflow for automated desktop client distribution
 
 **Improved: Deployment Guides**
@@ -269,10 +269,10 @@ Example: *"Check that all services are running and healthy"* — the agent runs 
 | Stage 2 | 41 个容器状态（Up/Exited/Restarting） | `docker ps -a` |
 | Stage 3 | 10 个 HTTP 端点响应（含 MCP Gateway） | `curl.exe 127.0.0.1:端口` |
 | Stage 4 | LiteLLM /readiness + **模型注册**、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox 健康状态 | `docker exec` + `docker inspect` |
-| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DeepChat 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
+| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DSH Desktop 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
 | Stage 6 | **AD 账号认证链路**：Keycloak well-known + AD 用户同步（aitest1）+ NewAPI OIDC 配置 + OIDC clients 完整性 + **NewAPI 管理员登录** | curl + Admin API + mysql |
 | Stage 7 | **MCP Gateway + Skill**：/health + tools/list + tools/call + 外部 Skill 聚合 | curl MCP 协议 |
-| Stage 8 | **DeepChat / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
+| Stage 8 | **DSH Desktop / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
 | Stage 9 | **磁盘空间**：系统盘剩余 + Docker 磁盘占用 | `Get-PSDrive` + `docker system df` |
 
 **Run it manually** (PowerShell):

@@ -4,7 +4,7 @@
 
 > 세 제품 각각의 초기화 및 상호 연결 설정.
 
-[← 제8장: LiteLLM: 검증 및 캐시](ch08-litellm.md) · [📖 목차](index.md) · [제10장: DeepChat 배포 및 CI/CD →](ch10-deepchat.md)
+[← 제8장: LiteLLM: 검증 및 캐시](ch08-litellm.md) · [📖 목차](index.md) · [제10장: DSH Desktop 배포 및 CI/CD →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | AI 워크벤치 | 사용자 지정 링크 | `http://<서버-IP>` |
 | 도움말 | 카테고리 | `/category/docs` |
 
-1. **다운로드 센터 페이지**: 페이지 → 「다운로드 센터」 새로 만들기 (slug `downloads`), 내용에 DeepChat 설치 패키지 내부망 링크.
+1. **다운로드 센터 페이지**: 페이지 → 「다운로드 센터」 새로 만들기 (slug `downloads`), 내용에 DSH Desktop 설치 패키지 내부망 링크.
 
 ```
-## DeepChat 엔터프라이즈
+## DSH Desktop 엔터프라이즈
 ### Windows
-- [DeepChat v1.1.0 (Windows x64)](http://<서버-IP>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0 (Windows x64)](http://<서버-IP>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0 (macOS x64)](http://<서버-IP>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0 (macOS x64)](http://<서버-IP>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ 포털 홈 `/`에서 「가입」을 누르지 마세요——방문자 구독자 가입입니다 (SMTP 미설정 시 500). 관리자 진입점은 `/ghost/`입니다. GitHub에서 최신 테마를 설치하지 마세요 (Ghost 6.x용일 수 있어 5.x에서 incompatible 오류).
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← 제8장: LiteLLM: 검증 및 캐시](ch08-litellm.md) · [📖 목차](index.md) · [제10장: DeepChat 배포 및 CI/CD →](ch10-deepchat.md)
+[← 제8장: LiteLLM: 검증 및 캐시](ch08-litellm.md) · [📖 목차](index.md) · [제10장: DSH Desktop 배포 및 CI/CD →](ch10-dsh.md)

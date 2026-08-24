@@ -14,10 +14,10 @@ Aquí termina la parte de implementación. Verifica por último los siguientes 1
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | La prueba del canal de NewAPI recibe OK |
 | 2 | Dify → NewAPI | La prueba del proveedor de modelos de Dify recibe respuesta |
-| 3 | DeepChat → NewAPI | DeepChat envía un mensaje y recibe respuesta |
+| 3 | DSH Desktop → NewAPI | DSH Desktop envía un mensaje y recibe respuesta |
 | 4 | Keycloak → NewAPI | La cuenta de Keycloak inicia sesión por OIDC en NewAPI |
 | 5 | Keycloak → Dify | La cuenta de Keycloak inicia sesión por SSO en Dify |
-| 6 | MCP Gateway → DeepChat | DeepChat obtiene la lista de herramientas MCP y las llama |
+| 6 | MCP Gateway → DSH Desktop | DSH Desktop obtiene la lista de herramientas MCP y las llama |
 | 7 | MCP Gateway → Dify | El flujo de trabajo de Dify llama a herramientas MCP |
 | 8 | Gitea Runner → Docker | El Runner puede ejecutar tareas CI/CD |
 | 9 | Gitea → servidor de actualización | Los artefactos de CI pueden subirse al servidor de actualización |

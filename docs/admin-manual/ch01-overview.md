@@ -20,8 +20,8 @@
 | AI Applications | Dify | Visual AI app / Agent / knowledge base platform |
 | Enterprise Portal | Ghost | Announcements, news, download center, employee Hub |
 | Source Code / CI | Gitea + Runner | Internal Git repository + Actions automation |
-| Client | DeepChat | Local AI desktop client (Win/macOS/Linux) |
-| Client Distribution | Update server | Hosts DeepChat installers and auto-updates |
+| Client | DSH Desktop | Local AI desktop client (Win/macOS/Linux) |
+| Client Distribution | Update server | Hosts DSH Desktop installers and auto-updates |
 | Unified Administration | AI Admin Center | Single administration entry: Dashboard + embedded products + audit/cost/reports |
 | Gateway | MCP Gateway | Skill / MCP marketplace management |
 | Monitoring & Alerting | Prometheus + Grafana + Alertmanager | Container resource monitoring + alert notifications |
@@ -54,7 +54,7 @@ Throughout this document, `<server-IP>` denotes the host machine's external addr
 | 5 | Dify | AI application platform | `127.0.0.1` | `<server-IP>` (port 80) |
 | 6 | Ghost | Enterprise portal | `127.0.0.1:8090` | `<server-IP>:8090` |
 | 7 | Gitea | Source code + CI/CD | `127.0.0.1:3002` | `<server-IP>:3002` |
-| 8 | Update server | DeepChat installers | `127.0.0.1:8091` | `<server-IP>:8091` |
+| 8 | Update server | DSH Desktop installers | `127.0.0.1:8091` | `<server-IP>:8091` |
 | 9 | MCP Gateway | Skill / MCP gateway | `127.0.0.1:3100` | `<server-IP>:3100` |
 | 10 | Grafana | Monitoring dashboard | `127.0.0.1:3030` | `<server-IP>:3030` |
 | 11 | Prometheus | Metrics collection / alerting | `127.0.0.1:9091` | `<server-IP>:9091` |
@@ -70,7 +70,7 @@ Throughout this document, `<server-IP>` denotes the host machine's external addr
 
 ```mermaid
 flowchart LR
-    A[DeepChat / Dify] -->|Forward| B[NewAPI routing]
+    A[DSH Desktop / Dify] -->|Forward| B[NewAPI routing]
     B -->|Redact| C[LiteLLM redaction]
     C -->|Call external model| D[External LLM]
     D -->|Restore PII| C
@@ -79,7 +79,7 @@ flowchart LR
 
 *Figure 1-1: Core LLM chain*
 
-1. **① Forward**: DeepChat / Dify sends the request to NewAPI (`:3000/v1`);
+1. **① Forward**: DSH Desktop / Dify sends the request to NewAPI (`:3000/v1`);
 
 2. **② Redact**: NewAPI forwards to LiteLLM, which uses regex + Presidio to replace phone numbers / ID numbers / emails, etc. with `[xxx_REDACTED]`;
 
@@ -95,7 +95,7 @@ flowchart LR
 
 - **Observability flow**: LiteLLM `success_callback` → Langfuse traces every call;
 
-- **Auto-update flow**: Gitea Actions build → update server (:8091) → DeepChat checks `version.txt` and auto-downloads/installs;
+- **Auto-update flow**: Gitea Actions build → update server (:8091) → DSH Desktop checks `version.txt` and auto-downloads/installs;
 
 - **Unified logging flow**: Promtail collects container logs → Loki aggregates → queried on the AI Admin Center "Unified Logging" page.
 

@@ -2,9 +2,9 @@
 
 *Première partie · Déploiement*
 
-> La passerelle qui centralise la gestion des Skills et des outils MCP ; DeepChat/Dify se connecte à une seule adresse pour obtenir tous les outils.
+> La passerelle qui centralise la gestion des Skills et des outils MCP ; DSH Desktop/Dify se connecte à une seule adresse pour obtenir tous les outils.
 
-[← Chapitre 10 : Distribution de DeepChat et CI/CD](ch10-deepchat.md) · [📖 Index](index.md) · [Chapitre 12 : Centre d'administration IA →](ch12-admin-center.md)
+[← Chapitre 10 : Distribution de DSH Desktop et CI/CD](ch10-dsh.md) · [📖 Index](index.md) · [Chapitre 12 : Centre d'administration IA →](ch12-admin-center.md)
 
 ---
 
@@ -36,7 +36,7 @@ Les outils agrégés reçoivent automatiquement le préfixe `{serverName}_` pour
 
 ## 11.3 Connexion des clients
 
-1. DeepChat : Paramètres → MCP → ajouter un serveur → type « HTTP streamable », URL `http://<IP-du-serveur>:3100/mcp` ;
+1. DSH Desktop : Paramètres → MCP → ajouter un serveur → type « HTTP streamable », URL `http://<IP-du-serveur>:3100/mcp` ;
 
 2. Workflow Dify : pointez la configuration d'outil personnalisé / d'outil MCP vers la même adresse.
 
@@ -52,13 +52,13 @@ Les outils agrégés reçoivent automatiquement le préfixe `{serverName}_` pour
 
 Les skills sont placés dans le répertoire `mcp-gateway/skills/` (sous-répertoires contenant SKILL.md), **analysés automatiquement à chaque requête, sans redémarrage**. Le skill de démarrage `skill-market` est inclus.
 
-> 📌 Dans DeepChat, MCP et Skill sont deux notions différentes : MCP est un « outil » (function calling), Skill est un « paquet de compétences d'agent intelligent » (SKILL.md + scripts). Le Skill de DeepChat ne dispose pas d'« URL de marché personnalisée » : il ne prend en charge que l'installation par dossier / ZIP / URL, la distribution intranet s'appuie donc sur l'« installation par URL ».
+> 📌 Dans DSH Desktop, MCP et Skill sont deux notions différentes : MCP est un « outil » (function calling), Skill est un « paquet de compétences d'agent intelligent » (SKILL.md + scripts). Le Skill de DSH Desktop ne dispose pas d'« URL de marché personnalisée » : il ne prend en charge que l'installation par dossier / ZIP / URL, la distribution intranet s'appuie donc sur l'« installation par URL ».
 
 ## 11.5 ⚠️ Nom d'hôte du marché de Skills (paramètre de déploiement, à remplacer impérativement)
 
 « Le gestionnaire de skills » lit le `market_url` de `config.json` pour requêter l'inventaire `/skills`. Deux points clés :
 
-- **Utiliser un nom d'hôte, pas une IP** : l'environnement d'agent de DeepChat anonymise l'IP en `[IP_ADDRESS_REDACTED]`, rendant l'adresse réelle illisible ;
+- **Utiliser un nom d'hôte, pas une IP** : l'environnement d'agent de DSH Desktop anonymise l'IP en `[IP_ADDRESS_REDACTED]`, rendant l'adresse réelle illisible ;
 
 - **Le nom d'hôte est un paramètre de déploiement** : différent pour chaque déploiement, à ne pas copier tel quel.
 
@@ -93,4 +93,4 @@ En-tête `X-Admin-Token` requis (`MCP_ADMIN_TOKEN` de `.env`). Appelé par proxy
 
 ---
 
-[← Chapitre 10 : Distribution de DeepChat et CI/CD](ch10-deepchat.md) · [📖 Index](index.md) · [Chapitre 12 : Centre d'administration IA →](ch12-admin-center.md)
+[← Chapitre 10 : Distribution de DSH Desktop et CI/CD](ch10-dsh.md) · [📖 Index](index.md) · [Chapitre 12 : Centre d'administration IA →](ch12-admin-center.md)

@@ -36,7 +36,7 @@ This skill targets the **AI AllInOne open-source enterprise AI platform** (self-
    ```
 5. **Initialize** (containers running ≠ platform usable; initialization is mandatory):
    - Keycloak: create the realm, OIDC client, `ai-platform-admin` role, unified admin
-   - NewAPI: configure channels (LiteLLM / direct), generate app tokens (deepchat-key / dify-key), SSO
+   - NewAPI: configure channels (LiteLLM / direct), generate app tokens (dsh-key / dify-key), SSO
    - Dify: start the standalone compose, point model providers to NewAPI, SSO
    - Ghost: initialize + deploy the Corp Portal theme + import sample content
    - Gitea: install + Runner registration + Actions workflows

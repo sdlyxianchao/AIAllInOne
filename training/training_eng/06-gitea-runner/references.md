@@ -4,7 +4,7 @@
 | Doc | Location |
 |---|---|
 | Admin Manual ch09 (products) | `../../docs/admin-manual/ch09-products.md` |
-| Admin Manual ch10 (deepchat-sync) | `../../docs/admin-manual/ch10-deepchat.md` |
+| Admin Manual ch10 (dsh-sync) | `../../docs/admin-manual/ch10-dsh.md` |
 | Admin Manual ch19 (ops) | `../../docs/admin-manual/ch19-ops-gitea.md` |
 | Deployment Guide §6.6, §9 | `../../windows/windows-deploy-guide-v2.en.html` |
 | Runner config | `../../windows/gitea-runner-config.yaml` |
@@ -29,4 +29,4 @@
 | Automating release versioning with Gitea Actions (official EN) | https://about.gitea.com/resources/tutorials/automating-release-versioning-with-gitea-actions-to-the-gitea-package-registry |
 
 ## Self-study path
-1. `package.md` → Runner 4 pitfalls + deepchat-sync; 2. labs (init→register→trigger→write workflow); 3. official quickstart + CSDN pipeline (on/jobs/steps/containers); 4. pitfalls: readonly database / ROOT_URL / force_pull (§6.6).
+1. `package.md` → Runner 4 pitfalls + dsh-sync; 2. labs (init→register→trigger→write workflow); 3. official quickstart + CSDN pipeline (on/jobs/steps/containers); 4. pitfalls: readonly database / ROOT_URL / force_pull (§6.6).

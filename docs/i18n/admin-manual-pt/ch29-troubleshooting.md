@@ -33,7 +33,7 @@
 | Login SSO dá unknown_error | Falha no encaminhamento de porta do AD (iphlpsvc) | Verificar iphlpsvc + rede Hyper-V |
 | Keycloak não vê os usuários do domínio | Search scope = One Level | Mudar para Subtree |
 | Langfuse não mostra dados | V4_WRITE_MODE ou conta SSO fora da organização | Definir dual; SQL para adicionar à organização (capítulo 23) |
-| DeepChat dá tempo esgotado de conexão com o modelo | Cliente passou por proxy de sistema caído | Definir sem proxy/conexão direta |
+| DSH Desktop dá tempo esgotado de conexão com o modelo | Cliente passou por proxy de sistema caído | Definir sem proxy/conexão direta |
 | Loki não encontra logs | Usou o label job | Use `{container=~".+"}` |
 | Presidio dá 404 /analyze/analyze | Endpoint com caminho | Preencher apenas a base URL |
 | Após alterar server.js, nova interface dá 404 | up -d não relê a mudança do volume | docker restart admin-portal |

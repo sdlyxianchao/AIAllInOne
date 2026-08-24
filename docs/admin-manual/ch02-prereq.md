@@ -48,7 +48,7 @@ After saving, run `wsl --shutdown` in PowerShell and restart Docker Desktop for 
 
 ```
 # PowerShell
-mkdir deepchat-updates
+mkdir dsh-updates
 ```
 
 ```
@@ -56,7 +56,7 @@ C:\ai-platform\windows\          # assumed deployment root directory
 ├─ docker-compose.yml           # core service orchestration
 ├─ .env.windows                 # environment variables (fill in API Key)
 ├─ litellm-config.yaml          # LiteLLM PII redaction configuration
-├─ deepchat-updates\            # DeepChat installer hosting directory
+├─ dsh-updates\            # DSH Desktop installer hosting directory
 ├─ admin-portal\                # AI Admin Center implementation
 ├─ mcp-gateway\                 # Skill / MCP gateway
 ├─ monitoring\                  # Prometheus / Loki configuration

@@ -22,7 +22,7 @@
 
 ## 15.2 Token (API Key) Management
 
-1. **Create**: API Keys → New token → name it (e.g. `deepchat-key`) → can set quota / expiry / model limits → Save;
+1. **Create**: API Keys → New token → name it (e.g. `dsh-key`) → can set quota / expiry / model limits → Save;
 
 2. **Copy Key**: starts with `sk-`, **shown only once, save it immediately**;
 

@@ -20,8 +20,8 @@
 | AI 애플리케이션 | Dify | 비주얼 AI 앱 / Agent / 지식베이스 플랫폼 |
 | 기업 포털 | Ghost | 공지, 뉴스, 다운로드 센터, 직원 Hub |
 | 소스 / CI | Gitea + Runner | 내부 Git 저장소 + Actions 자동화 |
-| 클라이언트 | DeepChat | 로컬 AI 데스크톱 클라이언트 (Win/macOS/Linux) |
-| 클라이언트 배포 | 업데이트 서버 | DeepChat 설치 패키지 호스팅 및 자동 업데이트 |
+| 클라이언트 | DSH Desktop | 로컬 AI 데스크톱 클라이언트 (Win/macOS/Linux) |
+| 클라이언트 배포 | 업데이트 서버 | DSH Desktop 설치 패키지 호스팅 및 자동 업데이트 |
 | 통합 관리 | AI 관리 센터 | 유일한 관리 진입점: Dashboard + 제품 임베드 + 감사/비용/보고서 |
 | 게이트웨이 | MCP Gateway | Skill / MCP 마켓 관리 |
 | 모니터링 알림 | Prometheus + Grafana + Alertmanager | 컨테이너 리소스 모니터링 + 알림 통지 |
@@ -54,7 +54,7 @@
 | 5 | Dify | AI 앱 플랫폼 | `127.0.0.1` | `<서버-IP>`(80 포트) |
 | 6 | Ghost | 기업 포털 | `127.0.0.1:8090` | `<서버-IP>:8090` |
 | 7 | Gitea | 소스 + CI/CD | `127.0.0.1:3002` | `<서버-IP>:3002` |
-| 8 | 업데이트 서버 | DeepChat 설치 패키지 | `127.0.0.1:8091` | `<서버-IP>:8091` |
+| 8 | 업데이트 서버 | DSH Desktop 설치 패키지 | `127.0.0.1:8091` | `<서버-IP>:8091` |
 | 9 | MCP Gateway | Skill / MCP 게이트웨이 | `127.0.0.1:3100` | `<서버-IP>:3100` |
 | 10 | Grafana | 모니터링 대시보드 | `127.0.0.1:3030` | `<서버-IP>:3030` |
 | 11 | Prometheus | 지표 수집 / 알림 | `127.0.0.1:9091` | `<서버-IP>:9091` |
@@ -70,7 +70,7 @@
 
 ```mermaid
 flowchart LR
-    A["DeepChat / Dify"] --> B["NewAPI (라우팅)"]
+    A["DSH Desktop / Dify"] --> B["NewAPI (라우팅)"]
     B["NewAPI (라우팅)"] --> C["LiteLLM (비식별화)"]
     C["LiteLLM (비식별화)"] --> D["외부 대형 모델"]
 ```
@@ -79,7 +79,7 @@ flowchart LR
 
 *요청 방향 →; 응답 방향 ← (LiteLLM이 PII를 복원한 후 반환); LiteLLM이 사이드채널로 Langfuse에 보고*
 
-1. **① 전달**: DeepChat / Dify가 요청을 NewAPI에 전송 (`:3000/v1`);
+1. **① 전달**: DSH Desktop / Dify가 요청을 NewAPI에 전송 (`:3000/v1`);
 
 2. **② 비식별화**: NewAPI가 LiteLLM으로 전달, LiteLLM이 정규식 + Presidio로 휴대폰번호/주민등록번호/이메일 등을 `[xxx_REDACTED]`로 대체;
 
@@ -95,7 +95,7 @@ flowchart LR
 
 - **옵저버빌리티 흐름**: LiteLLM `success_callback` → Langfuse가 매 호출을 추적;
 
-- **자동 업데이트 흐름**: Gitea Actions 빌드 → 업데이트 서버 (:8091) → DeepChat이 `version.txt` 확인 후 자동 다운로드 설치;
+- **자동 업데이트 흐름**: Gitea Actions 빌드 → 업데이트 서버 (:8091) → DSH Desktop이 `version.txt` 확인 후 자동 다운로드 설치;
 
 - **통합 로그 흐름**: Promtail이 각 컨테이너 로그 수집 → Loki 집계 → AI 관리 센터 「통합 로그」 페이지에서 조회.
 

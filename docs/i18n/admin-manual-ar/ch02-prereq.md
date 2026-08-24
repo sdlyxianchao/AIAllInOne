@@ -48,7 +48,7 @@ swap=4GB
 
 ```
 # PowerShell
-mkdir deepchat-updates
+mkdir dsh-updates
 ```
 
 ```
@@ -56,7 +56,7 @@ C:\ai-platform\windows\          # مجلد جذر النشر المفترض
 ├─ docker-compose.yml           # تنظيم الخدمات الأساسية
 ├─ .env.windows                 # متغيرات البيئة (يجب تعبئة مفتاح API)
 ├─ litellm-config.yaml          # إعداد إخفاء PII في LiteLLM
-├─ deepchat-updates\            # مجلد استضافة حزم تثبيت DeepChat
+├─ dsh-updates\            # مجلد استضافة حزم تثبيت DSH Desktop
 ├─ admin-portal\                # تنفيذ مركز إدارة الذكاء الاصطناعي
 ├─ mcp-gateway\                 # بوابة Skill / MCP
 ├─ monitoring\                  # إعدادات Prometheus / Loki

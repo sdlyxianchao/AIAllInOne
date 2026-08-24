@@ -4,7 +4,7 @@
 
 > Le point de départ de la plateforme IA : lire les actualités, télécharger des logiciels, basculer vers Dify.
 
-[← Chapitre 1 : Découvrir la plateforme](ch01-about.md) · [📖 Index](index.md) · [Chapitre 3 : Outil 1 : DeepChat →](ch03-deepchat.md)
+[← Chapitre 1 : Découvrir la plateforme](ch01-about.md) · [📖 Index](index.md) · [Chapitre 3 : Outil 1 : DSH Desktop →](ch03-dsh.md)
 
 ---
 
@@ -28,11 +28,11 @@ flowchart TB
 
 2. La page d'accueil affiche la liste des dernières actualités et annonces ; cliquez sur un titre pour lire l'article complet.
 
-## 2.3 Centre de téléchargement (installer DeepChat)
+## 2.3 Centre de téléchargement (installer DSH Desktop)
 
 1. Cliquez sur le menu « **Centre de téléchargement** » en haut du portail, ou ouvrez directement `http://IP:8090/downloads/` ;
 
-2. Choisissez le paquet d'installation **Windows** / **macOS** selon votre système, téléchargez **DeepChat** ;
+2. Choisissez le paquet d'installation **Windows** / **macOS** selon votre système, téléchargez **DSH Desktop** ;
 
 3. Installation : sous Windows, double-cliquez sur le .exe et suivez l'assistant ; sous macOS, ouvrez le .dmg et glissez-le dans « Applications ».
 
@@ -48,4 +48,4 @@ flowchart TB
 
 ---
 
-[← Chapitre 1 : Découvrir la plateforme](ch01-about.md) · [📖 Index](index.md) · [Chapitre 3 : Outil 1 : DeepChat →](ch03-deepchat.md)
+[← Chapitre 1 : Découvrir la plateforme](ch01-about.md) · [📖 Index](index.md) · [Chapitre 3 : Outil 1 : DSH Desktop →](ch03-dsh.md)

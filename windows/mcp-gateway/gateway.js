@@ -2,11 +2,11 @@
  * AI All-in-One MCP Gateway
  *
  * 基于 @modelcontextprotocol/sdk 的标准 MCP 聚合网关：
- * - 对外暴露 Streamable HTTP /mcp 端点（DeepChat / Dify 连这一个地址即可）
+ * - 对外暴露 Streamable HTTP /mcp 端点（DSH Desktop / Dify 连这一个地址即可）
  * - 内置平台工具（时间 / 回显 / 服务清单）
  * - 通过 mcp-servers.json 聚合外部 MCP Server（stdio 或 http）
  *
- * 客户端接入（DeepChat）：
+ * 客户端接入（DSH Desktop）：
  *   服务器类型: Streamable HTTP (http)
  *   基础 URL:   http://<服务器IP>:3100/mcp
  */
@@ -29,13 +29,13 @@ const SKILLS_DIR = process.env.SKILLS_DIR || '/app/skills';
 const ADMIN_TOKEN = process.env.MCP_ADMIN_TOKEN || '';
 const PUBLIC_URL = (process.env.SERVER_PUBLIC_URL || '').replace(/\/+$/, '');  // 如 http://192.168.31.117
 
-// 生成 DeepChat 一键安装 MCP 的 DeepLink（deepchat://mcp/install?code=<base64 JSON>）
+// 生成 DSH Desktop 一键安装 MCP 的 DeepLink（dsh://mcp/install?code=<base64 JSON>）
 function buildDeepLink() {
   const base = PUBLIC_URL ? `${PUBLIC_URL}:${PORT}` : `http://<服务器IP>:${PORT}`;
   const cfg = {
     mcpServers: {
       'ai-platform': {
-        // 注意：DeepChat 的 deepchat://mcp/install 处理器只接受 'stdio' 或 'sse'，
+        // 注意：DSH Desktop 的 dsh://mcp/install 处理器只接受 'stdio' 或 'sse'，
         // 不接受 'http'（Streamable HTTP），所以一键接入走 /sse，手动配置仍走 /mcp
         type: 'sse',
         url: `${base}/sse`,
@@ -47,8 +47,8 @@ function buildDeepLink() {
   };
   const code = Buffer.from(JSON.stringify(cfg), 'utf8').toString('base64');
   // base64 里可能含 + / =（如 emoji 图标 🔌），必须 URL 编码，
-  // 否则在 URL 查询参数解析时 + 会被当成空格，导致 DeepChat 解码失败、静默不安装
-  return { base, deepLink: `deepchat://mcp/install?code=${encodeURIComponent(code)}` };
+  // 否则在 URL 查询参数解析时 + 会被当成空格，导致 DSH Desktop 解码失败、静默不安装
+  return { base, deepLink: `dsh://mcp/install?code=${encodeURIComponent(code)}` };
 }
 
 // ═══════════════════════════════════════════
@@ -267,7 +267,7 @@ app.all('/mcp', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════
-// SSE 端点（DeepChat 一键接入 deepchat://mcp/install 只支持 stdio/sse，
+// SSE 端点（DSH Desktop 一键接入 dsh://mcp/install 只支持 stdio/sse，
 // 故额外暴露 /sse 供 deep link 使用；Dify/手动配置仍用 /mcp Streamable HTTP）
 // ═══════════════════════════════════════════
 const sseTransports = new Map(); // sessionId -> SSEServerTransport
@@ -362,7 +362,7 @@ function discoverSkills() {
 app.get('/skills', (req, res) => {
   res.json({
     skills: discoverSkills(),
-    install: 'DeepChat 设置 → Skills → 从 URL 安装，填 http://<服务器IP>:3100/skills/<名称>.zip',
+    install: 'DSH Desktop 设置 → Skills → 从 URL 安装，填 http://<服务器IP>:3100/skills/<名称>.zip',
   });
 });
 
@@ -586,14 +586,14 @@ app.get('/market', (req, res) => {
     <div class="section-head mcp"><span class="ico">🔌</span><span class="title">MCP</span><span class="hint">一键接入平台 MCP 网关</span></div>
     <div class="section-body">
       <div class="mcp-box">
-        <div class="mcp-title">🔌 一键接入 DeepChat MCP</div>
-        <p class="mcp-desc">把「AI 平台 MCP 网关」（内置工具 + 知识库检索 <code>search_knowledge</code>）加进 DeepChat，即可在对话里使用平台工具和 RAG 知识库检索。</p>
+        <div class="mcp-title">🔌 一键接入 DSH Desktop MCP</div>
+        <p class="mcp-desc">把「AI 平台 MCP 网关」（内置工具 + 知识库检索 <code>search_knowledge</code>）加进 DSH Desktop，即可在对话里使用平台工具和 RAG 知识库检索。</p>
         <div class="mcp-actions">
-          <a class="btn mcp-btn" href="${deepLink}">🔌 一键接入 DeepChat MCP</a>
+          <a class="btn mcp-btn" href="${deepLink}">🔌 一键接入 DSH Desktop MCP</a>
           <button class="btn ghost" onclick="copyDeepLink()">📋 复制一键接入链接</button>
         </div>
-        <p class="mcp-manual">手动配置：DeepChat → 设置 → MCP → 新增 → <b>跳过至手动配置</b> → 类型「可流式传输的 HTTP 请求」→ 基础 URL 填 <code>${mcpBase}/mcp</code></p>
-        <p class="mcp-note">⚠️ 一键接入走 <b>SSE</b>（DeepChat 的 deep link 只支持 SSE/stdio，不支持 Streamable HTTP），会显示「SSE is legacy-only」提示，属正常、不影响使用；想要 Streamable HTTP（无提示）请用上面手动配置填 <code>/mcp</code>。</p>
+        <p class="mcp-manual">手动配置：DSH Desktop → 设置 → MCP → 新增 → <b>跳过至手动配置</b> → 类型「可流式传输的 HTTP 请求」→ 基础 URL 填 <code>${mcpBase}/mcp</code></p>
+        <p class="mcp-note">⚠️ 一键接入走 <b>SSE</b>（DSH Desktop 的 deep link 只支持 SSE/stdio，不支持 Streamable HTTP），会显示「SSE is legacy-only」提示，属正常、不影响使用；想要 Streamable HTTP（无提示）请用上面手动配置填 <code>/mcp</code>。</p>
       </div>
 
       <div class="subhead">🛠️ 网关内置工具</div>
@@ -621,7 +621,7 @@ app.get('/market', (req, res) => {
     <div class="section-head skill"><span class="ico">🧩</span><span class="title">SKILL</span><span class="hint">内网技能包安装</span></div>
     <div class="section-body">
       <div class="howto">
-        <strong>DeepChat 安装 Skill：</strong>设置 → Skills → 从 URL 安装，填
+        <strong>DSH Desktop 安装 Skill：</strong>设置 → Skills → 从 URL 安装，填
         <code>${mcpBase}/skills/&lt;名称&gt;.zip</code>（或点「下载 ZIP」后从 ZIP / 文件夹安装）。
       </div>
       <div class="toolbar">

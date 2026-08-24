@@ -4,7 +4,7 @@
 
 > AI 플랫폼 진입 시작점: 뉴스 보기, 소프트웨어 다운로드, Dify로 이동.
 
-[← 제1장: 플랫폼 알아보기](ch01-about.md) · [📖 목차](index.md) · [제3장: 도구 1: DeepChat →](ch03-deepchat.md)
+[← 제1장: 플랫폼 알아보기](ch01-about.md) · [📖 목차](index.md) · [제3장: 도구 1: DSH Desktop →](ch03-dsh.md)
 
 ---
 
@@ -28,11 +28,11 @@ flowchart TB
 
 2. 홈이 최신 뉴스, 공지 목록, 제목 클릭해 전문 읽기.
 
-## 2.3 다운로드 센터 (DeepChat 설치)
+## 2.3 다운로드 센터 (DSH Desktop 설치)
 
 1. 포털 상단 「**다운로드 센터**」 메뉴 클릭, 또는 `http://IP:8090/downloads/` 직접 열기;
 
-2. 시스템에 따라 **Windows** / **macOS** 설치 패키지 선택, **DeepChat** 다운로드;
+2. 시스템에 따라 **Windows** / **macOS** 설치 패키지 선택, **DSH Desktop** 다운로드;
 
 3. 설치: Windows는 .exe 더블클릭 후 마법사 진행; macOS는 .dmg 열어 「응용 프로그램」으로 드래그.
 
@@ -48,4 +48,4 @@ flowchart TB
 
 ---
 
-[← 제1장: 플랫폼 알아보기](ch01-about.md) · [📖 목차](index.md) · [제3장: 도구 1: DeepChat →](ch03-deepchat.md)
+[← 제1장: 플랫폼 알아보기](ch01-about.md) · [📖 목차](index.md) · [제3장: 도구 1: DSH Desktop →](ch03-dsh.md)

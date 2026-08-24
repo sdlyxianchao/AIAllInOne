@@ -22,9 +22,9 @@
 | --- | --- |
 | "Insufficient quota" prompt? | check balance in the NewAPI admin; contact the admin to top up / raise when exhausted |
 | Content blocked on send? | hit a sensitive word or contains sensitive info; adjust per Chapter 6 rules and retry |
-| DeepChat reports connection timeout? | Settings → Network/Proxy → change to "No proxy / direct" |
+| DSH Desktop reports connection timeout? | Settings → Network/Proxy → change to "No proxy / direct" |
 | Model reply quality is poor? | switch models, or improve the question (provide context, clarify requirements, give examples) |
-| Forgot where to download DeepChat? | the portal download center `http://IP:8090/downloads/` |
+| Forgot where to download DSH Desktop? | the portal download center `http://IP:8090/downloads/` |
 | Dify keeps spinning when creating apps? | usually a network/WebSocket issue; contact the admin; hard-refresh with Ctrl+F5 |
 
 ## 7.3 Awareness

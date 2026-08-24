@@ -22,7 +22,7 @@
 
 ## 15.2 Gestión de tokens (API Keys)
 
-1. **Nuevo**: API Keys → nuevo token → ponle nombre (como `deepchat-key`) → puedes fijar cuota/fecha de expiración/restricción de modelos → guarda;
+1. **Nuevo**: API Keys → nuevo token → ponle nombre (como `dsh-key`) → puedes fijar cuota/fecha de expiración/restricción de modelos → guarda;
 
 2. **Copiar Key**: empieza por `sk-`, **solo se muestra una vez, guárdala de inmediato**;
 

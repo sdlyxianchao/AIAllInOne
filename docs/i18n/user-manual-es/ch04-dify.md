@@ -4,7 +4,7 @@
 
 > Plataforma web de aplicaciones de IA: usa aplicaciones ya listas y crea respuestas con base de conocimiento.
 
-[← Capítulo 3: Herramienta 1: DeepChat](ch03-deepchat.md) · [📖 Índice](index.md) · [Capítulo 5: Solicitar una API Key →](ch05-key.md)
+[← Capítulo 3: Herramienta 1: DSH Desktop](ch03-dsh.md) · [📖 Índice](index.md) · [Capítulo 5: Solicitar una API Key →](ch05-key.md)
 
 ---
 
@@ -50,4 +50,4 @@ Si quieres «alimentar» a la IA con documentos internos para que responda, usa 
 
 ---
 
-[← Capítulo 3: Herramienta 1: DeepChat](ch03-deepchat.md) · [📖 Índice](index.md) · [Capítulo 5: Solicitar una API Key →](ch05-key.md)
+[← Capítulo 3: Herramienta 1: DSH Desktop](ch03-dsh.md) · [📖 Índice](index.md) · [Capítulo 5: Solicitar una API Key →](ch05-key.md)

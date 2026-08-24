@@ -22,7 +22,7 @@
 
 ## 15.2 Gestion des tokens (clés API)
 
-1. **Créer** : Clés API → nouveau token → nommer (par exemple `deepchat-key`) → définir éventuellement quota/expiration/restriction de modèles → enregistrer ;
+1. **Créer** : Clés API → nouveau token → nommer (par exemple `dsh-key`) → définir éventuellement quota/expiration/restriction de modèles → enregistrer ;
 
 2. **Copier la clé** : commence par `sk-`, **affichée une seule fois, sauvegardez immédiatement** ;
 

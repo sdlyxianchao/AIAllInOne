@@ -46,8 +46,8 @@ AI AllInOne 是一套**开源免费**、开箱即用的企业内网 AI 平台：
 | AI 应用 | Dify | 可视化 AI 应用 / Agent 平台 + 统一知识库（RAG） |
 | 企业门户 | Ghost | 公司公告与新闻门户（内置定制 Corp Portal 主题） |
 | 源码 / CI | Gitea + Runner | 内部 Git + Actions 自动化 |
-| 客户端 | DeepChat | 本地 AI 桌面客户端（Windows / macOS / Linux） |
-| 客户端分发 | Update Server | DeepChat 安装包托管与自动更新 |
+| 客户端 | DSH Desktop（Windows/macOS）· Linux（即将推出） | 本地 AI 桌面客户端——Windows/macOS 用 DSH Desktop，Linux 版本即将推出 |
+| 客户端分发 | Update Server | 桌面客户端安装包托管与自动更新（Windows/macOS 为 DSH Desktop） |
 | 统一管理 | AI Admin Center | 统一入口：仪表板 + 内嵌产品 + 审计/成本/报表 + 分级管理员授权 + Keycloak 同步/角色 |
 | 网关 | MCP Gateway | 技能 / MCP 市场 + Dify 知识检索（RAG） |
 | 监控 | Prometheus + Grafana + Alertmanager | 容器资源监控 + 告警通知 |
@@ -112,9 +112,9 @@ docker compose up -d
 
 ## 🖼️ 界面截图
 
-**Dify** — AI 应用平台 · **MCP/Skill 市场** — 一键接入工具与技能 · **DeepChat** — 桌面 AI 客户端
+**Dify** — AI 应用平台 · **MCP/Skill 市场** — 一键接入工具与技能 · **DSH Desktop** — 桌面 AI 客户端
 
-![Dify](<../pics/Dify.png>) ![MCP/SKILL 市场](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
+![Dify](<../pics/Dify.png>) ![MCP/SKILL 市场](<../pics/Market.png>) ![DSH Desktop](<../pics/dsh.png>)
 
 更多截图（48 张真实界面截图）已嵌入[管理员手册](../docs/admin-manual/index.md)。
 
@@ -186,7 +186,7 @@ docker compose up -d
 - Keycloak SSO 集成统一登录
 
 **新增：Gitea 同步工作流**
-- DeepChat 自动更新同步脚本导出并文档化
+- DSH Desktop 自动更新同步脚本导出并文档化
 - Gitea Actions 工作流自动分发桌面客户端
 
 **改进：部署指南**
@@ -267,10 +267,10 @@ docker compose up -d
 | Stage 2 | 41 个容器状态（Up/Exited/Restarting） | `docker ps -a` |
 | Stage 3 | 10 个 HTTP 端点响应（含 MCP Gateway） | `curl.exe 127.0.0.1:端口` |
 | Stage 4 | LiteLLM /readiness + **模型注册**、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox 健康状态 | `docker exec` + `docker inspect` |
-| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DeepChat 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
+| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DSH Desktop 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
 | Stage 6 | **AD 账号认证链路**：Keycloak well-known + AD 用户同步（aitest1）+ NewAPI OIDC 配置 + OIDC clients 完整性 + **NewAPI 管理员登录** | curl + Admin API + mysql |
 | Stage 7 | **MCP Gateway + Skill**：/health + tools/list + tools/call + 外部 Skill 聚合 | curl MCP 协议 |
-| Stage 8 | **DeepChat / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
+| Stage 8 | **DSH Desktop / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
 | Stage 9 | **磁盘空间**：系统盘剩余 + Docker 磁盘占用 | `Get-PSDrive` + `docker system df` |
 
 **手动执行**（PowerShell）：

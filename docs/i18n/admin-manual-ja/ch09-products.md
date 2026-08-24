@@ -4,7 +4,7 @@
 
 > 3 製品それぞれの初期化と相互接続の設定。
 
-[← 第8章：LiteLLM：検証とキャッシュ](ch08-litellm.md) · [📖 目次](index.md) · [第10章：DeepChat の配布と CI/CD →](ch10-deepchat.md)
+[← 第8章：LiteLLM：検証とキャッシュ](ch08-litellm.md) · [📖 目次](index.md) · [第10章：DSH Desktop の配布と CI/CD →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | AI ワークベンチ | カスタムリンク | `http://<サーバーIP>` |
 | ヘルプドキュメント | カテゴリ | `/category/docs` |
 
-1. **ダウンロードセンターページ**：ページ → 「ダウンロードセンター」を新規作成（slug `downloads`）。内容に DeepChat インストーラのイントラネットリンクを配置。
+1. **ダウンロードセンターページ**：ページ → 「ダウンロードセンター」を新規作成（slug `downloads`）。内容に DSH Desktop インストーラのイントラネットリンクを配置。
 
 ```
-## DeepChat エンタープライズ版
+## DSH Desktop エンタープライズ版
 ### Windows
-- [DeepChat v1.1.0（Windows x64）](http://<サーバーIP>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0（Windows x64）](http://<サーバーIP>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0（macOS x64）](http://<サーバーIP>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0（macOS x64）](http://<サーバーIP>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ ポータルホーム `/` で「登録」をクリックしない——それは訪問者購読者の登録です（SMTP 未設定だと 500）。管理者入口は `/ghost/`。GitHub から最新版テーマをインストールしない（Ghost 6.x 向けの可能性があり、5.x では incompatible エラー）。
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← 第8章：LiteLLM：検証とキャッシュ](ch08-litellm.md) · [📖 目次](index.md) · [第10章：DeepChat の配布と CI/CD →](ch10-deepchat.md)
+[← 第8章：LiteLLM：検証とキャッシュ](ch08-litellm.md) · [📖 目次](index.md) · [第10章：DSH Desktop の配布と CI/CD →](ch10-dsh.md)

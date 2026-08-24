@@ -28,7 +28,7 @@
 |---|---|
 | Admin console | `<newapi>/ui/` (admin login, SSO or local account) |
 | Admin API | `<newapi>/api/…` (session token Bearer after login) |
-| Credentials | `NEWAPI_ADMIN_USERNAME` / `NEWAPI_ADMIN_PASSWORD` (.env); app tokens `deepchat-key` / `dify-key` |
+| Credentials | `NEWAPI_ADMIN_USERNAME` / `NEWAPI_ADMIN_PASSWORD` (.env); app tokens `dsh-key` / `dify-key` |
 
 **Common admin operations**:
 - Channel management: `/api/channel/` (list/add/edit/delete/test), channel types (OpenAI-compatible, etc.)
@@ -93,8 +93,8 @@
 **Common admin operations**:
 - Repos: create/migrate/delete, branches and releases (tags)
 - Users and organizations: members, permissions
-- Actions: manually trigger workflows (e.g. `sync.yml` of deepchat-sync), view run status and logs
-- Release management: publish/delete tags (distribute DeepChat packages with Update Server)
+- Actions: manually trigger workflows (e.g. `sync.yml` of dsh-sync), view run status and logs
+- Release management: publish/delete tags (distribute DSH Desktop packages with Update Server)
 - Runner status: `docker ps | grep gitea-runner` (Idle/Running)
 
 ## 7. MCP Gateway — Tool Gateway
@@ -108,7 +108,7 @@
 **Common admin operations**:
 - Register/remove business MCP servers (`mcp-servers.json` → `docker restart mcp-gateway`)
 - Skill marketplace: `skills/` directory (dynamically packaged and distributed; changes take effect immediately without restart); upload/delete skills
-- Tool list: `GET /api/tools` (aggregates all available tools for clients such as DeepChat to discover)
+- Tool list: `GET /api/tools` (aggregates all available tools for clients such as DSH Desktop to discover)
 
 ## 8. Monitoring & Alerting: Prometheus / Alertmanager / Grafana
 
@@ -152,16 +152,16 @@
 - Collection config: edit `promtail.yml` (add container log paths/labels) → `docker restart promtail`
 - Retention policy: Loki config (`monitoring/loki.yml`)
 
-## 11. Update Server / DeepChat
+## 11. Update Server / DSH Desktop
 
 | Item | Description |
 |---|---|
-| Update Server | Statically hosts DeepChat packages + `version.txt` (`deepchat-updates/` directory) |
+| Update Server | Statically hosts DSH Desktop packages + `version.txt` (`dsh-updates/` directory) |
 | Management | Replace packages/edit `version.txt` → clients auto-prompt for updates |
-| DeepChat | Desktop client: Provider points to NewAPI; MCP points to MCP Gateway; Skill marketplace |
+| DSH Desktop | Desktop client: Provider points to NewAPI; MCP points to MCP Gateway; Skill marketplace |
 
 **Common admin operations**:
-- Publish a new version: Gitea workflow (deepchat-sync) → update Update Server directory → update `version.txt`
+- Publish a new version: Gitea workflow (dsh-sync) → update Update Server directory → update `version.txt`
 - Client troubleshooting: Provider config, MCP connection (`<mcp-gateway>/mcp`), logs
 
 ## 12. MailHog (Dev Mail)

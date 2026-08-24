@@ -34,9 +34,9 @@ version: 1.0.0
 | `http://<服务器IP>:3100/skills` | 技能清单（JSON） |
 | `http://<服务器IP>:3100/skills/<技能名>.zip` | 技能包下载（自动打包） |
 
-## DeepChat 安装方式
+## DSH Desktop 安装方式
 
-DeepChat 设置 → Skills → **从 URL 安装**，填：
+DSH Desktop 设置 → Skills → **从 URL 安装**，填：
 
 ```
 http://<服务器IP>:3100/skills/<技能名>.zip

@@ -115,7 +115,7 @@
     <tr><td>Disk</td><td>60 GB free SSD</td><td>150 GB+ free SSD</td></tr>
     <tr><td>GPU</td><td>Not required</td><td>Not required</td></tr>
   </table>
-  <p><strong>Based on measurements</strong> (~30 containers idle use about 5 GB RAM total; Dify processing/indexing, Keycloak JVM, MySQL/Postgres caches add 3–5 GB at peak, plus Docker Desktop's WSL2 virtual memory — 16 GB is the minimum, 32 GB is comfortable). Disk is mostly consumed by Docker images (~10–15 GB) and DeepChat installers (~740 MB per version, accumulating by retained version count). All large models run via external APIs (deepseek-chat, etc.) with no local inference, so <b>no GPU is required</b>.</p>
+  <p><strong>Based on measurements</strong> (~30 containers idle use about 5 GB RAM total; Dify processing/indexing, Keycloak JVM, MySQL/Postgres caches add 3–5 GB at peak, plus Docker Desktop's WSL2 virtual memory — 16 GB is the minimum, 32 GB is comfortable). Disk is mostly consumed by Docker images (~10–15 GB) and DSH Desktop installers (~450 MB per version, accumulating by retained version count). All large models run via external APIs (deepseek-chat, etc.) with no local inference, so <b>no GPU is required</b>.</p>
 </div>
 
 <div class="toc">
@@ -129,9 +129,9 @@
     <li><a href="#start">4. Start Core Services</a></li>
     <li><a href="#dify">5. Standalone Dify Deployment</a></li>
     <li><a href="#config">6. Per-Product Web UI Configuration</a></li>
-    <li><a href="#deepchat">7. DeepChat Installation &amp; Configuration</a></li>
+    <li><a href="#dsh">7. DSH Desktop Installation &amp; Configuration</a></li>
     <li><a href="#mcp">8. MCP Gateway — Skill / MCP Management Hub</a></li>
-    <li><a href="#cicd">9. CI/CD — DeepChat Build &amp; Release</a></li>
+    <li><a href="#cicd">9. CI/CD — DSH Desktop Build &amp; Release</a></li>
     <li><a href="#interconnect">10. Interconnection Verification</a></li>
     <li><a href="#admin-portal">11. AI Admin Center — Unified Admin Portal</a></li>
     <li><a href="#ops">12. Operations — Health Checks &amp; Startup Self-Check</a></li>
@@ -194,7 +194,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
   <!-- ====== Layer 1: User ====== -->
   <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
-  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DeepChat Desktop Client</text>
+  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DSH Desktop Desktop Client</text>
   <text x="140" y="90" fill="#8b949e" font-size="10">Win/Mac/Linux · local file access · MCP/Skill</text>
 
   <g filter="url(#sh)"><rect x="820" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="820" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
@@ -246,7 +246,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
   <g filter="url(#sh)"><rect x="735" y="565" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="565" width="4" height="60" rx="2" fill="#56d364"/></g>
   <text x="755" y="588" fill="#56d364" font-size="13" font-weight="600">📦 Update Server</text>
-  <text x="755" y="605" fill="#8b949e" font-size="10">DeepChat installer hosting</text>
+  <text x="755" y="605" fill="#8b949e" font-size="10">DSH Desktop installer hosting</text>
 
   <g filter="url(#sh)"><rect x="960" y="565" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="565" width="4" height="60" rx="2" fill="#d29922"/></g>
   <text x="980" y="588" fill="#d29922" font-size="13" font-weight="600">📈 Monitoring · Logging</text>
@@ -287,7 +287,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <path d="M 612 565 L 735 565" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
   <text x="674" y="558" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">build artifact</text>
   <path d="M 1062 565 L 1175 565 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
-  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DeepChat auto-update (check version.txt → download & install)</text>
+  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DSH Desktop auto-update (check version.txt → download & install)</text>
 
   <!-- Keycloak OIDC -->
   <path d="M 162 565 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
@@ -297,7 +297,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <!-- MCP -->
   <path d="M 387 565 L 387 455" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
   <path d="M 387 455 L 250 455 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="2.5" stroke-dasharray="5,3" opacity="0.9" marker-end="url(#ap)"/>
-  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DSH Desktop · Dify</text>
   <!-- RAG retrieval: MCP Gateway → Dify knowledge base -->
   <path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" stroke="#39c5cf" stroke-width="2.5" stroke-dasharray="7" marker-end="url(#at)"/>
   <text x="577" y="498" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="700">RAG retrieval: search_knowledge → Dify knowledge base</text>
@@ -311,13 +311,13 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <text x="40" y="795" fill="#58a6ff" font-size="13" font-weight="700">📊 Data flow legend</text>
 
   <line x1="40" y1="815" x2="80" y2="815" stroke="#58a6ff" stroke-width="2"/>
-  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM request flow: DeepChat / Dify → NewAPI → LiteLLM masking → external model → restore PII → return</text>
+  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM request flow: DSH Desktop / Dify → NewAPI → LiteLLM masking → external model → restore PII → return</text>
 
   <line x1="40" y1="840" x2="80" y2="840" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
   <text x="90" y="844" fill="#c9d1d9" font-size="11">Observability flow: LiteLLM success_callback → Langfuse traces every call (prompt/response/latency/token/cost)</text>
 
   <line x1="40" y1="865" x2="80" y2="865" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="869" fill="#c9d1d9" font-size="11">Auto-update flow: Gitea Actions build → update server → DeepChat auto-download & install</text>
+  <text x="90" y="869" fill="#c9d1d9" font-size="11">Auto-update flow: Gitea Actions build → update server → DSH Desktop auto-download & install</text>
 
   <line x1="620" y1="815" x2="660" y2="815" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
   <text x="670" y="819" fill="#c9d1d9" font-size="11">Portal flow: browser → Ghost portal → browse news/download/redirect to Dify</text>
@@ -333,7 +333,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
   <line x1="40" y1="895" x2="1160" y2="895" stroke="#30363d" stroke-width="0.5"/>
   <text x="40" y="912" fill="#d2a8ff" font-size="10" font-weight="700">🔐 Component interactions:</text>
-  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → all web products　　MCP Gateway provides Skill/MCP → DeepChat/Dify　　LiteLLM report → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → all web products　　MCP Gateway provides Skill/MCP → DSH Desktop/Dify　　LiteLLM report → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
   <text x="40" y="942" fill="#8b949e" font-size="9">Gitea build → update server + Ghost announcement　　AI Admin Center — unified admin portal (Dashboard + embedded product pages + audit/cost reports + backup/restore + unified logs)</text>
 
   <rect x="40" y="950" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
@@ -354,8 +354,8 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <tr><td>5</td><td><strong>Dify</strong></td><td>Web AI app platform</td><td><code>http://127.0.0.1</code></td><td><code>http://&lt;server-IP&gt;</code></td><td>dify-* (multi-container)</td></tr>
   <tr><td>6</td><td><strong>Ghost</strong></td><td>Enterprise portal</td><td><code>http://127.0.0.1:8090</code></td><td><code>http://&lt;server-IP&gt;:8090</code></td><td>ghost</td></tr>
   <tr><td>7</td><td><strong>Gitea</strong></td><td>Source control + CI/CD</td><td><code>http://127.0.0.1:3002</code></td><td><code>http://&lt;server-IP&gt;:3002</code></td><td>gitea</td></tr>
-  <tr><td>8</td><td><strong>Update Server</strong></td><td>DeepChat installer hosting</td><td><code>http://127.0.0.1:8091</code></td><td><code>http://&lt;server-IP&gt;:8091</code></td><td>update-server</td></tr>
-  <tr><td>9</td><td><strong>DeepChat</strong></td><td>Local AI desktop client</td><td colspan="2">Desktop app; API address <code>http://&lt;server-IP&gt;:3000</code> (on employee machines)</td><td>—</td></tr>
+  <tr><td>8</td><td><strong>Update Server</strong></td><td>DSH Desktop installer hosting</td><td><code>http://127.0.0.1:8091</code></td><td><code>http://&lt;server-IP&gt;:8091</code></td><td>update-server</td></tr>
+  <tr><td>9</td><td><strong>DSH Desktop</strong></td><td>Local AI desktop client</td><td colspan="2">Desktop app; API address <code>http://&lt;server-IP&gt;:3000</code> (on employee machines)</td><td>—</td></tr>
   <tr><td>10</td><td><strong>Grafana</strong></td><td>Monitoring visualization dashboard</td><td><code>http://127.0.0.1:3030</code></td><td><code>http://&lt;server-IP&gt;:3030</code></td><td>grafana</td></tr>
   <tr><td>11</td><td><strong>Prometheus</strong></td><td>Metrics collection / alerting</td><td><code>http://127.0.0.1:9091</code></td><td><code>http://&lt;server-IP&gt;:9091</code></td><td>prometheus</td></tr>
   <tr><td>12</td><td><strong>Langfuse</strong></td><td>LLM observability / call tracing</td><td><code>http://127.0.0.1:3010</code></td><td><code>http://&lt;server-IP&gt;:3010</code></td><td>langfuse</td></tr>
@@ -389,9 +389,9 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
     <marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d2a8ff"/></marker>
     <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#39c5cf"/></marker>
 </defs>
-  <!-- Step 1: DeepChat/Dify -->
+  <!-- Step 1: DSH Desktop/Dify -->
   <g filter="url(#sh)"><rect x="8" y="18" width="135" height="58" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="18" width="4" height="58" rx="2" fill="#d2a8ff"/></g>
-  <text x="24" y="40" fill="#d2a8ff" font-size="11" font-weight="700">💬 DeepChat</text>
+  <text x="24" y="40" fill="#d2a8ff" font-size="11" font-weight="700">💬 DSH Desktop</text>
   <text x="24" y="54" fill="#d2a8ff" font-size="11" font-weight="700">/ Dify</text>
   <text x="24" y="68" fill="#8b949e" font-size="8">sends request</text>
 
@@ -539,8 +539,8 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 <h4>Clients &amp; special purposes</h4>
 <table>
   <tr><th>Purpose</th><th>Address</th><th>Notes</th></tr>
-  <tr><td>DeepChat client API</td><td><code>http://&lt;server-IP&gt;:3000/v1</code></td><td>DeepChat API Base URL on employee machines</td></tr>
-  <tr><td>DeepChat download</td><td><code>http://&lt;server-IP&gt;:8091</code></td><td>Installer hosting, click link to download</td></tr>
+  <tr><td>DSH Desktop client API</td><td><code>http://&lt;server-IP&gt;:3000/v1</code></td><td>DSH Desktop API Base URL on employee machines</td></tr>
+  <tr><td>DSH Desktop download</td><td><code>http://&lt;server-IP&gt;:8091</code></td><td>Installer hosting, click link to download</td></tr>
   <tr><td>AI Admin Center</td><td><code>http://&lt;server-IP&gt;:10086</code></td><td>Admins only, unified management entry</td></tr>
   <tr><td>Grafana monitoring</td><td><code>http://&lt;server-IP&gt;:3030</code></td><td>Admins only, container resource monitoring / alert dashboard</td></tr>
   <tr><td>Langfuse observability</td><td><code>http://&lt;server-IP&gt;:3010</code></td><td>Admins only, LLM call tracing / cost / quality analysis</td></tr>
@@ -563,7 +563,7 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <tr><td>Dify</td><td><code>http://127.0.0.1</code></td><td>AI app platform (port 80)</td></tr>
   <tr><td>Ghost portal</td><td><code>http://127.0.0.1:8090</code></td><td>Enterprise portal admin</td></tr>
   <tr><td>Gitea</td><td><code>http://127.0.0.1:3002</code><br><code>ssh://git@127.0.0.1:2222</code></td><td>Source control (Web + Git SSH)</td></tr>
-  <tr><td>Update Server</td><td><code>http://127.0.0.1:8091</code></td><td>DeepChat installer distribution</td></tr>
+  <tr><td>Update Server</td><td><code>http://127.0.0.1:8091</code></td><td>DSH Desktop installer distribution</td></tr>
   <tr><td>AI Admin Center</td><td><code>http://127.0.0.1:10086</code></td><td>Unified management entry</td></tr>
   <tr><td>LiteLLM</td><td><code>http://&lt;server-IP&gt;:4001</code></td><td>PII masking proxy (internal)</td></tr>
   <tr><td>Grafana</td><td><code>http://127.0.0.1:3030</code></td><td>Monitoring dashboard</td></tr>
@@ -593,14 +593,14 @@ swap=4GB</code></pre>
 <div class="step">
   <span class="step-num">2</span><strong>Create working directory</strong>
   <pre><code><span class="comment"># In PowerShell</span>
-mkdir deepchat-updates</code></pre>
+mkdir dsh-updates</code></pre>
   <p>Directory structure:</p>
   <div style="margin: 8px 0; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.85em; line-height: 2;">
     <div><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">C:\ai-platform\windows\</span> &nbsp;&nbsp;<span style="color:#8b949e"># assumed deploy root</span></div>
     <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">docker-compose.yml</span> &nbsp;&nbsp;<span style="color:#8b949e"># core service orchestration (generated)</span></div>
     <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">.env.windows</span> &nbsp;&nbsp;<span style="color:#8b949e"># env vars (generated; fill in API keys)</span></div>
     <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">litellm-config.yaml</span> &nbsp;&nbsp;<span style="color:#8b949e"># LiteLLM PII masking config (generated)</span></div>
-    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">deepchat-updates\</span> &nbsp;&nbsp;<span style="color:#8b949e"># DeepChat installer hosting dir</span></div>
+    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">dsh-updates\</span> &nbsp;&nbsp;<span style="color:#8b949e"># DSH Desktop installer hosting dir</span></div>
     <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">admin-portal\</span> &nbsp;&nbsp;<span style="color:#8b949e"># AI Admin Center implementation</span></div>
   </div>
 </div>
@@ -1263,14 +1263,14 @@ docker compose up -d web</code></pre>
 </div>
 <div class="step">
   <span class="step-num">3</span><strong>Create API keys</strong>
-  <p>Create separate keys for Dify and DeepChat for easier usage tracking:</p>
+  <p>Create separate keys for Dify and DSH Desktop for easier usage tracking:</p>
   <ul>
     <li>Left menu <strong>API Keys</strong> → <strong>New</strong></li>
     <li>Name: <code>dify-key</code> → Save → copy <code>sk-xxx</code>, fill into Dify model provider later</li>
-    <li>Create another, Name: <code>deepchat-key</code> → Save → copy <code>sk-xxx</code>, distribute to DeepChat users later</li>
+    <li>Create another, Name: <code>dsh-key</code> → Save → copy <code>sk-xxx</code>, distribute to DSH Desktop users later</li>
   </ul>
   <div class="callout" style="border-left:3px solid #8b949e;padding:10px 16px;margin:8px 0;background:rgba(139,148,158,0.06);border-radius:0 4px 4px 0;">
-    <strong>Why separate?</strong> Dify is server-side, DeepChat is client-side. Separating the two keys lets you view each one's consumption in NewAPI usage stats, and easier to locate problems.
+    <strong>Why separate?</strong> Dify is server-side, DSH Desktop is client-side. Separating the two keys lets you view each one's consumption in NewAPI usage stats, and easier to locate problems.
   </div>
 </div>
 
@@ -1505,7 +1505,7 @@ litellm_settings:
 </div>
 <div class="verify">Dify returns AI replies normally. <code>docker logs new-api</code> shows Dify's request records.</div>
 
-<div class="callout callout-info"><strong>🔍 Using Dify as the unified knowledge base (RAG):</strong> to let DeepChat search the Dify knowledge base over MCP, in addition to the LLM provider above you need to add an <b>embedding model</b> (e.g. <code>bge-m3</code>) in Model Providers and set it as default, then create a knowledge base + Knowledge API Key. Full steps in <a href="#mcp-rag">8.9 RAG — unified knowledge-base retrieval</a>.</div>
+<div class="callout callout-info"><strong>🔍 Using Dify as the unified knowledge base (RAG):</strong> to let DSH Desktop search the Dify knowledge base over MCP, in addition to the LLM provider above you need to add an <b>embedding model</b> (e.g. <code>bge-m3</code>) in Model Providers and set it as default, then create a knowledge base + Knowledge API Key. Full steps in <a href="#mcp-rag">8.9 RAG — unified knowledge-base retrieval</a>.</div>
 
 <h4>Auto-Initialize Dify (CLI, no browser needed)</h4>
 <div class="callout callout-info">
@@ -1555,16 +1555,16 @@ curl -s -X POST http://&lt;server-IP&gt;/console/api/setup ^
 <div class="step">
   <span class="step-num">4</span><strong>Create the download center page</strong>
   <p>Admin → <strong>Pages</strong> → new "Download center" (slug <code>downloads</code>):</p>
-  <pre><code>## DeepChat Enterprise
+  <pre><code>## DSH Desktop Enterprise
 
 ### Windows
-- [DeepChat v1.1.0 (Windows x64)](http://&lt;server-IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0 (Windows x64)](http://&lt;server-IP&gt;:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 
 ### macOS
-- [DeepChat v1.1.0 (macOS x64)](http://&lt;server-IP&gt;:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0 (macOS x64)](http://&lt;server-IP&gt;:8091/dsh/dsh-desktop-mac-x64.dmg)
 
 ### Version history
-- **v1.1.0** — released 2026-08-11</code></pre>
+- **v0.5.0** — released 2026-08-11</code></pre>
 </div>
 <div class="verify">Ghost homepage shows the theme; the nav menu includes the "AI workbench" link which redirects to Dify.</div>
 
@@ -1609,14 +1609,14 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
   <strong>🔐 Gitea Keycloak SSO auto-registration (v0.91):</strong> Gitea is connected to Keycloak OIDC (the <code>/user/login</code> page shows a "Sign in with keycloak" button). To auto-create new SSO users on first login and stop redirecting to the <code>link_account</code> page, append an <code>[oauth2_client]</code> section to <code>app.ini</code> (docker-compose already sets the <code>GITEA__oauth2_client__*</code> env vars): <code>ENABLE_AUTO_REGISTRATION=true</code>, <code>ACCOUNT_LINKING=auto</code>, <code>USERNAME=preferred_username</code>. ⚠️ The local Gitea admin email must match Keycloak/AD (<code>@&lt;company-domain&gt;</code>), otherwise SSO can't match by email and will "cross-link" accounts or create duplicates.
 </div>
 
-<h4>Import DeepChat Sync Scripts</h4>
-<p>The <code>deepchat-sync</code> repo contains the automated sync workflow for distributing DeepChat installers. After initializing Gitea (step above), import the sync scripts:</p>
+<h4>Import DSH Desktop Sync Scripts</h4>
+<p>The <code>dsh-sync</code> repo contains the automated sync workflow for distributing DSH Desktop installers. After initializing Gitea (step above), import the sync scripts:</p>
 <div class="step">
-  <span class="step-num">1</span><strong>Create the <code>deepchat-sync</code> repository</strong>
+  <span class="step-num">1</span><strong>Create the <code>dsh-sync</code> repository</strong>
   <pre><code>curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/create" ^
   -u "ai_all_in_one_admin:&lt;password&gt;" ^
   -H "Content-Type: application/json" ^
-  -d "{\"name\":\"deepchat-sync\",\"description\":\"DeepChat release sync + Ghost download page updater\",\"auto_init\":true}"</code></pre>
+  -d "{\"name\":\"dsh-sync\",\"description\":\"DSH Desktop release sync + Ghost download page updater\",\"auto_init\":true}"</code></pre>
 </div>
 <div class="step">
   <span class="step-num">2</span><strong>Upload sync workflow and scripts</strong>
@@ -1629,9 +1629,9 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
     <tr><td><code>sync-config.json</code></td><td>Configuration: version source, download prefix, keep count, market URL</td></tr>
     <tr><td><code>version.txt</code></td><td>Tracks the last synced version number</td></tr>
   </table>
-  <p>Upload via Gitea web UI (<code>http://&lt;server-IP&gt;:3002/ai_all_in_one_admin/deepchat-sync</code>) or use the API:</p>
+  <p>Upload via Gitea web UI (<code>http://&lt;server-IP&gt;:3002/ai_all_in_one_admin/dsh-sync</code>) or use the API:</p>
   <pre><code><span class="comment"># Example: upload sync-config.json via API</span>
-curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/contents/sync-config.json" ^
+curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/dsh-sync/contents/sync-config.json" ^
   -u "ai_all_in_one_admin:&lt;password&gt;" ^
   -H "Content-Type: application/json" ^
   -d "{\"content\":\"base64-encoded-content\",\"message\":\"Add sync config\"}"</code></pre>
@@ -1640,34 +1640,34 @@ curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/dee
   <span class="step-num">3</span><strong>Configure the Runner for the sync workflow</strong>
   <p>Ensure <code>gitea-runner-config.yaml</code> has <code>container.network: ai-platform</code> so job containers can resolve the <code>gitea</code> hostname. Also set <code>force_pull: false</code> and pre-pull <code>node:20</code> on the host (intranet can't reach Docker Hub).</p>
 </div>
-<div class="note">⚠️ <b>Key pitfalls</b>: ① The <code>deepchat-sync</code> repo must be a <b>normal repo</b> (not a mirror, which is read-only); ② the checkout step in <code>sync.yml</code> must include <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code>, otherwise checkout fails with an empty token; ③ <code>sync_download.py</code> uses the Docker Engine API (via <code>/var/run/docker.sock</code>) rather than the Docker CLI (CLI downloads timeout on intranet); ④ <code>sync-config.json</code> controls version source (<code>github</code> vs <code>official</code>), download acceleration prefix, and release retention count.</div>
+<div class="note">⚠️ <b>Key pitfalls</b>: ① The <code>dsh-sync</code> repo must be a <b>normal repo</b> (not a mirror, which is read-only); ② the checkout step in <code>sync.yml</code> must include <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code>, otherwise checkout fails with an empty token; ③ <code>sync_download.py</code> uses the Docker Engine API (via <code>/var/run/docker.sock</code>) rather than the Docker CLI (CLI downloads timeout on intranet); ④ <code>sync-config.json</code> controls version source (<code>github</code> vs <code>official</code>), download acceleration prefix, and release retention count.</div>
 
-<!-- ==================== 7. DeepChat ==================== -->
+<!-- ==================== 7. DSH Desktop ==================== -->
 
-<h2 id="deepchat">7. DeepChat Installation &amp; Configuration</h2>
-<p>DeepChat is a desktop AI chat client that calls backend large models through NewAPI. Choose any of the three methods below.</p>
+<h2 id="dsh">7. DSH Desktop Installation &amp; Configuration</h2>
+<p>DSH Desktop is a desktop AI chat client that calls backend large models through NewAPI. Choose any of the three methods below.</p>
 
 <h3>7.1 Method A: intranet distribution (recommended, employees download from intranet)</h3>
 <div class="callout callout-info">
-  <strong>Note:</strong> distribution chain = GitHub Releases installer → <code>deepchat-sync</code> repo's Gitea Actions workflow → Update Server (8091) → Ghost download page → employee download. <b>No longer needs a Gitea source mirror repo</b> (the <code>deepchat</code> mirror was deleted) — mirroring only syncs git source, <b>not release installers</b>, and runs every 8 hours taking ~107 MB, with no benefit for "distributing installers". Create one separately later only if you need source audit / secondary development.
+  <strong>Note:</strong> distribution chain = GitHub Releases installer → <code>dsh-sync</code> repo's Gitea Actions workflow → Update Server (8091) → Ghost download page → employee download. <b>No longer needs a Gitea source mirror repo</b> (the <code>dsh</code> mirror was deleted) — mirroring only syncs git source, <b>not release installers</b>, and runs every 8 hours taking ~107 MB, with no benefit for "distributing installers". Create one separately later only if you need source audit / secondary development.
 </div>
 <div class="step">
   <span class="step-num">1</span><strong>(Optional) create a source mirror repo, for source audit / secondary development only</strong>
-  <p>Only useful when you need to view DeepChat source on the intranet, do security review, or self-build; unrelated to "distributing installers", can be skipped:</p>
+  <p>Only useful when you need to view DSH Desktop source on the intranet, do security review, or self-build; unrelated to "distributing installers", can be skipped:</p>
   <pre><code>curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/migrate" \
   -u "ai_all_in_one_admin:&lt;password&gt;" \
   -H "Content-Type: application/json" \
-  -d '{"clone_addr":"https://github.com/ThinkInAIXYZ/deepchat","repo_name":"deepchat","mirror":true}'</code></pre>
+  -d '{"clone_addr":"https://github.com/dataelement/dsh-desktop","repo_name":"dsh","mirror":true}'</code></pre>
 </div>
 <div class="step">
   <span class="step-num">2</span><strong>Download the installer to the Update Server</strong>
-  <pre><code><span class="comment"># Download from GitHub release (example v1.1.0; replace with latest version)</span>
-mkdir -p deepchat-updates/deepchat
-curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-windows-x64.exe \
-  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-windows-x64.exe
-curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
-  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-mac-x64.dmg</code></pre>
-  <div class="verify">Download link reachable: <code>curl -I http://&lt;server-IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe</code> → HTTP 200/206.</div>
+  <pre><code><span class="comment"># Download from GitHub release (example v0.5.0; replace with latest version)</span>
+mkdir -p dsh-updates/dsh
+curl -L -o dsh-updates/dsh/dsh-desktop-windows-x64-setup.exe \
+  https://github.com/dataelement/dsh-desktop/releases/download/v0.5.0/dsh-desktop-windows-x64-setup.exe
+curl -L -o dsh-updates/dsh/dsh-desktop-mac-x64.dmg \
+  https://github.com/dataelement/dsh-desktop/releases/download/v0.5.0/dsh-desktop-mac-x64.dmg</code></pre>
+  <div class="verify">Download link reachable: <code>curl -I http://&lt;server-IP&gt;:8091/dsh/dsh-desktop-windows-x64-setup.exe</code> → HTTP 200/206.</div>
 </div>
 <div class="step">
   <span class="step-num">3</span><strong>Update the Ghost download center page</strong>
@@ -1678,23 +1678,23 @@ curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
 <p>The three steps above can be solidified into a Gitea Actions workflow that checks GitHub for new versions daily and syncs. Implemented:</p>
 <table>
   <tr><th>Component</th><th>Notes</th></tr>
-  <tr><td><code>deepchat-sync</code> repo</td><td>A normal Gitea repo (<b>not</b> a mirror repo, which is read-only), containing <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
+  <tr><td><code>dsh-sync</code> repo</td><td>A normal Gitea repo (<b>not</b> a mirror repo, which is read-only), containing <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
   <tr><td>Workflow trigger</td><td><code>schedule</code> (daily 2 AM UTC) + <code>workflow_dispatch</code> (manual)</td></tr>
   <tr><td>Sync logic</td><td>Query GitHub API latest tag → compare <code>version.txt</code> → if newer, download installer + update Ghost download page + write version</td></tr>
   <tr><td>Runner config</td><td><code>gitea-runner-config.yaml</code> mounted to the runner, add <code>CONFIG_FILE</code> env var; <code>container.network: ai-platform</code> (so job containers resolve the gitea hostname)</td></tr>
 </table>
 <pre><code><span class="comment"># Manually trigger a sync</span>
-curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/dsh-sync/actions/workflows/sync.yml/dispatches" \
   -u "ai_all_in_one_admin:&lt;password&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'
 
-<span class="comment"># Or Gitea Web UI: deepchat-sync → Actions → run workflow</span></code></pre>
+<span class="comment"># Or Gitea Web UI: dsh-sync → Actions → run workflow</span></code></pre>
 <div class="note">Key pitfalls: ① act_runner's <code>container.network</code> must be set via <code>config.yaml</code> (+ <code>CONFIG_FILE</code> env var), otherwise job containers can't resolve the <code>gitea</code> hostname on an isolated network; ② docker.sock is auto-mounted by act_runner, don't mount it again in <code>options</code> (Duplicate mount point error); ③ downloading the Docker CLI occasionally hits <code>curl (18) HTTP/2 stream</code> transient network failure — the workflow added <code>--http1.1 --retry 5</code> to that download; ④ <b>the intranet Docker daemon usually can't reach Docker Hub</b> (<code>registry-1.docker.io</code> times out), while the runner's default <code>force_pull: true</code> force-pulls the <code>node:20</code> job image every run, failing the job before any step executes — set <code>force_pull: false</code> in <code>gitea-runner-config.yaml</code> and pre-pull the image on the host (<code>docker pull node:20</code>), or configure a Docker Desktop registry mirror.</div>
 
 <h4>China download source config (<code>sync-config.json</code>)</h4>
 <div class="callout callout-warn">
-  <strong>⚠️ GitHub is largely unreachable in China; the official "download page" doesn't actually solve downloading:</strong> the official site <code>deepchatai.cn</code> gets its download data from its own server at <code>https://deepchatai.cn/download-cache.json</code> (reachable in China), but the installer <code>browser_download_url</code> inside <b>still points to <code>github.com/.../releases/download/...</code></b>; clicking "download" on the frontend jumps straight to GitHub, no domestic mirror/acceleration. Also this cache <b>lags</b> (when the official stable shows v1.0.7, GitHub is already v1.1.0).
+  <strong>⚠️ GitHub is largely unreachable in China; the official "download page" doesn't actually solve downloading:</strong> the official site <code>www.dshdesktop.com</code> gets its download data from its own server at <code>https://www.dshdesktop.com/download-cache.json</code> (reachable in China), but the installer <code>browser_download_url</code> inside <b>still points to <code>github.com/.../releases/download/...</code></b>; clicking "download" on the frontend jumps straight to GitHub, no domestic mirror/acceleration. Also this cache <b>lags</b> (when the official stable shows v1.0.7, GitHub is already v0.5.0).
 </div>
-<p>So actually solving China downloads relies on <code>sync-config.json</code> in the <code>deepchat-sync</code> repo root, with these switches:</p>
+<p>So actually solving China downloads relies on <code>sync-config.json</code> in the <code>dsh-sync</code> repo root, with these switches:</p>
 <table>
   <tr><th style="width:28%;">Field</th><th>Purpose</th><th>Default</th></tr>
   <tr><td><code>version_source</code></td><td>Where to check versions: <code>github</code> (GitHub API, most accurate) or <code>official</code> (official download-cache.json, reachable in China but lags)</td><td><code>github</code></td></tr>
@@ -1708,22 +1708,22 @@ curl -X POST "http://&lt;server-IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/dee
 { "version_source": "github", "download_prefix": "https://ghproxy.com/" }
 <span class="comment"># ③ GitHub API fully unreachable: check version via official + proxy download</span>
 { "version_source": "official", "download_prefix": "https://ghproxy.com/" }</code></pre>
-<div class="note">The workflow has a built-in <code>version_cmp.py</code> for version comparison, downloading <b>only when "latest &gt; locally deployed"</b> — because the official cache lags (v1.0.7 &lt; local v1.1.0), downloading on "version differs" would <b>downgrade employee clients</b>. Meanwhile <code>update_ghost.py</code> maintains the download page: new versions accumulate as a timeline, trimmed by <code>keep_releases</code>, idempotent per version (no duplicate append), auto-rebuilds the page if accidentally deleted (UPSERT).</div>
+<div class="note">The workflow has a built-in <code>version_cmp.py</code> for version comparison, downloading <b>only when "latest &gt; locally deployed"</b> — because the official cache lags (v1.0.7 &lt; local v0.5.0), downloading on "version differs" would <b>downgrade employee clients</b>. Meanwhile <code>update_ghost.py</code> maintains the download page: new versions accumulate as a timeline, trimmed by <code>keep_releases</code>, idempotent per version (no duplicate append), auto-rebuilds the page if accidentally deleted (UPSERT).</div>
 
 <h3>7.2 Method B: build a custom version with Docker</h3>
 <div class="step">
   <span class="step-num">1</span><strong>Build with a temporary Docker container</strong>
   <pre><code><span class="comment"># PowerShell</span>
-mkdir deepchat-build
+mkdir dsh-build
 
 <span class="comment"># Start a temporary Node.js container for building</span>
 docker run -it --rm ^
-  -v ${PWD}/deepchat-build:/app ^
+  -v ${PWD}/dsh-build:/app ^
   -w /app ^
   node:20 bash
 
 <span class="comment"># === inside the container ===</span>
-git clone https://github.com/ThinkInAIXYZ/deepchat.git .
+git clone https://github.com/dataelement/dsh-desktop.git .
 npm ci
 
 <span class="comment"># Build the Windows installer</span>
@@ -1731,27 +1731,27 @@ npx electron-builder --win --x64
 
 <span class="comment"># Build output in dist/</span>
 ls dist/
-<span class="comment"># DeepChat-Setup-0.0.1.exe  latest.yml</span>
+<span class="comment"># dsh-desktop-Setup-0.0.1.exe  latest.yml</span>
 
 <span class="comment"># Exit the container</span>
 exit
 
 <span class="comment"># === back in PowerShell ===</span>
 <span class="comment"># Copy the installer to the Update Server directory</span>
-mkdir deepchat-updates
-copy deepchat-build\dist\*.exe windows\deepchat-updates\
-copy deepchat-build\dist\latest.yml windows\deepchat-updates\</code></pre>
-  <div class="verify">Open <code>http://127.0.0.1:8091/deepchat/latest.yml</code> in a browser to see the YAML content.</div>
+mkdir dsh-updates
+copy dsh-build\dist\*.exe windows\dsh-updates\
+copy dsh-build\dist\latest.yml windows\dsh-updates\</code></pre>
+  <div class="verify">Open <code>http://127.0.0.1:8091/dsh/latest.yml</code> in a browser to see the YAML content.</div>
 </div>
 
-<h3>7.3 Configure the DeepChat client</h3>
+<h3>7.3 Configure the DSH Desktop client</h3>
 <div class="step">
   <span class="step-num">1</span><strong>Configure the LLM provider</strong>
   <ul>
-    <li>Open DeepChat → <strong>Settings</strong> → <strong>Model service</strong></li>
+    <li>Open DSH Desktop → <strong>Settings</strong> → <strong>Model service</strong></li>
     <li>Select "Custom Provider" or "OpenAI-compatible"</li>
     <li>API Base URL: <code>http://&lt;server-IP&gt;:3000/v1</code> (NewAPI; on employee machines must use the intranet IP, not &lt;server-IP&gt;)</li>
-    <li>API Key: <code>deepchat-key</code>'s <code>sk-xxx</code> (copied from NewAPI API Keys)</li>
+    <li>API Key: <code>dsh-key</code>'s <code>sk-xxx</code> (copied from NewAPI API Keys)</li>
     <li>Model: <code>gpt-4o-mini</code> (or <code>deepseek-chat</code>)</li>
     <li>Save</li>
   </ul>
@@ -1769,13 +1769,13 @@ copy deepchat-build\dist\latest.yml windows\deepchat-updates\</code></pre>
 docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
   <div class="verify">
     Logs show <code>EMAIL_ADDRESS</code> detected and replaced with <code>[EMAIL]</code>.
-    The email address is restored in DeepChat's received reply.
+    The email address is restored in DSH Desktop's received reply.
   </div>
 </div>
 <div class="step">
   <span class="step-num">4</span><strong>Configure MCP Server (optional)</strong>
   <ul>
-    <li>DeepChat → <strong>Settings</strong> → <strong>MCP</strong></li>
+    <li>DSH Desktop → <strong>Settings</strong> → <strong>MCP</strong></li>
     <li>Add MCP Server: name <code>filesystem</code></li>
     <li>Command: <code>npx -y @modelcontextprotocol/server-filesystem C:\Users</code></li>
     <li>Save → test "list my files" in a conversation</li>
@@ -1783,7 +1783,7 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
 </div>
 
 <h2 id="mcp">8. MCP Gateway — Skill / MCP Management Hub</h2>
-<div class="note"><strong>Note:</strong> the MCP Gateway is a centralized management gateway for Skills and MCP tools, implemented on the official <code>@modelcontextprotocol/sdk</code>, exposing a standard Streamable HTTP <code>/mcp</code> endpoint. DeepChat and Dify connect to this single address to get all tools (built-in platform tools + aggregated external MCP servers). It's merged into the main docker-compose.yml and starts with the core services.</div>
+<div class="note"><strong>Note:</strong> the MCP Gateway is a centralized management gateway for Skills and MCP tools, implemented on the official <code>@modelcontextprotocol/sdk</code>, exposing a standard Streamable HTTP <code>/mcp</code> endpoint. DSH Desktop and Dify connect to this single address to get all tools (built-in platform tools + aggregated external MCP servers). It's merged into the main docker-compose.yml and starts with the core services.</div>
 
 <h3>8.1 Deployment (merged into main docker-compose.yml)</h3>
 <p>The MCP Gateway is added as the <code>mcp-gateway</code> service in the main <code>docker-compose.yml</code>, port <code>3100</code>, starts with <code>docker compose up -d</code>. Source in the <code>mcp-gateway/</code> directory (gateway.js + package.json + mcp-servers.json).</p>
@@ -1810,21 +1810,21 @@ npm install</code></pre>Otherwise <code>node gateway.js</code> fails with <code>
 }</code></pre>
 <p style="color:#8b949e;font-size:0.9em">Aggregated tools get a <code>{serverName}_</code> prefix automatically to avoid name conflicts with built-in tools.</p>
 
-<h3>8.4 Client integration (DeepChat / Dify)</h3>
+<h3>8.4 Client integration (DSH Desktop / Dify)</h3>
 <ol>
-  <li>DeepChat: Settings → MCP → <b>Add</b> → click <b>"Skip to manual config"</b> → type <b>Streamable HTTP (HTTP)</b></li>
+  <li>DSH Desktop: Settings → MCP → <b>Add</b> → click <b>"Skip to manual config"</b> → type <b>Streamable HTTP (HTTP)</b></li>
   <li>Base URL: <code>http://&lt;server-IP&gt;:3100/mcp</code></li>
   <li>Dify workflow: custom tool / MCP tool config points to the same <code>http://&lt;server-IP&gt;:3100/mcp</code></li>
 </ol>
-<div class="callout callout-warn"><strong>⚠️ Important:</strong> after clicking "Add" in DeepChat you land on a template/preset page — you <b>must click "Skip to manual config"</b> to reach the fields for type and base URL (otherwise the "Streamable HTTP" type is not visible).</div>
-<div class="note"><strong>One-click vs manual:</strong> ① <b>One-click install</b> (top of the <code>/market</code> page, or "Copy DeepChat one-click install link" on the AI Admin Center MCP page) uses the <b>SSE endpoint <code>/sse</code></b> — because DeepChat's <code>deepchat://mcp/install</code> handler <b>only accepts stdio/sse, not Streamable HTTP</b>; SSE shows an "SSE is legacy-only" hint, which is <b>normal and harmless</b>. ② <b>Manual config</b> uses Streamable HTTP <code>/mcp</code> (no such hint, recommended). Both hit the same gateway and the same tools (including <code>search_knowledge</code>).</div>
+<div class="callout callout-warn"><strong>⚠️ Important:</strong> after clicking "Add" in DSH Desktop you land on a template/preset page — you <b>must click "Skip to manual config"</b> to reach the fields for type and base URL (otherwise the "Streamable HTTP" type is not visible).</div>
+<div class="note"><strong>One-click vs manual:</strong> ① <b>One-click install</b> (top of the <code>/market</code> page, or "Copy DSH Desktop one-click install link" on the AI Admin Center MCP page) uses the <b>SSE endpoint <code>/sse</code></b> — because DSH Desktop's <code>dsh://mcp/install</code> handler <b>only accepts stdio/sse, not Streamable HTTP</b>; SSE shows an "SSE is legacy-only" hint, which is <b>normal and harmless</b>. ② <b>Manual config</b> uses Streamable HTTP <code>/mcp</code> (no such hint, recommended). Both hit the same gateway and the same tools (including <code>search_knowledge</code>).</div>
 
 <h3>8.5 Verification</h3>
 <ol>
   <li><code>curl http://&lt;server-IP&gt;:3100/health</code> → returns <code>{"status":"ok"}</code></li>
   <li><code>curl -X POST http://&lt;server-IP&gt;:3100/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code> → returns the built-in tool list</li>
 </ol>
-<div class="tip">Once the MCP Gateway is running, add <code>http://&lt;server-IP&gt;:3100/mcp</code> in DeepChat's MCP settings to use platform tools. Dify workflows can also connect to the same address via MCP tool config.</div>
+<div class="tip">Once the MCP Gateway is running, add <code>http://&lt;server-IP&gt;:3100/mcp</code> in DSH Desktop's MCP settings to use platform tools. Dify workflows can also connect to the same address via MCP tool config.</div>
 
 <h3>8.6 Extension: add a custom built-in tool</h3>
 <p>In <code>mcp-gateway/gateway.js</code>, two steps: add the tool definition to the <code>builtinTools</code> array, then add execution logic in <code>callBuiltin</code>.</p>
@@ -1836,7 +1836,7 @@ npm install</code></pre>Otherwise <code>node gateway.js</code> fails with <code>
 if (name === 'platform_health') {
   return 'all services running normally';
 }</code></pre>
-<p>Restart to apply: <code>docker compose restart mcp-gateway</code>. Then reconnect the MCP server in DeepChat to see the new tool.</p>
+<p>Restart to apply: <code>docker compose restart mcp-gateway</code>. Then reconnect the MCP server in DSH Desktop to see the new tool.</p>
 
 <h3>8.7 Skill Market (intranet skill package distribution)</h3>
 <p>The MCP Gateway also hosts intranet Skills (skill packages), providing browse, download, and install endpoints:</p>
@@ -1848,20 +1848,20 @@ if (name === 'platform_health') {
 </table>
 <p>Skills live under the <code>mcp-gateway/skills/</code> directory (subdirectories containing <code>SKILL.md</code>), <b>auto-scanned on every request, no restart needed</b>. Built-in example: <code>platform-report</code> (generates platform status reports).</p>
 <div class="callout callout-info">
-  <strong>DeepChat install Skill:</strong> Settings → Skills → <b>Install from URL</b>, fill <code>http://&lt;server-IP&gt;:3100/skills/&lt;name&gt;.zip</code>.<br>
-  <strong>Key concept:</strong> in DeepChat, MCP and Skill are two separate concepts — MCP is a "tool" (function calling), Skill is an "agent skill package" (SKILL.md instructions + scripts). DeepChat's Skill has <b>no "custom market URL"</b>; it officially supports only "folder / ZIP / URL" installation, so intranet distribution relies on "install from URL" (gateway hosts the zip + market page).
+  <strong>DSH Desktop install Skill:</strong> Settings → Skills → <b>Install from URL</b>, fill <code>http://&lt;server-IP&gt;:3100/skills/&lt;name&gt;.zip</code>.<br>
+  <strong>Key concept:</strong> in DSH Desktop, MCP and Skill are two separate concepts — MCP is a "tool" (function calling), Skill is an "agent skill package" (SKILL.md instructions + scripts). DSH Desktop's Skill has <b>no "custom market URL"</b>; it officially supports only "folder / ZIP / URL" installation, so intranet distribution relies on "install from URL" (gateway hosts the zip + market page).
 </div>
 
 <h4>"Skill Manager" Skill (install first, for employees to find/install/update skills)</h4>
-<p>A guided <code>skill-market</code> skill is built in; employees install it first, then ask "what skills are there / install X for me / update skills" in a conversation. It doesn't touch DeepChat's internal directories (100% reliable), and only: reads <code>market_url</code> from <code>config.json</code> → requests the <code>/skills</code> list → filters/recommends → gives install instructions → compares version to suggest updates. The Ghost download page has a pinned "install the skill manager first" hint at the top.</p>
+<p>A guided <code>skill-market</code> skill is built in; employees install it first, then ask "what skills are there / install X for me / update skills" in a conversation. It doesn't touch DSH Desktop's internal directories (100% reliable), and only: reads <code>market_url</code> from <code>config.json</code> → requests the <code>/skills</code> list → filters/recommends → gives install instructions → compares version to suggest updates. The Ghost download page has a pinned "install the skill manager first" hint at the top.</p>
 <pre><code><span class="comment"># The skill manager's own market address (packaged into the zip for employees)</span>
 <span class="comment"># mcp-gateway/skills/skill-market/config.json</span>
-<span class="comment"># ⚠️ Use a hostname, not an IP (DeepChat masks IPs)</span>
+<span class="comment"># ⚠️ Use a hostname, not an IP (DSH Desktop masks IPs)</span>
 <span class="comment"># ⚠️ &lt;market-hostname&gt; is a deployment parameter, must be replaced (see "Auto / Manual" below)</span>
 { "market_url": "http://&lt;market-hostname&gt;:3100" }</code></pre>
 
 <div class="callout callout-warn">
-  <strong>⚠️ Important: <code>market_url</code> uses a hostname, and <code>&lt;market-hostname&gt;</code> is a <b>deployment parameter that must be replaced</b>.</strong> DeepChat's agent environment masks IP addresses into <code>[IP_ADDRESS_REDACTED]</code>, causing the "skill manager" to fail to read the real IP and unable to request the <code>/skills</code> list; hostnames are unaffected by masking. But the hostname is a <b>local value that differs per deployment</b> and must not be copied as-is (each deployment uses its own domain, e.g. <code>skillmarket.&lt;company-domain&gt;</code>).
+  <strong>⚠️ Important: <code>market_url</code> uses a hostname, and <code>&lt;market-hostname&gt;</code> is a <b>deployment parameter that must be replaced</b>.</strong> DSH Desktop's agent environment masks IP addresses into <code>[IP_ADDRESS_REDACTED]</code>, causing the "skill manager" to fail to read the real IP and unable to request the <code>/skills</code> list; hostnames are unaffected by masking. But the hostname is a <b>local value that differs per deployment</b> and must not be copied as-is (each deployment uses its own domain, e.g. <code>skillmarket.&lt;company-domain&gt;</code>).
   <ul>
     <li><b>Auto (recommended, via Agent deployment):</b> the Agent asks you "Skill market hostname (domain)" during "Chapter 0 · Step 1 collect parameters", then automatically replaces all <code>&lt;market-hostname&gt;</code> in <code>mcp-gateway/skills/skill-market/config.json</code> and the sibling <code>SKILL.md</code> with your value.</li>
     <li><b>Manual:</b> edit <code>mcp-gateway/skills/skill-market/config.json</code> (and the <code>SKILL.md</code> fallback address), replace <code>&lt;market-hostname&gt;</code> with your hostname; then make the hostname resolvable — single machine: add a line <code>&lt;server-IP&gt;  &lt;your-hostname&gt;</code> in <code>C:\Windows\System32\drivers\etc\hosts</code> (for local debugging you can use <code>127.0.0.1</code>); company intranet: add an A record in DNS.</li>
@@ -1880,10 +1880,10 @@ if (name === 'platform_health') {
 <p>These endpoints are called by the AI Admin Center (Chapter 11) "MCP Gateway" page via proxy endpoints (protected by the Keycloak <code>ai-platform-admin</code> role); admins can add/remove MCP servers and upload/delete skills in the UI, while the employee-facing <code>/market</code> remains a read-only market.</p>
 
 <h3 id="mcp-rag">8.9 RAG — unified knowledge-base retrieval (search_knowledge built-in tool)</h3>
-<div class="note"><strong>Note:</strong> the MCP Gateway has a built-in <code>search_knowledge</code> tool that forwards to Dify's Knowledge API (Service API, <code>POST /v1/datasets/{id}/hit-testing</code>) for knowledge-base retrieval. DeepChat calls this single tool over MCP to use Dify's unified knowledge base (RAG) — no need for DeepChat to talk to Dify directly.</div>
+<div class="note"><strong>Note:</strong> the MCP Gateway has a built-in <code>search_knowledge</code> tool that forwards to Dify's Knowledge API (Service API, <code>POST /v1/datasets/{id}/hit-testing</code>) for knowledge-base retrieval. DSH Desktop calls this single tool over MCP to use Dify's unified knowledge base (RAG) — no need for DSH Desktop to talk to Dify directly.</div>
 
 <h4>Overall flow</h4>
-<pre><code>DeepChat ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Knowledge API
+<pre><code>DSH Desktop ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Knowledge API
                                                       POST /v1/datasets/{id}/hit-testing</code></pre>
 
 <h4>Step 1: Dify-side prep (embedding model + knowledge base + Knowledge Key)</h4>
@@ -1909,7 +1909,7 @@ DIFY_DEFAULT_DATASET_ID=&lt;knowledge-base UUID&gt;</code></pre>
 <h4>Step 3: Restart and verify</h4>
 <ol>
   <li><code>docker compose up -d mcp-gateway</code> (or <code>docker restart mcp-gateway</code>)</li>
-  <li>DeepChat Settings → MCP → connect <code>http://&lt;server-IP&gt;:3100/mcp</code>, call <code>search_knowledge</code> with a <code>query</code> (optional <code>dataset_id</code>, <code>top_k</code>) in a conversation; it returns the most relevant text chunks (each with <code>content</code> + <code>score</code>).</li>
+  <li>DSH Desktop Settings → MCP → connect <code>http://&lt;server-IP&gt;:3100/mcp</code>, call <code>search_knowledge</code> with a <code>query</code> (optional <code>dataset_id</code>, <code>top_k</code>) in a conversation; it returns the most relevant text chunks (each with <code>content</code> + <code>score</code>).</li>
   <li>AI Admin Center → "Dify" page → the "🔍 RAG knowledge retrieval" card: type a query to search and display chunks (backend <code>POST /api/dify/retrieve</code>, see 11.5).</li>
 </ol>
 
@@ -1923,10 +1923,10 @@ DIFY_DEFAULT_DATASET_ID=&lt;knowledge-base UUID&gt;</code></pre>
   </ul>
 </div>
 
-<h4>Alternative access: DeepChat's built-in difyKnowledge (bypassing the MCP Gateway)</h4>
-<p>The DeepChat client ships a built-in <code>difyKnowledge</code> (in-memory) MCP server that talks to the Dify knowledge base directly, <b>without going through this platform's MCP Gateway</b>. It suits individuals or a very small number of users; for enterprise rollout, still prefer the gateway's <code>search_knowledge</code> (no key leaves the server, auditable, single point to switch datasets).</p>
+<h4>Alternative access: DSH Desktop's built-in difyKnowledge (bypassing the MCP Gateway)</h4>
+<p>The DSH Desktop client ships a built-in <code>difyKnowledge</code> (in-memory) MCP server that talks to the Dify knowledge base directly, <b>without going through this platform's MCP Gateway</b>. It suits individuals or a very small number of users; for enterprise rollout, still prefer the gateway's <code>search_knowledge</code> (no key leaves the server, auditable, single point to switch datasets).</p>
 <ol>
-  <li>DeepChat → Settings → <b>MCP settings</b> → find the built-in <b><code>difyKnowledge</code></b> → click its <b>edit</b> button → <b>add Dify config</b>.</li>
+  <li>DSH Desktop → Settings → <b>MCP settings</b> → find the built-in <b><code>difyKnowledge</code></b> → click its <b>edit</b> button → <b>add Dify config</b>.</li>
   <li>Fill in three fields (using the values from step 1):
     <ul>
       <li><b>API server address (endpoint)</b>: <code>http://&lt;server-IP&gt;/v1</code> (must include <code>/v1</code>)</li>
@@ -1944,27 +1944,27 @@ DIFY_DEFAULT_DATASET_ID=&lt;knowledge-base UUID&gt;</code></pre>
   </ul>
 </div>
 
-<h2 id="cicd">9. CI/CD — DeepChat Build &amp; Release</h2>
+<h2 id="cicd">9. CI/CD — DSH Desktop Build &amp; Release</h2>
 
-<h3>9.1 Fork DeepChat source to Gitea</h3>
-<pre><code>git clone https://github.com/ThinkInAIXYZ/deepchat.git
-cd deepchat
-# After creating an empty repo "deepchat" in Gitea:
-git remote add internal http://127.0.0.1:3002/your-org/deepchat.git
+<h3>9.1 Fork DSH Desktop source to Gitea</h3>
+<pre><code>git clone https://github.com/dataelement/dsh-desktop.git
+cd dsh
+# After creating an empty repo "dsh" in Gitea:
+git remote add internal http://127.0.0.1:3002/your-org/dsh.git
 git push -u internal main</code></pre>
 
-<h3>9.2 Configure the DeepChat release address</h3>
+<h3>9.2 Configure the DSH Desktop release address</h3>
 <p>Edit <code>package.json</code> in the Gitea Web UI, change <code>publish.url</code> to point to the update server:</p>
 <pre><code>"build": {
   "publish": [{
     "provider": "generic",
-    "url": "http://&lt;server-IP&gt;:8091/deepchat/"
+    "url": "http://&lt;server-IP&gt;:8091/dsh/"
   }]
 }</code></pre>
 
 <h3>9.3 Create the CI/CD workflow</h3>
 <div class="file-name">.gitea/workflows/release.yml</div>
-<pre><code>name: Build & Release DeepChat
+<pre><code>name: Build & Release DSH Desktop
 
 on:
   push:
@@ -1985,7 +1985,7 @@ jobs:
       - name: Upload to update server
         run: |
           cp dist/*.exe dist/*.AppImage dist/latest*.yml /tmp/
-          curl -X PUT -T /tmp/latest.yml http://update-server/deepchat/latest.yml || true</code></pre>
+          curl -X PUT -T /tmp/latest.yml http://update-server/dsh/latest.yml || true</code></pre>
 
 <div class="note"><strong>Note:</strong> the Gitea Runner needs Docker access (docker.sock already mounted). Build artifacts must be uploaded to the <code>update-server</code> container (port 8091) manually or via a script.</div>
 
@@ -1999,17 +1999,17 @@ jobs:
           curl -X POST http://ghost:8090/ghost/api/admin/posts/ \
             -H "Authorization: Ghost ${{ secrets.GHOST_ADMIN_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"posts":[{"title":"DeepChat new release","status":"published","html":"A new version has been released; go to the download center to update."}]}'</code></pre>
+            -d '{"posts":[{"title":"DSH Desktop new release","status":"published","html":"A new version has been released; go to the download center to update."}]}'</code></pre>
 
 <h2 id="interconnect">10. Interconnection Verification (12 items)</h2>
 <div class="card">
 <ol>
   <li><span class="check">☑</span> NewAPI → LiteLLM: receive OK in the NewAPI channel test</li>
   <li><span class="check">☑</span> Dify → NewAPI: receive a reply in the Dify model provider test</li>
-  <li><span class="check">☑</span> DeepChat → NewAPI: send a message and receive a reply</li>
+  <li><span class="check">☑</span> DSH Desktop → NewAPI: send a message and receive a reply</li>
   <li><span class="check">☑</span> Keycloak → NewAPI: log into the NewAPI admin with a Keycloak account (OIDC mode)</li>
   <li><span class="check">☑</span> Keycloak → Dify: SSO login to Dify with a Keycloak account</li>
-  <li><span class="check">☑</span> MCP Gateway → DeepChat: DeepChat fetches the MCP tool list and calls</li>
+  <li><span class="check">☑</span> MCP Gateway → DSH Desktop: DSH Desktop fetches the MCP tool list and calls</li>
   <li><span class="check">☑</span> MCP Gateway → Dify: call MCP Gateway tools in a Dify workflow</li>
   <li><span class="check">☑</span> Gitea Runner → Docker: Runner can execute CI/CD jobs</li>
   <li><span class="check">☑</span> Gitea → update server: CI/CD artifacts upload to the update server</li>
@@ -2187,12 +2187,12 @@ User browser → AI Admin Center (&lt;server-IP&gt;:10086)
   <tr><td>📊</td><td><b>Overview Dashboard</b></td><td>Embedded page</td><td>8 product business metrics + Docker services (grouped by product) + system info</td></tr>
   <tr><td>📰</td><td>Ghost Admin</td><td>Embedded stats page</td><td>Posts/pages/subscribers/tags stats + "Open Ghost admin" button → <code>:8090/ghost/</code></td></tr>
   <tr><td>🤖</td><td>Dify AI Platform</td><td>Embedded stats page</td><td>Apps/workspaces/version stats + "Open Dify platform" button</td></tr>
-  <tr><td>📦</td><td>Gitea Source</td><td>Embedded stats page</td><td>Repo list (name/description/language/size/updated) + deepchat-sync last run + "Open Gitea" button</td></tr>
+  <tr><td>📦</td><td>Gitea Source</td><td>Embedded stats page</td><td>Repo list (name/description/language/size/updated) + dsh-sync last run + "Open Gitea" button</td></tr>
   <tr><td>🔀</td><td>NewAPI Management</td><td>Embedded page</td><td>Channels/users/keys (with used quota) + 💰 cost report (by user/model/date) + 📋 audit log (recent calls), Admin API, admins only</td></tr>
   <tr><td>🔐</td><td>Keycloak Auth</td><td>Embedded stats page</td><td>Users/clients/roles/identity-source stats + "Open Keycloak" button</td></tr>
   <tr><td>🔌</td><td>MCP Gateway</td><td>Embedded management page</td><td>Endpoint info + add/remove MCP servers + upload/delete skills (ai-platform-admin only)</td></tr>
   <tr><td>🛡️</td><td>LiteLLM+PII</td><td>Embedded page</td><td>Copy Master Key + open LiteLLM admin center</td></tr>
-  <tr><td>⬇️</td><td>Update Server</td><td>Embedded stats page</td><td>DeepChat version + installer list (filename/size/updated)</td></tr>
+  <tr><td>⬇️</td><td>Update Server</td><td>Embedded stats page</td><td>DSH Desktop version + installer list (filename/size/updated)</td></tr>
   <tr><td>📈</td><td>Monitoring & Alerts</td><td>New tab</td><td>Grafana dashboard → <code>:3030</code></td></tr>
   <tr><td>🔍</td><td>LLM Observability</td><td>New tab</td><td>Langfuse traces → <code>:3010</code></td></tr>
   <tr><td>🔐</td><td><b>Central Auth</b></td><td>Embedded page</td><td>Unified account system (ai-platform-admin only)</td></tr>
@@ -2263,7 +2263,7 @@ cd ..</code></pre>
   <li><b>💾 Backup & restore</b>: backup list + "backup now" + one-click restore (backend <code>/api/backup/list|run|restore</code>, via docker.sock + the mounted <code>C:\AIAllInOne\backups</code>, same format as backup.ps1).</li>
   <li><b>📄 Report generation</b>: generate detailed system reports by criteria (statistics period 1/7/30/90 days + select included modules), covering system overview, product health, usage stats (calls/tokens/cost, by user·model·day), client stats (by IP + by API-key app), recent issues (Loki error log summary + availability failures + stopped containers), availability tests, backup status, PII masking status; report language follows the current UI language (zh/en, others fall back to English); exportable as <code>.md</code> (backend <code>/api/report?days=&lang=&sections=</code>).</li>
   <li><b>Monitoring alerts / LLM observability</b>: embedded stats pages (Prometheus targets/alert count, Langfuse version/trace count) + open-dashboard buttons.</li>
-  <li><b>🩺 Availability testing</b>: scheduled (default every 10 min, <code>AVAILABILITY_INTERVAL_MIN</code> adjustable) + manual "test all" + per-item tests; covers Keycloak auth / NewAPI / LiteLLM / DeepChat·Dify chat (real conversation via NewAPI) / Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / update server / backup / Docker / Redis; each item card shows result and key logs in a small window. Backend <code>/api/availability|run|test/:id</code>. Dashboard product metrics area adds an "availability test" summary card.</li>
+  <li><b>🩺 Availability testing</b>: scheduled (default every 10 min, <code>AVAILABILITY_INTERVAL_MIN</code> adjustable) + manual "test all" + per-item tests; covers Keycloak auth / NewAPI / LiteLLM / DSH Desktop·Dify chat (real conversation via NewAPI) / Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / update server / backup / Docker / Redis; each item card shows result and key logs in a small window. Backend <code>/api/availability|run|test/:id</code>. Dashboard product metrics area adds an "availability test" summary card.</li>
   <li><b>📰 Ghost passwordless login</b>: clicking "Open" on the "Ghost Admin" entry, the backend <code>/api/ghost/auto-login</code> auto-completes — password login (<code>POST /session/</code>) → read Ghost DB's <code>admin_session_secret</code> to compute the 6-digit TOTP code locally (<code>HMAC-SHA1(secret+userId)</code>, identical to the emailed code, no need to read MailHog) → <code>PUT /session/verify</code> to verify the session → write the <code>ghost-admin-api-session</code> cookie into the browser → redirect to the Ghost admin, seamless. Details in 13.10.</li>
 </ul>
 <div class="callout callout-warn">
@@ -2343,10 +2343,10 @@ cd ..</code></pre>
   <tr><td>Stage 2</td><td>41 container statuses (Up/Exited/Restarting)</td><td><code>docker ps -a</code></td></tr>
   <tr><td>Stage 3</td><td>10 HTTP endpoint responses (including MCP Gateway)</td><td><code>curl.exe 127.0.0.1:port</code></td></tr>
   <tr><td>Stage 4</td><td>LiteLLM /readiness + <b>model registration</b>, litellm-redis PING, Dify API /health, MySQL/PostgreSQL/Redis/Sandbox health</td><td><code>docker exec</code> + <code>docker inspect</code></td></tr>
-  <tr><td>Stage 5</td><td><b>Full LLM chain</b>: NewAPI channel status + send a real request each as DeepChat and Dify (NewAPI → LiteLLM → DeepSeek)</td><td><code>curl /v1/chat/completions</code></td></tr>
+  <tr><td>Stage 5</td><td><b>Full LLM chain</b>: NewAPI channel status + send a real request each as DSH Desktop and Dify (NewAPI → LiteLLM → DeepSeek)</td><td><code>curl /v1/chat/completions</code></td></tr>
   <tr><td>Stage 6</td><td><b>AD account auth chain</b>: Keycloak well-known + AD user sync (aitest1) + NewAPI OIDC config + OIDC client integrity + <b>NewAPI admin login</b></td><td>curl + Admin API + mysql</td></tr>
   <tr><td>Stage 7</td><td><b>MCP Gateway + Skill</b>: /health + tools/list + tools/call + external Skill aggregation</td><td>curl MCP protocol</td></tr>
-  <tr><td>Stage 8</td><td><b>DeepChat / Dify login prerequisites</b>: NewAPI service available + Dify initialized</td><td>curl + psql</td></tr>
+  <tr><td>Stage 8</td><td><b>DSH Desktop / Dify login prerequisites</b>: NewAPI service available + Dify initialized</td><td>curl + psql</td></tr>
   <tr><td>Stage 9</td><td><b>Disk space</b>: system drive free + Docker disk usage</td><td><code>Get-PSDrive</code> + <code>docker system df</code></td></tr>
 </table>
 
@@ -2527,7 +2527,7 @@ ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
 <p>Specific department quota adjustments are done in the NewAPI admin (AI Admin Center "Open NewAPI admin ↗").</p>
 
 <h3>13.7 Employee training &amp; policy</h3>
-<p>The training manual has been split into two <b>multi-page e-books</b> and translated into <b>9 languages</b> (matching the AI Admin Center): the <b>administrator manual</b> (30 chapters: deployment + day-to-day operations for 13 products + operations) and the <b>end-user manual</b> (8 chapters: platform intro, AI All In One Hub (portal) usage, DeepChat/Dify quick start, <b>data classification rules</b>, API key request, FAQ, code of conduct). Language layout: English in <code>docs/admin-manual/</code> and <code>docs/user-manual/</code>; Simplified Chinese in <code>docs/i18n/admin-manual-zh-cn/</code> and <code>docs/i18n/user-manual-zh-cn/</code>; the other 7 (Traditional Chinese / French / Spanish / Portuguese / Japanese / Korean / Arabic) in the corresponding <code>docs/i18n/</code> folders. Each is an e-book with a cover + table of contents + one page per chapter + prev/next navigation, ready to send to employees or later move to the Ghost portal.</p>
+<p>The training manual has been split into two <b>multi-page e-books</b> and translated into <b>9 languages</b> (matching the AI Admin Center): the <b>administrator manual</b> (30 chapters: deployment + day-to-day operations for 13 products + operations) and the <b>end-user manual</b> (8 chapters: platform intro, AI All In One Hub (portal) usage, DSH Desktop/Dify quick start, <b>data classification rules</b>, API key request, FAQ, code of conduct). Language layout: English in <code>docs/admin-manual/</code> and <code>docs/user-manual/</code>; Simplified Chinese in <code>docs/i18n/admin-manual-zh-cn/</code> and <code>docs/i18n/user-manual-zh-cn/</code>; the other 7 (Traditional Chinese / French / Spanish / Portuguese / Japanese / Korean / Arabic) in the corresponding <code>docs/i18n/</code> folders. Each is an e-book with a cover + table of contents + one page per chapter + prev/next navigation, ready to send to employees or later move to the Ghost portal.</p>
 <p><b>Data classification suggestion</b>: public info can use external models directly; internal info (project docs) is usable but needs redaction; confidential info (customer data/source code/ID numbers) must not be uploaded to external models — use local models or manual handling.</p>
 
 <h3>13.8 Unified SSO login (Keycloak)</h3>
@@ -2750,7 +2750,7 @@ netsh advfirewall set allprofiles state on                             <span cla
   <li>After login, go to Langfuse user settings to do account linking with Keycloak account</li>
 </ul>
 
-<h3>O.6 Gitea Sync Repo (deepchat-sync)</h3>
+<h3>O.6 Gitea Sync Repo (dsh-sync)</h3>
 <ul>
   <li><code>.gitea/workflows/sync.yml</code>: checkout step must include <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code></li>
   <li>act_runner: label <code>ubuntu-latest:docker://node:20</code>, mount <code>/var/run/docker.sock</code>, network <code>ai-platform</code></li>

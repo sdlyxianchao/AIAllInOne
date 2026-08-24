@@ -22,9 +22,9 @@
 | --- | --- |
 | ¿Indica cuota insuficiente? | Consulta el saldo en el panel de NewAPI; si se agotó, contacta con el administrador para recargar o aumentar la cuota |
 | ¿Se intercepta el contenido que envías? | Coincidió con una palabra sensible o contiene información sensible; ajústalo según la normativa del capítulo 6 y reintenta |
-| ¿DeepChat da tiempo de conexión agotado? | Configuración → Red/Proxy → cambia a «No usar proxy / conexión directa» |
+| ¿DSH Desktop da tiempo de conexión agotado? | Configuración → Red/Proxy → cambia a «No usar proxy / conexión directa» |
 | ¿La calidad de la respuesta del modelo es mala? | Cambia de modelo u optimiza la pregunta (aporta contexto, aclara el requisito y da ejemplos) |
-| ¿No recuerdas dónde descargar DeepChat? | Centro de descargas del portal `http://IP:8090/downloads/` |
+| ¿No recuerdas dónde descargar DSH Desktop? | Centro de descargas del portal `http://IP:8090/downloads/` |
 | ¿Al crear una aplicación en Dify se queda cargando? | Suele ser un problema de red/WebSocket; contacta con el administrador; fuerza la recarga en el navegador con Ctrl+F5 |
 
 ## 7.3 Comprensión

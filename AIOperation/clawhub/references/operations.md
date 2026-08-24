@@ -63,7 +63,7 @@ POST <admin-portal>/api/availability/test/<id> # Run a single test
 GET  <admin-portal>/api/availability           # Latest results + summary + test item list
 ```
 
-Sample test items: `keycloak`, `newapi`, `litellm`, `chat-deepchat`, `chat-dify`, `dify`, `ghost`, `gitea`, `mcp`, `prometheus`, `grafana`, `langfuse`, `loki`, `presidio`, `sso-grafana`, `sso-langfuse`, `update-server`, `backup`, `docker`, `redis`. The test interval is a platform-level parameter (configured at deployment); changing it requires editing the backend and restarting.
+Sample test items: `keycloak`, `newapi`, `litellm`, `chat-dsh`, `chat-dify`, `dify`, `ghost`, `gitea`, `mcp`, `prometheus`, `grafana`, `langfuse`, `loki`, `presidio`, `sso-grafana`, `sso-langfuse`, `update-server`, `backup`, `docker`, `redis`. The test interval is a platform-level parameter (configured at deployment); changing it requires editing the backend and restarting.
 
 ## 6. Report Generation
 
@@ -107,7 +107,7 @@ Entry: open `<admin-portal>` in a browser (Keycloak login, requires the `ai-plat
 | Admin management | `/api/admins*` | Admin CRUD, role grants, product permissions |
 | Authentication/accounts | `/api/auth/overview`、`/api/keycloak/*` | SSO overview, Keycloak clients/roles/users, AD user sync |
 | NewAPI | `/api/newapi/*` | Channels, tokens, users, audit, cost |
-| Gitea | `/api/gitea/*` | Repository overview, deepchat-sync trigger/history/version management |
+| Gitea | `/api/gitea/*` | Repository overview, dsh-sync trigger/history/version management |
 | Ghost | `/api/ghost/*` | Portal overview, auto login |
 | Dify | `/api/dify/overview`、`/api/dify/retrieve` | App/workspace overview, knowledge base retrieval tests |
 | MCP | `/api/mcp-gateway/*` | Registered servers, aggregated skills, tool lists, skill uploads |
@@ -136,7 +136,7 @@ Admin Center is the unified entry point, but **every deployed third-party produc
 
 Full manual (entry points, common admin operations, credential variables, security reminders for each product): see **`references/products.md`**. Common conventions: admin account `ai_all_in_one_admin`, passwords always read from `.env`; back up before touching databases directly.
 
-## 9. Gitea and DeepChat Sync
+## 9. Gitea and DSH Desktop Sync
 
 - **Trigger sync**: `POST /api/gitea/sync/trigger` (or dispatch the `sync.yml` workflow via the Gitea Actions API)
 - **Watch progress**: poll `/api/gitea/sync/history` + read `sync-progress.json`
@@ -158,7 +158,7 @@ Flow: sync windows → windows-github (passwords auto-redacted) → build releas
 
 **Component upgrades**: change the compose image tag → `docker compose pull <svc> && docker compose up -d <svc>` → run the health check to verify. Back up before major version upgrades.
 
-**DeepChat client**: Update Server hosts the installer packages (`deepchat-updates/`); `version.txt` is updated automatically after the Gitea workflow publishes.
+**DSH Desktop client**: Update Server hosts the installer packages (`dsh-updates/`); `version.txt` is updated automatically after the Gitea workflow publishes.
 
 ## 11. Disk Cleanup (Confirm First, Then Execute)
 

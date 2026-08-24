@@ -101,11 +101,11 @@
 | Loki+Promtail+Rsyslog practice (CN) | https://wenku.csdn.net/column/aac7703s897 |
 | Official | https://grafana.com/docs/loki/latest/ |
 
-## 13. DeepChat (M09)
+## 13. DSH Desktop (M09)
 | Resource | Link |
 |---|---|
-| DeepChat install & config guide (CN) | https://blog.csdn.net/gitblog_00437/article/details/155408091 |
-| Official docs | https://deepchatai.cn/docs/guide/getting-started/ |
+| DSH Desktop install & config guide (CN) | https://blog.csdn.net/gitblog_00437/article/details/155408091 |
+| Official docs | https://www.dshdesktop.com/docs/guide/getting-started/ |
 
 ## 14. Ollama (M02 companion)
 | Resource | Link |

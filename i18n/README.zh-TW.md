@@ -46,8 +46,8 @@ AI AllInOne 是一套**開源免費**、開箱即用的企業內網 AI 平台：
 | AI 應用程式 | Dify | 視覺化 AI 應用程式 / Agent 平台 + 統一知識庫（RAG） |
 | 企業入口網站 | Ghost | 公司公告與新聞入口網站（內建自訂 Corp Portal 主題） |
 | 原始碼 / CI | Gitea + Runner | 內部 Git + Actions 自動化 |
-| 用戶端 | DeepChat | 本機 AI 桌面用戶端（Windows / macOS / Linux） |
-| 用戶端發佈 | Update Server | DeepChat 安裝檔託管與自動更新 |
+| 用戶端 | DSH Desktop（Windows/macOS）· Linux（即將推出） | 本機 AI 桌面用戶端——Windows/macOS 用 DSH Desktop，Linux 版本即將推出 |
+| 用戶端發佈 | Update Server | 桌面用戶端安裝檔託管與自動更新（Windows/macOS 為 DSH Desktop） |
 | 統一管理 | AI Admin Center | 統一入口：儀表板 + 內嵌產品 + 稽核/成本/報表 + 分級管理員授權 + Keycloak 同步/角色 |
 | 閘道 | MCP Gateway | 技能 / MCP 市集 + Dify 知識檢索（RAG） |
 | 監控 | Prometheus + Grafana + Alertmanager | 容器資源監控 + 告警通知 |
@@ -110,9 +110,9 @@ docker compose up -d
 
 ## 🖼️ 介面截圖
 
-**Dify** — AI 應用程式平台 · **MCP/Skill 市集** — 一鍵接入工具與技能 · **DeepChat** — 桌面 AI 用戶端
+**Dify** — AI 應用程式平台 · **MCP/Skill 市集** — 一鍵接入工具與技能 · **DSH Desktop** — 桌面 AI 用戶端
 
-![Dify](<../pics/Dify.png>) ![MCP/SKILL 市集](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
+![Dify](<../pics/Dify.png>) ![MCP/SKILL 市集](<../pics/Market.png>) ![DSH Desktop](<../pics/dsh.png>)
 
 更多截圖（48 張真實介面截圖）已嵌入[管理員手冊](../docs/admin-manual/index.md)。
 
@@ -233,10 +233,10 @@ docker compose up -d
 | Stage 2 | 41 个容器状态（Up/Exited/Restarting） | `docker ps -a` |
 | Stage 3 | 10 个 HTTP 端点响应（含 MCP Gateway） | `curl.exe 127.0.0.1:端口` |
 | Stage 4 | LiteLLM /readiness + **模型注册**、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox 健康状态 | `docker exec` + `docker inspect` |
-| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DeepChat 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
+| Stage 5 | **LLM 全链路**：NewAPI 渠道状态 + 以 DSH Desktop 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek） | `curl /v1/chat/completions` |
 | Stage 6 | **AD 账号认证链路**：Keycloak well-known + AD 用户同步（aitest1）+ NewAPI OIDC 配置 + OIDC clients 完整性 + **NewAPI 管理员登录** | curl + Admin API + mysql |
 | Stage 7 | **MCP Gateway + Skill**：/health + tools/list + tools/call + 外部 Skill 聚合 | curl MCP 协议 |
-| Stage 8 | **DeepChat / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
+| Stage 8 | **DSH Desktop / Dify 登录前置条件**：NewAPI 服务可用 + Dify 已初始化 | curl + psql |
 | Stage 9 | **磁碟空間**：系统盘剩余 + Docker 磁盘占用 | `Get-PSDrive` + `docker system df` |
 
 **手動執行**（PowerShell）：

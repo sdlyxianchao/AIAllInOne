@@ -2,9 +2,9 @@
 
 *第一部 · デプロイ編*
 
-> スキルと MCP ツールを集中管理するゲートウェイ。DeepChat/Dify は 1 つのアドレスに接続するだけで全ツールを取得できます。
+> スキルと MCP ツールを集中管理するゲートウェイ。DSH Desktop/Dify は 1 つのアドレスに接続するだけで全ツールを取得できます。
 
-[← 第10章：DeepChat の配布と CI/CD](ch10-deepchat.md) · [📖 目次](index.md) · [第12章：AI 管理センター →](ch12-admin-center.md)
+[← 第10章：DSH Desktop の配布と CI/CD](ch10-dsh.md) · [📖 目次](index.md) · [第12章：AI 管理センター →](ch12-admin-center.md)
 
 ---
 
@@ -36,7 +36,7 @@
 
 ## 11.3 クライアント接続
 
-1. DeepChat：設定 → MCP → サーバー追加 → タイプ「ストリーミング可能な HTTP」、URL `http://<サーバーIP>:3100/mcp`；
+1. DSH Desktop：設定 → MCP → サーバー追加 → タイプ「ストリーミング可能な HTTP」、URL `http://<サーバーIP>:3100/mcp`；
 
 2. Dify ワークフロー：カスタムツール / MCP ツール設定を同じアドレスに向けます。
 
@@ -52,13 +52,13 @@
 
 スキルは `mcp-gateway/skills/` ディレクトリ（SKILL.md を含むサブディレクトリ）に置き、**リクエストごとに自動スキャンされ、再起動不要**。組み込みの `skill-market` ガイドスキルがあります。
 
-> 📌 DeepChat における MCP と Skill は別概念です：MCP は「ツール」（function calling）、Skill は「エージェントスキルパッケージ」（SKILL.md + スクリプト）。DeepChat の Skill には「カスタムマーケット URL」がなく、フォルダ/ZIP/URL の 3 方式のインストールのみ対応。イントラネット配布は「URL インストール」で実現します。
+> 📌 DSH Desktop における MCP と Skill は別概念です：MCP は「ツール」（function calling）、Skill は「エージェントスキルパッケージ」（SKILL.md + スクリプト）。DSH Desktop の Skill には「カスタムマーケット URL」がなく、フォルダ/ZIP/URL の 3 方式のインストールのみ対応。イントラネット配布は「URL インストール」で実現します。
 
 ## 11.5 ⚠️ スキルマーケットのホスト名（デプロイパラメータ、置換必須）
 
 「スキルマネージャー」は `config.json` の `market_url` を読み、`/skills` 一覧を要求します。重要な 2 点：
 
-- **ホスト名を使い、IP は使わない**：DeepChat の agent 環境は IP を `[IP_ADDRESS_REDACTED]` にマスキングするため、実際のアドレスを読み取れなくなります；
+- **ホスト名を使い、IP は使わない**：DSH Desktop の agent 環境は IP を `[IP_ADDRESS_REDACTED]` にマスキングするため、実際のアドレスを読み取れなくなります；
 
 - **ホスト名はデプロイパラメータ**：各デプロイで異なるため、そのままコピーできません。
 
@@ -93,4 +93,4 @@ Agent はパラメータ収集時に「スキルマーケットのホスト名�
 
 ---
 
-[← 第10章：DeepChat の配布と CI/CD](ch10-deepchat.md) · [📖 目次](index.md) · [第12章：AI 管理センター →](ch12-admin-center.md)
+[← 第10章：DSH Desktop の配布と CI/CD](ch10-dsh.md) · [📖 目次](index.md) · [第12章：AI 管理センター →](ch12-admin-center.md)

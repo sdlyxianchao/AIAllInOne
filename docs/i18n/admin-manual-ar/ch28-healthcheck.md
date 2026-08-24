@@ -21,7 +21,7 @@
 | Stage 5 | مسار LLM الكامل (طلب حقيقي عبر NewAPI ← LiteLLM ← DeepSeek) |
 | Stage 6 | مسار مصادقة حساب AD + تسجيل دخول مدير NewAPI |
 | Stage 7 | MCP Gateway + وظائف المهارات |
-| Stage 8 | المتطلبات المسبقة لتسجيل الدخول إلى DeepChat/Dify |
+| Stage 8 | المتطلبات المسبقة لتسجيل الدخول إلى DSH Desktop/Dify |
 | Stage 9 | مساحة القرص |
 
 ## 28.2 التنفيذ اليدوي

@@ -115,7 +115,7 @@
     <tr><td>磁盘</td><td>60 GB 可用 SSD</td><td>150 GB+ 可用 SSD</td></tr>
     <tr><td>GPU</td><td>无需独立显卡</td><td>无需独立显卡</td></tr>
   </table>
-  <p><strong>依据实测</strong>（约 30 个容器空闲时全部合计约 5 GB 内存；Dify 处理/索引、Keycloak JVM、MySQL/Postgres 缓存等峰值再增 3–5 GB，加 Docker Desktop 的 WSL2 虚拟内存，16 GB 为最低、32 GB 为舒适值）。磁盘主要被 Docker 镜像（约 10–15 GB）与 DeepChat 安装包（每版本约 740 MB，按保留版本数累积）占用。本方案所有大模型走外部 API（deepseek-chat 等），本地不做推理，因此<b>无需 GPU</b>。</p>
+  <p><strong>依据实测</strong>（约 30 个容器空闲时全部合计约 5 GB 内存；Dify 处理/索引、Keycloak JVM、MySQL/Postgres 缓存等峰值再增 3–5 GB，加 Docker Desktop 的 WSL2 虚拟内存，16 GB 为最低、32 GB 为舒适值）。磁盘主要被 Docker 镜像（约 10–15 GB）与 DSH Desktop 安装包（每版本约 450 MB，按保留版本数累积）占用。本方案所有大模型走外部 API（deepseek-chat 等），本地不做推理，因此<b>无需 GPU</b>。</p>
 </div>
 
 <div class="toc">
@@ -129,9 +129,9 @@
     <li><a href="#start">4. 启动核心服务</a></li>
     <li><a href="#dify">5. Dify 独立部署</a></li>
     <li><a href="#config">6. 各产品 Web UI 配置</a></li>
-    <li><a href="#deepchat">7. DeepChat 安装与配置</a></li>
+    <li><a href="#dsh">7. DSH Desktop 安装与配置</a></li>
     <li><a href="#mcp">8. MCP Gateway — Skill / MCP 管理 Hub</a></li>
-    <li><a href="#cicd">9. CI/CD — DeepChat 自动构建与发布</a></li>
+    <li><a href="#cicd">9. CI/CD — DSH Desktop 自动构建与发布</a></li>
     <li><a href="#interconnect">10. 互连配置验证</a></li>
     <li><a href="#admin-portal">11. AI 管理中心 — 统一管理员门户</a></li>
     <li><a href="#ops">12. 运维 — 健康检查与开机自检</a></li>
@@ -247,7 +247,7 @@
 
   <!-- ====== Layer 1: User ====== -->
   <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
-  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DeepChat 桌面客户端</text>
+  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DSH Desktop 桌面客户端</text>
   <text x="140" y="90" fill="#8b949e" font-size="10">Win/Mac/Linux · 本地文件读写 · MCP/Skill</text>
 
   <g filter="url(#sh)"><rect x="820" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="820" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
@@ -299,7 +299,7 @@
 
   <g filter="url(#sh)"><rect x="735" y="565" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="565" width="4" height="60" rx="2" fill="#56d364"/></g>
   <text x="755" y="588" fill="#56d364" font-size="13" font-weight="600">📦 更新服务器</text>
-  <text x="755" y="605" fill="#8b949e" font-size="10">DeepChat 安装包托管</text>
+  <text x="755" y="605" fill="#8b949e" font-size="10">DSH Desktop 安装包托管</text>
 
   <g filter="url(#sh)"><rect x="960" y="565" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="565" width="4" height="60" rx="2" fill="#d29922"/></g>
   <text x="980" y="588" fill="#d29922" font-size="13" font-weight="600">📈 监控 · 日志</text>
@@ -340,7 +340,7 @@
   <path d="M 612 565 L 735 565" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
   <text x="674" y="558" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">构建产物</text>
   <path d="M 1062 565 L 1175 565 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
-  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DeepChat 自动更新（检查 version.txt → 下载安装）</text>
+  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DSH Desktop 自动更新（检查 version.txt → 下载安装）</text>
 
   <!-- Keycloak OIDC -->
   <path d="M 162 565 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
@@ -350,7 +350,7 @@
   <!-- MCP -->
   <path d="M 387 565 L 387 455" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
   <path d="M 387 455 L 250 455 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="2.5" stroke-dasharray="5,3" opacity="0.9" marker-end="url(#ap)"/>
-  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DeepChat · Dify</text>
+  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DSH Desktop · Dify</text>
   <!-- RAG 检索链路：MCP Gateway → Dify 知识库 -->
   <path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" stroke="#39c5cf" stroke-width="2.5" stroke-dasharray="7" marker-end="url(#at)"/>
   <text x="577" y="498" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="700">RAG 检索：search_knowledge → Dify 知识库</text>
@@ -364,13 +364,13 @@
   <text x="40" y="795" fill="#58a6ff" font-size="13" font-weight="700">📊 数据流说明</text>
 
   <line x1="40" y1="815" x2="80" y2="815" stroke="#58a6ff" stroke-width="2"/>
-  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM 请求流：DeepChat / Dify → NewAPI → LiteLLM 脱敏 → 外部模型 → 响应还原 PII → 返回</text>
+  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM 请求流：DSH Desktop / Dify → NewAPI → LiteLLM 脱敏 → 外部模型 → 响应还原 PII → 返回</text>
 
   <line x1="40" y1="840" x2="80" y2="840" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
   <text x="90" y="844" fill="#c9d1d9" font-size="11">可观测流：LiteLLM success_callback → Langfuse 追踪每次调用（提示词/响应/延迟/token/成本）</text>
 
   <line x1="40" y1="865" x2="80" y2="865" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="869" fill="#c9d1d9" font-size="11">自动更新流：Gitea Actions 构建 → 更新服务器 → DeepChat 自动下载安装</text>
+  <text x="90" y="869" fill="#c9d1d9" font-size="11">自动更新流：Gitea Actions 构建 → 更新服务器 → DSH Desktop 自动下载安装</text>
 
   <line x1="620" y1="815" x2="660" y2="815" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
   <text x="670" y="819" fill="#c9d1d9" font-size="11">门户流：浏览器 → Ghost 门户 → 浏览新闻/下载/跳转 Dify</text>
@@ -386,7 +386,7 @@
 
   <line x1="40" y1="895" x2="1160" y2="895" stroke="#30363d" stroke-width="0.5"/>
   <text x="40" y="912" fill="#d2a8ff" font-size="10" font-weight="700">🔐 组件交互：</text>
-  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → 全部 Web 产品　　MCP Gateway 提供 Skill/MCP → DeepChat/Dify　　LiteLLM 上报 → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → 全部 Web 产品　　MCP Gateway 提供 Skill/MCP → DSH Desktop/Dify　　LiteLLM 上报 → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
   <text x="40" y="942" fill="#8b949e" font-size="9">Gitea 构建 → 更新服务器 + Ghost 公告　　AI 管理中心 — 统一管理门户（Dashboard + 产品内嵌页 + 审计/成本报表 + 备份恢复 + 统一日志）</text>
 
   <rect x="40" y="950" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
@@ -407,8 +407,8 @@
   <tr><td>5</td><td><strong>Dify</strong></td><td>Web AI 应用平台</td><td><code>http://127.0.0.1</code></td><td><code>http://&lt;服务器IP&gt;</code></td><td>dify-* (多容器)</td></tr>
   <tr><td>6</td><td><strong>Ghost</strong></td><td>企业门户</td><td><code>http://127.0.0.1:8090</code></td><td><code>http://&lt;服务器IP&gt;:8090</code></td><td>ghost</td></tr>
   <tr><td>7</td><td><strong>Gitea</strong></td><td>源码管理 + CI/CD</td><td><code>http://127.0.0.1:3002</code></td><td><code>http://&lt;服务器IP&gt;:3002</code></td><td>gitea</td></tr>
-  <tr><td>8</td><td><strong>Update Server</strong></td><td>DeepChat 安装包托管</td><td><code>http://127.0.0.1:8091</code></td><td><code>http://&lt;服务器IP&gt;:8091</code></td><td>update-server</td></tr>
-  <tr><td>9</td><td><strong>DeepChat</strong></td><td>本地 AI 桌面客户端</td><td colspan="2">桌面应用，API 地址填 <code>http://&lt;服务器IP&gt;:3000</code>（员工电脑上）</td><td>—</td></tr>
+  <tr><td>8</td><td><strong>Update Server</strong></td><td>DSH Desktop 安装包托管</td><td><code>http://127.0.0.1:8091</code></td><td><code>http://&lt;服务器IP&gt;:8091</code></td><td>update-server</td></tr>
+  <tr><td>9</td><td><strong>DSH Desktop</strong></td><td>本地 AI 桌面客户端</td><td colspan="2">桌面应用，API 地址填 <code>http://&lt;服务器IP&gt;:3000</code>（员工电脑上）</td><td>—</td></tr>
   <tr><td>10</td><td><strong>Grafana</strong></td><td>监控可视化大盘</td><td><code>http://127.0.0.1:3030</code></td><td><code>http://&lt;服务器IP&gt;:3030</code></td><td>grafana</td></tr>
   <tr><td>11</td><td><strong>Prometheus</strong></td><td>监控指标采集 / 告警</td><td><code>http://127.0.0.1:9091</code></td><td><code>http://&lt;服务器IP&gt;:9091</code></td><td>prometheus</td></tr>
   <tr><td>12</td><td><strong>Langfuse</strong></td><td>LLM 可观测 / 调用追踪</td><td><code>http://127.0.0.1:3010</code></td><td><code>http://&lt;服务器IP&gt;:3010</code></td><td>langfuse</td></tr>
@@ -442,9 +442,9 @@
     <marker id="ap" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#d2a8ff"/></marker>
     <marker id="at" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#39c5cf"/></marker>
 </defs>
-  <!-- Step 1: DeepChat/Dify -->
+  <!-- Step 1: DSH Desktop/Dify -->
   <g filter="url(#sh)"><rect x="8" y="18" width="135" height="58" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="0.8"/><rect x="8" y="18" width="4" height="58" rx="2" fill="#d2a8ff"/></g>
-  <text x="24" y="40" fill="#d2a8ff" font-size="11" font-weight="700">💬 DeepChat</text>
+  <text x="24" y="40" fill="#d2a8ff" font-size="11" font-weight="700">💬 DSH Desktop</text>
   <text x="24" y="54" fill="#d2a8ff" font-size="11" font-weight="700">/ Dify</text>
   <text x="24" y="68" fill="#8b949e" font-size="8">发起请求</text>
 
@@ -592,8 +592,8 @@
 <h4>客户端与特殊用途</h4>
 <table>
   <tr><th>用途</th><th>地址</th><th>说明</th></tr>
-  <tr><td>DeepChat 客户端 API</td><td><code>http://&lt;服务器IP&gt;:3000/v1</code></td><td>员工电脑上 DeepChat 的 API Base URL</td></tr>
-  <tr><td>DeepChat 下载</td><td><code>http://&lt;服务器IP&gt;:8091</code></td><td>安装包托管，点链接下载</td></tr>
+  <tr><td>DSH Desktop 客户端 API</td><td><code>http://&lt;服务器IP&gt;:3000/v1</code></td><td>员工电脑上 DSH Desktop 的 API Base URL</td></tr>
+  <tr><td>DSH Desktop 下载</td><td><code>http://&lt;服务器IP&gt;:8091</code></td><td>安装包托管，点链接下载</td></tr>
   <tr><td>AI 管理中心</td><td><code>http://&lt;服务器IP&gt;:10086</code></td><td>仅管理员，统一管理入口</td></tr>
   <tr><td>Grafana 监控</td><td><code>http://&lt;服务器IP&gt;:3030</code></td><td>仅管理员，容器资源监控 / 告警大盘</td></tr>
   <tr><td>Langfuse 可观测</td><td><code>http://&lt;服务器IP&gt;:3010</code></td><td>仅管理员，LLM 调用追踪 / 成本 / 质量分析</td></tr>
@@ -615,7 +615,7 @@
   <tr><td>Dify</td><td><code>http://127.0.0.1</code></td><td>AI 应用平台（80 端口）</td></tr>
   <tr><td>Ghost 门户</td><td><code>http://127.0.0.1:8090</code></td><td>企业门户后台</td></tr>
   <tr><td>Gitea</td><td><code>http://127.0.0.1:3002</code><br><code>ssh://git@127.0.0.1:2222</code></td><td>源码管理（Web + Git SSH）</td></tr>
-  <tr><td>Update Server</td><td><code>http://127.0.0.1:8091</code></td><td>DeepChat 安装包分发</td></tr>
+  <tr><td>Update Server</td><td><code>http://127.0.0.1:8091</code></td><td>DSH Desktop 安装包分发</td></tr>
   <tr><td>AI 管理中心</td><td><code>http://127.0.0.1:10086</code></td><td>统一管理入口</td></tr>
   <tr><td>LiteLLM</td><td><code>http://&lt;服务器IP&gt;:4001</code></td><td>PII 脱敏代理（内部）</td></tr>
   <tr><td>Grafana</td><td><code>http://127.0.0.1:3030</code></td><td>监控大盘</td></tr>
@@ -645,14 +645,14 @@ swap=4GB</code></pre>
 <div class="step">
   <span class="step-num">2</span><strong>创建工作目录</strong>
   <pre><code><span class="comment"># 在 PowerShell 中执行</span>
-mkdir deepchat-updates</code></pre>
+mkdir dsh-updates</code></pre>
   <p>目录结构：</p>
   <div style="margin: 8px 0; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.85em; line-height: 2;">
     <div><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">C:\ai-platform\windows\</span> &nbsp;&nbsp;<span style="color:#8b949e"># 假设的部署根目录</span></div>
     <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">docker-compose.yml</span> &nbsp;&nbsp;<span style="color:#8b949e"># 核心服务编排（已生成）</span></div>
     <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">.env.windows</span> &nbsp;&nbsp;<span style="color:#8b949e"># 环境变量（已生成，需填入 API Key）</span></div>
     <div style="padding-left: 28px;"><span style="color:#d29922">&#128196;</span> <span style="color:#c9d1d9">litellm-config.yaml</span> &nbsp;&nbsp;<span style="color:#8b949e"># LiteLLM PII 脱敏配置（已生成）</span></div>
-    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">deepchat-updates\</span> &nbsp;&nbsp;<span style="color:#8b949e"># DeepChat 安装包托管目录</span></div>
+    <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">dsh-updates\</span> &nbsp;&nbsp;<span style="color:#8b949e"># DSH Desktop 安装包托管目录</span></div>
     <div style="padding-left: 28px;"><span style="color:#58a6ff">&#128193;</span> <span style="color:#c9d1d9">admin-portal\</span> &nbsp;&nbsp;<span style="color:#8b949e"># AI 管理中心实现</span></div>
   </div>
 </div>
@@ -1318,14 +1318,14 @@ docker compose up -d web</code></pre>
 </div>
 <div class="step">
   <span class="step-num">3</span><strong>创建 API 密钥</strong>
-  <p>为 Dify 和 DeepChat 各创建一个独立密钥，方便后续分开管理用量：</p>
+  <p>为 Dify 和 DSH Desktop 各创建一个独立密钥，方便后续分开管理用量：</p>
   <ul>
     <li>左侧菜单 <strong>API 密钥</strong> → <strong>新建</strong></li>
     <li>名称：<code>dify-key</code> → 保存 → 复制 <code>sk-xxx</code>，后续填到 Dify 模型供应商</li>
-    <li>再新建一个，名称：<code>deepchat-key</code> → 保存 → 复制 <code>sk-xxx</code>，后续分发给 DeepChat 用户</li>
+    <li>再新建一个，名称：<code>dsh-key</code> → 保存 → 复制 <code>sk-xxx</code>，后续分发给 DSH Desktop 用户</li>
   </ul>
   <div class="callout" style="border-left:3px solid #8b949e;padding:10px 16px;margin:8px 0;background:rgba(139,148,158,0.06);border-radius:0 4px 4px 0;">
-    <strong>为什么要分开？</strong>Dify 是服务端调用，DeepChat 是客户端调用，两把 key 分开后可以在 NewAPI 用量统计里分别查看各自消耗，出问题也容易定位。
+    <strong>为什么要分开？</strong>Dify 是服务端调用，DSH Desktop 是客户端调用，两把 key 分开后可以在 NewAPI 用量统计里分别查看各自消耗，出问题也容易定位。
   </div>
 </div>
 
@@ -1560,7 +1560,7 @@ litellm_settings:
 </div>
 <div class="verify">Dify 中 AI 正常回复消息。查看 <code>docker logs new-api</code> 能看到 Dify 的请求记录。</div>
 
-<div class="callout callout-info"><strong>🔍 用 Dify 承载统一知识库（RAG）：</strong>如需让 DeepChat 通过 MCP 检索 Dify 知识库，除上面的 LLM 供应商外，还需在「模型供应商」里加一个 <b>embedding 模型</b>（如 <code>bge-m3</code>）并设为默认，再创建知识库 + Knowledge API Key。完整步骤见 <a href="#mcp-rag">8.9 RAG — 统一知识库检索</a>。</div>
+<div class="callout callout-info"><strong>🔍 用 Dify 承载统一知识库（RAG）：</strong>如需让 DSH Desktop 通过 MCP 检索 Dify 知识库，除上面的 LLM 供应商外，还需在「模型供应商」里加一个 <b>embedding 模型</b>（如 <code>bge-m3</code>）并设为默认，再创建知识库 + Knowledge API Key。完整步骤见 <a href="#mcp-rag">8.9 RAG — 统一知识库检索</a>。</div>
 
 <h4>自动初始化 Dify（CLI 方式，无需浏览器）</h4>
 <div class="callout callout-info">
@@ -1607,7 +1607,7 @@ docker restart ghost</code></pre>
 </div>
 <div class="step">
   <span class="step-num">3</span><strong>导入示例内容（可选，含发布地址 + 语言选择）</strong>
-  <p>项目自带一份门户示例内容种子 <code>ghost-content-seed/content.json</code>（站点标题/描述、主导航、4 篇示例文章 + 1 个 DeepChat 下载页）。导入后门户开箱即有内容，无需从零建页面。</p>
+  <p>项目自带一份门户示例内容种子 <code>ghost-content-seed/content.json</code>（站点标题/描述、主导航、4 篇示例文章 + 1 个 DSH Desktop 下载页）。导入后门户开箱即有内容，无需从零建页面。</p>
   <div class="callout callout-info"><strong>🤖 自动化（推荐）：</strong>部署 Agent 会先问你两件事，再生成真正的内容：</div>
   <ol>
     <li><b>对外发布地址</b>（内网 IP 或域名，如 <code>192.168.1.10</code> 或 <code>portal.company.com</code>）：内容里的文章正文也含各产品访问地址（NewAPI / MCP / Dify 等），Agent 会用这个地址替换 seed 里的 <code>&lt;服务器IP&gt;</code> 占位符（注意保留 <code>host.docker.internal</code> 这类容器内固定地址不动）。</li>
@@ -1616,9 +1616,9 @@ docker restart ghost</code></pre>
   <p>导入命令（Agent 自动执行）：</p>
   <pre><code>powershell -File .\scripts\ghost-content-import.ps1 -ServerAddr "&lt;对外发布地址&gt;"</code></pre>
   <p>脚本内部做的事：把 <code>ghost-content-seed/content.json</code> 复制进容器 → 在容器内执行 <code>node /tmp/ghost-content-import.js /tmp/content.json &lt;对外发布地址&gt;</code> → 自动替换 <code>&lt;服务器IP&gt;</code> 占位符、创建文章/页面、写入导航和站点设置（已存在的 slug 自动跳过，幂等）。</p>
-  <p>导入后门户首页即为新闻列表，导航含 Home / DeepChat / Dify，下载页 <code>/deepchat/</code> 已有完整下载链接——原「配置导航菜单」「创建下载页」两步由种子自动完成，无需手工再配。</p>
+  <p>导入后门户首页即为新闻列表，导航含 Home / DSH Desktop / Dify，下载页 <code>/dsh/</code> 已有完整下载链接——原「配置导航菜单」「创建下载页」两步由种子自动完成，无需手工再配。</p>
 </div>
-<div class="verify">Ghost 首页显示主题样式 + 示例新闻列表，导航含 Home / DeepChat / Dify，下载页 /deepchat/ 有安装包链接。</div>
+<div class="verify">Ghost 首页显示主题样式 + 示例新闻列表，导航含 Home / DSH Desktop / Dify，下载页 /dsh/ 有安装包链接。</div>
 
 <h3 id="config-gitea">6.6 Gitea — 初始化和 Runner 注册</h3>
 <div class="step">
@@ -1661,14 +1661,14 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
   <strong>🔐 Gitea Keycloak SSO 自动注册（v0.91）：</strong>Gitea 已接 Keycloak OIDC（<code>/user/login</code> 页有「Sign in with keycloak」按钮）。为让新 SSO 用户首次登录<b>自动建号、不再跳 <code>link_account</code></b>（关联账号）页，需在 <code>app.ini</code> 追加 <code>[oauth2_client]</code> 段（docker-compose 已配 <code>GITEA__oauth2_client__*</code> 环境变量）：<code>ENABLE_AUTO_REGISTRATION=true</code>、<code>ACCOUNT_LINKING=auto</code>、<code>USERNAME=preferred_username</code>。⚠️ Gitea 本地管理员邮箱必须与 Keycloak/AD 一致（<code>@&lt;公司域名&gt;</code>），否则 SSO 按邮箱匹配不到会「串号」或生成重复账号。
 </div>
 
-<h4>导入 DeepChat 同步脚本</h4>
-<p><code>deepchat-sync</code> 仓库包含自动同步 DeepChat 安装包的工作流。Gitea 初始化完成后，导入同步脚本：</p>
+<h4>导入 DSH Desktop 同步脚本</h4>
+<p><code>dsh-sync</code> 仓库包含自动同步 DSH Desktop 安装包的工作流。Gitea 初始化完成后，导入同步脚本：</p>
 <div class="step">
-  <span class="step-num">1</span><strong>创建 <code>deepchat-sync</code> 仓库</strong>
+  <span class="step-num">1</span><strong>创建 <code>dsh-sync</code> 仓库</strong>
   <pre><code>curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/create" ^
   -u "ai_all_in_one_admin:&lt;密码&gt;" ^
   -H "Content-Type: application/json" ^
-  -d "{\"name\":\"deepchat-sync\",\"description\":\"DeepChat release 同步 + Ghost 下载页更新\",\"auto_init\":true}"</code></pre>
+  -d "{\"name\":\"dsh-sync\",\"description\":\"DSH Desktop release 同步 + Ghost 下载页更新\",\"auto_init\":true}"</code></pre>
 </div>
 <div class="step">
   <span class="step-num">2</span><strong>上传同步工作流和脚本</strong>
@@ -1681,9 +1681,9 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"</code></pre>
     <tr><td><code>sync-config.json</code></td><td>配置：版本源、下载加速前缀、保留版本数、市场地址</td></tr>
     <tr><td><code>version.txt</code></td><td>记录上次同步的版本号</td></tr>
   </table>
-  <p>通过 Gitea 网页上传（<code>http://&lt;服务器IP&gt;:3002/ai_all_in_one_admin/deepchat-sync</code>）或用 API：</p>
+  <p>通过 Gitea 网页上传（<code>http://&lt;服务器IP&gt;:3002/ai_all_in_one_admin/dsh-sync</code>）或用 API：</p>
   <pre><code><span class="comment"># 示例：通过 API 上传 sync-config.json</span>
-curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/contents/sync-config.json" ^
+curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/dsh-sync/contents/sync-config.json" ^
   -u "ai_all_in_one_admin:&lt;密码&gt;" ^
   -H "Content-Type: application/json" ^
   -d "{\"content\":\"base64编码内容\",\"message\":\"Add sync config\"}"</code></pre>
@@ -1692,34 +1692,34 @@ curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/d
   <span class="step-num">3</span><strong>为同步工作流配置 Runner</strong>
   <p>确保 <code>gitea-runner-config.yaml</code> 中 <code>container.network: ai-platform</code> 已配置，以便 job 容器能解析 <code>gitea</code> 主机名。同时设置 <code>force_pull: false</code>，并在宿主机预拉取 <code>node:20</code>（内网访问不了 Docker Hub）。</p>
 </div>
-<div class="note">⚠️ <b>关键坑</b>：① <code>deepchat-sync</code> 仓库必须是<b>普通仓库</b>（不能用 mirror 仓库，mirror 只读）；② <code>sync.yml</code> 中 checkout 步骤必须带 <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code>，否则 checkout 因空 token 失败；③ <code>sync_download.py</code> 使用 Docker Engine API（通过 <code>/var/run/docker.sock</code>）而非 Docker CLI（CLI 在内网下载会超时）；④ <code>sync-config.json</code> 控制版本源（<code>github</code> vs <code>official</code>）、下载加速前缀和版本保留数。</div>
+<div class="note">⚠️ <b>关键坑</b>：① <code>dsh-sync</code> 仓库必须是<b>普通仓库</b>（不能用 mirror 仓库，mirror 只读）；② <code>sync.yml</code> 中 checkout 步骤必须带 <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code>，否则 checkout 因空 token 失败；③ <code>sync_download.py</code> 使用 Docker Engine API（通过 <code>/var/run/docker.sock</code>）而非 Docker CLI（CLI 在内网下载会超时）；④ <code>sync-config.json</code> 控制版本源（<code>github</code> vs <code>official</code>）、下载加速前缀和版本保留数。</div>
 
-<!-- ==================== 7. DeepChat ==================== -->
+<!-- ==================== 7. DSH Desktop ==================== -->
 
-<h2 id="deepchat">7. DeepChat 安装与配置</h2>
-<p>DeepChat 是桌面端 AI 对话客户端，通过 NewAPI 统一调用后端大模型。下面三种方式任选其一。</p>
+<h2 id="dsh">7. DSH Desktop 安装与配置</h2>
+<p>DSH Desktop 是桌面端 AI 对话客户端，通过 NewAPI 统一调用后端大模型。下面三种方式任选其一。</p>
 
 <h3>7.1 方式 A：内网分发（推荐，员工从内网下载）</h3>
 <div class="callout callout-info">
-  <strong>说明：</strong>分发链路 = GitHub Releases 安装包 → <code>deepchat-sync</code> 仓库的 Gitea Actions 工作流 → Update Server(8091) → Ghost 下载页 → 员工下载。<b>不再需要 Gitea 源码镜像仓库</b>（<code>deepchat</code> mirror 已删除）——镜像只同步 git 源码、<b>不同步 release 安装包</b>，且每天 8 小时同步一次、占 ~107 MB，对「分发安装包」没有任何帮助。若将来要做源码审计/二次开发再单独建。
+  <strong>说明：</strong>分发链路 = GitHub Releases 安装包 → <code>dsh-sync</code> 仓库的 Gitea Actions 工作流 → Update Server(8091) → Ghost 下载页 → 员工下载。<b>不再需要 Gitea 源码镜像仓库</b>（<code>dsh</code> mirror 已删除）——镜像只同步 git 源码、<b>不同步 release 安装包</b>，且每天 8 小时同步一次、占 ~107 MB，对「分发安装包」没有任何帮助。若将来要做源码审计/二次开发再单独建。
 </div>
 <div class="step">
   <span class="step-num">1</span><strong>（可选）建源码镜像仓库，仅供源码审计/二次开发</strong>
-  <p>仅当需要在内网看 DeepChat 源码、做安全审查或自建打包时才有用，与「分发安装包」无关，可跳过：</p>
+  <p>仅当需要在内网看 DSH Desktop 源码、做安全审查或自建打包时才有用，与「分发安装包」无关，可跳过：</p>
   <pre><code>curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/migrate" \
   -u "ai_all_in_one_admin:&lt;密码&gt;" \
   -H "Content-Type: application/json" \
-  -d '{"clone_addr":"https://github.com/ThinkInAIXYZ/deepchat","repo_name":"deepchat","mirror":true}'</code></pre>
+  -d '{"clone_addr":"https://github.com/dataelement/dsh-desktop","repo_name":"dsh","mirror":true}'</code></pre>
 </div>
 <div class="step">
   <span class="step-num">2</span><strong>下载安装包到 Update Server</strong>
-  <pre><code><span class="comment"># 从 GitHub release 下载（以 v1.1.0 为例，替换成最新版本号）</span>
-mkdir -p deepchat-updates/deepchat
-curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-windows-x64.exe \
-  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-windows-x64.exe
-curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
-  https://github.com/ThinkInAIXYZ/deepchat/releases/download/v1.1.0/DeepChat-1.1.0-mac-x64.dmg</code></pre>
-  <div class="verify">下载链接可访问：<code>curl -I http://&lt;服务器IP&gt;:8091/deepchat/DeepChat-1.1.0-windows-x64.exe</code> → HTTP 200/206。</div>
+  <pre><code><span class="comment"># 从 GitHub release 下载（以 v0.5.0 为例，替换成最新版本号）</span>
+mkdir -p dsh-updates/dsh
+curl -L -o dsh-updates/dsh/dsh-desktop-windows-x64-setup.exe \
+  https://github.com/dataelement/dsh-desktop/releases/download/v0.5.0/dsh-desktop-windows-x64-setup.exe
+curl -L -o dsh-updates/dsh/dsh-desktop-mac-x64.dmg \
+  https://github.com/dataelement/dsh-desktop/releases/download/v0.5.0/dsh-desktop-mac-x64.dmg</code></pre>
+  <div class="verify">下载链接可访问：<code>curl -I http://&lt;服务器IP&gt;:8091/dsh/dsh-desktop-windows-x64-setup.exe</code> → HTTP 200/206。</div>
 </div>
 <div class="step">
   <span class="step-num">3</span><strong>更新 Ghost 下载中心页面</strong>
@@ -1730,23 +1730,23 @@ curl -L -o deepchat-updates/deepchat/DeepChat-1.1.0-mac-x64.dmg \
 <p>上面的三步可以固化成 Gitea Actions 工作流，每天自动检查 GitHub 新版本并同步。已实现：</p>
 <table>
   <tr><th>组件</th><th>说明</th></tr>
-  <tr><td><code>deepchat-sync</code> 仓库</td><td>Gitea 普通仓库（<b>不能</b>用 mirror 仓库，mirror 只读），放 <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
+  <tr><td><code>dsh-sync</code> 仓库</td><td>Gitea 普通仓库（<b>不能</b>用 mirror 仓库，mirror 只读），放 <code>.gitea/workflows/sync.yml</code> + <code>update_ghost.py</code></td></tr>
   <tr><td>workflow 触发</td><td><code>schedule</code>（每天 UTC 2 点）+ <code>workflow_dispatch</code>（手动）</td></tr>
   <tr><td>同步逻辑</td><td>查 GitHub API 最新 tag → 对比 <code>version.txt</code> → 有新版则下载安装包 + 更新 Ghost 下载页 + 写版本</td></tr>
   <tr><td>runner 配置</td><td><code>gitea-runner-config.yaml</code> 挂载到 runner，加 <code>CONFIG_FILE</code> 环境变量；<code>container.network: ai-platform</code>（让 job 容器解析 gitea 容器名）</td></tr>
 </table>
 <pre><code><span class="comment"># 手动触发一次同步</span>
-curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/deepchat-sync/actions/workflows/sync.yml/dispatches" \
+curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/dsh-sync/actions/workflows/sync.yml/dispatches" \
   -u "ai_all_in_one_admin:&lt;密码&gt;" -H "Content-Type: application/json" -d '{"ref":"main"}'
 
-<span class="comment"># 或 Gitea Web UI：deepchat-sync → Actions → 运行工作流</span></code></pre>
+<span class="comment"># 或 Gitea Web UI：dsh-sync → Actions → 运行工作流</span></code></pre>
 <div class="note">关键坑：① act_runner 的 <code>container.network</code> 必须通过 <code>config.yaml</code>（+ <code>CONFIG_FILE</code> 环境变量）配置，否则 job 容器在独立网络解析不了 <code>gitea</code> 主机名；② docker.sock 由 act_runner 自动挂载，不要在 <code>options</code> 里再挂一次（会报 Duplicate mount point）；③ 下载 docker CLI 时偶发 <code>curl (18) HTTP/2 stream</code> 网络瞬断，workflow 已给该下载加 <code>--http1.1 --retry 5</code>；④ <b>内网 Docker daemon 通常访问不了 Docker Hub</b>（<code>registry-1.docker.io</code> 超时），而 runner 默认 <code>force_pull: true</code> 会每次强制拉取 job 镜像 <code>node:20</code>，导致 job 在跑任何 step 之前就失败——需在 <code>gitea-runner-config.yaml</code> 里设 <code>force_pull: false</code>，并在宿主机先 <code>docker pull node:20</code> 预置镜像（或给 Docker Desktop 配镜像加速器）。</div>
 
 <h4>国内下载源配置（<code>sync-config.json</code>）</h4>
 <div class="callout callout-warn">
-  <strong>⚠️ 国内访问 GitHub 基本不通，官方「下载页」其实不解决下载问题：</strong>官网 <code>deepchatai.cn</code> 的下载数据来自它自己服务器上的 <code>https://deepchatai.cn/download-cache.json</code>（国内可达），但里面的安装包 <code>browser_download_url</code> <b>仍指向 <code>github.com/.../releases/download/...</code></b>，前端点「下载」就是直接跳 GitHub，没有任何国内镜像/加速改写。而且这份缓存<b>会滞后</b>（官网 stable 显示 v1.0.7 时，GitHub 实际已是 v1.1.0）。
+  <strong>⚠️ 国内访问 GitHub 基本不通，官方「下载页」其实不解决下载问题：</strong>官网 <code>www.dshdesktop.com</code> 的下载数据来自它自己服务器上的 <code>https://www.dshdesktop.com/download-cache.json</code>（国内可达），但里面的安装包 <code>browser_download_url</code> <b>仍指向 <code>github.com/.../releases/download/...</code></b>，前端点「下载」就是直接跳 GitHub，没有任何国内镜像/加速改写。而且这份缓存<b>会滞后</b>（官网 stable 显示 v1.0.7 时，GitHub 实际已是 v0.5.0）。
 </div>
-<p>所以真正解决国内下载靠 <code>deepchat-sync</code> 仓库根目录的 <code>sync-config.json</code>，两个开关：</p>
+<p>所以真正解决国内下载靠 <code>dsh-sync</code> 仓库根目录的 <code>sync-config.json</code>，两个开关：</p>
 <table>
   <tr><th style="width:28%;">字段</th><th>作用</th><th>默认</th></tr>
   <tr><td><code>version_source</code></td><td>查版本走哪：<code>github</code>（GitHub API，最准）或 <code>official</code>（官网 download-cache.json，国内可达但滞后）</td><td><code>github</code></td></tr>
@@ -1760,22 +1760,22 @@ curl -X POST "http://&lt;服务器IP&gt;:3002/api/v1/repos/ai_all_in_one_admin/d
 { "version_source": "github", "download_prefix": "https://ghproxy.com/" }
 <span class="comment"># ③ GitHub API 完全不通：官网查版本 + 代理下载</span>
 { "version_source": "official", "download_prefix": "https://ghproxy.com/" }</code></pre>
-<div class="note">工作流内置 <code>version_cmp.py</code> 做版本号比较，<b>只有「最新版 &gt; 本地已部署版」才下载</b>——因为官网缓存滞后（v1.0.7 &lt; 本地 v1.1.0），若按「版本不同就下载」会把员工客户端<b>回退到旧版</b>。同时 <code>update_ghost.py</code> 会自动维护下载页：新版本累积成时间轴、按 <code>keep_releases</code> 裁剪、同版本幂等（不重复追加）、页面被误删时自动重建（UPSERT）。</div>
+<div class="note">工作流内置 <code>version_cmp.py</code> 做版本号比较，<b>只有「最新版 &gt; 本地已部署版」才下载</b>——因为官网缓存滞后（v1.0.7 &lt; 本地 v0.5.0），若按「版本不同就下载」会把员工客户端<b>回退到旧版</b>。同时 <code>update_ghost.py</code> 会自动维护下载页：新版本累积成时间轴、按 <code>keep_releases</code> 裁剪、同版本幂等（不重复追加）、页面被误删时自动重建（UPSERT）。</div>
 
 <h3>7.2 方式 B：用 Docker 构建自定义版本</h3>
 <div class="step">
   <span class="step-num">1</span><strong>用 Docker 临时容器构建</strong>
   <pre><code><span class="comment"># PowerShell</span>
-mkdir deepchat-build
+mkdir dsh-build
 
 <span class="comment"># 启动临时 Node.js 容器进行构建</span>
 docker run -it --rm ^
-  -v ${PWD}/deepchat-build:/app ^
+  -v ${PWD}/dsh-build:/app ^
   -w /app ^
   node:20 bash
 
 <span class="comment"># === 容器内执行 ===</span>
-git clone https://github.com/ThinkInAIXYZ/deepchat.git .
+git clone https://github.com/dataelement/dsh-desktop.git .
 npm ci
 
 <span class="comment"># 构建 Windows 安装包</span>
@@ -1783,27 +1783,27 @@ npx electron-builder --win --x64
 
 <span class="comment"># 构建产物在 dist/ 目录</span>
 ls dist/
-<span class="comment"># DeepChat-Setup-0.0.1.exe  latest.yml</span>
+<span class="comment"># dsh-desktop-Setup-0.0.1.exe  latest.yml</span>
 
 <span class="comment"># 退出容器</span>
 exit
 
 <span class="comment"># === 回到 PowerShell ===</span>
 <span class="comment"># 将安装包复制到 Update Server 目录</span>
-mkdir deepchat-updates
-copy deepchat-build\dist\*.exe windows\deepchat-updates\
-copy deepchat-build\dist\latest.yml windows\deepchat-updates\</code></pre>
-  <div class="verify">浏览器打开 <code>http://127.0.0.1:8091/deepchat/latest.yml</code> 能看到 YAML 文件内容。</div>
+mkdir dsh-updates
+copy dsh-build\dist\*.exe windows\dsh-updates\
+copy dsh-build\dist\latest.yml windows\dsh-updates\</code></pre>
+  <div class="verify">浏览器打开 <code>http://127.0.0.1:8091/dsh/latest.yml</code> 能看到 YAML 文件内容。</div>
 </div>
 
-<h3>7.3 配置 DeepChat 客户端</h3>
+<h3>7.3 配置 DSH Desktop 客户端</h3>
 <div class="step">
   <span class="step-num">1</span><strong>配置 LLM Provider</strong>
   <ul>
-    <li>打开 DeepChat → <strong>设置</strong> → <strong>模型服务</strong></li>
+    <li>打开 DSH Desktop → <strong>设置</strong> → <strong>模型服务</strong></li>
     <li>选择"自定义 Provider" 或 "OpenAI 兼容"</li>
     <li>API Base URL：<code>http://&lt;服务器IP&gt;:3000/v1</code>（NewAPI，员工电脑上必须用内网 IP，不能用 &lt;服务器IP&gt;）</li>
-    <li>API Key：<code>deepchat-key</code> 的 <code>sk-xxx</code>（在 NewAPI API 密钥中复制）</li>
+    <li>API Key：<code>dsh-key</code> 的 <code>sk-xxx</code>（在 NewAPI API 密钥中复制）</li>
     <li>模型选择：<code>gpt-4o-mini</code>（或 <code>deepseek-chat</code>）</li>
     <li>保存</li>
   </ul>
@@ -1821,13 +1821,13 @@ copy deepchat-build\dist\latest.yml windows\deepchat-updates\</code></pre>
 docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
   <div class="verify">
     日志显示 <code>EMAIL_ADDRESS</code> 被检测到并替换为 <code>[EMAIL]</code>。
-    DeepChat 收到的回复中邮箱地址被还原。
+    DSH Desktop 收到的回复中邮箱地址被还原。
   </div>
 </div>
 <div class="step">
   <span class="step-num">4</span><strong>配置 MCP Server（可选）</strong>
   <ul>
-    <li>DeepChat → <strong>设置</strong> → <strong>MCP</strong></li>
+    <li>DSH Desktop → <strong>设置</strong> → <strong>MCP</strong></li>
     <li>添加 MCP Server：名称 <code>filesystem</code></li>
     <li>命令：<code>npx -y @modelcontextprotocol/server-filesystem C:\Users</code></li>
     <li>保存 → 在对话中测试 "列出我的文件"</li>
@@ -1835,7 +1835,7 @@ docker logs litellm 2>&1 | findstr "EMAIL"</code></pre>
 </div>
 
 <h2 id="mcp">8. MCP Gateway — Skill / MCP 管理 Hub</h2>
-<div class="note"><strong>说明：</strong>MCP Gateway 是 Skill 和 MCP 工具的集中管理网关，基于官方 <code>@modelcontextprotocol/sdk</code> 实现，暴露标准 Streamable HTTP <code>/mcp</code> 端点。DeepChat 和 Dify 连这一个地址即可获取所有工具（内置平台工具 + 聚合的外部 MCP Server）。已并入主 docker-compose.yml，随核心服务一起启动。</div>
+<div class="note"><strong>说明：</strong>MCP Gateway 是 Skill 和 MCP 工具的集中管理网关，基于官方 <code>@modelcontextprotocol/sdk</code> 实现，暴露标准 Streamable HTTP <code>/mcp</code> 端点。DSH Desktop 和 Dify 连这一个地址即可获取所有工具（内置平台工具 + 聚合的外部 MCP Server）。已并入主 docker-compose.yml，随核心服务一起启动。</div>
 
 <h3>8.1 部署（已并入主 docker-compose.yml）</h3>
 <p>MCP Gateway 已作为 <code>mcp-gateway</code> 服务加入主 <code>docker-compose.yml</code>，端口 <code>3100</code>，随核心服务 <code>docker compose up -d</code> 一起启动。源码在 <code>mcp-gateway/</code> 目录（gateway.js + package.json + mcp-servers.json）。</p>
@@ -1862,21 +1862,21 @@ npm install</code></pre>否则 <code>node gateway.js</code> 会报 <code>Cannot 
 }</code></pre>
 <p style="color:#8b949e;font-size:0.9em">聚合的工具会自动加 <code>{serverName}_</code> 前缀，避免与内置工具重名冲突。</p>
 
-<h3>8.4 客户端接入（DeepChat / Dify）</h3>
+<h3>8.4 客户端接入（DSH Desktop / Dify）</h3>
 <ol>
-  <li>DeepChat：设置 → MCP → <b>新增</b> → 点 <b>「跳过至手动配置」</b> → 类型选 <b>可流式传输的 HTTP 请求（HTTP）</b></li>
+  <li>DSH Desktop：设置 → MCP → <b>新增</b> → 点 <b>「跳过至手动配置」</b> → 类型选 <b>可流式传输的 HTTP 请求（HTTP）</b></li>
   <li>基础 URL 填：<code>http://&lt;服务器IP&gt;:3100/mcp</code></li>
   <li>Dify 工作流：自定义工具 / MCP 工具配置同样指向 <code>http://&lt;服务器IP&gt;:3100/mcp</code></li>
 </ol>
-<div class="callout callout-warn"><strong>⚠️ 关键：</strong>DeepChat 点「新增」后默认进入模板/预设选择页，<b>必须点「跳过至手动配置」</b>才会出现手动填类型和基础 URL 的界面（否则找不到「可流式传输的 HTTP 请求」类型）。</div>
-<div class="note"><strong>一键接入 vs 手动配置：</strong>① <b>一键接入</b>（<code>/market</code> 页顶部或 AI 管理中心 MCP 页的「复制 DeepChat 一键接入链接」）走 <b>SSE 端点 <code>/sse</code></b>——因为 DeepChat 的 <code>deepchat://mcp/install</code> 处理器<b>只接受 stdio/sse，不接受 Streamable HTTP</b>，SSE 会显示「SSE is legacy-only」提示，<b>属正常、不影响使用</b>。② <b>手动配置</b>走 Streamable HTTP <code>/mcp</code>（无该提示，推荐）。两者连的是同一个网关、同一套工具（含 <code>search_knowledge</code>）。</div>
+<div class="callout callout-warn"><strong>⚠️ 关键：</strong>DSH Desktop 点「新增」后默认进入模板/预设选择页，<b>必须点「跳过至手动配置」</b>才会出现手动填类型和基础 URL 的界面（否则找不到「可流式传输的 HTTP 请求」类型）。</div>
+<div class="note"><strong>一键接入 vs 手动配置：</strong>① <b>一键接入</b>（<code>/market</code> 页顶部或 AI 管理中心 MCP 页的「复制 DSH Desktop 一键接入链接」）走 <b>SSE 端点 <code>/sse</code></b>——因为 DSH Desktop 的 <code>dsh://mcp/install</code> 处理器<b>只接受 stdio/sse，不接受 Streamable HTTP</b>，SSE 会显示「SSE is legacy-only」提示，<b>属正常、不影响使用</b>。② <b>手动配置</b>走 Streamable HTTP <code>/mcp</code>（无该提示，推荐）。两者连的是同一个网关、同一套工具（含 <code>search_knowledge</code>）。</div>
 
 <h3>8.5 验证</h3>
 <ol>
   <li><code>curl http://&lt;服务器IP&gt;:3100/health</code> → 返回 <code>{"status":"ok"}</code></li>
   <li><code>curl -X POST http://&lt;服务器IP&gt;:3100/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code> → 返回内置工具列表</li>
 </ol>
-<div class="tip">MCP Gateway 运行后，DeepChat 客户端在 MCP 设置中添加 <code>http://&lt;服务器IP&gt;:3100/mcp</code> 即可使用平台工具。Dify 工作流也可通过 MCP 工具配置接入同一地址。</div>
+<div class="tip">MCP Gateway 运行后，DSH Desktop 客户端在 MCP 设置中添加 <code>http://&lt;服务器IP&gt;:3100/mcp</code> 即可使用平台工具。Dify 工作流也可通过 MCP 工具配置接入同一地址。</div>
 
 <h3>8.6 扩展：添加自定义内置工具</h3>
 <p>在 <code>mcp-gateway/gateway.js</code> 中加两步：先往 <code>builtinTools</code> 数组加工具定义，再在 <code>callBuiltin</code> 加执行逻辑。</p>
@@ -1888,7 +1888,7 @@ npm install</code></pre>否则 <code>node gateway.js</code> 会报 <code>Cannot 
 if (name === 'platform_health') {
   return '所有服务运行正常';
 }</code></pre>
-<p>修改后重启生效：<code>docker compose restart mcp-gateway</code>。之后 DeepChat 里重新连接该 MCP 服务器即可看到新工具。</p>
+<p>修改后重启生效：<code>docker compose restart mcp-gateway</code>。之后 DSH Desktop 里重新连接该 MCP 服务器即可看到新工具。</p>
 
 <h3>8.7 Skill 市场（内网技能包分发）</h3>
 <p>MCP Gateway 同时托管内网 Skill（技能包），提供浏览、下载、安装三个端点：</p>
@@ -1900,20 +1900,20 @@ if (name === 'platform_health') {
 </table>
 <p>技能放在 <code>mcp-gateway/skills/</code> 目录下（含 <code>SKILL.md</code> 的子目录），<b>每次请求自动扫描，无需重启</b>。内置示例：<code>platform-report</code>（生成平台状态报告）。</p>
 <div class="callout callout-info">
-  <strong>DeepChat 装 Skill：</strong>设置 → Skills → <b>从 URL 安装</b>，填 <code>http://&lt;服务器IP&gt;:3100/skills/&lt;名称&gt;.zip</code>。<br>
-  <strong>关键认知：</strong>DeepChat 里 MCP 和 Skill 是两个独立概念——MCP 是「工具」（function calling），Skill 是「智能体技能包」（SKILL.md 指令 + 脚本）。DeepChat 的 Skill <b>没有「自定义市场 URL」</b>，官方只支持「文件夹 / ZIP / URL」三种安装方式，所以内网分发只能靠「URL 安装」变相实现（网关托管 zip + 市场页）。
+  <strong>DSH Desktop 装 Skill：</strong>设置 → Skills → <b>从 URL 安装</b>，填 <code>http://&lt;服务器IP&gt;:3100/skills/&lt;名称&gt;.zip</code>。<br>
+  <strong>关键认知：</strong>DSH Desktop 里 MCP 和 Skill 是两个独立概念——MCP 是「工具」（function calling），Skill 是「智能体技能包」（SKILL.md 指令 + 脚本）。DSH Desktop 的 Skill <b>没有「自定义市场 URL」</b>，官方只支持「文件夹 / ZIP / URL」三种安装方式，所以内网分发只能靠「URL 安装」变相实现（网关托管 zip + 市场页）。
 </div>
 
 <h4>「技能管家」Skill（先装，供员工找/装/更新技能）</h4>
-<p>内置一个引导型 <code>skill-market</code> 技能，员工先装它，之后在对话里问「有哪些技能 / 帮我装 X / 更新技能」即可。它不碰 DeepChat 内部目录（100% 可靠），只负责：读 <code>config.json</code> 里的 <code>market_url</code> → 请求 <code>/skills</code> 清单 → 筛选/推荐 → 给安装指引 → 比 version 提示更新。Ghost 下载页顶部已置顶「首次使用先装技能管家」提示。</p>
+<p>内置一个引导型 <code>skill-market</code> 技能，员工先装它，之后在对话里问「有哪些技能 / 帮我装 X / 更新技能」即可。它不碰 DSH Desktop 内部目录（100% 可靠），只负责：读 <code>config.json</code> 里的 <code>market_url</code> → 请求 <code>/skills</code> 清单 → 筛选/推荐 → 给安装指引 → 比 version 提示更新。Ghost 下载页顶部已置顶「首次使用先装技能管家」提示。</p>
 <pre><code><span class="comment"># 技能管家自己的市场地址（打包进 zip 分发给员工）</span>
 <span class="comment"># mcp-gateway/skills/skill-market/config.json</span>
-<span class="comment"># ⚠️ 用主机名，不要用 IP（DeepChat 会脱敏 IP）</span>
+<span class="comment"># ⚠️ 用主机名，不要用 IP（DSH Desktop 会脱敏 IP）</span>
 <span class="comment"># ⚠️ &lt;市场主机名&gt; 是部署参数，必须替换（见下方「自动 / 手动」）</span>
 { "market_url": "http://&lt;市场主机名&gt;:3100" }</code></pre>
 
 <div class="callout callout-warn">
-  <strong>⚠️ 重要：<code>market_url</code> 用主机名，且 <code>&lt;市场主机名&gt;</code> 是<b>部署参数，必须替换</b>。</strong>DeepChat 的 agent 环境会把 IP 地址脱敏成 <code>[IP_ADDRESS_REDACTED]</code>，导致「技能管家」读不到真实 IP、无法请求 <code>/skills</code> 清单；主机名不受脱敏影响。但主机名是<b>每套部署都不同的本地值</b>，不能照抄（每套部署换成自己的域名，例如 <code>skillmarket.&lt;公司域名&gt;</code>）。
+  <strong>⚠️ 重要：<code>market_url</code> 用主机名，且 <code>&lt;市场主机名&gt;</code> 是<b>部署参数，必须替换</b>。</strong>DSH Desktop 的 agent 环境会把 IP 地址脱敏成 <code>[IP_ADDRESS_REDACTED]</code>，导致「技能管家」读不到真实 IP、无法请求 <code>/skills</code> 清单；主机名不受脱敏影响。但主机名是<b>每套部署都不同的本地值</b>，不能照抄（每套部署换成自己的域名，例如 <code>skillmarket.&lt;公司域名&gt;</code>）。
   <ul>
     <li><b>自动（推荐，用 Agent 部署）：</b>Agent 会在「第 0 章 · 第一步收集参数」时问你「Skill 市场主机名（域名）」，然后自动把 <code>mcp-gateway/skills/skill-market/config.json</code> 和同目录 <code>SKILL.md</code> 里的 <code>&lt;市场主机名&gt;</code> 全部替换成你的值。</li>
     <li><b>手动：</b>编辑 <code>mcp-gateway/skills/skill-market/config.json</code>（及 <code>SKILL.md</code> 兜底地址），把 <code>&lt;市场主机名&gt;</code> 换成你的主机名；再让该主机名可解析——单机在 <code>C:\Windows\System32\drivers\etc\hosts</code> 加一行 <code>&lt;服务器IP&gt;  &lt;你的主机名&gt;</code>（本机调试也可用 <code>127.0.0.1</code>），公司内网则在 DNS 加 A 记录。</li>
@@ -1932,10 +1932,10 @@ if (name === 'platform_health') {
 <p>这些接口由 AI 管理中心（第 11 章）的「MCP Gateway」页面通过代理端点调用（Keycloak <code>ai-platform-admin</code> 角色保护），管理员在 UI 上即可增删 MCP Server、上传/删除 Skill，员工看到的 <code>/market</code> 仍是只读市场。</p>
 
 <h3 id="mcp-rag">8.9 RAG — 统一知识库检索（search_knowledge 内置工具）</h3>
-<div class="note"><strong>说明：</strong>MCP Gateway 内置 <code>search_knowledge</code> 工具，转发调用 Dify 的 Knowledge API（Service API，<code>POST /v1/datasets/{id}/hit-testing</code>）做知识库检索。DeepChat 通过 MCP 调这一个工具即可用上 Dify 承载的统一知识库（RAG），无需 DeepChat 直连 Dify。</div>
+<div class="note"><strong>说明：</strong>MCP Gateway 内置 <code>search_knowledge</code> 工具，转发调用 Dify 的 Knowledge API（Service API，<code>POST /v1/datasets/{id}/hit-testing</code>）做知识库检索。DSH Desktop 通过 MCP 调这一个工具即可用上 Dify 承载的统一知识库（RAG），无需 DSH Desktop 直连 Dify。</div>
 
 <h4>整体链路</h4>
-<pre><code>DeepChat ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Knowledge API
+<pre><code>DSH Desktop ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Knowledge API
                                                       POST /v1/datasets/{id}/hit-testing</code></pre>
 
 <h4>第 1 步：Dify 侧准备（embedding 模型 + 知识库 + Knowledge Key）</h4>
@@ -1961,7 +1961,7 @@ DIFY_DEFAULT_DATASET_ID=&lt;知识库 UUID&gt;</code></pre>
 <h4>第 3 步：重启并验证</h4>
 <ol>
   <li><code>docker compose up -d mcp-gateway</code>（或 <code>docker restart mcp-gateway</code>）</li>
-  <li>DeepChat 设置 → MCP → 连 <code>http://&lt;服务器IP&gt;:3100/mcp</code>，在对话里调用 <code>search_knowledge</code>，传 <code>query</code>（可选 <code>dataset_id</code>、<code>top_k</code>），返回最相关的文本片段（每条含 <code>content</code> + <code>score</code>）。</li>
+  <li>DSH Desktop 设置 → MCP → 连 <code>http://&lt;服务器IP&gt;:3100/mcp</code>，在对话里调用 <code>search_knowledge</code>，传 <code>query</code>（可选 <code>dataset_id</code>、<code>top_k</code>），返回最相关的文本片段（每条含 <code>content</code> + <code>score</code>）。</li>
   <li>AI 管理中心 →「Dify」页 →「🔍 RAG 知识库检索」卡片，输入问题即可检索并展示片段（后端 <code>POST /api/dify/retrieve</code>，见 11.5）。</li>
 </ol>
 
@@ -1975,10 +1975,10 @@ DIFY_DEFAULT_DATASET_ID=&lt;知识库 UUID&gt;</code></pre>
   </ul>
 </div>
 
-<h4>备选接入方式：DeepChat 内置 difyKnowledge（不经 MCP Gateway）</h4>
-<p>DeepChat 客户端内置了一个 <code>difyKnowledge</code>（InMemory）MCP 服务器，可直接连 Dify 知识库做检索，<b>不经过本平台的 MCP Gateway</b>。适合个人或极少数人使用；企业统一发布仍建议走网关的 <code>search_knowledge</code>（密钥不落地、可审计、可统一切换数据集）。</p>
+<h4>备选接入方式：DSH Desktop 内置 difyKnowledge（不经 MCP Gateway）</h4>
+<p>DSH Desktop 客户端内置了一个 <code>difyKnowledge</code>（InMemory）MCP 服务器，可直接连 Dify 知识库做检索，<b>不经过本平台的 MCP Gateway</b>。适合个人或极少数人使用；企业统一发布仍建议走网关的 <code>search_knowledge</code>（密钥不落地、可审计、可统一切换数据集）。</p>
 <ol>
-  <li>DeepChat → 设置 → <b>MCP 设置</b> → 找到内置的 <b><code>difyKnowledge</code></b> → 点其 <b>编辑</b> 按钮 → <b>添加 Dify 配置</b>。</li>
+  <li>DSH Desktop → 设置 → <b>MCP 设置</b> → 找到内置的 <b><code>difyKnowledge</code></b> → 点其 <b>编辑</b> 按钮 → <b>添加 Dify 配置</b>。</li>
   <li>填三项（用第 1 步生成的值）：
     <ul>
       <li><b>API 服务器地址 (endpoint)</b>：<code>http://&lt;服务器IP&gt;/v1</code>（务必带 <code>/v1</code>）</li>
@@ -1996,27 +1996,27 @@ DIFY_DEFAULT_DATASET_ID=&lt;知识库 UUID&gt;</code></pre>
   </ul>
 </div>
 
-<h2 id="cicd">9. CI/CD — DeepChat 自动构建与发布</h2>
+<h2 id="cicd">9. CI/CD — DSH Desktop 自动构建与发布</h2>
 
-<h3>9.1 Fork DeepChat 源码到 Gitea</h3>
-<pre><code>git clone https://github.com/ThinkInAIXYZ/deepchat.git
-cd deepchat
-# 在 Gitea 中创建空仓库 deepchat 后：
-git remote add internal http://127.0.0.1:3002/你的组织/deepchat.git
+<h3>9.1 Fork DSH Desktop 源码到 Gitea</h3>
+<pre><code>git clone https://github.com/dataelement/dsh-desktop.git
+cd dsh
+# 在 Gitea 中创建空仓库 dsh 后：
+git remote add internal http://127.0.0.1:3002/你的组织/dsh.git
 git push -u internal main</code></pre>
 
-<h3>9.2 配置 DeepChat 发布地址</h3>
+<h3>9.2 配置 DSH Desktop 发布地址</h3>
 <p>在 Gitea Web UI 中编辑 <code>package.json</code>，修改 <code>publish.url</code> 指向更新服务器：</p>
 <pre><code>"build": {
   "publish": [{
     "provider": "generic",
-    "url": "http://&lt;服务器IP&gt;:8091/deepchat/"
+    "url": "http://&lt;服务器IP&gt;:8091/dsh/"
   }]
 }</code></pre>
 
 <h3>9.3 创建 CI/CD 工作流</h3>
 <div class="file-name">.gitea/workflows/release.yml</div>
-<pre><code>name: Build & Release DeepChat
+<pre><code>name: Build & Release DSH Desktop
 
 on:
   push:
@@ -2037,7 +2037,7 @@ jobs:
       - name: Upload to update server
         run: |
           cp dist/*.exe dist/*.AppImage dist/latest*.yml /tmp/
-          curl -X PUT -T /tmp/latest.yml http://update-server/deepchat/latest.yml || true</code></pre>
+          curl -X PUT -T /tmp/latest.yml http://update-server/dsh/latest.yml || true</code></pre>
 
 <div class="note"><strong>说明：</strong>Gitea Runner 需要能访问 Docker（已挂载 <code>docker.sock</code>）。构建产物需手动或通过脚本上传到 <code>update-server</code> 容器（端口 8091）。</div>
 
@@ -2051,17 +2051,17 @@ jobs:
           curl -X POST http://ghost:8090/ghost/api/admin/posts/ \
             -H "Authorization: Ghost ${{ secrets.GHOST_ADMIN_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"posts":[{"title":"DeepChat 新版本发布","status":"published","html":"新版本已发布，请前往下载中心更新。"}]}'</code></pre>
+            -d '{"posts":[{"title":"DSH Desktop 新版本发布","status":"published","html":"新版本已发布，请前往下载中心更新。"}]}'</code></pre>
 
 <h2 id="interconnect">10. 互连配置验证（12 项）</h2>
 <div class="card">
 <ol>
   <li><span class="check">☑</span> NewAPI → LiteLLM：在 NewAPI 渠道测试中收到 OK</li>
   <li><span class="check">☑</span> Dify → NewAPI：在 Dify 模型供应商测试中收到回复</li>
-  <li><span class="check">☑</span> DeepChat → NewAPI：在 DeepChat 中发送消息收到回复</li>
+  <li><span class="check">☑</span> DSH Desktop → NewAPI：在 DSH Desktop 中发送消息收到回复</li>
   <li><span class="check">☑</span> Keycloak → NewAPI：用 Keycloak 账号登录 NewAPI 管理后台（OIDC 模式）</li>
   <li><span class="check">☑</span> Keycloak → Dify：用 Keycloak 账号 SSO 登录 Dify</li>
-  <li><span class="check">☑</span> MCP Gateway → DeepChat：DeepChat 获取 MCP 工具列表并调用</li>
+  <li><span class="check">☑</span> MCP Gateway → DSH Desktop：DSH Desktop 获取 MCP 工具列表并调用</li>
   <li><span class="check">☑</span> MCP Gateway → Dify：Dify 工作流中调用 MCP Gateway 工具</li>
   <li><span class="check">☑</span> Gitea Runner → Docker：Runner 可执行 CI/CD 任务</li>
   <li><span class="check">☑</span> Gitea → 更新服务器：CI/CD 产物可上传到更新服务器</li>
@@ -2348,12 +2348,12 @@ curl -X POST "http://&lt;SERVER_IP&gt;:9090/admin/realms/enterprise-ai/user-stor
   <tr><td>📊</td><td><b>总览仪表板</b></td><td>内嵌页面</td><td>8 个产品业务指标 + Docker 服务（按产品分组）+ 系统信息</td></tr>
   <tr><td>📰</td><td>Ghost 后台</td><td>内嵌统计页</td><td>文章/页面/订阅者/标签统计 + 「打开 Ghost 后台」按钮 → <code>:8090/ghost/</code></td></tr>
   <tr><td>🤖</td><td>Dify AI 平台</td><td>内嵌统计页</td><td>应用/工作空间/版本统计 + 「打开 Dify 平台」按钮</td></tr>
-  <tr><td>📦</td><td>Gitea 源码管理</td><td>内嵌统计页</td><td>仓库列表（名称/描述/语言/大小/更新时间）+ deepchat-sync 同步脚本上次执行 + 「打开 Gitea」按钮</td></tr>
+  <tr><td>📦</td><td>Gitea 源码管理</td><td>内嵌统计页</td><td>仓库列表（名称/描述/语言/大小/更新时间）+ dsh-sync 同步脚本上次执行 + 「打开 Gitea」按钮</td></tr>
   <tr><td>🔀</td><td>NewAPI 管理</td><td>内嵌页面</td><td>渠道/用户/密钥（含已使用配额）+ 💰 成本报表（按用户/模型/日期）+ 📋 审计日志（最近调用记录），Admin API，仅管理员</td></tr>
   <tr><td>🔐</td><td>Keycloak 认证</td><td>内嵌统计页</td><td>用户/客户端/角色/身份源统计 + 「打开 Keycloak」按钮</td></tr>
   <tr><td>🔌</td><td>MCP Gateway</td><td>内嵌管理页</td><td>端点信息 + 增删 MCP Server + 上传/删除 Skill（仅 ai-platform-admin）</td></tr>
   <tr><td>🛡️</td><td>LiteLLM+PII</td><td>内嵌页</td><td>复制 Master Key + 打开 LiteLLM 管理中心</td></tr>
-  <tr><td>⬇️</td><td>更新服务器</td><td>内嵌统计页</td><td>DeepChat 版本 + 安装包清单（文件名/大小/更新时间）</td></tr>
+  <tr><td>⬇️</td><td>更新服务器</td><td>内嵌统计页</td><td>DSH Desktop 版本 + 安装包清单（文件名/大小/更新时间）</td></tr>
   <tr><td>📈</td><td>监控告警</td><td>新标签页</td><td>Grafana 大盘 → <code>:3030</code></td></tr>
   <tr><td>🔍</td><td>LLM 可观测</td><td>新标签页</td><td>Langfuse 追踪 → <code>:3010</code></td></tr>
   <tr><td>🔐</td><td><b>集中认证</b></td><td>内嵌页面</td><td>统一账号体系（仅 ai-platform-admin 可见）</td></tr>
@@ -2424,7 +2424,7 @@ cd ..</code></pre>
   <li><b>💾 备份与恢复</b>：备份列表 + 「立即备份」+ 一键恢复（后端 <code>/api/backup/list|run|restore</code>，经 docker.sock + <code>C:\AIAllInOne\backups</code> 挂载实现，与 backup.ps1 同格式）。</li>
   <li><b>📄 报告生成</b>：按条件（统计周期 1/7/30/90 天 + 勾选包含模块）生成系统详细报告，覆盖系统总览、产品健康状态、使用统计（调用/Token/成本，按用户·模型·天）、客户端统计（按 IP 地址 + 按 API Key 应用）、最近问题（Loki 错误日志汇总 + 可用性失败项 + 停止容器）、可用性测试、备份状态、PII 脱敏状态；报告语言与当前界面语言一致（zh/en，其他语言回退英文）；可导出 <code>.md</code> 文件（后端 <code>/api/report?days=&lang=&sections=</code>）。</li>
   <li><b>监控告警 / LLM 可观测</b>：内嵌统计页（Prometheus targets/告警数、Langfuse 版本/trace 数）+ 打开大盘按钮。</li>
-  <li><b>🩺 可用性测试</b>：定时（默认每 10 分钟，<code>AVAILABILITY_INTERVAL_MIN</code> 可调）+ 手动「测试所有」+ 每项单独测试；覆盖 Keycloak 认证 / NewAPI / LiteLLM / DeepChat·Dify 聊天（经 NewAPI 发真实对话）/ Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / 更新服务器 / 备份 / Docker / Redis；每项卡片下方小窗口输出结果与关键日志。后端 <code>/api/availability|run|test/:id</code>。Dashboard 产品指标区追加「可用性测试」汇总卡。</li>
+  <li><b>🩺 可用性测试</b>：定时（默认每 10 分钟，<code>AVAILABILITY_INTERVAL_MIN</code> 可调）+ 手动「测试所有」+ 每项单独测试；覆盖 Keycloak 认证 / NewAPI / LiteLLM / DSH Desktop·Dify 聊天（经 NewAPI 发真实对话）/ Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / 更新服务器 / 备份 / Docker / Redis；每项卡片下方小窗口输出结果与关键日志。后端 <code>/api/availability|run|test/:id</code>。Dashboard 产品指标区追加「可用性测试」汇总卡。</li>
   <li><b>📰 Ghost 免登录</b>：点「Ghost 后台」的「打开」按钮时，后端 <code>/api/ghost/auto-login</code> 自动完成——密码登录（<code>POST /session/</code>）→ 读 Ghost 库的 <code>admin_session_secret</code> 本地算 6 位 TOTP 验证码（<code>HMAC-SHA1(secret+userId)</code>，与邮件里的码一致，免读 MailHog）→ <code>PUT /session/verify</code> 验证会话 → 把 <code>ghost-admin-api-session</code> cookie 写进浏览器 → 跳转 Ghost 后台，全程无感。详情见 13.10。</li>
 </ul>
 <div class="callout callout-warn">
@@ -2504,10 +2504,10 @@ cd ..</code></pre>
   <tr><td>Stage 2</td><td>41 个容器状态（Up/Exited/Restarting）</td><td><code>docker ps -a</code></td></tr>
   <tr><td>Stage 3</td><td>10 个 HTTP 端点响应（含 MCP Gateway）</td><td><code>curl.exe 127.0.0.1:端口</code></td></tr>
   <tr><td>Stage 4</td><td>LiteLLM /readiness + <b>模型注册</b>、litellm-redis PING、Dify API /health、MySQL/PostgreSQL/Redis/Sandbox 健康状态</td><td><code>docker exec</code> + <code>docker inspect</code></td></tr>
-  <tr><td>Stage 5</td><td><b>LLM 全链路</b>：NewAPI 渠道状态 + 以 DeepChat 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek）</td><td><code>curl /v1/chat/completions</code></td></tr>
+  <tr><td>Stage 5</td><td><b>LLM 全链路</b>：NewAPI 渠道状态 + 以 DSH Desktop 和 Dify 名义各发一个真实请求（NewAPI → LiteLLM → DeepSeek）</td><td><code>curl /v1/chat/completions</code></td></tr>
   <tr><td>Stage 6</td><td><b>AD 账号认证链路</b>：Keycloak well-known + AD 用户同步（aitest1）+ NewAPI OIDC 配置 + OIDC clients 完整性 + <b>NewAPI 管理员登录</b></td><td>curl + Admin API + mysql</td></tr>
   <tr><td>Stage 7</td><td><b>MCP Gateway + Skill</b>：/health + tools/list + tools/call + 外部 Skill 聚合</td><td>curl MCP 协议</td></tr>
-  <tr><td>Stage 8</td><td><b>DeepChat / Dify 登录前置条件</b>：NewAPI 服务可用 + Dify 已初始化</td><td>curl + psql</td></tr>
+  <tr><td>Stage 8</td><td><b>DSH Desktop / Dify 登录前置条件</b>：NewAPI 服务可用 + Dify 已初始化</td><td>curl + psql</td></tr>
   <tr><td>Stage 9</td><td><b>磁盘空间</b>：系统盘剩余 + Docker 磁盘占用</td><td><code>Get-PSDrive</code> + <code>docker system df</code></td></tr>
 </table>
 
@@ -2688,7 +2688,7 @@ ON CONFLICT (org_id, user_id) DO UPDATE SET role='ADMIN';"</code></pre>
 <p>具体按部门配额调整在 NewAPI 后台完成（AI 管理中心「打开 NewAPI 后台 ↗」）。</p>
 
 <h3>13.7 员工培训与制度</h3>
-<p>培训手册已拆分为两本<b>多页电子书</b>，并翻译成 <b>9 种语言</b>（与 AI 管理中心一致）：<b>管理员手册</b>（30 章：部署篇 + 13 个产品的日常操作 + 运维篇）、<b>普通用户手册</b>（8 章：平台简介、AI All In One Hub（门户）使用、DeepChat/Dify 上手步骤、<b>数据分级规范</b>、API Key 申请、常见问题、行为准则）。语言分布：英文版在 <code>docs/admin-manual/</code> 与 <code>docs/user-manual/</code>；简体中文在 <code>docs/i18n/admin-manual-zh-cn/</code> 与 <code>docs/i18n/user-manual-zh-cn/</code>；其余 7 种（繁体中文 / 法 / 西 / 葡 / 日 / 韩 / 阿）在 <code>docs/i18n/</code> 对应目录。每本都是「封面 + 目录 + 每章一页 + 翻页导航」的电子书，可直接发员工，或后续搬到 Ghost 门户。</p>
+<p>培训手册已拆分为两本<b>多页电子书</b>，并翻译成 <b>9 种语言</b>（与 AI 管理中心一致）：<b>管理员手册</b>（30 章：部署篇 + 13 个产品的日常操作 + 运维篇）、<b>普通用户手册</b>（8 章：平台简介、AI All In One Hub（门户）使用、DSH Desktop/Dify 上手步骤、<b>数据分级规范</b>、API Key 申请、常见问题、行为准则）。语言分布：英文版在 <code>docs/admin-manual/</code> 与 <code>docs/user-manual/</code>；简体中文在 <code>docs/i18n/admin-manual-zh-cn/</code> 与 <code>docs/i18n/user-manual-zh-cn/</code>；其余 7 种（繁体中文 / 法 / 西 / 葡 / 日 / 韩 / 阿）在 <code>docs/i18n/</code> 对应目录。每本都是「封面 + 目录 + 每章一页 + 翻页导航」的电子书，可直接发员工，或后续搬到 Ghost 门户。</p>
 <p><b>数据分级建议</b>：公开信息可直接用外部模型；内部信息（项目文档）可用但需脱敏；机密信息（客户数据/源代码/身份证号）禁止上传外部模型，应走本地模型或人工处理。</p>
 
 <h3>13.8 统一 SSO 登录（Keycloak）</h3>
@@ -2911,7 +2911,7 @@ netsh advfirewall set allprofiles state on                             <span cla
   <li>登录后需在 Langfuse 用户设置里做 account linking 关联 Keycloak 账号</li>
 </ul>
 
-<h3>O.6 Gitea 同步仓库（deepchat-sync）</h3>
+<h3>O.6 Gitea 同步仓库（dsh-sync）</h3>
 <ul>
   <li><code>.gitea/workflows/sync.yml</code>：checkout step 必须带 <code>env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}</code></li>
   <li>act_runner：label <code>ubuntu-latest:docker://node:20</code>，挂载 <code>/var/run/docker.sock</code>，网络 <code>ai-platform</code></li>

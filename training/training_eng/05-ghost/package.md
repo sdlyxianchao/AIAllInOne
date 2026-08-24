@@ -2,7 +2,7 @@
 
 ## Outline
 
-**Positioning**: the enterprise portal/news site (the "AI All In One Hub"): announcements, platform guides, DeepChat download center, product entry navigation. Employees see the portal first every day.
+**Positioning**: the enterprise portal/news site (the "AI All In One Hub"): announcements, platform guides, DSH Desktop download center, product entry navigation. Employees see the portal first every day.
 
 **Objectives**: explain role (port 8090, SQLite, Corp Portal theme); init (setup wizard / ghost-setup.ps1), install/activate theme, import content seed; publish posts/pages, manage nav & site settings; configure mail exit (MailHog) & understand the no-password login + Admin Center auto-login; create Admin API key (for Gitea announcements); troubleshoot (`/ghost/` entry, members 500, theme incompatibility, code login).
 
@@ -25,8 +25,8 @@ Port `8090` (container `ghost`), **SQLite** (`ghost-data` volume), admin at `htt
 **3. Procedures**
 - Init: automated `scripts\ghost-setup.ps1` (reads .env) or wizard at `:8090/ghost/`. ⚠️ Don't click "Register" on the homepage `/` — that's **members subscription** via magic link and needs SMTP (500 without it).
 - Theme: automated `scripts\ghost-theme-setup.ps1` (copy theme in → set active_theme → restart). ⚠️ Don't install the latest official themes from GitHub — main branch already targets Ghost 6.x and fails on 5.x ("not compatible"); the bundled theme is verified for 5.x.
-- Seed: `scripts\ghost-content-import.ps1 -ServerAddr "<public address>"` — replaces `<SERVER_IP>` placeholders (keep host.docker.internal), creates posts/pages/nav/site settings (idempotent). Result: news-list homepage, nav Home/DeepChat/Dify, download page `/deepchat/`.
-- Content: Posts (articles), Pages (fixed content), Navigation (menu), download center edits `/deepchat/` with `http://<SERVER_IP>:8091/deepchat/...` links.
+- Seed: `scripts\ghost-content-import.ps1 -ServerAddr "<public address>"` — replaces `<SERVER_IP>` placeholders (keep host.docker.internal), creates posts/pages/nav/site settings (idempotent). Result: news-list homepage, nav Home/DSH Desktop/Dify, download page `/dsh/`.
+- Content: Posts (articles), Pages (fixed content), Navigation (menu), download center edits `/dsh/` with `http://<SERVER_IP>:8091/dsh/...` links.
 - Admin API key: Integrations → custom integration → key `id:secret` → for Gitea Actions announcements.
 
 **4. Mail & no-password login**
@@ -58,7 +58,7 @@ Port `8090` (container `ghost`), **SQLite** (`ghost-data` volume), admin at `htt
 | 11:00-11:30 | Lab 3: Admin API key + MailHog code + Admin Center auto-login | lab |
 | 11:30-12:00 | FAQ + failure drills | lecture |
 
-**Lab checklist**: init via ghost-setup.ps1 or wizard (S); Corp Portal active — homepage changes (S); seed imported — nav Home/DeepChat/Dify, `/deepchat/` reachable; announcement published & visible; nav edited; Admin API key created; code email seen in MailHog; Admin Center auto-login enters Ghost admin (S).
+**Lab checklist**: init via ghost-setup.ps1 or wizard (S); Corp Portal active — homepage changes (S); seed imported — nav Home/DSH Desktop/Dify, `/dsh/` reachable; announcement published & visible; nav edited; Admin API key created; code email seen in MailHog; Admin Center auto-login enters Ghost admin (S).
 
 **Homework**: publish a "AI platform usage guide" post; read ch18-ops-ghost.md → 5 ops points; draw the user-navigation diagram portal→products.
 
@@ -74,4 +74,4 @@ Port `8090` (container `ghost`), **SQLite** (`ghost-data` volume), admin at `htt
 
 **Hands-on (50)**: 1. init + theme + seed (20); 2. publish post with media visible (15); 3. Admin API key + auto-login (15).
 
-**Defense (20)**: "How do employees find & download DeepChat?"; "Why no password login? Where's the code?"; "Company-wide announcement workflow?"
+**Defense (20)**: "How do employees find & download DSH Desktop?"; "Why no password login? Where's the code?"; "Company-wide announcement workflow?"

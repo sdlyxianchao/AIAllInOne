@@ -4,7 +4,7 @@
 
 > 三個產品各自的初始化與互連配置。
 
-[← 第8章：LiteLLM：驗證與快取](ch08-litellm.md) · [📖 目錄](index.md) · [第10章：DeepChat 分發與 CI/CD →](ch10-deepchat.md)
+[← 第8章：LiteLLM：驗證與快取](ch08-litellm.md) · [📖 目錄](index.md) · [第10章：DSH Desktop 分發與 CI/CD →](ch10-dsh.md)
 
 ---
 
@@ -42,14 +42,14 @@
 | AI 工作臺 | 自定義連結 | `http://<伺服器IP>` |
 | 幫助文件 | 分類 | `/category/docs` |
 
-1. **下載中心頁面**：頁面 → 新建「下載中心」（slug `downloads`），內容放 DeepChat 安裝包內網連結。
+1. **下載中心頁面**：頁面 → 新建「下載中心」（slug `downloads`），內容放 DSH Desktop 安裝包內網連結。
 
 ```
-## DeepChat 企業版
+## DSH Desktop 企業版
 ### Windows
-- [DeepChat v1.1.0（Windows x64）](http://<伺服器IP>:8091/deepchat/DeepChat-1.1.0-windows-x64.exe)
+- [DSH Desktop v0.5.0（Windows x64）](http://<伺服器IP>:8091/dsh/dsh-desktop-windows-x64-setup.exe)
 ### macOS
-- [DeepChat v1.1.0（macOS x64）](http://<伺服器IP>:8091/deepchat/DeepChat-1.1.0-mac-x64.dmg)
+- [DSH Desktop v0.5.0（macOS x64）](http://<伺服器IP>:8091/dsh/dsh-desktop-mac-x64.dmg)
 ```
 
 > ⚠️ 別在門戶首頁 `/` 點「註冊」——那是訪客訂閱者註冊（未配 SMTP 會 500）；管理員入口是 `/ghost/`。別從 GitHub 裝最新版主題（可能適配 Ghost 6.x，5.x 報 incompatible）。
@@ -77,4 +77,4 @@ docker logs gitea-runner 2>&1 | findstr "Runner registered"
 
 ---
 
-[← 第8章：LiteLLM：驗證與快取](ch08-litellm.md) · [📖 目錄](index.md) · [第10章：DeepChat 分發與 CI/CD →](ch10-deepchat.md)
+[← 第8章：LiteLLM：驗證與快取](ch08-litellm.md) · [📖 目錄](index.md) · [第10章：DSH Desktop 分發與 CI/CD →](ch10-dsh.md)

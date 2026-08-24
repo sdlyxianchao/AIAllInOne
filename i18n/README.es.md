@@ -46,8 +46,8 @@ AI AllInOne es una plataforma de IA para la intranet empresarial, **de código a
 | Aplicaciones de IA | Dify | Plataforma de aplicaciones de IA / agentes visuales + base de conocimiento unificada (RAG) |
 | Portal empresarial | Ghost | Portal de anuncios y noticias de la empresa (con el tema Corp Portal personalizado integrado) |
 | Código fuente / CI | Gitea + Runner | Git interno + automatización con Actions |
-| Cliente | DeepChat | Cliente de escritorio de IA local (Windows / macOS / Linux) |
-| Distribución de cliente | Update Server | Alojamiento de instaladores de DeepChat y actualización automática |
+| Cliente | DSH Desktop (Windows/macOS) · Linux (próximamente) | Cliente de escritorio de IA local — DSH Desktop en Windows/macOS; versión para Linux próximamente |
+| Distribución de cliente | Update Server | Alojamiento de instaladores del cliente de escritorio y actualización automática (DSH Desktop para Windows/macOS) |
 | Administración unificada | AI Admin Center | Punto de entrada único: panel + productos integrados + auditoría/costos/informes + autorización de administradores por niveles + sincronización/roles de Keycloak |
 | Gateway | MCP Gateway | Mercado de skills / MCP + recuperación de conocimiento de Dify (RAG) |
 | Monitoreo | Prometheus + Grafana + Alertmanager | Monitoreo de recursos de contenedores + notificaciones de alertas |
@@ -110,9 +110,9 @@ Cuando todo esté hecho, ejecuta pruebas de extremo a extremo: todos los contene
 
 ## 🖼️ Capturas de pantalla
 
-**Dify** — plataforma de aplicaciones de IA · **Mercado de MCP/Skills** — herramientas y skills con un solo clic · **DeepChat** — cliente de IA de escritorio
+**Dify** — plataforma de aplicaciones de IA · **Mercado de MCP/Skills** — herramientas y skills con un solo clic · **DSH Desktop** — cliente de IA de escritorio
 
-![Dify](<../pics/Dify.png>) ![Mercado de MCP/Skills](<../pics/Market.png>) ![DeepChat](<../pics/DeepChat.png>)
+![Dify](<../pics/Dify.png>) ![Mercado de MCP/Skills](<../pics/Market.png>) ![DSH Desktop](<../pics/dsh.png>)
 
 Más capturas (48 capturas reales de la interfaz) están integradas en el [manual de administración](../docs/admin-manual/index.md).
 
@@ -233,10 +233,10 @@ Ejemplo : *« Comprueba que todos los servicios están en funcionamiento y son s
 | Stage 2 | Estado de los 41 contenedores (Up/Exited/Restarting) | `docker ps -a` |
 | Stage 3 | Respuesta de 10 endpoints HTTP (incluido MCP Gateway) | `curl.exe 127.0.0.1:puerto` |
 | Stage 4 | LiteLLM /readiness + **registro de modelos**, litellm-redis PING, Dify API /health, salud de MySQL/PostgreSQL/Redis/Sandbox | `docker exec` + `docker inspect` |
-| Stage 5 | **Cadena LLM completa** : estado de canales NewAPI + una petición real en nombre de DeepChat y Dify (NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
+| Stage 5 | **Cadena LLM completa** : estado de canales NewAPI + una petición real en nombre de DSH Desktop y Dify (NewAPI → LiteLLM → DeepSeek) | `curl /v1/chat/completions` |
 | Stage 6 | **Cadena de autenticación AD** : Keycloak well-known + sincronización de usuarios AD (aitest1) + configuración OIDC de NewAPI + integridad de clientes OIDC + **login admin de NewAPI** | curl + Admin API + mysql |
 | Stage 7 | **MCP Gateway + Skill** : /health + tools/list + tools/call + agregación de Skills externos | curl (protocolo MCP) |
-| Stage 8 | **Prerrequisitos de login DeepChat / Dify** : NewAPI disponible + Dify inicializado | curl + psql |
+| Stage 8 | **Prerrequisitos de login DSH Desktop / Dify** : NewAPI disponible + Dify inicializado | curl + psql |
 | Stage 9 | **Espacio en disco** : restante en el disco del sistema + uso de Docker | `Get-PSDrive` + `docker system df` |
 
 **Ejecución manual** (PowerShell) :

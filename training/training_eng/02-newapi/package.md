@@ -2,7 +2,7 @@
 
 ## Outline
 
-**Positioning**: LLM routing & API gateway. All AI apps (Dify, DeepChat) call external LLMs through it — channel management, API tokens, quotas/billing, rate limiting, audit logs. It is the first hop of the platform's "LLM chain".
+**Positioning**: LLM routing & API gateway. All AI apps (Dify, DSH Desktop) call external LLMs through it — channel management, API tokens, quotas/billing, rate limiting, audit logs. It is the first hop of the platform's "LLM chain".
 
 **Objectives**: initialize wizard; configure channels (→ LiteLLM); create/separate API keys; Keycloak OIDC login (host.docker.internal fix, server address, role promotion); manage quota/groups/rate limits; read dashboard/logs/cost/audit; troubleshoot (channel test fail, 429, OIDC 403, invalid token).
 
@@ -21,7 +21,7 @@ In-platform: port `3000` (container `new-api`), MySQL `new-api-db`, Redis `new-a
 **1. What it is**: NewAPI is an LLM gateway/AI asset management system forked from OneAPI: unifies OpenAI/Claude/Gemini/DeepSeek into an OpenAI-compatible API with channels, token distribution, quota/billing, rate limits, and stats.
 
 ```
-DeepChat / Dify → NewAPI(:3000) → LiteLLM(:4000, PII redaction) → external LLM
+DSH Desktop / Dify → NewAPI(:3000) → LiteLLM(:4000, PII redaction) → external LLM
 ```
 
 **2. Conventions**: URL `http://<SERVER_IP>:3000`; admin `ai_all_in_one_admin`; mode **Personal use**; channel Base URL `http://litellm:4000`; channel key = `LITELLM_MASTER_KEY` from `.env`; env: `DEFAULT_QUOTA=100`, `GENERATE_DEFAULT_TOKEN=true`, rate-limit vars.
@@ -30,7 +30,7 @@ DeepChat / Dify → NewAPI(:3000) → LiteLLM(:4000, PII redaction) → external
 
 **4. Channels & tokens**
 - Channel: type `OpenAI`, name `LiteLLM-OpenAI`, Base URL **`http://litellm:4000`** (container name, not localhost), key = real `LITELLM_MASTER_KEY` value, models `gpt-4o, gpt-4o-mini` (+`deepseek-chat`); Claude → type `Anthropic Claude`, same base; test → reply = chain OK.
-- Tokens: create `dify-key` (server-side) and `deepchat-key` (client) — separate for usage stats.
+- Tokens: create `dify-key` (server-side) and `dsh-key` (client) — separate for usage stats.
 - Self-service: `DEFAULT_QUOTA` + `GENERATE_DEFAULT_TOKEN` apply **only to newly registered users**; existing users need manual quota adjustment.
 
 **5. Keycloak OIDC (focus)**
@@ -64,7 +64,7 @@ DeepChat / Dify → NewAPI(:3000) → LiteLLM(:4000, PII redaction) → external
 |---|---|---|
 | 09:00-09:30 | Overview + modes + init wizard | lecture |
 | 09:30-10:00 | Lab 1: init wizard | lab |
-| 10:00-10:40 | Lab 2: channel (LiteLLM) + test + dify-key/deepchat-key | lab |
+| 10:00-10:40 | Lab 2: channel (LiteLLM) + test + dify-key/dsh-key | lab |
 | 10:40-11:30 | Lab 3: OIDC (discover + endpoint fix + server address + promote) | lab |
 | 11:30-12:00 | Usage/cost/groups + troubleshooting | lecture+lab |
 
@@ -74,7 +74,7 @@ DeepChat / Dify → NewAPI(:3000) → LiteLLM(:4000, PII redaction) → external
 
 **Failure drills**: Base URL localhost → fail; token endpoint not fixed → token exchange fail; server address default → invalid_grant; SSO before promote → 403.
 
-**Handoff**: dify-key feeds M06; deepchat-key feeds M09; interconnect checks #1/#3.
+**Handoff**: dify-key feeds M06; dsh-key feeds M09; interconnect checks #1/#3.
 
 ---
 
@@ -82,7 +82,7 @@ DeepChat / Dify → NewAPI(:3000) → LiteLLM(:4000, PII redaction) → external
 
 **Single choice (3 pts × 6)**: 1. Channel Base URL → B `http://litellm:4000`; 2. Channel key → B LITELLM_MASTER_KEY value; 3. Mode → C Personal use; 4. Token/userinfo endpoints → C host.docker.internal:9090; 5. 403 after SSO → B promote role=100; 6. Employee quota 0 → B only new users get DEFAULT_QUOTA; existing adjusted manually.
 
-**True/False (3 pts × 4)**: 7. Separate dify-key/deepchat-key for stats. T; 8. Authorize endpoint should also be host.docker.internal. F; 9. After setting server address to intranet, debug via intranet IP too. T; 10. Rate-limit vars are in .env not Settings. T.
+**True/False (3 pts × 4)**: 7. Separate dify-key/dsh-key for stats. T; 8. Authorize endpoint should also be host.docker.internal. F; 9. After setting server address to intranet, debug via intranet IP too. T; 10. Rate-limit vars are in .env not Settings. T.
 
 **Hands-on (50)**: 1. Add channel→LiteLLM and test OK (20); 2. Full OIDC config + AD login (20); 3. Two purpose-separated tokens verified via curl (10).
 

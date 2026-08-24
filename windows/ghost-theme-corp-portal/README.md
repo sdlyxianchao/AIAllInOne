@@ -4,7 +4,7 @@
 
 ## 特性
 
-- **顶部导航**：读取 Ghost 后台的导航设置（Home / News / DeepChat / Dify 等），通过 `partials/navigation.hbs` 渲染。
+- **顶部导航**：读取 Ghost 后台的导航设置（Home / News / DSH Desktop / Dify 等），通过 `partials/navigation.hbs` 渲染。
 - **首页 Hero + 能力卡片**：统一认证 / 大模型网关 / 模型代理 / AI 应用编排 / 桌面客户端 / 源码管理 六大能力介绍。
 - **最新动态**：首页直接展示全部文章（带分页），发新文章即出现在首页。
 - **中文字体**：思源宋体（Noto Serif SC）+ 思源黑体（Noto Sans SC）。

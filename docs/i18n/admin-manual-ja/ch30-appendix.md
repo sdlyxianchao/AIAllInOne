@@ -26,8 +26,8 @@
 | Gitea（中国語） | https://docs.gitea.com/zh-cn |
 | Gitea 管理 | https://docs.gitea.com/zh-cn/category/administration |
 | Gitea Actions | https://docs.gitea.com/zh-cn/usage/actions/overview |
-| DeepChat | https://deepchatai.cn/docs/guide/getting-started/ |
-| DeepChat ソース | https://github.com/ThinkInAIXYZ/deepchat |
+| DSH Desktop | https://www.dshdesktop.com/docs/guide/getting-started/ |
+| DSH Desktop ソース | https://github.com/dataelement/dsh-desktop |
 | MCP プロトコル | https://modelcontextprotocol.io |
 | MCP SDK | https://github.com/modelcontextprotocol |
 | Grafana | https://grafana.com/docs/grafana/latest/ |

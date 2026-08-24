@@ -29,4 +29,4 @@
 | Building Agents with MCP — Full Workshop (EN) | https://www.youtube.com/watch?v=kQmXtrmQ5Zg |
 
 ## Self-study path
-1. "What is MCP in 7 min" → `package.md` (built-ins + search_knowledge chain); 2. labs (tools/list → DeepChat → RAG hit); 3. official spec + Ruan Yifeng; 4. build your own MCP server (videos 2/5 as companions).
+1. "What is MCP in 7 min" → `package.md` (built-ins + search_knowledge chain); 2. labs (tools/list → DSH Desktop → RAG hit); 3. official spec + Ruan Yifeng; 4. build your own MCP server (videos 2/5 as companions).

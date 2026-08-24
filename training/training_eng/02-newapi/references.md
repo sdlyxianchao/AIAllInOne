@@ -25,4 +25,4 @@
 | New-API 5-min deploy + Ollama (cpolar) | https://www.cpolar.com/blog/deploy-the-new-api-ai-interface-transfer-station-in-just-5-minutes-using-n1-flycow-nas-the-local-ollama-will-instantly-transform-into-a-public-openai-interface |
 
 ## Self-study path
-1. `package.md` → platform usage (channel → litellm, dify-key/deepchat-key, OIDC 3-step fix); 2. labs; 3. official docs (channel types/groups/rate limits/API); 4. deploy-guide §6.2 pitfalls (429/403/invalid_grant).
+1. `package.md` → platform usage (channel → litellm, dify-key/dsh-key, OIDC 3-step fix); 2. labs; 3. official docs (channel types/groups/rate limits/API); 4. deploy-guide §6.2 pitfalls (429/403/invalid_grant).

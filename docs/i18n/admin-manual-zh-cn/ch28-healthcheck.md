@@ -21,7 +21,7 @@
 | Stage 5 | LLM 全链路（NewAPI → LiteLLM → DeepSeek 真实请求） |
 | Stage 6 | AD 账号认证链路 + NewAPI 管理员登录 |
 | Stage 7 | MCP Gateway + Skill 功能 |
-| Stage 8 | DeepChat/Dify 登录前置条件 |
+| Stage 8 | DSH Desktop/Dify 登录前置条件 |
 | Stage 9 | 磁盘空间 |
 
 ![可用性测试页](../../images/admin-manual/availability.png)

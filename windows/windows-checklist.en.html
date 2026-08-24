@@ -90,7 +90,7 @@
   <li data-id="w3_01" class="checked"><input type="checkbox" checked> LiteLLM health check + model <code>deepseek-chat</code> returns</li>
   <li data-id="w3_02" class="checked"><input type="checkbox" checked> NewAPI admin <code>ai_all_in_one_admin</code> login (via LAN IP)</li>
   <li data-id="w3_03" class="checked"><input type="checkbox" checked> NewAPI channel: <code>Deepseek V4</code> → <code>http://litellm:4000</code></li>
-  <li data-id="w3_04" class="checked"><input type="checkbox" checked> NewAPI API keys (<code>deepchat-key</code> / <code>dify-key</code>)</li>
+  <li data-id="w3_04" class="checked"><input type="checkbox" checked> NewAPI API keys (<code>dsh-key</code> / <code>dify-key</code>)</li>
   <li data-id="w3_05" class="checked"><input type="checkbox" checked> NewAPI Keycloak OIDC SSO (AD account login)</li>
   <li data-id="w3_06" class="checked"><input type="checkbox" checked> NewAPI rate limit / ServerAddress / default quota configured</li>
 </ul>
@@ -108,7 +108,7 @@
 <ul class="checklist">
   <li data-id="w5_01" class="checked"><input type="checkbox" checked> MCP Gateway implemented (Streamable HTTP <code>/mcp</code> + 3 built-in tools)</li>
   <li data-id="w5_02" class="checked"><input type="checkbox" checked> MCP protocol verified (initialize / tools/list / tools/call all pass)</li>
-  <li data-id="w5_03"><input type="checkbox"> DeepChat client connected to MCP Gateway (<code>http://&lt;server-IP&gt;:3100/mcp</code>)</li>
+  <li data-id="w5_03"><input type="checkbox"> DSH Desktop client connected to MCP Gateway (<code>http://&lt;server-IP&gt;:3100/mcp</code>)</li>
   <li data-id="w5_04"><input type="checkbox"> Aggregated business MCP servers (configure <code>mcp-servers.json</code> as needed)</li>
 </ul>
 
@@ -119,13 +119,13 @@
   <li data-id="w6_03"><input type="checkbox"> Dify Keycloak OIDC SSO configured</li>
   <li data-id="w6_04"><input type="checkbox"> Ghost (8090) initialized + navigation menu + download center</li>
   <li data-id="w6_05"><input type="checkbox"> Gitea (3002) installed + Actions + Runner registered</li>
-  <li data-id="w6_06"><input type="checkbox"> Update Server hosting DeepChat installer packages</li>
-  <li data-id="w6_07"><input type="checkbox"> DeepChat installed + Provider points to NewAPI + AI responds</li>
+  <li data-id="w6_06"><input type="checkbox"> Update Server hosting DSH Desktop installer packages</li>
+  <li data-id="w6_07"><input type="checkbox"> DSH Desktop installed + Provider points to NewAPI + AI responds</li>
 </ul>
 
 <h3>7. End-to-End Verification <span class="stage-todo">▸▸ To be verified</span></h3>
 <ul class="checklist">
-  <li data-id="w7_01"><input type="checkbox"> DeepChat → NewAPI → LiteLLM → external model round-trip</li>
+  <li data-id="w7_01"><input type="checkbox"> DSH Desktop → NewAPI → LiteLLM → external model round-trip</li>
   <li data-id="w7_02"><input type="checkbox"> Dify → NewAPI → LiteLLM → external model round-trip</li>
   <li data-id="w7_03" class="warn"><input type="checkbox"> PII masking + restoration (enable after guardrail compatibility)</li>
   <li data-id="w7_04"><input type="checkbox"> Ghost → Dify portal redirect</li>
@@ -149,7 +149,7 @@
   <li data-id="w8_05"><input type="checkbox"> LiteLLM health check <code>/health</code> returns OK</li>
   <li data-id="w8_06"><input type="checkbox"> NewAPI channel configured → LiteLLM test passes</li>
   <li data-id="w8_07" class="warn"><input type="checkbox"> PII masking verified: send a message containing a phone number / ID card, reply is normal</li>
-  <li data-id="w8_08"><input type="checkbox"> NewAPI token generated → used by DeepChat and Dify</li>
+  <li data-id="w8_08"><input type="checkbox"> NewAPI token generated → used by DSH Desktop and Dify</li>
 </ul>
 
 <h4 style="color:#56d364">Phase 3 · AI Apps + Portal (~1-2 days)</h4>
@@ -164,19 +164,19 @@
 <h4 style="color:#d29922">Phase 4 · CI/CD + Client (~1-2 days)</h4>
 <ul class="checklist">
   <li data-id="w8_14"><input type="checkbox"> Gitea initialized, Runner registered successfully (Idle state)</li>
-  <li data-id="w8_15"><input type="checkbox"> DeepChat source forked to internal Gitea repo</li>
+  <li data-id="w8_15"><input type="checkbox"> DSH Desktop source forked to internal Gitea repo</li>
   <li data-id="w8_16"><input type="checkbox"> CI/CD workflow <code>.gitea/workflows/release.yml</code> created</li>
   <li data-id="w8_17"><input type="checkbox"> Update server (8091) accessible</li>
-  <li data-id="w8_18"><input type="checkbox"> DeepChat client installed, Provider points to NewAPI</li>
-  <li data-id="w8_19"><input type="checkbox"> MCP Gateway running, DeepChat can fetch MCP tool list</li>
+  <li data-id="w8_18"><input type="checkbox"> DSH Desktop client installed, Provider points to NewAPI</li>
+  <li data-id="w8_19"><input type="checkbox"> MCP Gateway running, DSH Desktop can fetch MCP tool list</li>
 </ul>
 
 <h4 style="color:#f85149">Phase 5 · End-to-End Full Chain (~0.5 day)</h4>
 <ul class="checklist">
-  <li data-id="w8_20"><input type="checkbox"> <b>Full LLM chain:</b> DeepChat → NewAPI → LiteLLM (PII masking) → external model → response restoration → OK</li>
+  <li data-id="w8_20"><input type="checkbox"> <b>Full LLM chain:</b> DSH Desktop → NewAPI → LiteLLM (PII masking) → external model → response restoration → OK</li>
   <li data-id="w8_21"><input type="checkbox"> <b>Full Dify chain:</b> browser → Dify → NewAPI → LiteLLM → external model → RAG/Agent replies normally</li>
   <li data-id="w8_22"><input type="checkbox"> <b>SSO auth:</b> Keycloak → Dify/NewAPI OIDC login works</li>
-  <li data-id="w8_23"><input type="checkbox"> <b>MCP tools:</b> DeepChat → MCP Gateway → tool call returns normally</li>
+  <li data-id="w8_23"><input type="checkbox"> <b>MCP tools:</b> DSH Desktop → MCP Gateway → tool call returns normally</li>
   <li data-id="w8_24"><input type="checkbox"> <b>Portal navigation:</b> browser → Ghost → click "AI Workbench" → redirect to Dify → OK</li>
 </ul>
 

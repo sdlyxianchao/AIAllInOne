@@ -17,8 +17,8 @@
 | 7 | [NewAPI：初始化、渠道與 OIDC](ch07-newapi.md) | 完成初始安裝嚮導，配置指向 LiteLLM 的渠道、下發 API Key，接入 Keycloak OIDC。 |
 | 8 | [LiteLLM：驗證與快取](ch08-litellm.md) | 驗證 LiteLLM 代理可用、開啟響應快取節省 token。 |
 | 9 | [Dify / Ghost / Gitea 配置](ch09-products.md) | 三個產品各自的初始化與互連配置。 |
-| 10 | [DeepChat 分發與 CI/CD](ch10-deepchat.md) | 把 DeepChat 安裝包分發給員工，以及用 Gitea Actions 自動同步官方新版本。 |
-| 11 | [MCP Gateway 與 Skill 市場](ch11-mcp.md) | 集中管理 Skill 和 MCP 工具的閘道器，DeepChat/Dify 連一個地址即可拿到所有工具。 |
+| 10 | [DSH Desktop 分發與 CI/CD](ch10-dsh.md) | 把 DSH Desktop 安裝包分發給員工，以及用 Gitea Actions 自動同步官方新版本。 |
+| 11 | [MCP Gateway 與 Skill 市場](ch11-mcp.md) | 集中管理 Skill 和 MCP 工具的閘道器，DSH Desktop/Dify 連一個地址即可拿到所有工具。 |
 | 12 | [AI 管理中心](ch12-admin-center.md) | 統一管理員門戶：Keycloak 鑑權、左側選單內嵌全部產品、Dashboard 叢集狀態。 |
 | 13 | [互連驗證清單](ch13-interconnect.md) | 部署完成後，逐項確認 12 條互連鏈路全部打通。 |
 
@@ -33,7 +33,7 @@
 | 18 | [Ghost 日常管理](ch18-ops-ghost.md) | 企業門戶 / Hub：文章、頁面、導航、主題、成員。 |
 | 19 | [Gitea 日常管理](ch19-ops-gitea.md) | 內部 Git + CI/CD：倉庫、組織、Runner、Actions。 |
 | 20 | [MCP Gateway 日常管理](ch20-ops-mcp.md) | 增刪 MCP Server、上傳/刪除 Skill、擴充套件內建工具。 |
-| 21 | [更新伺服器管理](ch21-ops-update.md) | DeepChat 安裝包託管與自動更新。 |
+| 21 | [更新伺服器管理](ch21-ops-update.md) | DSH Desktop 安裝包託管與自動更新。 |
 | 22 | [監控告警管理](ch22-ops-monitoring.md) | Prometheus + Grafana + Alertmanager：容器資源監控與告警通知。 |
 | 23 | [LLM 可觀測（Langfuse）](ch23-ops-langfuse.md) | 追蹤每次模型呼叫的提示詞、響應、延遲、token、成本。 |
 | 24 | [統一日誌（Loki）](ch24-ops-loki.md) | 聚合所有容器日誌，按容器 + 關鍵字 + 時間檢索。 |

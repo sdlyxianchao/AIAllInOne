@@ -15,7 +15,7 @@
 - **Docker Compose** がすべてのコンテナを定義します。
 - **`.env` ファイル**（例：`windows/.env.windows`）がサービスで使う資格情報を保持します。
 - **管理 API** が管理エンドポイントを公開します（Keycloak、Gitea、NewAPI など）。
-- **ファイルとデータベース**（Ghost の SQLite DB、DeepChat のインストーラー、同期履歴 JSON など）が実際の状態です。
+- **ファイルとデータベース**（Ghost の SQLite DB、DSH Desktop のインストーラー、同期履歴 JSON など）が実際の状態です。
 
 エージェントにできること：
 
@@ -81,9 +81,9 @@
 
 > 「Gitea runner のログの最後の 50 行を見せて、エラーがあるか教えて。」
 
-### 4.5 DeepChat 同期の管理（Gitea）
+### 4.5 DSH Desktop 同期の管理（Gitea）
 
-> 「deepchat-sync ワークフローをトリガーして、進捗を見せて——フェーズ、ダウンロード済みファイル数、MB、残り時間。」
+> 「dsh-sync ワークフローをトリガーして、進捗を見せて——フェーズ、ダウンロード済みファイル数、MB、残り時間。」
 
 エージェントは Gitea API を呼んでワークフローをトリガーし、実行状態をポーリングして `sync-progress.json` を読みます。
 
@@ -138,6 +138,6 @@
 | サービスの再起動 | `docker restart <名前>` |
 | 全サービスの起動 | `docker compose up -d` |
 | Compose の状態 | `docker compose ps` |
-| Gitea 同期のトリガー | `POST /api/v1/repos/<user>/deepchat-sync/actions/workflows/sync.yml/dispatches` |
+| Gitea 同期のトリガー | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
 | バックアップ実行 | `powershell .\scripts\backup.ps1` |
 | リリース公開 | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

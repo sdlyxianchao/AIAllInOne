@@ -49,6 +49,20 @@ model_list:
       api_key: os.environ/DEEPSEEK_API_KEY   # Key from .env
       api_base: https://api.deepseek.com/v1  # DeepSeek API endpoint
 
+  # --- DeepSeek V4 Flash（Agent 优化，DSH 默认模型）---
+  - model_name: deepseek-v4-flash
+    litellm_params:
+      model: openai/deepseek-v4-flash
+      api_key: os.environ/DEEPSEEK_API_KEY
+      api_base: https://api.deepseek.com/v1
+
+  # --- DeepSeek V4 Pro（旗舰 Agent 模型）---
+  - model_name: deepseek-v4-pro
+    litellm_params:
+      model: openai/deepseek-v4-pro
+      api_key: os.environ/DEEPSEEK_API_KEY
+      api_base: https://api.deepseek.com/v1
+
   # --- 本地 embedding：bge-m3（语义缓存 redis-semantic 的向量化模型）---
   # HOW: 宿主机需安装 Ollama 并预拉 bge-m3（ollama pull bge-m3）。
   #      容器经 host.docker.internal 访问宿主机 Ollama，完全本地、免费。
@@ -150,15 +164,17 @@ general_settings:
 # 需实时/个性化内容可用请求头 no-cache 绕过。To disable: cache: false。
 # ============================================================
 litellm_settings:
+  # 丢弃上游模型不支持的参数（如 Cherry Studio 发的 reasoning_effort），
+  # 避免 "openai does not support parameters" 400 错误。
+  drop_params: true
+  # 精确匹配缓存（type: redis）：只有完全相同的请求才命中缓存，
+  # 对 Agent（系统提示词恒定、语义相似度会误命中）安全。
   cache: true
   cache_params:
-    type: redis-semantic
+    type: redis
     host: litellm-redis
     port: 6379
     ttl: 3600
-    similarity_threshold: 0.8
-    redis_semantic_cache_embedding_model: bge-m3
-    redis_semantic_cache_index_name: litellm_semantic_cache_index
   # --- LLM 可观测（Langfuse）---
   # 每次调用（提示词/响应/模型/延迟/成本/token）上报到 Langfuse 做追踪分析。
   # 端点由环境变量 LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY / LANGFUSE_HOST 指定。

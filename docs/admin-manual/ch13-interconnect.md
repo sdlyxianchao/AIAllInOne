@@ -14,10 +14,10 @@ This ends the Deployment part. Finally, verify the 12 items below one by one; th
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | NewAPI channel test receives OK |
 | 2 | Dify → NewAPI | Dify model provider test receives a reply |
-| 3 | DeepChat → NewAPI | DeepChat sends a message and receives a reply |
+| 3 | DSH Desktop → NewAPI | DSH Desktop sends a message and receives a reply |
 | 4 | Keycloak → NewAPI | Keycloak account OIDC login to NewAPI |
 | 5 | Keycloak → Dify | Keycloak account SSO login to Dify |
-| 6 | MCP Gateway → DeepChat | DeepChat gets the MCP tool list and calls it |
+| 6 | MCP Gateway → DSH Desktop | DSH Desktop gets the MCP tool list and calls it |
 | 7 | MCP Gateway → Dify | Dify workflow calls an MCP tool |
 | 8 | Gitea Runner → Docker | Runner can execute CI/CD jobs |
 | 9 | Gitea → update server | CI artifacts can be uploaded to the update server |

@@ -474,10 +474,10 @@ a:hover { color: var(--color-gold); }
 
 .post-container { max-width: 900px; }
 
-/* DeepChat 下载页：与首页同宽 + 深色 hero 化 */
-.page-deepchat .post-container { max-width: var(--container); }
-.page-deepchat .post-header { display: none; }
-.page-deepchat .dc-hero { display: none !important; }
+/* DSH Desktop 下载页：与首页同宽 + 深色 hero 化 */
+.page-dsh .post-container { max-width: var(--container); }
+.page-dsh .post-header { display: none; }
+.page-dsh .dc-hero { display: none !important; }
 
 .post-header { margin-bottom: 32px; }
 

@@ -32,7 +32,7 @@ Investigation order:
 
 ## 4. Model Call Issues
 
-- **Call errors/timeouts**: `POST /api/availability/test/chat-deepchat` to test the chain (DeepChat → NewAPI → LiteLLM → external model); `GET /api/litellm/models` to check model registration; NewAPI channel status `/api/newapi/channels`
+- **Call errors/timeouts**: `POST /api/availability/test/chat-dsh` to test the chain (DSH Desktop → NewAPI → LiteLLM → external model); `GET /api/litellm/models` to check model registration; NewAPI channel status `/api/newapi/channels`
 - **Redaction false positives**: Presidio rules too strict → check rules via `/api/pii/overview`, adjust `litellm-config.yaml` guardrails
 - **Cost/quota anomalies**: `/api/newapi/cost`、`/api/newapi/audit` to check call details
 - **Semantic cache**: litellm-redis health (`docker exec litellm-redis redis-cli ping` → PONG); cache hits return at ~0.4s level

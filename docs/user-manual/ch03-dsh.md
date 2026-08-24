@@ -1,4 +1,4 @@
-# Chapter 3: Tool 1: DeepChat
+# Chapter 3: Tool 1: DSH Desktop
 
 *Quick Start*
 
@@ -14,13 +14,13 @@
 
 2. Download the installer for your system and install it;
 
-3. Launch DeepChat.
+3. Launch DSH Desktop.
 
 ## 3.2 Configure the Model (connect to the company gateway)
 
-On first use you need to tell DeepChat where the model is. The company has unified the models into the **NewAPI** gateway; you only need to fill in three values:
+On first use you need to tell DSH Desktop where the model is. The company has unified the models into the **NewAPI** gateway; you only need to fill in three values:
 
-**1.** Open DeepChat → bottom-left **Settings (⚙️)** → **Model Service / Model Provider**.
+**1.** Open DSH Desktop → bottom-left **Settings (⚙️)** → **Model Service / Model Provider**.
 
 **2.** Add a "**custom Provider**" or "**OpenAI-compatible**".
 
@@ -44,7 +44,7 @@ On first use you need to tell DeepChat where the model is. The company has unifi
 
 3. Receiving a reply means the chain is working.
 
-> 💡 **Try it**: send "Help me write a polite payment-reminder email to a customer" and see how the AI responds. Then try "Translate the following paragraph into English: ...". DeepChat supports multi-turn conversations; you can keep asking follow-ups and have the AI revise.
+> 💡 **Try it**: send "Help me write a polite payment-reminder email to a customer" and see how the AI responds. Then try "Translate the following paragraph into English: ...". DSH Desktop supports multi-turn conversations; you can keep asking follow-ups and have the AI revise.
 
 ## 3.4 Common Features and Tips
 
@@ -69,7 +69,7 @@ On first use you need to tell DeepChat where the model is. The company has unifi
 
 - **Follow up step by step**: if not satisfied, say "revise it again" or "use a different tone".
 
-> 📖 Vendor docs:DeepChat quick start https://deepchatai.cn/docs/guide/getting-started/ · open-source repo https://github.com/ThinkInAIXYZ/deepchat
+> 📖 Vendor docs:DSH Desktop quick start https://www.dshdesktop.com/docs/guide/getting-started/ · open-source repo https://github.com/dataelement/dsh-desktop
 
 ---
 

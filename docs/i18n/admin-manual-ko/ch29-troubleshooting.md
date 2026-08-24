@@ -33,7 +33,7 @@
 | SSO 로그인 unknown_error | AD 포트 포워딩 무효 (iphlpsvc) | iphlpsvc + Hyper-V 네트워크 확인 |
 | Keycloak에서 도메인 사용자가 안 보임 | Search scope = One Level | Subtree로 변경 |
 | Langfuse 데이터가 안 보임 | V4_WRITE_MODE 또는 SSO 계정 미가입 조직 | dual 설정; SQL로 조직 추가 (제23장) |
-| DeepChat 모델 연결 타임아웃 | 클라이언트가 죽은 시스템 프록시 경유 | 프록시 사용 안 함/직접 연결로 설정 |
+| DSH Desktop 모델 연결 타임아웃 | 클라이언트가 죽은 시스템 프록시 경유 | 프록시 사용 안 함/직접 연결로 설정 |
 | Loki 로그 조회 안 됨 | job 라벨 사용 | `{container=~".+"}` 사용 |
 | Presidio 404 /analyze/analyze | 엔드포인트에 경로 포함 | base URL만 입력 |
 | server.js 수정 후 새 API 404 | up -d는 volume 변화를 다시 읽지 않음 | docker restart admin-portal |

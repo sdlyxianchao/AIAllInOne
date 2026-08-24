@@ -48,7 +48,7 @@ swap=4GB
 
 ```
 # PowerShell
-mkdir deepchat-updates
+mkdir dsh-updates
 ```
 
 ```
@@ -56,7 +56,7 @@ C:\ai-platform\windows\          # 가정한 배포 루트 디렉터리
 ├─ docker-compose.yml           # 핵심 서비스 오케스트레이션
 ├─ .env.windows                 # 환경 변수 (API Key 입력 필요)
 ├─ litellm-config.yaml          # LiteLLM PII 비식별화 설정
-├─ deepchat-updates\            # DeepChat 설치 패키지 호스팅 디렉터리
+├─ dsh-updates\            # DSH Desktop 설치 패키지 호스팅 디렉터리
 ├─ admin-portal\                # AI 관리 센터 구현
 ├─ mcp-gateway\                 # Skill / MCP 게이트웨이
 ├─ monitoring\                  # Prometheus / Loki 설정

@@ -14,10 +14,10 @@
 | --- | --- | --- |
 | 1 | NewAPI → LiteLLM | NewAPI 渠道测试收到 OK |
 | 2 | Dify → NewAPI | Dify 模型供应商测试收到回复 |
-| 3 | DeepChat → NewAPI | DeepChat 发消息收到回复 |
+| 3 | DSH Desktop → NewAPI | DSH Desktop 发消息收到回复 |
 | 4 | Keycloak → NewAPI | Keycloak 账号 OIDC 登录 NewAPI |
 | 5 | Keycloak → Dify | Keycloak 账号 SSO 登录 Dify |
-| 6 | MCP Gateway → DeepChat | DeepChat 获取 MCP 工具列表并调用 |
+| 6 | MCP Gateway → DSH Desktop | DSH Desktop 获取 MCP 工具列表并调用 |
 | 7 | MCP Gateway → Dify | Dify 工作流调用 MCP 工具 |
 | 8 | Gitea Runner → Docker | Runner 可执行 CI/CD 任务 |
 | 9 | Gitea → 更新服务器 | CI 产物可上传到更新服务器 |

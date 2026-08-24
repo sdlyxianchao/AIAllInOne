@@ -39,7 +39,7 @@ AI AllInOne is an **open-source, self-hosted enterprise intranet AI platform**: 
 | M06 | AI App Platform | Dify (apps/agents/workflows/RAG) | Core | ★★★ |
 | M07 | Enterprise Portal | Ghost (posts/pages/theme/download center) | Core | ★★★ |
 | M08 | Source & CI/CD | Gitea + Runner + Actions | Core | ★★★ |
-| M09 | Desktop Client | DeepChat (models/MCP/Skills/auto-update) | Core | ★★★ |
+| M09 | Desktop Client | DSH Desktop (models/MCP/Skills/auto-update) | Core | ★★★ |
 | M10 | Tool Gateway | MCP Gateway + Skill Marketplace | Core | ★★★ |
 | M11 | Unified Admin | AI Admin Center | Core | ★★★ |
 | M12 | Installer Distribution | Update Server | Foundation | ★★ |
@@ -65,7 +65,7 @@ AI AllInOne is an **open-source, self-hosted enterprise intranet AI platform**: 
 |---|---|---|
 | Phase 1 (Day 1-2) | Platform overview + Docker basics + full-stack deployment | 12 |
 | Phase 2 (Day 3-5) | Core modules: Keycloak / NewAPI / LiteLLM / Dify / Ghost | 18 |
-| Phase 3 (Day 6-7) | Advanced: Gitea CI/CD / MCP Gateway / DeepChat / Admin Center | 12 |
+| Phase 3 (Day 6-7) | Advanced: Gitea CI/CD / MCP Gateway / DSH Desktop / Admin Center | 12 |
 | Phase 4 (Day 8) | Ops: monitoring / observability / logs / backup / health check | 8 |
 | Phase 5 (Day 9) | Integrated practice: end-to-end verification + AI-driven ops | 6 |
 | Phase 6 (Day 10) | Review + theory exam + hands-on exam + Q&A defense | 4 |
@@ -86,7 +86,7 @@ See `17-exam/`: exam scheme, 100-question bank (with answers), hands-on checklis
 |---|---|
 | Training machine | Windows 11 + Docker Desktop (WSL2), ≥16 GB RAM, 60 GB disk — one machine suffices |
 | External LLM key | At least 1 DeepSeek API key (to get the LLM chain working) |
-| Sample data | Built-in: Ghost content seed, DeepChat installers, sample MCP Skills |
+| Sample data | Built-in: Ghost content seed, DSH Desktop installers, sample MCP Skills |
 | Primary textbooks | `../../windows/windows-deploy-guide-v2.en.html`, `../../docs/admin-manual/` (30 chapters), `../../docs/user-manual/` (8 chapters), this training package |
 | References | Per-product `references.md` (official docs + videos, see `99-references/video-index.md`) |
 

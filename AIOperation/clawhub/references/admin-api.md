@@ -48,7 +48,7 @@
 | GET | `/api/newapi/audit` | Call audit |
 | GET | `/api/newapi/cost` | Cost statistics |
 
-## 5. Gitea (Source Code + DeepChat Sync)
+## 5. Gitea (Source Code + DSH Desktop Sync)
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -91,7 +91,7 @@
 | GET | `/api/pii/overview` | PII redaction rules and model integration |
 | GET | `/api/litellm` / `/api/litellm/models` | LiteLLM status / model list |
 | GET | `/api/langfuse/overview` | Langfuse call volume/cost overview |
-| GET | `/api/update/overview` | Update server status and DeepChat version |
+| GET | `/api/update/overview` | Update server status and DSH Desktop version |
 
 ## 9. Availability Tests
 

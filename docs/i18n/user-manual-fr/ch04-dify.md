@@ -4,7 +4,7 @@
 
 > Plateforme d'applications IA Web : utiliser des applications existantes, créer du question-réponse sur base de connaissances.
 
-[← Chapitre 3 : Outil 1 : DeepChat](ch03-deepchat.md) · [📖 Index](index.md) · [Chapitre 5 : Demander une clé API →](ch05-key.md)
+[← Chapitre 3 : Outil 1 : DSH Desktop](ch03-dsh.md) · [📖 Index](index.md) · [Chapitre 5 : Demander une clé API →](ch05-key.md)
 
 ---
 
@@ -50,4 +50,4 @@ Pour « donner » des documents internes à l'IA afin qu'elle réponde, utilisez
 
 ---
 
-[← Chapitre 3 : Outil 1 : DeepChat](ch03-deepchat.md) · [📖 Index](index.md) · [Chapitre 5 : Demander une clé API →](ch05-key.md)
+[← Chapitre 3 : Outil 1 : DSH Desktop](ch03-dsh.md) · [📖 Index](index.md) · [Chapitre 5 : Demander une clé API →](ch05-key.md)
