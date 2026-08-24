@@ -604,8 +604,8 @@ app.get('/market', (req, res) => {
     <div class="section-body">
       <div class="mcp-box">
         <div class="mcp-title">🔌 接入平台 MCP 网关</div>
-        <p class="mcp-desc">DSH Desktop 通过 MCP 客户端插件接入平台 MCP 网关（内置工具 + 知识库检索 <code>search_knowledge</code>），即可在对话里使用平台工具和 RAG 知识库检索。</p>
-        <p class="mcp-manual">配置方法：在 DSH 的 MCP 客户端插件（<code>@deepseek-ai/dsh-mcp-client</code>）中新增服务器，传输方式选 <b>Streamable HTTP</b>，地址填 <code>${mcpBase}/mcp</code></p>
+        <p class="mcp-desc">在 DSH Desktop 中安装下方相关 SKILL，或手动连接到本 MCP 网关并注册到本地，即可在对话中使用平台工具和知识库检索（<code>search_knowledge</code>）。</p>
+        <p class="mcp-manual">手动配置：MCP 客户端插件中新增服务器，传输方式选 <b>Streamable HTTP</b>，地址填 <code>${mcpBase}/mcp</code></p>
       </div>
 
       <div class="subhead">🛠️ 接入后可用能力</div>
