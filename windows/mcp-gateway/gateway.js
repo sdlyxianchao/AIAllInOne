@@ -315,6 +315,8 @@ app.get('/', (req, res) => res.json({
 // 内网 Skill 市场（Skill 分发）
 // ═══════════════════════════════════════════
 function parseFrontmatter(md) {
+  // 兼容 CRLF（Windows 编辑过的 SKILL.md 会带 \r，导致下面正则匹配失败、description/version 解析为空）
+  md = md.replace(/\r\n/g, '\n');
   const m = md.match(/^---\s*\n([\s\S]*?)\n---/);
   if (!m) return {};
   const meta = {};
@@ -362,7 +364,7 @@ function discoverSkills() {
 app.get('/skills', (req, res) => {
   res.json({
     skills: discoverSkills(),
-    install: 'DSH Desktop 设置 → Skills → 从 URL 安装，填 http://<服务器IP>:3100/skills/<名称>.zip',
+    install: 'DSH 的技能通过插件安装（dsh plugin add），技能包地址 http://<服务器IP>:3100/skills/<名称>.zip',
   });
 });
 
@@ -538,6 +540,21 @@ app.get('/market', (req, res) => {
   .tool-row-main code { color: #8a6d1a; font-weight: 700; font-size: 13px; }
   .tool-row .tool-desc { font-size: 12px; margin: 2px 0 0; }
 
+  /* 能力清单（内置工具） */
+  .cap-list { display: flex; flex-direction: column; gap: 12px; }
+  .cap-item { display: flex; gap: 14px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .cap-item.cap-main { border-left: 3px solid var(--gold); }
+  .cap-item.cap-debug { opacity: .9; background: #fafbfc; }
+  .cap-ico { font-size: 22px; line-height: 1.35; flex: 0 0 auto; }
+  .cap-body { flex: 1; min-width: 0; }
+  .cap-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--navy); }
+  .cap-title code { background: rgba(201,162,39,.12); color: #8a6d1a; padding: 2px 8px; border-radius: 6px; font-size: 13px; }
+  .cap-tag { background: rgba(26,43,74,.08); color: var(--navy); font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+  .cap-desc { color: #6b7280; font-size: 13px; line-height: 1.7; margin: 6px 0 0; }
+  .cap-desc code { background: #f0f2f5; color: #57606a; padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+  .cap-params { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .cap-params code { background: #f0f2f5; color: #6b7280; font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+
   /* 技能行（列表） */
   .skill-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
   .skill-row .skill-icon { width: 40px; height: 40px; font-size: 18px; }
@@ -577,43 +594,22 @@ app.get('/market', (req, res) => {
   <div class="hero-inner">
     <div class="hero-eyebrow">内部工作平台</div>
     <h1 class="hero-title">AI 平台 Skill 市场</h1>
-    <p class="hero-sub">一键接入 MCP 网关 · 下载内网技能包 · 共 ${skills.length} 个技能</p>
+    <p class="hero-sub">接入 MCP 网关 · 下载内网技能包 · 共 ${skills.length} 个技能</p>
   </div>
 </div>
 
 <div class="wrap">
   <div class="section">
-    <div class="section-head mcp"><span class="ico">🔌</span><span class="title">MCP</span><span class="hint">一键接入平台 MCP 网关</span></div>
+    <div class="section-head mcp"><span class="ico">🔌</span><span class="title">MCP</span><span class="hint">接入平台 MCP 网关</span></div>
     <div class="section-body">
       <div class="mcp-box">
-        <div class="mcp-title">🔌 一键接入 DSH Desktop MCP</div>
-        <p class="mcp-desc">把「AI 平台 MCP 网关」（内置工具 + 知识库检索 <code>search_knowledge</code>）加进 DSH Desktop，即可在对话里使用平台工具和 RAG 知识库检索。</p>
-        <div class="mcp-actions">
-          <a class="btn mcp-btn" href="${deepLink}">🔌 一键接入 DSH Desktop MCP</a>
-          <button class="btn ghost" onclick="copyDeepLink()">📋 复制一键接入链接</button>
-        </div>
-        <p class="mcp-manual">手动配置：DSH Desktop → 设置 → MCP → 新增 → <b>跳过至手动配置</b> → 类型「可流式传输的 HTTP 请求」→ 基础 URL 填 <code>${mcpBase}/mcp</code></p>
-        <p class="mcp-note">⚠️ 一键接入走 <b>SSE</b>（DSH Desktop 的 deep link 只支持 SSE/stdio，不支持 Streamable HTTP），会显示「SSE is legacy-only」提示，属正常、不影响使用；想要 Streamable HTTP（无提示）请用上面手动配置填 <code>/mcp</code>。</p>
+        <div class="mcp-title">🔌 接入平台 MCP 网关</div>
+        <p class="mcp-desc">DSH Desktop 通过 MCP 客户端插件接入平台 MCP 网关（内置工具 + 知识库检索 <code>search_knowledge</code>），即可在对话里使用平台工具和 RAG 知识库检索。</p>
+        <p class="mcp-manual">配置方法：在 DSH 的 MCP 客户端插件（<code>@deepseek-ai/dsh-mcp-client</code>）中新增服务器，传输方式选 <b>Streamable HTTP</b>，地址填 <code>${mcpBase}/mcp</code></p>
       </div>
 
-      <div class="subhead">🛠️ 网关内置工具</div>
-      <div class="toolbar">
-        <input type="search" id="tools-search" class="search" placeholder="搜索工具名或描述…">
-        <span class="count" id="tools-count"></span>
-        <div class="view-toggle" id="tools-toggle">
-          <button type="button" class="view-btn active" data-view="card">卡片</button>
-          <button type="button" class="view-btn" data-view="list">列表</button>
-        </div>
-        <label class="page-size">每页
-          <select id="tools-page-size"><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select> 条
-        </label>
-      </div>
-      <div class="grid" id="tools-container"></div>
-      <div class="pagination" id="tools-pagination">
-        <button type="button" class="pg-btn" id="tools-pg-prev">上一页</button>
-        <span class="pg-info" id="tools-pg-info"></span>
-        <button type="button" class="pg-btn" id="tools-pg-next">下一页</button>
-      </div>
+      <div class="subhead">🛠️ 接入后可用能力</div>
+      <div class="cap-list" id="tools-container"></div>
     </div>
   </div>
 
@@ -621,8 +617,7 @@ app.get('/market', (req, res) => {
     <div class="section-head skill"><span class="ico">🧩</span><span class="title">SKILL</span><span class="hint">内网技能包安装</span></div>
     <div class="section-body">
       <div class="howto">
-        <strong>DSH Desktop 安装 Skill：</strong>设置 → Skills → 从 URL 安装，填
-        <code>${mcpBase}/skills/&lt;名称&gt;.zip</code>（或点「下载 ZIP」后从 ZIP / 文件夹安装）。
+        <strong>DSH Desktop 安装 Skill：</strong>DSH 的技能通过插件安装（<code>dsh plugin add</code>），下载 ZIP 后按技能说明解压安装。
       </div>
       <div class="toolbar">
         <input type="search" id="skills-search" class="search" placeholder="搜索技能名或描述…">
@@ -682,26 +677,6 @@ function fallbackCopy(text, done) {
   document.body.removeChild(ta);
 }
 
-function paramChips(params) {
-  if (!params || !params.length) return '<span class="param none">无参数</span>';
-  return params.map(function (p) {
-    return '<span class="param' + (p.required ? ' req' : '') + '" title="' + esc(p.desc) + '">' + esc(p.name) + (p.required ? ' *' : '') + '</span>';
-  }).join('');
-}
-function toolCard(t) {
-  return '<div class="tool-card">'
-    + '<div class="tool-name"><code>' + esc(t.name) + '</code></div>'
-    + '<p class="tool-desc">' + esc(t.description) + '</p>'
-    + '<div class="tool-params">' + paramChips(t.params) + '</div>'
-    + '</div>';
-}
-function toolRow(t) {
-  return '<div class="tool-row">'
-    + '<div class="tool-row-main"><code>' + esc(t.name) + '</code>'
-    + '<p class="tool-desc">' + esc(t.description) + '</p></div>'
-    + '<div class="tool-params">' + paramChips(t.params) + '</div>'
-    + '</div>';
-}
 function skillCard(s) {
   return '<div class="skill-card">'
     + '<div class="skill-head"><span class="skill-icon">' + esc(s.emoji) + '</span>'
@@ -779,21 +754,40 @@ document.addEventListener('click', function (e) {
   if (b) copyText(b.getAttribute('data-copy'));
 });
 
-createCollection({
-  items: window.__TOOLS__,
-  container: document.getElementById('tools-container'),
-  count: document.getElementById('tools-count'),
-  search: document.getElementById('tools-search'),
-  toggles: Array.prototype.slice.call(document.querySelectorAll('#tools-toggle .view-btn')),
-  pageSize: document.getElementById('tools-page-size'),
-  pg: document.getElementById('tools-pagination'),
-  pgInfo: document.getElementById('tools-pg-info'),
-  pgPrev: document.getElementById('tools-pg-prev'),
-  pgNext: document.getElementById('tools-pg-next'),
-  renderCard: toolCard,
-  renderRow: toolRow,
-  match: function (t, q) { return !q || t.name.toLowerCase().indexOf(q) >= 0 || t.description.toLowerCase().indexOf(q) >= 0; }
-});
+// 能力清单：内置工具按价值分层展示（知识库检索/服务清单为主，调试工具合并弱化）
+(function () {
+  var tools = window.__TOOLS__ || [];
+  function find(n) { for (var i = 0; i < tools.length; i++) if (tools[i].name === n) return tools[i]; return null; }
+  function chips(params) {
+    if (!params || !params.length) return '';
+    return '<div class="cap-params">' + params.map(function (p) { return '<code>' + esc(p.name) + '</code>'; }).join('') + '</div>';
+  }
+  function mainCard(t, emoji, tag) {
+    return '<div class="cap-item cap-main">'
+      + '<span class="cap-ico">' + emoji + '</span>'
+      + '<div class="cap-body">'
+      + '<div class="cap-title"><code>' + esc(t.name) + '</code><span class="cap-tag">' + tag + '</span></div>'
+      + '<p class="cap-desc">' + esc(t.description) + '</p>'
+      + chips(t.params)
+      + '</div></div>';
+  }
+  var html = '';
+  var sk = find('search_knowledge');
+  if (sk) html += mainCard(sk, '📚', '知识库检索');
+  var svc = find('platform_services');
+  if (svc) html += mainCard(svc, '🗂️', '服务清单');
+  var t = find('platform_time'), e = find('platform_echo');
+  if (t || e) {
+    var lines = [];
+    if (t) lines.push('<code>' + esc(t.name) + '</code> ' + esc(t.description));
+    if (e) lines.push('<code>' + esc(e.name) + '</code> ' + esc(e.description));
+    html += '<div class="cap-item cap-debug"><span class="cap-ico">🔧</span><div class="cap-body">'
+      + '<div class="cap-title">调试工具</div>'
+      + '<p class="cap-desc">' + lines.join('<br>') + '</p>'
+      + '</div></div>';
+  }
+  document.getElementById('tools-container').innerHTML = html;
+})();
 
 createCollection({
   items: window.__SKILLS__,
