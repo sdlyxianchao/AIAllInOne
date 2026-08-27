@@ -172,6 +172,13 @@ docker compose up -d
 
 ## 📋 更新日志
 
+### v1.03（2026-08-28）
+
+- **改进：管理中心侧边栏重组** — 分组更名为「应用服务 / 平台基础设施 / 运维监控 / 系统管理」；LiteLLM 移至应用服务，Keycloak 移至平台基础设施，「企业 IM 告警」合并入「监控告警 + IM 通知」，「PII 脱敏」独立项移除（现为 LiteLLM 名称的一部分），「客户端软件同步」更名为「桌面客户端管理」
+- **改进：PII 自动还原** — Presidio 模式从 `pre_call` 改为 `["pre_call", "post_call"]`；PII 现在在 LLM 响应中自动还原（用户不再看到 `<PERSON>` 占位符）
+- **修复：`iss` 参数重定向循环** — 在 admin-portal server.js 中添加中间件，在 Keycloak 中间件处理前剥离 `iss` 查询参数，防止 token 过期后的无限重定向循环
+- **新增：DSH 同步脚本** — 新增 `dsh-sync-export/` 目录，含 Gitea Actions 工作流用于 DSH Desktop 自动更新同步
+
 ### v1.00（2026-08-23）
 
 **新增：Linux 平台支持**

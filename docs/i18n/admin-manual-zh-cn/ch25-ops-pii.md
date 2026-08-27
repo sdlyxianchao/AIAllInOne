@@ -12,7 +12,7 @@
 
 菜单：**系统运维 → 🧬 PII 脱敏**。页面显示 Presidio Analyzer / Anonymizer 两个服务的运行状态与版本。
 
-> 📌 页面只读。脱敏规则在 LiteLLM 的 guardrails 里配置（见 16.4）——当前因上游 API 变更暂注释，仅做纯代理；启用时按本节恢复。
+> 📌 页面只读。脱敏规则在 LiteLLM 的 guardrails 里配置（见 16.4），模式为 `["pre_call", "post_call"]`——PII 在请求发出前脱敏，响应返回后自动还原（用户不再看到 `<PERSON>` 占位符）。
 
 ![AI 管理中心 PII 脱敏页](../../images/admin-manual/pii.png)
 

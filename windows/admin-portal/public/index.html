@@ -101,32 +101,30 @@
   <div class="divider"></div>
 
   <div class="nav-group collapsed" data-group="apps">
-    <div class="nav-group-head" onclick="toggleGroup('apps')"><span class="group-arrow">▾</span><span data-i18n="group_apps">产品应用</span></div>
+    <div class="nav-group-head" onclick="toggleGroup('apps')"><span class="group-arrow">▾</span><span data-i18n="group_apps">应用服务</span></div>
     <div class="nav-group-body">
-      <a class="nav-item" data-product="ghost" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8090</span></a>
       <a class="nav-item" data-product="dify" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:80</span></a>
-      <a class="nav-item" data-product="gitea" onclick="loadGitea(this)">📦 <span data-i18n="client_sync">客户端软件同步</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002/:8091</span></a>
-      <a class="nav-item" data-product="newapi" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3000</span></a>
-      <a class="nav-item" data-product="keycloak" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:9090</span></a>
+      <a class="nav-item" data-product="ghost" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 企业门户</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8090</span></a>
+      <a class="nav-item" data-product="newapi" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 模型网关</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3000</span></a>
+      <a class="nav-item" data-product="litellm" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM + PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:4001</span></a>
+      <a class="nav-item" data-product="gitea" onclick="loadGitea(this)">📦 <span data-i18n="client_sync">桌面客户端管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002/:8091</span></a>
     </div>
   </div>
 
-  <div class="nav-group collapsed" data-group="ai">
-    <div class="nav-group-head" onclick="toggleGroup('ai')"><span class="group-arrow">▾</span><span data-i18n="group_ai">AI 网关与集成</span></div>
+  <div class="nav-group collapsed" data-group="infra">
+    <div class="nav-group-head" onclick="toggleGroup('infra')"><span class="group-arrow">▾</span><span data-i18n="group_infra">平台基础设施</span></div>
     <div class="nav-group-body">
+      <a class="nav-item" data-product="keycloak" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:9090</span></a>
       <a class="nav-item" data-product="mcp-gateway" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3100</span></a>
-      <a class="nav-item" data-product="litellm" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:4001</span></a>
     </div>
   </div>
 
   <div class="nav-group collapsed" data-group="ops">
-    <div class="nav-group-head" onclick="toggleGroup('ops')"><span class="group-arrow">▾</span><span data-i18n="group_ops">系统运维</span></div>
+    <div class="nav-group-head" onclick="toggleGroup('ops')"><span class="group-arrow">▾</span><span data-i18n="group_ops">运维监控</span></div>
     <div class="nav-group-body">
       <a class="nav-item" data-product="availability" onclick="loadAvailability(this)">🩺 <span data-i18n="availability">可用性测试</span></a>
-      <a class="nav-item" data-product="monitoring" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
-      <a class="nav-item" data-product="monitoring" onclick="loadImAlert(this)">🔔 <span data-i18n="im_alert">企业 IM 告警</span></a>
+      <a class="nav-item" data-product="monitoring" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警 + IM 通知</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
       <a class="nav-item" data-product="observability" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3010</span></a>
-      <a class="nav-item" data-product="pii" onclick="loadPii(this)">🧬 <span data-i18n="pii">PII 脱敏</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:5001/:5002</span></a>
       <a class="nav-item" data-product="logs" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">Loki</span></a>
       <a class="nav-item" data-product="backup" onclick="loadBackup(this)">💾 <span data-i18n="backup">备份与恢复</span></a>
       <a class="nav-item" data-product="report" onclick="loadReport(this)">📄 <span data-i18n="report">报告生成</span></a>
@@ -204,7 +202,7 @@ function toggleTheme() {
 const I18N = {
   zh: {
     brand: 'AI 管理中心', dashboard: '总览仪表板', ghost: 'Ghost 后台', dify: 'Dify AI 平台', gitea: '客户端软件同步',
-    group_apps: '产品应用', group_ai: 'AI 网关与集成', group_ops: '系统运维', group_admin: '系统管理',
+    group_apps: '应用服务', group_infra: '平台基础设施', group_ops: '运维监控', group_admin: '系统管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 认证', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新服务器',
     auth: '集中认证', admins: '管理员管理', settings: '系统设置', logout: '退出登录', not_admin_title: '你不是管理员', not_admin_desc: '该账号没有平台管理员权限，无法使用本系统。', not_admin_hint: '如需访问，请联系全局管理员（ai_all_in_one_admin）为你分配权限。', not_admin_ok: '确定',
     loading_services: '正在获取服务状态...', loading: '加载中...',
@@ -349,7 +347,7 @@ const I18N = {
   },
   en: {
     brand: 'AI Admin Center', dashboard: 'Dashboard', ghost: 'Ghost Admin', dify: 'Dify AI Platform', gitea: 'Client Software Sync',
-    group_apps: 'Applications', group_ai: 'AI Gateway & Integrations', group_ops: 'Operations', group_admin: 'System Admin',
+    group_apps: 'Applications', group_infra: 'Platform Infrastructure', group_ops: 'Operations & Monitoring', group_admin: 'System Admin',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Update Server',
     auth: 'Central Auth', admins: 'Admins', settings: 'Settings', logout: 'Log out', not_admin_title: 'You are not an administrator', not_admin_desc: 'This account has no platform admin privileges and cannot use this system.', not_admin_hint: 'Contact the global admin (ai_all_in_one_admin) to grant you access.', not_admin_ok: 'OK',
     loading_services: 'Loading services...', loading: 'Loading...',
@@ -494,7 +492,7 @@ const I18N = {
   },
   "zh-TW": {
     brand: 'AI 管理中心', dashboard: '總覽儀表板', ghost: 'Ghost 後台', dify: 'Dify AI 平台', gitea: '客戶端軟體同步',
-    group_apps: '產品應用', group_ai: 'AI 閘道與整合', group_ops: '系統維運', group_admin: '系統管理',
+    group_apps: '應用服務', group_infra: '平台基礎設施', group_ops: '運維監控', group_admin: '系統管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 認證', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新伺服器',
     auth: '集中認證', admins: '管理員管理', settings: '系統設定', logout: '登出', not_admin_title: '你不是管理員', not_admin_desc: '該帳號沒有平台管理員權限，無法使用本系統。', not_admin_hint: '如需存取，請聯絡全域管理員（ai_all_in_one_admin）為你指派權限。', not_admin_ok: '確定',
     loading_services: '正在取得服務狀態...', loading: '載入中...',
@@ -588,7 +586,7 @@ const I18N = {
   },
   fr: {
     brand: 'Centre d’administration IA', dashboard: 'Tableau de bord', ghost: 'Administration Ghost', dify: 'Plateforme Dify', gitea: 'Source Gitea',
-    group_apps: 'Applications', group_ai: 'Passerelle IA & intégrations', group_ops: 'Opérations', group_admin: 'Administration système',
+    group_apps: 'Services applicatifs', group_infra: 'Infrastructure plateforme', group_ops: 'Supervision & Opérations', group_admin: 'Administration système',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Serveur de mise à jour',
     auth: 'Authentification centralisée', admins: 'Administrateurs', settings: 'Paramètres', logout: 'Déconnexion', not_admin_title: 'Vous n’êtes pas administrateur', not_admin_desc: 'Ce compte ne dispose pas de droits d’administrateur et ne peut pas utiliser ce système.', not_admin_hint: 'Contactez l’administrateur global (ai_all_in_one_admin) pour obtenir un accès.', not_admin_ok: 'OK',
     loading_services: 'Chargement des services...', loading: 'Chargement...',
@@ -682,7 +680,7 @@ const I18N = {
   },
   es: {
     brand: 'Centro de administración de IA', dashboard: 'Panel de control', ghost: 'Administración de Ghost', dify: 'Plataforma Dify', gitea: 'Código Gitea',
-    group_apps: 'Aplicaciones', group_ai: 'Puerta de enlace IA e integraciones', group_ops: 'Operaciones', group_admin: 'Administración del sistema',
+    group_apps: 'Servicios de aplicación', group_infra: 'Infraestructura de plataforma', group_ops: 'Monitoreo & Operaciones', group_admin: 'Administración del sistema',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Servidor de actualizaciones',
     auth: 'Autenticación central', admins: 'Administradores', settings: 'Ajustes', logout: 'Cerrar sesión', not_admin_title: 'No eres administrador', not_admin_desc: 'Esta cuenta no tiene privilegios de administrador y no puede usar este sistema.', not_admin_hint: 'Contacta con el administrador global (ai_all_in_one_admin) para obtener acceso.', not_admin_ok: 'Aceptar',
     loading_services: 'Cargando servicios...', loading: 'Cargando...',
@@ -776,7 +774,7 @@ const I18N = {
   },
   pt: {
     brand: 'Central de Administração de IA', dashboard: 'Painel', ghost: 'Administração Ghost', dify: 'Plataforma Dify', gitea: 'Código Gitea',
-    group_apps: 'Aplicações', group_ai: 'Gateway de IA e integrações', group_ops: 'Operações', group_admin: 'Administração do sistema',
+    group_apps: 'Serviços de aplicação', group_infra: 'Infraestrutura da plataforma', group_ops: 'Monitoramento & Operações', group_admin: 'Administração do sistema',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Servidor de atualização',
     auth: 'Autenticação central', admins: 'Administradores', settings: 'Configurações', logout: 'Sair', not_admin_title: 'Você não é administrador', not_admin_desc: 'Esta conta não tem privilégios de administrador e não pode usar este sistema.', not_admin_hint: 'Entre em contato com o administrador global (ai_all_in_one_admin) para obter acesso.', not_admin_ok: 'OK',
     loading_services: 'Carregando serviços...', loading: 'Carregando...',
@@ -870,7 +868,7 @@ const I18N = {
   },
   ja: {
     brand: 'AI管理センター', dashboard: 'ダッシュボード', ghost: 'Ghost 管理', dify: 'Dify AI プラットフォーム', gitea: 'Gitea ソース管理',
-    group_apps: 'アプリケーション', group_ai: 'AI ゲートウェイと統合', group_ops: '運用管理', group_admin: 'システム管理',
+    group_apps: 'アプリケーションサービス', group_infra: 'プラットフォーム基盤', group_ops: '運用監視', group_admin: 'システム管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 認証', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新サーバー',
     auth: '集中認証', admins: '管理者管理', settings: 'システム設定', logout: 'ログアウト', not_admin_title: '管理者ではありません', not_admin_desc: 'このアカウントには管理者権限がなく、本システムを利用できません。', not_admin_hint: 'アクセスが必要な場合は、グローバル管理者（ai_all_in_one_admin）に権限付与を依頼してください。', not_admin_ok: 'OK',
     loading_services: 'サービス状態を取得中...', loading: '読み込み中...',
@@ -964,7 +962,7 @@ const I18N = {
   },
   ko: {
     brand: 'AI 관리 센터', dashboard: '대시보드', ghost: 'Ghost 관리', dify: 'Dify AI 플랫폼', gitea: 'Gitea 소스 관리',
-    group_apps: '애플리케이션', group_ai: 'AI 게이트웨이 및 통합', group_ops: '운영 관리', group_admin: '시스템 관리',
+    group_apps: '응용 서비스', group_infra: '플랫폼 인프라', group_ops: '운영 모니터링', group_admin: '시스템 관리',
     newapi: 'NewAPI 관리', keycloak: 'Keycloak 인증', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '업데이트 서버',
     auth: '통합 인증', admins: '관리자 관리', settings: '시스템 설정', logout: '로그아웃', not_admin_title: '관리자가 아닙니다', not_admin_desc: '이 계정에는 관리자 권한이 없어 이 시스템을 사용할 수 없습니다.', not_admin_hint: '액세스가 필요하면 전역 관리자(ai_all_in_one_admin)에게 권한 부여를 요청하세요.', not_admin_ok: '확인',
     loading_services: '서비스 상태 가져오는 중...', loading: '로딩 중...',
@@ -1058,7 +1056,7 @@ const I18N = {
   },
   ar: {
     brand: 'مركز إدارة الذكاء الاصطناعي', dashboard: 'لوحة التحكم', ghost: 'إدارة Ghost', dify: 'منصة Dify AI', gitea: 'إدارة مصدر Gitea',
-    group_apps: 'التطبيقات', group_ai: 'بوابة الذكاء الاصطناعي والتكاملات', group_ops: 'العمليات', group_admin: 'إدارة النظام',
+    group_apps: 'خدمات التطبيقات', group_infra: 'بنية المنصة التحتية', group_ops: 'المراقبة والعمليات', group_admin: 'إدارة النظام',
     newapi: 'إدارة NewAPI', keycloak: 'مصادقة Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'خادم التحديث',
     auth: 'المصادقة المركزية', admins: 'إدارة المشرفين', settings: 'إعدادات النظام', logout: 'تسجيل الخروج', not_admin_title: 'لست مشرفًا', not_admin_desc: 'لا يملك هذا الحساب صلاحيات مشرف ولا يمكنه استخدام هذا النظام.', not_admin_hint: 'للحصول على الوصول، اتصل بالمشرف العام (ai_all_in_one_admin) لمنحك الصلاحية.', not_admin_ok: 'موافق',
     loading_services: 'جارٍ جلب حالة الخدمات...', loading: 'جارٍ التحميل...',
@@ -1641,7 +1639,7 @@ function renderNewApi(overview, channels, users, tokens, audit, cost) {
   const naBase = P('newapi');
   const chTable = pagedTable('newapi_channels', ch, `<tr><th>${t('name')}</th><th>${t('model')}</th><th>${t('status')}</th><th>${t('used_quota')}</th></tr>`, c => `<tr><td><a class="namelink" href="${naBase}/channels/" target="_blank">${c.name || '—'}</a></td><td>${c.models || '—'}</td><td style="color:${c.status===1?'var(--green)':'var(--red)'}">${c.status===1?t('enabled'):t('disabled')}</td><td>${c.used_quota ?? 0}</td></tr>`);
   const usTable = pagedTable('newapi_users', us, `<tr><th>${t('username')}</th><th>${t('role')}</th><th>${t('group')}</th><th>${t('quota')}</th><th>${t('used')}</th><th>${t('requests')}</th></tr>`, u => `<tr><td><a class="namelink" href="${naBase}/users/" target="_blank">${u.username || '—'}</a></td><td>${u.role===100?t('admin_role'):(u.role===1?t('user_role'):t('other_role'))}</td><td>${u.group || 'default'}</td><td>${usd(u.quota)} ${t('usd')}</td><td>${usd(u.used_quota)} ${t('usd')}</td><td>${u.request_count ?? 0}</td></tr>`);
-  const tkTable = pagedTable('newapi_tokens', tk, `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>`, x => `<tr><td><a class="namelink" href="${naBase}/keys/" target="_blank">${x.name || '—'}</a></td><td style="color:${x.status===1?'var(--green)':'var(--red)'}">${x.status===1?t('enabled'):t('disabled')}</td><td>${x.used_quota ?? 0} ${t('quota_unit')}</td><td>${x.unlimited_quota ? t('unlimited') : ((x.remain_quota ?? 0) + ' ' + t('quota_unit'))}</td></tr>`);
+  const tkTable = pagedTable('newapi_tokens', tk, `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('used_quota')}</th><th>${t('quota')}</th></tr>`, x => `<tr><td><a class="namelink" href="${naBase}/keys/" target="_blank">${x.name || '—'}</a></td><td style="color:${x.status===1?'var(--green)':'var(--red)'}">${x.status===1?t('enabled'):t('disabled')}</td><td>${usd(x.used_quota)} ${t('usd')}</td><td>${x.unlimited_quota ? t('unlimited') : (usd(x.remain_quota) + ' ' + t('usd'))}</td></tr>`);
 
   // 审计日志（客户端分页）
   _newapiAuditItems = audit?.items || [];

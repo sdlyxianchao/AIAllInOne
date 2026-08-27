@@ -41,7 +41,7 @@ docker compose restart litellm          # restart after changing config
 docker logs litellm --tail 50           # view logs
 ```
 
-> ⚠️ Key pitfalls: ① guardrails need `default_on: true` to take effect globally; ② PII redaction (Presidio) is currently commented out due to upstream API changes, acting only as a pure proxy; ③ use the stable version `v1.95.1` (`main-latest` has bugs).
+> ⚠️ Key pitfalls: ① guardrails need `default_on: true` to take effect globally; ② PII redaction (Presidio) mode is `["pre_call", "post_call"]` — PII is redacted before the model call and automatically restored in the response (users no longer see `<PERSON>` placeholders); ③ use the stable version `v1.95.1` (`main-latest` has bugs).
 
 > 📖 Vendor docs:LiteLLM official docs https://docs.litellm.ai · Presidio guardrail https://docs.litellm.ai/docs/proxy/guardrails/presidio
 

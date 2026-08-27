@@ -155,6 +155,15 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 전체 가이드는 [CONTRIBUTING.md](../CONTRIBUTING.md)를 참조하고, 공개 [로드맵](#roadmap)에서 다음 계획을 확인할 수 있습니다. **모든 기여자는 README의 기여자 명단에 포함됩니다.**
 
+## 📋 변경 이력
+
+### v1.03（2026-08-28）
+
+- **개선: 관리 센터 사이드바 재구성** — 그룹명을 "应用服务（애플리케이션 서비스）/ 平台基础设施（플랫폼 인프라）/ 运维监控（운영 모니터링）/ 系统管理（시스템 관리）"로 변경; LiteLLM을 应用服务로 이동, Keycloak을 平台基础设施로 이동, "企业 IM 告警"을 "监控告警 + IM 通知"에 통합, "PII 脱敏" 독립 항목 제거(LiteLLM 이름에 통합), "客户端软件同步"을 "桌面客户端管理"로 이름 변경
+- **개선: PII 자동 복원** — Presidio 모드를 `pre_call`에서 `["pre_call", "post_call"]`로 변경; PII가 LLM 응답에서 자동 복원되어 사용자가 `<PERSON>` 플레이스홀더를 더 이상 보지 않음
+- **수정: `iss` 매개변수 리디렉션 루프** — admin-portal server.js에 미들웨어를 추가하여 Keycloak 미들웨어 처리 전에 `iss` 쿼리 매개변수를 제거, 토큰 만료 후 무한 리디렉션 루프 방지
+- **신규: DSH 동기화 스크립트** — DSH Desktop 자동 업데이트 동기화를 위한 Gitea Actions 워크플로가 포함된 `dsh-sync-export/` 디렉토리 추가
+
 <h2 id="roadmap">🗺️ 로드맵</h2>
 
 - ✅ v0.9x — Windows 플랫폼: 올인원 + AI 관리 센터 + 등급별 관리자 권한 + 기업 IM 알림 + 시맨틱 캐시(LiteLLM redis-semantic)

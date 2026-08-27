@@ -87,29 +87,28 @@ const GITEA_CONTAINER = process.env.GITEA_CONTAINER || 'gitea';
 // 分模块管理员：admin:<key>（realm role，SSO 原生，令牌 realm_access.roles 可读），
 //   仅管理被授权的模块。授权即添加/移除对应 Keycloak realm 角色。
 const ADMIN_CATEGORIES = [
-  { key: 'apps', labelKey: 'group_apps' },
-  { key: 'ai',   labelKey: 'group_ai'   },
-  { key: 'ops',  labelKey: 'group_ops'  },
+  { key: 'apps',  labelKey: 'group_apps'  },
+  { key: 'infra', labelKey: 'group_infra' },
+  { key: 'ops',   labelKey: 'group_ops'   },
 ];
 const ADMIN_PRODUCTS = [
-  // 产品应用
-  { key: 'ghost',         labelKey: 'ghost',         category: 'apps', sso: false },
-  { key: 'dify',          labelKey: 'dify',          category: 'apps', sso: false },
-  { key: 'gitea',         labelKey: 'gitea',         category: 'apps', sso: true  },
-  { key: 'newapi',        labelKey: 'newapi',        category: 'apps', sso: true  },
-  { key: 'keycloak',      labelKey: 'keycloak',      category: 'apps', sso: true  },
-  // AI 网关与集成
-  { key: 'mcp-gateway',   labelKey: 'mcp',           category: 'ai',   sso: false },
-  { key: 'litellm',       labelKey: 'litellm',       category: 'ai',   sso: true  },
-  { key: 'update-server', labelKey: 'update',        category: 'ai',   sso: false },
-  // 系统运维
-  { key: 'availability',  labelKey: 'availability',  category: 'ops',  sso: false },
-  { key: 'monitoring',    labelKey: 'monitoring',    category: 'ops',  sso: true  },
-  { key: 'observability', labelKey: 'observability', category: 'ops',  sso: true  },
-  { key: 'pii',           labelKey: 'pii',           category: 'ops',  sso: false },
-  { key: 'logs',          labelKey: 'logs',          category: 'ops',  sso: false },
-  { key: 'backup',        labelKey: 'backup',        category: 'ops',  sso: false },
-  { key: 'report',        labelKey: 'report',        category: 'ops',  sso: false },
+  // 应用服务
+  { key: 'dify',          labelKey: 'dify',          category: 'apps',  sso: false },
+  { key: 'ghost',         labelKey: 'ghost',         category: 'apps',  sso: false },
+  { key: 'newapi',        labelKey: 'newapi',        category: 'apps',  sso: true  },
+  { key: 'litellm',       labelKey: 'litellm',       category: 'apps',  sso: true  },
+  { key: 'gitea',         labelKey: 'gitea',         category: 'apps',  sso: true  },
+  { key: 'update-server', labelKey: 'update',        category: 'apps',  sso: false },
+  // 平台基础设施
+  { key: 'keycloak',      labelKey: 'keycloak',      category: 'infra', sso: true  },
+  { key: 'mcp-gateway',   labelKey: 'mcp',           category: 'infra', sso: false },
+  // 运维监控
+  { key: 'availability',  labelKey: 'availability',  category: 'ops',   sso: false },
+  { key: 'monitoring',    labelKey: 'monitoring',    category: 'ops',   sso: true  },
+  { key: 'observability', labelKey: 'observability', category: 'ops',   sso: true  },
+  { key: 'logs',          labelKey: 'logs',          category: 'ops',   sso: false },
+  { key: 'backup',        labelKey: 'backup',        category: 'ops',   sso: false },
+  { key: 'report',        labelKey: 'report',        category: 'ops',   sso: false },
 ];
 const GLOBAL_ADMIN_ROLE = 'ai-platform-admin';
 const productRole = (key) => `admin:${key}`;
@@ -145,6 +144,19 @@ if (KC_CLIENT_SECRET) {
 }
 
 const keycloak = new Keycloak({ store: redisStore }, kcConfig);
+
+// 防止 iss 参数累积导致无限重定向循环：
+// Keycloak 回调后 URL 带 iss 参数，如果 session 建立失败再次刷新，
+// keycloak middleware 会再次读到 iss 并重定向，iss 不断追加。
+// 解决：在 keycloak middleware 之前，如果 URL 有 iss 参数就 301 到干净路径。
+app.use((req, res, next) => {
+  if (req.query.iss) {
+    const cleanUrl = req.path;
+    return res.redirect(301, cleanUrl);
+  }
+  next();
+});
+
 app.use(keycloak.middleware());
 app.use(express.json({ limit: '2mb' }));
 

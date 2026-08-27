@@ -41,7 +41,7 @@ The new LiteLLM guardrail API changed, so the Presidio section is currently comm
 
 ## 25.4 Verify
 
-Send a request containing a phone number/email → the original value is replaced with `[REDACTED]` in the model reply; send a request containing "internal confidential" → it returns `Content blocked` directly.
+Send a request containing a phone number/email → the original value is replaced with `[xxx_REDACTED]` in the request sent to the model, and **automatically restored** in the model's response (users see the original phone number/email, not `<PERSON>` placeholders); send a request containing "internal confidential" → it returns `Content blocked` directly. This auto-restoration is enabled by the `mode: ["pre_call", "post_call"]` setting in the Presidio guardrail config.
 
 > 📖 Vendor docs:Microsoft Presidio https://microsoft.github.io/presidio/ · source https://github.com/microsoft/presidio
 

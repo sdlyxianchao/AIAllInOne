@@ -174,6 +174,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 
 ## 📋 Changelog
 
+### v1.03 (2026-08-28)
+
+- **Improved: Admin Center sidebar reorganized** — groups renamed to "应用服务 / 平台基础设施 / 运维监控 / 系统管理"; LiteLLM moved to 应用服务, Keycloak moved to 平台基础设施, "企业 IM 告警" merged into "监控告警 + IM 通知", "PII 脱敏" standalone removed (now part of LiteLLM name), "客户端软件同步" renamed to "桌面客户端管理"
+- **Improved: PII auto-deanonymization** — Presidio mode changed from `pre_call` to `["pre_call", "post_call"]`; PII is now automatically restored in LLM responses (users no longer see `<PERSON>` placeholders)
+- **Fixed: `iss` parameter redirect loop** — added middleware in admin-portal server.js to strip `iss` query parameters before Keycloak middleware, preventing infinite redirect loops after token expiry
+- **New: DSH sync scripts** — new `dsh-sync-export/` directory with Gitea Actions workflow for DSH Desktop auto-update sync
+
 ### v1.00 (2026-08-23)
 
 **New: Linux Platform Support**

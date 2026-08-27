@@ -155,6 +155,15 @@ docker compose up -d
 
 完整指南見 [CONTRIBUTING.md](../CONTRIBUTING.md)，公開的[路線圖](#roadmap)可以看到下一步計畫。**每一位貢獻者都會列入 README 的貢獻者名單。**
 
+## 📋 更新日誌
+
+### v1.03（2026-08-28）
+
+- **改進：管理中心側邊欄重組** — 分組更名為「應用服務 / 平台基礎設施 / 運維監控 / 系統管理」；LiteLLM 移至應用服務，Keycloak 移至平台基礎設施，「企業 IM 告警」合併入「監控告警 + IM 通知」，「PII 脫敏」獨立項移除（現為 LiteLLM 名稱的一部分），「客戶端軟體同步」更名為「桌面客戶端管理」
+- **改進：PII 自動還原** — Presidio 模式從 `pre_call` 改為 `["pre_call", "post_call"]`；PII 現在在 LLM 回應中自動還原（使用者不再看到 `<PERSON>` 佔位符）
+- **修復：`iss` 參數重定向迴圈** — 在 admin-portal server.js 中新增中介軟體，在 Keycloak 中介軟體處理前剝離 `iss` 查詢參數，防止 token 過期後的無限重定向迴圈
+- **新增：DSH 同步腳本** — 新增 `dsh-sync-export/` 目錄，含 Gitea Actions 工作流程用於 DSH Desktop 自動更新同步
+
 <h2 id="roadmap">🗺️ 路線圖</h2>
 
 - ✅ v0.9x — Windows 平台：全家桶 + AI 管理中心 + 分級管理員授權 + 企業 IM 告警 + 語意快取（LiteLLM redis-semantic）

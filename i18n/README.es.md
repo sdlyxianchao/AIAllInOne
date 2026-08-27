@@ -155,6 +155,15 @@ Este proyecto es **de código abierto y gratuito** y crece gracias a la comunida
 
 Consulta la guía completa en [CONTRIBUTING.md](../CONTRIBUTING.md); en la [hoja de ruta](#roadmap) pública puedes ver los próximos planes. **Cada colaborador aparecerá en la lista de colaboradores del README.**
 
+## 📋 Registro de cambios
+
+### v1.03（2026-08-28）
+
+- **Mejora: reorganización de la barra lateral del centro de administración** — grupos renombrados a "应用服务（Servicios de aplicación）/ 平台基础设施（Infraestructura de plataforma）/ 运维监控（Supervisión de operaciones）/ 系统管理（Administración del sistema）"; LiteLLM movido a 应用服务, Keycloak movido a 平台基础设施, "企业 IM 告警" fusionado en "监控告警 + IM 通知", "PII 脱敏" eliminado como elemento independiente (integrado en el nombre de LiteLLM), "客户端软件同步" renombrado a "桌面客户端管理"
+- **Mejora: desanonimización automática de PII** — modo de Presidio cambiado de `pre_call` a `["pre_call", "post_call"]`; los PII ahora se restauran automáticamente en las respuestas del LLM (los usuarios ya no ven los marcadores de posición `<PERSON>`)
+- **Corrección: bucle de redirección del parámetro `iss`** — se añadió un middleware en admin-portal server.js para eliminar los parámetros de consulta `iss` antes de que el middleware de Keycloak los procese, evitando bucles de redirección infinitos después de la expiración del token
+- **Nuevo: scripts de sincronización DSH** — nuevo directorio `dsh-sync-export/` con un flujo de trabajo de Gitea Actions para la sincronización automática de actualizaciones de DSH Desktop
+
 <h2 id="roadmap">🗺️ Hoja de ruta</h2>
 
 - ✅ v0.9x — Plataforma Windows: todo en uno + AI Admin Center + autorización de administradores por niveles + alertas de IM empresarial + caché semántica (redis-semantic de LiteLLM)

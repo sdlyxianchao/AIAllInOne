@@ -54,7 +54,7 @@
   - **验证命中**：连续两次语义相近但措辞不同的请求，第二次响应带 `X-Litellm-Cache-Key` + `X-Litellm-Semantic-Similarity`（实测 0.92）即命中；
   - **适用建议**：确定性任务（知识库问答 / 固定模板 / `temperature=0`）收益最大；实时/个性化内容用请求头 `no-cache` 绕过；关闭：`cache: false` 后重启。
 - **Langfuse 上报**：`success_callback: ["langfuse"]` + `.env` 的 `LANGFUSE_PUBLIC_KEY/SECRET_KEY/HOST` 自动上报每次调用（可观测链路依赖它）；
-- **PII 脱敏（Presidio）**：guardrails 要加 `default_on: true` 才全局生效；当前因上游 API 变更暂注释，仅做纯代理——需要启用时按第 25 章配置；
+- **PII 脱敏（Presidio）**：guardrails 使用 `default_on: true` 全局生效；模式为 `["pre_call", "post_call"]`——PII 在模型调用前脱敏，响应中自动还原（用户不再看到 `<PERSON>` 占位符）；
 - **重启与排错**：
 
 ```
