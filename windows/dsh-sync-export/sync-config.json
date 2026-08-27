@@ -1,0 +1,18 @@
+{
+  "product": "DSH Desktop",
+  "repo": "dataelement/dsh-desktop",
+  "version_source": "github",
+  "download_prefix": "",
+  "keep_releases": 5,
+  "market_url": "http://192.168.31.117:3100",
+  "platforms": {
+    "windows-x64": "dsh-desktop-windows-x64-setup.exe",
+    "mac-x64": "dsh-desktop-mac-x64.dmg",
+    "mac-arm64": "dsh-desktop-mac-arm64.dmg"
+  },
+  "targets": [
+    "windows-x64",
+    "mac-x64",
+    "mac-arm64"
+  ]
+}

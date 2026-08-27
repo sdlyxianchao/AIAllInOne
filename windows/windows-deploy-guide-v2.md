@@ -2358,3 +2358,188 @@ mail__options__port: 1025
 4. 把 `ghost-admin-api-session` cookie 写进浏览器（`Path=/ghost`，同 host 不同端口 cookie 按域名共享），跳转 `:8090/ghost/` 直接进后台。
 
 ⚠️ **关键坑**：① Ghost 5 后端**仍支持密码登录**（`POST /session/`），但密码对后会触发「新设备 2FA」（返回 403 `Needs2FAError` + 发码），所以必须补验证码这步；② 验证码就是 TOTP，可用 `crypto.createHmac('sha1', secret+userId)` 精确复现，实测与邮件里的码逐位一致；③ 就算自己算码，Ghost 仍会真的「发邮件」，因此 MailHog（或任意 SMTP）必须保留，否则登录报 `Failed to send email`；④ `/session/verify` 有 brute 限流，正常单次点击不会触发，但别短时间反复刷。
+
+---
+
+<a id="dsh-sync"></a>
+
+## 14. DSH Desktop 自动同步系统
+
+### 14.1 架构概述
+
+DSH Desktop 自动同步系统负责从 GitHub 自动下载最新版本的安装包，并更新下载页面。
+
+```
+GitHub (dataelement/dsh-desktop)
+    │
+    ▼
+Gitea Actions (sync.yml) ──触发──▶ sync_download.py
+    │                                    │
+    │                                    ├─ 读取已有版本 (admin-portal API)
+    │                                    ├─ 下载新版本安装包
+    │                                    ├─ 更新 versions.json
+    │                                    ├─ 更新 sync-history.json
+    │                                    ├─ 复制到 update-server
+    │                                    └─ 调用 admin-portal 更新 Ghost 页面
+    │                                           │
+    ▼                                           ▼
+Update Server (:8091)                    Ghost (:8090)
+(dsh/v0.x.x/安装包)                      (下载页面)
+```
+
+### 14.2 相关文件
+
+所有同步相关文件已导出到 `dsh-sync-export/` 目录：
+
+| 文件 | 说明 |
+|------|------|
+| `sync_download.py` | 主同步脚本 |
+| `sync-config.json` | 同步配置（平台、保留版本数） |
+| `sync.yml` | Gitea Actions 工作流定义 |
+| `version_cmp.py` | 版本比较工具 |
+| `admin-portal-sync-endpoints.js` | Admin Center API 端点代码 |
+| `DEPLOYMENT-GUIDE.md` | 详细部署指南 |
+| `versions.json` | 当前版本清单（运行时数据） |
+| `sync-history.json` | 同步历史（运行时数据） |
+
+### 14.3 部署步骤
+
+#### 步骤 1：创建 Gitea 仓库
+
+```bash
+# 在 Gitea 中创建 dsh-sync 仓库
+# 上传 sync_download.py, sync-config.json, version_cmp.py
+# 创建 .gitea/workflows/sync.yml
+```
+
+#### 步骤 2：注册 Gitea Runner
+
+```bash
+# 确保 Runner 容器可以访问 Docker socket
+docker run -d --name gitea-runner \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -e GITEA_INSTANCE_URL=http://gitea:3000 \
+  -e GITEA_RUNNER_REGISTRATION_TOKEN=<token> \
+  gitea/act_runner:latest
+```
+
+#### 步骤 3：配置 Admin Center
+
+在 `admin-portal/server.js` 中添加以下端点（完整代码见 `admin-portal-sync-endpoints.js`）：
+
+- `POST /api/gitea/sync/trigger` - 触发同步
+- `POST /api/gitea/sync/force-stop` - 强制停止
+- `POST /api/gitea/sync/resync-version` - 重新同步指定版本
+- `GET /api/gitea/sync/versions` - 读取版本列表（需认证）
+- `GET /api/gitea/sync/versions-internal` - 同步脚本用（无需认证）
+- `GET /api/gitea/sync/history` - 读取同步历史（需认证）
+- `GET /api/gitea/sync/history-internal` - 同步脚本用（无需认证）
+- `POST /api/ghost/update-dsh-page` - 更新 Ghost 页面
+
+#### 步骤 4：安装 Python 依赖
+
+```bash
+# admin-portal 容器需要 Python 来更新 Ghost 数据库
+docker exec admin-portal apk add --no-cache python3 py3-pip
+```
+
+#### 步骤 5：初始化数据文件
+
+```bash
+# 在 update-server 中创建初始数据文件
+docker exec update-server mkdir -p /usr/share/nginx/html/dsh
+
+# 创建 versions.json
+echo '{"versions":[]}' | docker exec -i update-server sh -c 'cat > /usr/share/nginx/html/dsh/versions.json'
+
+# 创建 sync-history.json
+echo '[]' | docker exec -i update-server sh -c 'cat > /usr/share/nginx/html/dsh/sync-history.json'
+```
+
+#### 步骤 6：测试同步
+
+```bash
+# 手动触发同步
+curl -X POST http://<服务器IP>:10086/api/gitea/sync/trigger
+
+# 查看 Gitea Actions 执行结果
+# 访问 http://<服务器IP>:3002/ai_all_in_one_admin/dsh-sync/actions
+```
+
+### 14.4 配置说明
+
+#### sync-config.json
+
+```json
+{
+  "repo": "dataelement/dsh-desktop",    // GitHub 仓库
+  "platforms": {
+    "windows-x64": "dsh-desktop-windows-x64-setup.exe",
+    "mac-x64": "dsh-desktop-mac-x64.dmg",
+    "mac-arm64": "dsh-desktop-mac-arm64.dmg"
+  },
+  "keep_releases": 5,                    // 保留版本数
+  "download_prefix": ""                  // 下载 URL 前缀（代理用）
+}
+```
+
+#### 定时同步
+
+在 `sync.yml` 中配置 cron 表达式：
+
+```yaml
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 每天凌晨 2 点
+```
+
+或通过 Admin Center UI 修改。
+
+### 14.5 数据格式
+
+#### versions.json
+
+```json
+{
+  "versions": [
+    {
+      "version": "v0.6.3",
+      "date": "2026-08-27",
+      "files": {
+        "windows-x64": "dsh-desktop-windows-x64-setup.exe",
+        "mac-x64": "dsh-desktop-mac-x64.dmg",
+        "mac-arm64": "dsh-desktop-mac-arm64.dmg"
+      }
+    }
+  ]
+}
+```
+
+#### sync-history.json
+
+```json
+[
+  {
+    "time": "2026-08-27T21:27:00",
+    "status": "success",
+    "detail": "Synced v0.6.3 (3 files)",
+    "version": "v0.6.3",
+    "date": "2026-08-27"
+  }
+]
+```
+
+### 14.6 新机器迁移清单
+
+1. [ ] 部署 Gitea 并创建 dsh-sync 仓库（上传 sync_download.py 等文件）
+2. [ ] 注册 Gitea Runner（挂载 Docker socket）
+3. [ ] 部署 update-server（Nginx，端口 8091）
+4. [ ] 部署 Ghost（端口 8090）
+5. [ ] 部署 admin-portal 并添加同步相关 API 端点
+6. [ ] 在 admin-portal 容器中安装 Python：`apk add --no-cache python3`
+7. [ ] 初始化 versions.json 和 sync-history.json
+8. [ ] 配置 sync-config.json（仓库地址、平台、保留版本数）
+9. [ ] 测试手动触发同步
+10. [ ] 验证 Ghost 页面自动更新
+11. [ ] 配置定时同步（cron）
+12. [ ] 验证版本列表和同步历史显示

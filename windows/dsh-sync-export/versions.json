@@ -1,0 +1,22 @@
+{
+  "versions": [
+    {
+      "version": "v0.6.3",
+      "date": "2026-08-27",
+      "files": {
+        "windows-x64": "dsh-desktop-windows-x64-setup.exe",
+        "mac-x64": "dsh-desktop-mac-x64.dmg",
+        "mac-arm64": "dsh-desktop-mac-arm64.dmg"
+      }
+    },
+    {
+      "version": "v0.5.0",
+      "date": "2026-08-22",
+      "files": {
+        "windows-x64": "dsh-desktop-windows-x64-setup.exe",
+        "mac-x64": "dsh-desktop-mac-x64.dmg",
+        "mac-arm64": "dsh-desktop-mac-arm64.dmg"
+      }
+    }
+  ]
+}

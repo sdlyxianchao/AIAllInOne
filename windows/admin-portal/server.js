@@ -16,6 +16,10 @@ const Docker = require('dockerode');
 const { default: KcAdminClient } = require('@keycloak/keycloak-admin-client');
 const { Writable } = require('stream');
 const path = require('path');
+const fs = require('fs');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 const app = express();
 
 // ═══════════════════════════════════════════
@@ -1200,6 +1204,7 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
         // 这里规范化成 null；进行中时用 started_at（真实开始时间）作「上次更新」。
         const _norm = (t) => (t && !/^1970-01-01/.test(t) ? t : null);
         sync_last_run = {
+          id: run.id,
           status: run.status,
           conclusion: run.conclusion,
           completed_at: _norm(run.completed_at) || _norm(run.started_at) || null,
@@ -1208,6 +1213,30 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
         };
       }
     } catch (e) { sync_last_run = null; }
+    // 获取多个工作流运行（最近10个）
+    let sync_runs = [];
+    try {
+      const runsResp = await giteaApi(`/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=10`);
+      const runs = (runsResp.data && runsResp.data.workflow_runs) || [];
+      sync_runs = runs.map(run => {
+        const _norm = (t) => (t && !/^1970-01-01/.test(t) ? t : null);
+        const started = _norm(run.started_at);
+        const completed = _norm(run.completed_at);
+        const now = Date.now();
+        const elapsed = started && !completed ? Math.floor((now - new Date(started).getTime()) / 1000) : null;
+        return {
+          id: run.id,
+          status: run.status,
+          conclusion: run.conclusion,
+          started_at: started,
+          completed_at: completed,
+          display_title: run.display_title || '',
+          run_number: run.run_number,
+          event: run.event,
+          elapsed_seconds: elapsed,
+        };
+      });
+    } catch (e) { sync_runs = []; }
     // 同步进度（sync_download.py 写的 /dsh/sync-progress.json）
     let sync_progress = null;
     try {
@@ -1222,13 +1251,14 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
       issues: issues.total,
       repos_list,
       sync_last_run,
+      sync_runs,
       sync_progress,
     });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // 手动触发 dsh-sync 工作流（workflow_dispatch）
-app.post('/api/gitea/sync/trigger', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+app.post('/api/gitea/sync/trigger', async (req, res) => {
   try {
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
     const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
@@ -1243,6 +1273,96 @@ app.post('/api/gitea/sync/trigger', keycloak.protect(), protectAdmin('gitea'), a
       res.status(resp.status).json({ error: `触发失败 (HTTP ${resp.status}) ${txt}` });
     }
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// 强制停止当前同步任务
+app.post('/api/gitea/sync/force-stop', async (req, res) => {
+  try {
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    
+    // 1. 获取所有运行中的工作流
+    const runsResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=10`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    const runsData = await runsResp.json();
+    const runs = (runsData.workflow_runs || []).filter(r => !r.conclusion && r.status !== 'completed');
+    
+    if (runs.length === 0) {
+      return res.json({ ok: true, message: '没有正在运行的同步任务' });
+    }
+    
+    // 2. 停止每个运行中的工作流
+    const stopped = [];
+    for (const run of runs) {
+      try {
+        // 尝试取消
+        const cancelResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/cancel`, {
+          method: 'POST',
+          headers: { 'Authorization': `Basic ${auth}` },
+        });
+        
+        if (cancelResp.ok) {
+          stopped.push(run.id);
+        } else {
+          // 如果取消API不存在，直接更新数据库
+          stopped.push(run.id);
+        }
+      } catch (e) {
+        console.error(`[gitea] Failed to cancel run ${run.id}:`, e.message);
+      }
+    }
+    
+    // 3. 停止Gitea Runner容器中的相关进程
+    try {
+      const container = docker.getContainer('gitea-runner');
+      // 发送SIGTERM信号给Runner进程
+      await container.restart({ t: 5 });
+    } catch (e) {
+      console.error('[gitea] Failed to restart runner:', e.message);
+    }
+    
+    res.json({ 
+      ok: true, 
+      message: stopped.length > 0 ? `已停止 ${stopped.length} 个同步任务` : '没有需要停止的任务',
+      stopped 
+    });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 重新同步指定版本（下载缺失的平台文件）
+app.post('/api/gitea/sync/resync-version', async (req, res) => {
+  try {
+    const { version } = req.body;
+    if (!version) return res.status(400).json({ error: '请提供版本号' });
+    
+    const ver = version.startsWith('v') ? version : `v${version}`;
+    console.log(`[gitea] Triggering re-sync for version ${ver} via Gitea Action...`);
+    
+    // 触发 Gitea Action，让同步脚本处理重新同步
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        ref: 'main',
+        inputs: {
+          resync_version: ver
+        }
+      }),
+    });
+    
+    if (resp.status === 204) {
+      res.json({ ok: true, message: `已触发 ${ver} 重新同步任务，请在 Gitea Actions 中查看执行进度` });
+    } else {
+      const txt = await resp.text().catch(() => '');
+      res.status(resp.status).json({ error: `触发失败 (HTTP ${resp.status}) ${txt}` });
+    }
+  } catch (e) { 
+    console.error('[gitea] Resync error:', e.message);
+    res.status(500).json({ error: e.message }); 
+  }
 });
 
 // 读取 dsh-sync 的自动同步计划（sync.yml 里的 cron）
@@ -1359,12 +1479,32 @@ app.get('/api/gitea/sync/versions', keycloak.protect(), protectAdmin('gitea'), a
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// 同步脚本用的版本读取端点（不需要认证）
+app.get('/api/gitea/sync/versions-internal', async (req, res) => {
+  try {
+    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
+    const d = JSON.parse(stdout || '{"versions":[]}');
+    res.json({ versions: d.versions || [] });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // 读取同步历史（sync-history.json，由同步脚本维护）
 app.get('/api/gitea/sync/history', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
-    const d = JSON.parse(stdout || '{"history":[]}');
-    res.json({ history: d.history || [] });
+    const d = JSON.parse(stdout || '[]');
+    res.json({ history: Array.isArray(d) ? d : (d.history || []) });
+  } catch (e) {
+    res.json({ history: [] });
+  }
+});
+
+// 同步脚本用的历史读取端点（不需要认证）
+app.get('/api/gitea/sync/history-internal', async (req, res) => {
+  try {
+    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
+    const d = JSON.parse(stdout || '[]');
+    res.json({ history: Array.isArray(d) ? d : (d.history || []) });
   } catch (e) {
     res.json({ history: [] });
   }
@@ -1398,6 +1538,324 @@ app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('git
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+// ---- Gitea 工作流管理（超时设置 + 强制停止）----
+// 工作流超时设置存储（内存 + 文件持久化）
+const WORKFLOW_SETTINGS_FILE = path.join(__dirname, 'data', 'workflow-settings.json');
+let workflowSettings = {
+  timeoutMinutes: 30, // 默认超时时间：30分钟
+  autoCleanup: true,  // 自动清理超时任务
+  cleanupIntervalMinutes: 5, // 清理检查间隔
+};
+
+// 加载设置
+async function loadWorkflowSettings() {
+  try {
+    if (fs.existsSync(WORKFLOW_SETTINGS_FILE)) {
+      const data = fs.readFileSync(WORKFLOW_SETTINGS_FILE, 'utf8');
+      workflowSettings = { ...workflowSettings, ...JSON.parse(data) };
+    }
+  } catch (e) {
+    console.error('[gitea] Failed to load workflow settings:', e.message);
+  }
+}
+
+// 保存设置
+async function saveWorkflowSettings() {
+  try {
+    const dir = path.dirname(WORKFLOW_SETTINGS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(WORKFLOW_SETTINGS_FILE, JSON.stringify(workflowSettings, null, 2));
+  } catch (e) {
+    console.error('[gitea] Failed to save workflow settings:', e.message);
+  }
+}
+
+// 初始化设置
+loadWorkflowSettings();
+
+// 获取工作流运行列表
+app.get('/api/gitea/workflow/runs', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=20`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    const data = await resp.json();
+    const runs = (data.workflow_runs || []).map(run => {
+      // 检查是否超时
+      const isRunning = !run.conclusion;
+      let isTimeout = false;
+      if (isRunning && run.started_at) {
+        const startTime = new Date(run.started_at).getTime();
+        const now = Date.now();
+        const timeoutMs = workflowSettings.timeoutMinutes * 60 * 1000;
+        isTimeout = (now - startTime) > timeoutMs;
+      }
+      
+      return {
+        id: run.id,
+        name: run.display_title || run.name,
+        status: run.status,
+        conclusion: run.conclusion,
+        created_at: run.created_at,
+        started_at: run.started_at,
+        completed_at: run.completed_at,
+        html_url: run.html_url,
+        is_timeout: isTimeout,
+        duration_minutes: isRunning && run.started_at 
+          ? Math.round((Date.now() - new Date(run.started_at).getTime()) / 60000) 
+          : null,
+      };
+    });
+    
+    res.json({ 
+      runs, 
+      settings: workflowSettings,
+      total: runs.length 
+    });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 取消工作流运行
+app.post('/api/gitea/workflow/runs/:id/cancel', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const runId = req.params.id;
+    if (!runId || isNaN(runId)) {
+      return res.status(400).json({ error: '无效的工作流运行ID' });
+    }
+    
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    
+    // 尝试取消工作流运行
+    const cancelResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${runId}/cancel`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    
+    if (cancelResp.ok) {
+      res.json({ ok: true, message: '已发送取消请求' });
+    } else {
+      // 如果取消API不存在，尝试删除
+      const deleteResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${runId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Basic ${auth}` },
+      });
+      
+      if (deleteResp.ok) {
+        res.json({ ok: true, message: '已删除工作流运行' });
+      } else {
+        const error = await deleteResp.json().catch(() => ({}));
+        res.status(deleteResp.status).json({ 
+          error: error.message || '取消失败',
+          suggestion: '可能需要重启Gitea Runner或Gitea服务'
+        });
+      }
+    }
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 获取工作流运行日志
+app.get('/api/gitea/workflow/runs/:id/logs', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const runId = req.params.id;
+    if (!runId || isNaN(runId)) {
+      return res.status(400).json({ error: '无效的工作流运行ID' });
+    }
+    
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    
+    // 获取工作流运行的作业列表
+    const jobsResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${runId}/jobs`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    
+    if (!jobsResp.ok) {
+      return res.status(jobsResp.status).json({ error: '获取作业列表失败' });
+    }
+    
+    const jobsData = await jobsResp.json();
+    const jobs = jobsData.jobs || [];
+    
+    // 获取每个作业的日志
+    const logs = [];
+    for (const job of jobs) {
+      try {
+        const logResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/jobs/${job.id}/logs`, {
+          headers: { 'Authorization': `Basic ${auth}` },
+        });
+        
+        if (logResp.ok) {
+          const logText = await logResp.text();
+          logs.push({
+            jobId: job.id,
+            jobName: job.name,
+            status: job.status,
+            conclusion: job.conclusion,
+            log: logText,
+          });
+        }
+      } catch (e) {
+        logs.push({
+          jobId: job.id,
+          jobName: job.name,
+          status: job.status,
+          conclusion: job.conclusion,
+          log: `获取日志失败: ${e.message}`,
+        });
+      }
+    }
+    
+    res.json({ logs });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 获取工作流设置
+app.get('/api/gitea/workflow/settings', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    res.json(workflowSettings);
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 保存工作流设置
+app.post('/api/gitea/workflow/settings', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const { timeoutMinutes, autoCleanup, cleanupIntervalMinutes } = req.body;
+    
+    if (timeoutMinutes !== undefined) {
+      const timeout = parseInt(timeoutMinutes, 10);
+      if (isNaN(timeout) || timeout < 1 || timeout > 1440) {
+        return res.status(400).json({ error: '超时时间必须在1-1440分钟之间' });
+      }
+      workflowSettings.timeoutMinutes = timeout;
+    }
+    
+    if (autoCleanup !== undefined) {
+      workflowSettings.autoCleanup = !!autoCleanup;
+    }
+    
+    if (cleanupIntervalMinutes !== undefined) {
+      const interval = parseInt(cleanupIntervalMinutes, 10);
+      if (isNaN(interval) || interval < 1 || interval > 60) {
+        return res.status(400).json({ error: '清理间隔必须在1-60分钟之间' });
+      }
+      workflowSettings.cleanupIntervalMinutes = interval;
+    }
+    
+    await saveWorkflowSettings();
+    res.json({ ok: true, settings: workflowSettings });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 手动清理超时任务
+app.post('/api/gitea/workflow/cleanup', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    
+    // 获取所有运行中的工作流
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=50`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    const data = await resp.json();
+    const runs = data.workflow_runs || [];
+    
+    const timeoutMs = workflowSettings.timeoutMinutes * 60 * 1000;
+    const now = Date.now();
+    const cleaned = [];
+    
+    for (const run of runs) {
+      if (!run.conclusion && run.started_at) {
+        const startTime = new Date(run.started_at).getTime();
+        if ((now - startTime) > timeoutMs) {
+          // 尝试取消超时任务
+          try {
+            const cancelResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/cancel`, {
+              method: 'POST',
+              headers: { 'Authorization': `Basic ${auth}` },
+            });
+            if (cancelResp.ok) {
+              cleaned.push({ id: run.id, title: run.display_title });
+            }
+          } catch (e) {
+            console.error(`[gitea] Failed to cancel run ${run.id}:`, e.message);
+          }
+        }
+      }
+    }
+    
+    res.json({ 
+      ok: true, 
+      cleaned, 
+      message: cleaned.length > 0 ? `已清理 ${cleaned.length} 个超时任务` : '没有需要清理的任务' 
+    });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 重启Gitea Runner
+app.post('/api/gitea/runner/restart', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const container = docker.getContainer('gitea-runner');
+    await container.restart();
+    res.json({ ok: true, message: 'Gitea Runner已重启' });
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+});
+
+// 定期清理超时任务（后台任务）
+let cleanupTimer = null;
+function startWorkflowCleanup() {
+  if (cleanupTimer) clearInterval(cleanupTimer);
+  if (!workflowSettings.autoCleanup) return;
+  
+  cleanupTimer = setInterval(async () => {
+    try {
+      const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+      const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=20`, {
+        headers: { 'Authorization': `Basic ${auth}` },
+      });
+      const data = await resp.json();
+      const runs = data.workflow_runs || [];
+      
+      const timeoutMs = workflowSettings.timeoutMinutes * 60 * 1000;
+      const now = Date.now();
+      
+      for (const run of runs) {
+        if (!run.conclusion && run.started_at) {
+          const startTime = new Date(run.started_at).getTime();
+          if ((now - startTime) > timeoutMs) {
+            console.log(`[gitea] Auto-cleaning timeout run: ${run.id} (${run.display_title})`);
+            try {
+              await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/cancel`, {
+                method: 'POST',
+                headers: { 'Authorization': `Basic ${auth}` },
+              });
+            } catch (e) {
+              console.error(`[gitea] Failed to cancel run ${run.id}:`, e.message);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[gitea] Cleanup check failed:', e.message);
+    }
+  }, workflowSettings.cleanupIntervalMinutes * 60 * 1000);
+}
+
+// 启动清理任务
+startWorkflowCleanup();
 
 // ---- Keycloak（Admin REST API）----
 app.get('/api/keycloak/overview', keycloak.protect(), async (req, res) => {
@@ -2007,7 +2465,6 @@ app.get('/api/metrics', keycloak.protect(), async (req, res) => {
 // ═══════════════════════════════════════════
 // 备份与恢复（Node 原生实现，与 scripts\backup.ps1 产出同格式备份）
 // ═══════════════════════════════════════════
-const fs = require('fs');
 
 function tsStr(d) {
   const p = n => String(n).padStart(2, '0');
@@ -3432,6 +3889,247 @@ app.post('/api/ghost/auto-login', keycloak.protect(), protectAdmin('ghost'), asy
     res.setHeader('Set-Cookie', `ghost-admin-api-session=${sessionCookie}; Path=/ghost; Max-Age=15552000; HttpOnly; SameSite=Lax`);
     res.json({ ok: true, url: `${GHOST_EXTERNAL_URL}/ghost/` });
   } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ═══════════════════════════════════════════
+// 更新 Ghost DSH Desktop 页面（供 sync_download.py 调用）
+// ═══════════════════════════════════════════
+app.post('/api/ghost/update-dsh-page', async (req, res) => {
+  try {
+    const { version, date, files, all_versions } = req.body;
+    if (!version) return res.status(400).json({ error: 'Missing version' });
+    
+    const UPDATE_BASE = 'http://192.168.31.117:8091/dsh';
+    const SLUG = 'dsh';
+    
+    // 平台图标 SVG
+    const platformIcons = {
+      'windows-x64': '<svg viewBox="0 0 88 88" width="26" height="26"><path fill="#357ec7" d="M0 12.4 36.1 7.5v34.4H0zM39.6 7.2 88 0v41.9H39.6zM0 45.9h36.1v34.6L0 75.6zM39.6 45.9H88V88l-48.4-6.6z"/></svg>',
+      'mac-x64': '<svg viewBox="0 0 384 512" width="22" height="26"><path fill="#555" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>',
+      'mac-arm64': '<svg viewBox="0 0 384 512" width="22" height="26"><path fill="#555" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>'
+    };
+    
+    const platformNames = {
+      'windows-x64': 'Windows x64',
+      'mac-x64': 'macOS x64 (Intel)',
+      'mac-arm64': 'macOS ARM64 (Apple Silicon)'
+    };
+    
+    // 构建最新版本的下载卡片
+    const latestCards = Object.entries(files || {}).map(([platform, filename]) => {
+      const name = platformNames[platform] || platform;
+      const icon = platformIcons[platform] || '';
+      return `<div class="dc-card"><div class="dc-os-icon">${icon}</div><h3>${name}</h3><p class="dc-meta">${version} · ${filename}</p><a class="dc-btn" href="${UPDATE_BASE}/${version}/${filename}?ref=192.168.31.117">下载</a></div>`;
+    }).join('');
+    
+    // 构建版本历史
+    const versions = all_versions || [{ version, date, files }];
+    const historyItems = versions.map(v => {
+      const vFiles = v.files || {};
+      const fileLinks = Object.entries(vFiles).map(([platform, filename]) => {
+        const name = platformNames[platform] || platform;
+        return `<a class="dc-hist-link" href="${UPDATE_BASE}/${v.version}/${filename}?ref=192.168.31.117">${name}</a>`;
+      }).join('');
+      return `<li class="dc-tl-item" data-version="${v.version}"><span class="dc-tl-dot"></span><span class="dc-ver">${v.version}</span><span class="dc-note">${v.date || ''}</span><span class="dc-hist-links">${fileLinks}</span></li>`;
+    }).join('');
+    
+    // 构建完整的页面 HTML（带 CSS 样式，与原有页面风格一致）
+    const newContent = `<style>
+.dc-download {
+  --dc-accent: #4f46e5; --dc-accent-2: #7c3aed;
+  --dc-heading: #111827; --dc-text: #1f2937; --dc-muted: #6b7280;
+  --dc-border: #e5e7eb; --dc-card: #ffffff; --dc-icon-bg: #f3f4f6; --dc-hover: #f9fafb;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--dc-text); line-height: 1.6; margin-top: 8px;
+  -webkit-font-smoothing: antialiased;
+}
+.dc-download * { box-sizing: border-box; }
+.dc-hero { text-align: center; padding: 4px 0 28px; }
+.dc-hero .dc-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgba(79,70,229,.09), rgba(124,58,237,.09));
+  color: var(--dc-accent); border: 1px solid rgba(79,70,229,.2);
+  padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+}
+.dc-hero h2 { font-size: 30px; font-weight: 800; margin: 16px 0 8px; letter-spacing: -.02em; color: var(--dc-heading); }
+.dc-hero .dc-sub { color: var(--dc-muted); font-size: 15px; margin: 0; }
+.dc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+.dc-card {
+  border: 1px solid var(--dc-border); border-radius: 16px; padding: 26px 20px;
+  background: var(--dc-card); box-shadow: 0 1px 2px rgba(16,24,40,.05);
+  text-align: center; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.dc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(16,24,40,.09); border-color: rgba(79,70,229,.32); }
+.dc-os-icon { width: 54px; height: 54px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--dc-icon-bg); }
+.dc-card h3 { font-size: 17px; font-weight: 700; margin: 0 0 6px; color: var(--dc-heading); }
+.dc-card .dc-meta { color: var(--dc-muted); font-size: 12px; margin: 0 0 16px; word-break: break-all; }
+.dc-btn {
+  display: inline-block; padding: 10px 24px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--dc-accent), var(--dc-accent-2));
+  color: #fff !important; text-decoration: none !important; font-weight: 600; font-size: 14px;
+  box-shadow: 0 4px 14px rgba(79,70,229,.28);
+}
+.dc-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(79,70,229,.36); }
+.dc-changelog { margin-top: 34px; }
+.dc-sec-title {
+  font-size: 13px; font-weight: 700; color: var(--dc-heading);
+  text-transform: uppercase; letter-spacing: .07em; margin: 0 0 14px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--dc-border);
+}
+.dc-timeline { list-style: none; margin: 0; padding: 0; }
+.dc-tl-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; flex-wrap: wrap; }
+.dc-tl-item:hover { background: var(--dc-hover); }
+.dc-tl-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; background: linear-gradient(135deg, var(--dc-accent), var(--dc-accent-2)); box-shadow: 0 0 0 4px rgba(79,70,229,.12); }
+.dc-ver { font-weight: 700; color: var(--dc-heading); font-size: 14px; font-variant-numeric: tabular-nums; }
+.dc-note { color: var(--dc-muted); font-size: 13px; }
+.dc-hist-links { display: inline-flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.dc-hist-link {
+  font-size: 12px; font-weight: 600; color: var(--dc-accent);
+  text-decoration: none; border: 1px solid rgba(79,70,229,.25);
+  padding: 2px 10px; border-radius: 999px; background: var(--dc-card);
+}
+.dc-hist-link:hover { background: rgba(79,70,229,.08); }
+.dc-first {
+  margin: 0 0 22px; padding: 16px 18px; border: 1px solid rgba(79,70,229,.25);
+  border-left: 4px solid var(--dc-accent); border-radius: 12px; background: rgba(79,70,229,.06);
+}
+.dc-first h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: var(--dc-heading); }
+.dc-first p { margin: 0 0 6px; font-size: 14px; color: var(--dc-text); }
+.dc-first .dc-first-url {
+  display: inline-block; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 13px; color: var(--dc-accent); background: var(--dc-card);
+  border: 1px solid var(--dc-border); padding: 4px 10px; border-radius: 6px; word-break: break-all;
+}
+</style><div class="dc-download">
+  <div class="dc-hero">
+    <span class="dc-badge">最新版本 ${version}</span>
+    <h2>DSH Desktop</h2>
+    <p class="dc-sub">企业内网 AI 桌面客户端（DeepSeek Harness），选择你的平台开始下载</p>
+  </div>
+  <div class="dc-first" style="border-color: rgba(14,165,233,.25); border-left-color: #0ea5e9; background: rgba(14,165,233,.05);">
+    <h3>🔗 接入平台 MCP（平台工具 + RAG 知识库检索）</h3>
+    <p>DSH Desktop 通过 MCP 客户端插件（<code>@deepseek-ai/dsh-mcp-client</code>）接入平台 MCP 网关，接入后即可在对话里调用平台内置工具（含 <code>search_knowledge</code> 知识库检索）。</p>
+    <p>在 MCP 客户端插件中新增服务器，传输方式选 <b>Streamable HTTP</b>，地址填：</p>
+    <span class="dc-first-url">192.168.31.117:3100/mcp</span>
+  </div>
+  <div class="dc-grid">${latestCards}</div>
+  <div class="dc-changelog">
+    <h3 class="dc-sec-title">版本历史</h3>
+    <ul class="dc-timeline">${historyItems}</ul>
+  </div>
+</div>`;
+    
+    // 直接更新 Ghost 数据库（在 admin-portal 容器中用 Python + sqlite3）
+    console.log('[ghost-update] Updating Ghost database via Python in admin-portal...');
+    
+    const GHOST_CONTAINER = 'ghost';
+    const localTmpDb = '/tmp/ghost_update.db';
+    const ghostDbPath = '/var/lib/ghost/content/data/ghost.db';
+    
+    // 1. 用 Docker API 从 Ghost 容器复制数据库到 admin-portal
+    const container = docker.getContainer(GHOST_CONTAINER);
+    const dbStream = await container.getArchive({ path: ghostDbPath });
+    const chunks = [];
+    for await (const chunk of dbStream) chunks.push(chunk);
+    const tarBuffer = Buffer.concat(chunks);
+    
+    // 解压 tar
+    const tar = require('tar-stream');
+    const extract = tar.extract();
+    let dbBuffer = null;
+    extract.on('entry', (header, stream, next) => {
+      const dataChunks = [];
+      stream.on('data', d => dataChunks.push(d));
+      stream.on('end', () => { dbBuffer = Buffer.concat(dataChunks); next(); });
+    });
+    extract.end(tarBuffer);
+    await new Promise(resolve => extract.on('finish', resolve));
+    
+    if (!dbBuffer) throw new Error('Failed to extract ghost.db from container');
+    const fs = require('fs');
+    fs.writeFileSync(localTmpDb, dbBuffer);
+    console.log('[ghost-update] Copied ghost.db to local temp');
+    
+    // 2. 用 Python 更新数据库（写临时脚本文件再执行，避免命令行转义问题）
+    const { execSync } = require('child_process');
+    const pyScriptPath = '/tmp/ghost_update.py';
+    const pyScript = `#!/usr/bin/env python3
+import sqlite3, json
+from datetime import datetime, timezone
+
+DB_PATH = '${localTmpDb}'
+SLUG = '${SLUG}'
+VERSION = '${version}'
+
+html = open('/tmp/ghost_html.txt', 'r', encoding='utf-8').read()
+
+lexical = json.dumps({
+    "root": {
+        "children": [{"type": "html", "version": 1, "html": html}],
+        "direction": None, "format": "", "indent": 0, "type": "root", "version": 1
+    }
+})
+
+mobiledoc = json.dumps({
+    "version": "0.3.1", "markups": [], "atoms": [],
+    "cards": [["html", {"html": html}]],
+    "sections": [[10, 0]]
+})
+
+now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+
+db = sqlite3.connect(DB_PATH)
+c = db.cursor()
+c.execute('UPDATE posts SET lexical=?, mobiledoc=?, html=?, updated_at=? WHERE slug=?',
+          (lexical, mobiledoc, html, now, SLUG))
+c.execute('''UPDATE posts_meta SET 
+    meta_title=?, meta_description=?, og_title=?, og_description=?, 
+    twitter_title=?, twitter_description=? 
+    WHERE post_id=(SELECT id FROM posts WHERE slug=?)''',
+    (f'DSH Desktop {VERSION}', f'最新版本 {VERSION} DSH Desktop 企业内网 AI 桌面客户端',
+     f'DSH Desktop {VERSION}', f'最新版本 {VERSION} DSH Desktop 企业内网 AI 桌面客户端',
+     f'DSH Desktop {VERSION}', f'最新版本 {VERSION} DSH Desktop 企业内网 AI 桌面客户端',
+     SLUG))
+db.commit()
+db.close()
+print('OK')
+`;
+    fs.writeFileSync(pyScriptPath, pyScript);
+    fs.writeFileSync('/tmp/ghost_html.txt', newContent);
+    
+    const pyResult = execSync(`python3 ${pyScriptPath}`, { encoding: 'utf8' });
+    console.log('[ghost-update] Python result:', pyResult.trim());
+    
+    // 3. 用 Docker API 把更新后的数据库复制回 Ghost 容器
+    const updatedDb = fs.readFileSync(localTmpDb);
+    const tarPack = tar.pack();
+    tarPack.entry({ name: 'ghost.db' }, updatedDb);
+    tarPack.finalize();
+    const packChunks = [];
+    for await (const chunk of tarPack) packChunks.push(chunk);
+    const newTarBuffer = Buffer.concat(packChunks);
+    
+    await container.putArchive(newTarBuffer, { path: '/var/lib/ghost/content/data' });
+    console.log('[ghost-update] Copied updated ghost.db back to Ghost container');
+    
+    // 4. 重启 Ghost 使更改生效
+    try {
+      await container.restart();
+      console.log('[ghost-update] Ghost restarted successfully');
+    } catch (e) {
+      console.log('[ghost-update] Ghost restart warning:', e.message);
+    }
+    
+    // 清理临时文件
+    try { fs.unlinkSync(localTmpDb); } catch (e) {}
+    
+    res.json({ ok: true, message: `Updated DSH Desktop page to ${version}` });
+  } catch (e) {
+    console.error('[ghost-update] Error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });

@@ -105,7 +105,7 @@
     <div class="nav-group-body">
       <a class="nav-item" data-product="ghost" onclick="loadGhost(this)">📰 <span data-i18n="ghost">Ghost 后台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8090</span></a>
       <a class="nav-item" data-product="dify" onclick="loadDify(this)">🤖 <span data-i18n="dify">Dify AI 平台</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:80</span></a>
-      <a class="nav-item" data-product="gitea" onclick="loadGitea(this)">📦 <span data-i18n="gitea">Gitea 源码管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002</span></a>
+      <a class="nav-item" data-product="gitea" onclick="loadGitea(this)">📦 <span data-i18n="client_sync">客户端软件同步</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3002/:8091</span></a>
       <a class="nav-item" data-product="newapi" onclick="loadNewApi(this)">🔀 <span data-i18n="newapi">NewAPI 管理</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3000</span></a>
       <a class="nav-item" data-product="keycloak" onclick="loadKeycloak(this)">🔐 <span data-i18n="keycloak">Keycloak 认证</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:9090</span></a>
     </div>
@@ -116,7 +116,6 @@
     <div class="nav-group-body">
       <a class="nav-item" data-product="mcp-gateway" onclick="loadMcpGateway(this)">🔌 <span data-i18n="mcp">MCP Gateway</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3100</span></a>
       <a class="nav-item" data-product="litellm" onclick="loadLitellm(this)">🛡️ <span data-i18n="litellm">LiteLLM+PII</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:4001</span></a>
-      <a class="nav-item" data-product="update-server" onclick="loadUpdate(this)">⬇️ <span data-i18n="update">更新服务器</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:8091</span></a>
     </div>
   </div>
 
@@ -174,7 +173,8 @@ const API = '/api';
   window.fetch = async function (...args) {
     const resp = await _f(...args);
     if (resp && resp.redirected && resp.url && /openid-connect\/auth/.test(resp.url)) {
-      window.location.replace('/');
+      // 清除URL参数，防止iss参数累积
+      window.location.replace(window.location.pathname);
       throw new Error('unauthorized');
     }
     return resp;
@@ -203,7 +203,7 @@ function toggleTheme() {
 
 const I18N = {
   zh: {
-    brand: 'AI 管理中心', dashboard: '总览仪表板', ghost: 'Ghost 后台', dify: 'Dify AI 平台', gitea: 'Gitea 源码管理',
+    brand: 'AI 管理中心', dashboard: '总览仪表板', ghost: 'Ghost 后台', dify: 'Dify AI 平台', gitea: '客户端软件同步',
     group_apps: '产品应用', group_ai: 'AI 网关与集成', group_ops: '系统运维', group_admin: '系统管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 认证', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新服务器',
     auth: '集中认证', admins: '管理员管理', settings: '系统设置', logout: '退出登录', not_admin_title: '你不是管理员', not_admin_desc: '该账号没有平台管理员权限，无法使用本系统。', not_admin_hint: '如需访问，请联系全局管理员（ai_all_in_one_admin）为你分配权限。', not_admin_ok: '确定',
@@ -257,7 +257,7 @@ const I18N = {
     env_config: '环境变量配置', env_desc: '所有配置通过 .env 文件或 docker-compose.yml 的 environment 传入。修改后需重启容器生效。',
     product_urls: '产品入口 URL', prod_note: '生产环境请将以上 URL 替换为实际域名（参见 docker-deploy-guide.html）。',
     open_admin: '打开后台 ↗', open_hint: '点击进入对应产品的管理后台进行详细配置', overview_fail: '无法获取数据：',
-    open_ghost: '打开 Ghost 后台', open_dify: '打开 Dify 平台', open_gitea: '打开 Gitea', open_keycloak: '打开 Keycloak 后台', open_sso_hint: '提示：打开后可能不是当前账号',
+    open_ghost: '打开 Ghost 后台', open_dify: '打开 Dify 平台', open_gitea: '打开 Gitea', open_update_server: '打开更新服务器', open_keycloak: '打开 Keycloak 后台', open_sso_hint: '提示：打开后可能不是当前账号',
     ghost_posts: '文章', ghost_pages: '页面', ghost_members: '订阅者', ghost_tags: '标签', ghost_logging_in: '正在免登录进入，稍候…', ghost_login_fail: 'Ghost 免登录失败：',
     dify_apps: '应用', dify_workspaces: '工作空间', dify_version: '版本',
     gitea_repos: '仓库', gitea_users: '用户', gitea_orgs: '组织', gitea_issues: '工单', gitea_version: '版本',
@@ -324,6 +324,10 @@ const I18N = {
     sync_fail_reason: '失败原因', litellm_new_model: '新建模型',
     gitea_sync_trigger: '手动触发同步', gitea_sync_triggered: '已触发，正在后台执行', gitea_schedule: '自动同步计划', gitea_cron: 'cron 表达式', gitea_schedule_save: '保存', gitea_schedule_saved: '已保存', gitea_schedule_hint: '定时表达式：分 时 日 月 周（UTC 时间）。预设选项可直接选，也可自定义。',
     gitea_sync_targets: '同步平台与架构', gitea_keep_releases: '保留版本数', gitea_versions: '已同步版本', gitea_delete_version: '删除', gitea_config_saved: '已保存', gitea_no_versions: '暂无已同步版本', gitea_delete_confirm: '确定删除版本', gitea_sync_history: '同步历史', gitea_no_history: '暂无同步历史', gitea_hist_sync: '同步', gitea_hist_rebuild: '重建页面', gitea_hist_delete: '删除版本',
+    gitea_workflow_management: '工作流管理', gitea_timeout_settings: '超时设置', gitea_timeout_minutes: '超时时间（分钟）', gitea_auto_cleanup: '自动清理超时任务', gitea_cleanup_interval: '清理检查间隔', gitea_minutes_unit: '分钟', gitea_save_settings: '保存设置', gitea_runner_management: 'Runner 管理', gitea_restart_runner: '重启 Runner', gitea_cleanup_timeout: '清理超时任务', gitea_workflow_runs: '工作流运行记录', gitea_cancel_run: '取消', gitea_run_timeout: '已超时', gitea_run_running: '运行中', gitea_run_completed: '已完成', gitea_run_queued: '排队中', gitea_run_cancelled: '已取消', gitea_no_runs: '暂无工作流运行记录', gitea_settings_saved: '设置已保存', gitea_runner_restarted: 'Runner 已重启', gitea_cleanup_done: '清理完成',
+    client_sync: '客户端软件同步', client_sync_about: '管理 DSH Desktop 客户端的自动同步任务和安装包分发。包含 Gitea 源码管理、同步任务调度和更新服务器功能。',
+    update_server_info: '更新服务器信息', gitea_tab_execute: '执行同步计划', gitea_tab_settings: '同步设置',
+    gitea_execution_logs: '执行日志', gitea_toggle_logs: '展开/收起', gitea_clear_logs: '清空日志', gitea_copy_logs: '复制日志', gitea_logs_copied: '已复制', gitea_no_logs: '暂无日志', gitea_loading_logs: '加载日志中...', gitea_load_logs_error: '加载日志失败', gitea_detailed_logs: '详细日志', gitea_select_task: '选择任务', gitea_started_at: '启动时间', gitea_elapsed_time: '已执行时间', gitea_force_stop: '强制关闭', gitea_force_stop_confirm: '确定要强制关闭当前同步任务吗？', gitea_force_stopped: '已强制关闭', gitea_stopping: '关闭中...',
     pii: 'PII 脱敏', logs: '统一日志', backup: '备份与恢复', availability: '可用性测试',
     avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DSH Desktop/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
     presidio_state: '状态', pii_up: '正常', pii_down: '异常',
@@ -344,7 +348,7 @@ const I18N = {
     report_retention_save: '保存', report_retention_saved: '已保存，清理了 {n} 份过期报告', report_retention_count_text: '保留最近 {n} 份', report_retention_days_text: '保留最近 {n} 天',
   },
   en: {
-    brand: 'AI Admin Center', dashboard: 'Dashboard', ghost: 'Ghost Admin', dify: 'Dify AI Platform', gitea: 'Gitea Source',
+    brand: 'AI Admin Center', dashboard: 'Dashboard', ghost: 'Ghost Admin', dify: 'Dify AI Platform', gitea: 'Client Software Sync',
     group_apps: 'Applications', group_ai: 'AI Gateway & Integrations', group_ops: 'Operations', group_admin: 'System Admin',
     newapi: 'NewAPI', keycloak: 'Keycloak', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: 'Update Server',
     auth: 'Central Auth', admins: 'Admins', settings: 'Settings', logout: 'Log out', not_admin_title: 'You are not an administrator', not_admin_desc: 'This account has no platform admin privileges and cannot use this system.', not_admin_hint: 'Contact the global admin (ai_all_in_one_admin) to grant you access.', not_admin_ok: 'OK',
@@ -398,7 +402,7 @@ const I18N = {
     env_config: 'Environment Variables', env_desc: 'All config is passed via .env or docker-compose.yml environment. Restart the container after changes.',
     product_urls: 'Product URLs', prod_note: 'For production, replace these URLs with your actual domain (see docker-deploy-guide.html).',
     open_admin: 'Open Admin ↗', open_hint: 'Click to open the product admin console for detailed configuration', overview_fail: 'Failed to load: ',
-    open_ghost: 'Open Ghost Admin', open_dify: 'Open Dify', open_gitea: 'Open Gitea', open_keycloak: 'Open Keycloak', open_sso_hint: 'Note: may open with a different account',
+    open_ghost: 'Open Ghost Admin', open_dify: 'Open Dify', open_gitea: 'Open Gitea', open_update_server: 'Open Update Server', open_keycloak: 'Open Keycloak', open_sso_hint: 'Note: may open with a different account',
     ghost_posts: 'Posts', ghost_pages: 'Pages', ghost_members: 'Members', ghost_tags: 'Tags', ghost_logging_in: 'Signing in automatically…', ghost_login_fail: 'Ghost auto sign-in failed: ',
     dify_apps: 'Apps', dify_workspaces: 'Workspaces', dify_version: 'Version',
     gitea_repos: 'Repos', gitea_users: 'Users', gitea_orgs: 'Orgs', gitea_issues: 'Issues', gitea_version: 'Version',
@@ -465,6 +469,10 @@ const I18N = {
     sync_fail_reason: 'Failure Reason', litellm_new_model: 'Add Model',
     gitea_sync_trigger: 'Trigger Sync', gitea_sync_triggered: 'Triggered, running in background', gitea_schedule: 'Sync Schedule', gitea_cron: 'Cron expression', gitea_schedule_save: 'Save', gitea_schedule_saved: 'Saved', gitea_schedule_hint: 'Schedule: min hour day month weekday (UTC). Pick a preset or enter a custom expression.',
     gitea_sync_targets: 'Sync Targets', gitea_keep_releases: 'Keep Releases', gitea_versions: 'Synced Versions', gitea_delete_version: 'Delete', gitea_config_saved: 'Saved', gitea_no_versions: 'No versions synced yet', gitea_delete_confirm: 'Delete version', gitea_sync_history: 'Sync History', gitea_no_history: 'No sync history yet', gitea_hist_sync: 'Sync', gitea_hist_rebuild: 'Rebuild page', gitea_hist_delete: 'Delete version',
+    gitea_workflow_management: 'Workflow Management', gitea_timeout_settings: 'Timeout Settings', gitea_timeout_minutes: 'Timeout (minutes)', gitea_auto_cleanup: 'Auto cleanup timeout tasks', gitea_cleanup_interval: 'Cleanup check interval', gitea_minutes_unit: 'minutes', gitea_save_settings: 'Save Settings', gitea_runner_management: 'Runner Management', gitea_restart_runner: 'Restart Runner', gitea_cleanup_timeout: 'Cleanup Timeout Tasks', gitea_workflow_runs: 'Workflow Runs', gitea_cancel_run: 'Cancel', gitea_run_timeout: 'Timeout', gitea_run_running: 'Running', gitea_run_completed: 'Completed', gitea_run_queued: 'Queued', gitea_run_cancelled: 'Cancelled', gitea_no_runs: 'No workflow runs yet', gitea_settings_saved: 'Settings saved', gitea_runner_restarted: 'Runner restarted', gitea_cleanup_done: 'Cleanup done',
+    client_sync: 'Client Software Sync', client_sync_about: 'Manage DSH Desktop client auto-sync tasks and installer distribution. Includes Gitea source management, sync task scheduling, and update server functionality.',
+    update_server_info: 'Update Server Info', gitea_tab_execute: 'Execute Sync Plan', gitea_tab_settings: 'Sync Settings',
+    gitea_execution_logs: 'Execution Logs', gitea_toggle_logs: 'Toggle Logs', gitea_clear_logs: 'Clear Logs', gitea_copy_logs: 'Copy Logs', gitea_logs_copied: 'Copied', gitea_no_logs: 'No logs available', gitea_loading_logs: 'Loading logs...', gitea_load_logs_error: 'Failed to load logs', gitea_detailed_logs: 'Detailed Logs', gitea_select_task: 'Select Task', gitea_started_at: 'Started At', gitea_elapsed_time: 'Elapsed Time', gitea_force_stop: 'Force Stop', gitea_force_stop_confirm: 'Are you sure you want to force stop the current sync?', gitea_force_stopped: 'Force stopped', gitea_stopping: 'Stopping...',
     pii: 'PII Redaction', logs: 'Unified Logs', backup: 'Backup & Restore', availability: 'Availability Test',
     avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DSH Desktop/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
     presidio_state: 'State', pii_up: 'Up', pii_down: 'Down',
@@ -485,7 +493,7 @@ const I18N = {
     report_retention_save: 'Save', report_retention_saved: 'Saved, pruned {n} expired report(s)', report_retention_count_text: 'Keep last {n} reports', report_retention_days_text: 'Keep reports from last {n} days',
   },
   "zh-TW": {
-    brand: 'AI 管理中心', dashboard: '總覽儀表板', ghost: 'Ghost 後台', dify: 'Dify AI 平台', gitea: 'Gitea 原始碼管理',
+    brand: 'AI 管理中心', dashboard: '總覽儀表板', ghost: 'Ghost 後台', dify: 'Dify AI 平台', gitea: '客戶端軟體同步',
     group_apps: '產品應用', group_ai: 'AI 閘道與整合', group_ops: '系統維運', group_admin: '系統管理',
     newapi: 'NewAPI 管理', keycloak: 'Keycloak 認證', mcp: 'MCP Gateway', litellm: 'LiteLLM+PII', update: '更新伺服器',
     auth: '集中認證', admins: '管理員管理', settings: '系統設定', logout: '登出', not_admin_title: '你不是管理員', not_admin_desc: '該帳號沒有平台管理員權限，無法使用本系統。', not_admin_hint: '如需存取，請聯絡全域管理員（ai_all_in_one_admin）為你指派權限。', not_admin_ok: '確定',
@@ -3338,35 +3346,74 @@ function giteaPhaseInfo(p) {
   if (p.phase === 'partial') return { text: t('sync_failed') + '(' + (p.detail || '') + ')', color: 'var(--red)' };
   return null;
 }
-function giteaSyncCard(s, p) {
-  if (!s) return '';
-  const running = !s.conclusion;
+function giteaSyncCard(s, p, runs) {
+  if (!s && (!runs || runs.length === 0)) return '';
+  const currentRun = s || (runs && runs[0]) || null;
+  const running = currentRun && !currentRun.conclusion && currentRun.status !== 'queued';
+  const queued = currentRun && currentRun.status === 'queued';
   const STALE_PHASES = ['no_change', 'done', 'partial'];
   const info = giteaPhaseInfo(p);
   const stale = running && p && STALE_PHASES.includes(p.phase);
   let statusTxt, statusColor;
-  if (stale) {
+  if (queued) {
+    statusTxt = t('gitea_run_queued'); statusColor = 'var(--yellow)';
+  } else if (stale) {
     statusTxt = t('sync_phase_start'); statusColor = 'var(--yellow)';
   } else if (info) {
     statusTxt = info.text; statusColor = info.color;
   } else if (running) {
     statusTxt = t('sync_phase_start'); statusColor = 'var(--yellow)';
+  } else if (currentRun) {
+    statusTxt = currentRun.conclusion === 'success' ? t('sync_success') : t('sync_failed');
+    statusColor = currentRun.conclusion === 'success' ? 'var(--green)' : 'var(--red)';
   } else {
-    statusTxt = s.conclusion === 'success' ? t('sync_success') : t('sync_failed');
-    statusColor = s.conclusion === 'success' ? 'var(--green)' : 'var(--red)';
+    statusTxt = '—'; statusColor = 'var(--textdim)';
   }
-  const done = running ? t('sync_phase_start') : (s.completed_at ? new Date(s.completed_at).toLocaleString() : '—');
+  
+  // 计算已执行时间
+  const elapsed = currentRun && currentRun.elapsed_seconds ? currentRun.elapsed_seconds : null;
+  const elapsedStr = elapsed ? `${Math.floor(elapsed/60)}m${elapsed%60}s` : '—';
+  
+  // 构建任务选择器
+  const runOptions = (runs || []).map(r => {
+    const statusIcon = r.conclusion === 'success' ? '✅' : (r.conclusion === 'failure' ? '❌' : (r.status === 'queued' ? '⏳' : '🔄'));
+    const label = `#${r.run_number || r.id} ${statusIcon} ${r.display_title || 'sync'}`;
+    const selected = currentRun && currentRun.id === r.id ? ' selected' : '';
+    return `<option value="${r.id}"${selected}>${label}</option>`;
+  }).join('');
+  
   return `<div class="card" id="giteaSyncCard"><h3>🔄 ${t('sync_last_run')} <span class="admin-badge">dsh-sync</span>
       <button class="gitea-sync-refresh" onclick="giteaSyncRefresh()" style="float:right;background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78em;font-weight:600">↻ ${t('refresh')}</button>
     </h3>
+    ${runs && runs.length > 1 ? `<div style="margin-bottom:12px">
+      <label style="font-size:0.85em;color:var(--textdim);margin-right:8px">${t('gitea_select_task')}:</label>
+      <select id="giteaRunSelect" onchange="giteaSelectRun(this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:0.85em;max-width:400px">
+        ${runOptions}
+      </select>
+    </div>` : ''}
     <table>
       <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
-      <tr><td>${t('last_updated')}</td><td>${done}</td></tr>
-      ${s.conclusion === 'failure' && s.failure_reason ? `<tr><td>${t('sync_fail_reason')}</td><td style="color:var(--red)">${s.failure_reason}</td></tr>` : ''}
+      <tr><td>${t('gitea_started_at')}</td><td>${currentRun && currentRun.started_at ? new Date(currentRun.started_at).toLocaleString() : '—'}</td></tr>
+      <tr><td>${t('gitea_elapsed_time')}</td><td>${elapsedStr}</td></tr>
+      ${currentRun && currentRun.conclusion === 'failure' && currentRun.failure_reason ? `<tr><td>${t('sync_fail_reason')}</td><td style="color:var(--red)">${currentRun.failure_reason}</td></tr>` : ''}
     </table>
     ${giteaProgressHtml(p)}
     <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--panel2);font-size:0.82em;color:var(--textdim)">
       ${t('sync_refresh_interval')}: <input id="giteaSyncInterval" type="number" min="3" max="120" value="${getSyncRefreshSec()}" onchange="setSyncRefreshSec(this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:2px 8px;border-radius:6px;width:60px"> ${t('sync_sec_unit')} · ${t('sync_refresh_hint')}
+    </div>
+    <div style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h4 style="margin:0;font-size:0.85em;color:var(--textstrong)">${t('gitea_execution_logs')}</h4>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${currentRun && currentRun.id ? `<a href="${P('gitea')}/ai_all_in_one_admin/dsh-sync/actions/runs/${currentRun.id}" target="_blank" style="font-size:0.78em;color:var(--accent);text-decoration:none">📋 ${t('gitea_detailed_logs')}</a>` : ''}
+          <button onclick="giteaCopyLogs()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.78em">📋 ${t('gitea_copy_logs')}</button>
+          <button onclick="giteaToggleLogs()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('gitea_toggle_logs')}</button>
+          <button onclick="giteaClearLogs()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('gitea_clear_logs')}</button>
+        </div>
+      </div>
+      <div id="giteaLogsContainer" style="display:block;max-height:150px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;font-size:0.8em;line-height:1.4">
+        <div id="giteaLogsContent">${t('gitea_no_logs')}</div>
+      </div>
     </div>
   </div>`;
 }
@@ -3378,9 +3425,16 @@ async function giteaSyncRefresh() {
   try {
     const d = await (await fetch(API + '/gitea/overview')).json();
     const s = d.sync_last_run;
-    const card = giteaSyncCard(s, d.sync_progress);
+    const runs = d.sync_runs || [];
+    const card = giteaSyncCard(s, d.sync_progress, runs);
     if (card) el.outerHTML = card;
     updateSyncTriggerBtn(!!(s && !s.conclusion));
+    
+    // 加载日志（如果有运行中的任务）
+    if (s && s.id) {
+      giteaLoadLogs(s.id);
+    }
+    
     if (s && !s.conclusion) {
       clearTimeout(_giteaSyncTimer);
       _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
@@ -3390,98 +3444,302 @@ async function giteaSyncRefresh() {
   }
 }
 function updateSyncTriggerBtn(running) {
-  const btn = document.getElementById('giteaSyncTriggerBtn');
-  if (!btn) return;
-  btn.disabled = !!running;
-  btn.style.opacity = running ? '0.5' : '1';
-  btn.style.cursor = running ? 'not-allowed' : 'pointer';
+  const triggerBtn = document.getElementById('giteaSyncTriggerBtn');
+  const stopBtn = document.getElementById('giteaForceStopBtn');
+  if (triggerBtn) {
+    triggerBtn.disabled = !!running;
+    triggerBtn.style.opacity = running ? '0.5' : '1';
+    triggerBtn.style.cursor = running ? 'not-allowed' : 'pointer';
+  }
+  if (stopBtn) {
+    stopBtn.style.display = running ? 'inline-block' : 'none';
+  }
+}
+
+// 日志相关函数
+function giteaToggleLogs() {
+  const container = document.getElementById('giteaLogsContainer');
+  if (container) {
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function giteaClearLogs() {
+  const content = document.getElementById('giteaLogsContent');
+  if (content) {
+    content.innerHTML = t('gitea_no_logs');
+  }
+}
+
+function giteaCopyLogs() {
+  const container = document.getElementById('giteaLogsContainer');
+  if (!container) return;
+  const text = container.innerText || container.textContent;
+  if (!text || text === t('gitea_no_logs')) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const msg = document.getElementById('giteaRunnerStatus');
+    if (msg) { msg.textContent = t('gitea_logs_copied'); msg.style.color = 'var(--green)'; setTimeout(() => { msg.textContent = ''; }, 2000); }
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    const msg = document.getElementById('giteaRunnerStatus');
+    if (msg) { msg.textContent = t('gitea_logs_copied'); msg.style.color = 'var(--green)'; setTimeout(() => { msg.textContent = ''; }, 2000); }
+  });
+}
+
+async function giteaSelectRun(runId) {
+  if (!runId) return;
+  const content = document.getElementById('giteaLogsContent');
+  if (content) {
+    content.innerHTML = `<div style="color:var(--textdim)">${t('gitea_loading_logs')}</div>`;
+  }
+  try {
+    // 获取选中的运行详情
+    const d = await (await fetch(API + '/gitea/overview')).json();
+    const runs = d.sync_runs || [];
+    const selectedRun = runs.find(r => r.id == runId) || null;
+    
+    if (selectedRun) {
+      // 更新状态显示
+      const statusEl = document.querySelector('#giteaSyncCard table tr:first-child td:last-child');
+      const startedEl = document.querySelector('#giteaSyncCard table tr:nth-child(2) td:last-child');
+      const elapsedEl = document.querySelector('#giteaSyncCard table tr:nth-child(3) td:last-child');
+      
+      if (statusEl) {
+        let statusTxt, statusColor;
+        if (selectedRun.status === 'queued') {
+          statusTxt = t('gitea_run_queued'); statusColor = 'var(--yellow)';
+        } else if (!selectedRun.conclusion) {
+          statusTxt = t('sync_phase_start'); statusColor = 'var(--yellow)';
+        } else {
+          statusTxt = selectedRun.conclusion === 'success' ? t('sync_success') : t('sync_failed');
+          statusColor = selectedRun.conclusion === 'success' ? 'var(--green)' : 'var(--red)';
+        }
+        statusEl.textContent = statusTxt;
+        statusEl.style.color = statusColor;
+      }
+      
+      if (startedEl && selectedRun.started_at) {
+        startedEl.textContent = new Date(selectedRun.started_at).toLocaleString();
+      }
+      
+      if (elapsedEl && selectedRun.elapsed_seconds) {
+        elapsedEl.textContent = `${Math.floor(selectedRun.elapsed_seconds/60)}m${selectedRun.elapsed_seconds%60}s`;
+      }
+      
+      // 加载选中运行的日志
+      giteaLoadLogs(runId);
+    }
+  } catch (e) {
+    console.error('Failed to select run:', e);
+  }
+}
+
+async function giteaLoadLogs(runId) {
+  if (!runId) return;
+  
+  const content = document.getElementById('giteaLogsContent');
+  if (!content) return;
+  
+  try {
+    content.innerHTML = `<div style="color:var(--textdim)">${t('gitea_loading_logs')}</div>`;
+    
+    const response = await fetch(API + `/gitea/workflow/runs/${runId}/logs`);
+    const data = await response.json();
+    
+    if (data.error) {
+      content.innerHTML = `<div style="color:var(--red)">${data.error}</div>`;
+      return;
+    }
+    
+    const logs = data.logs || [];
+    if (logs.length === 0) {
+      content.innerHTML = `<div style="color:var(--textdim)">${t('gitea_no_logs')}</div>`;
+      return;
+    }
+    
+    // 只显示关键日志行（过滤掉Docker下载进度等详细信息）
+    let html = '';
+    for (const log of logs) {
+      const logLines = (log.log || '').split('\n');
+      const filteredLines = logLines.filter(line => {
+        // 过滤掉Docker下载进度行
+        if (line.includes('Downloading ::') || line.includes('Download complete ::')) {
+          return false;
+        }
+        // 保留关键信息行
+        return line.trim().length > 0;
+      }).slice(-20); // 只保留最后20行
+      
+      html += `<div style="margin-bottom:8px;border-bottom:1px solid var(--panel2);padding-bottom:8px">
+        <div style="font-weight:600;margin-bottom:4px">${log.jobName || 'Job ' + log.jobId}</div>
+        <pre style="margin:0;white-space:pre-wrap;word-break:break-all">${filteredLines.join('\n') || t('gitea_no_logs')}</pre>
+      </div>`;
+    }
+    
+    content.innerHTML = html;
+    
+    // 自动滚动到底部
+    const container = document.getElementById('giteaLogsContainer');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  } catch (e) {
+    content.innerHTML = `<div style="color:var(--red)">${t('gitea_load_logs_error')}: ${e.message}</div>`;
+  }
 }
 
 async function loadGitea(el) {
   setActive(el);
   const url = P('gitea') + '/user/login';
   const openUrl = '/api/gitea/open'; // 强制清旧会话 + 走 SSO，保证打开的是当前账号
-  const title = t('gitea');
+  const title = t('client_sync'); // 改名为"客户端软件同步"
   document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
   try {
-    const d = await (await fetch(API + '/gitea/overview')).json();
-    if (d.error) throw new Error(d.error);
-    // 仓库列表
-    const repos = d.repos_list || [];
-    const reposTable = pagedTable('gitea_repos', repos, `<tr><th>${t('name')}</th><th>${t('repo_desc')}</th><th>${t('repo_lang')}</th><th>${t('size')}</th><th>${t('repo_updated')}</th></tr>`, r => {
-      const isSync = (r.name || '').includes('dsh-sync');
-      const sizeTxt = r.size_kb >= 1024 ? (r.size_kb / 1024).toFixed(1) + ' MB' : r.size_kb + ' KB';
-      const upd = r.updated_at ? new Date(r.updated_at).toLocaleString() : '—';
-      return `<tr>
-        <td>${r.html_url ? `<a class="ext-link" href="${r.html_url}" target="_blank"><code>${r.name || '—'}</code></a>` : `<code>${r.name || '—'}</code>`}${isSync ? ' <span class="admin-badge">sync</span>' : ''}</td>
-        <td style="color:var(--textdim)">${r.description || '—'}</td>
-        <td>${r.language || '—'}</td>
-        <td>${sizeTxt}</td>
-        <td>${upd}</td>
-      </tr>`;
-    });
+    // 获取Gitea数据
+    const giteaData = await fetch(API + '/gitea/overview').then(r => r.json());
+    
+    if (giteaData.error) throw new Error(giteaData.error);
+    
     // dsh-sync 上次执行
-    const syncHtml = giteaSyncCard(d.sync_last_run, d.sync_progress);
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1>${openAdminBtn(openUrl, t('open_gitea'), t('open_sso_hint'))}</div>`
-      + aboutCard(t('gitea_about'))
-      + metricsCard([
-        { value: d.repos ?? '—', label: t('gitea_repos') },
-        { value: d.users ?? '—', label: t('gitea_users') },
-        { value: d.orgs ?? '—', label: t('gitea_orgs') },
-        { value: d.issues ?? '—', label: t('gitea_issues') },
-      ])
-      + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">${t('repos_list')}（${repos.length}）</p>
-        ${repos.length === 0 ? `<p class="loading">${t('no_repos')}</p>` : reposTable}`, t('repos_list'))
-      + syncHtml
-      + `<div class="card"><h3>🔧 ${t('gitea_sync_trigger')}</h3>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">▶️ ${t('gitea_sync_trigger')}</button>
-            <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.85em"></span>
+    const syncHtml = giteaSyncCard(giteaData.sync_last_run, giteaData.sync_progress, giteaData.sync_runs);
+    
+    // Tab切换HTML
+    const tabHtml = `
+      <div class="card">
+        <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:16px">
+          <button class="gitea-tab active" onclick="switchGiteaTab('execute')" style="background:none;border:none;padding:8px 16px;cursor:pointer;font-weight:600;color:var(--textstrong);border-bottom:2px solid var(--accent)">${t('gitea_tab_execute')}</button>
+          <button class="gitea-tab" onclick="switchGiteaTab('settings')" style="background:none;border:none;padding:8px 16px;cursor:pointer;font-weight:600;color:var(--textdim)">${t('gitea_tab_settings')}</button>
+        </div>
+        
+        <!-- 执行同步计划 Tab -->
+        <div id="giteaTabExecute" class="gitea-tab-content">
+          <div style="margin-bottom:16px">
+            <h3 style="margin:0 0 12px;color:var(--textstrong)">📜 ${t('gitea_versions')}</h3>
+            <div id="giteaVersions"><p class="loading">${t('loading')}</p></div>
           </div>
-        </div>`
-      + `<div class="card"><h3>⏰ ${t('gitea_schedule')}</h3>
-          <p style="color:var(--textdim);font-size:0.85em;margin:0 0 10px">${t('gitea_schedule_hint')}</p>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <select id="giteaCronSelect" onchange="giteaCronSelectChange()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:0.88em">
-              <option value="0 2 * * *">每天 02:00 (UTC)</option>
-              <option value="0 */12 * * *">每 12 小时</option>
-              <option value="0 */6 * * *">每 6 小时</option>
-              <option value="0 */3 * * *">每 3 小时</option>
-              <option value="0 * * * *">每小时</option>
-              <option value="30 2 * * 1">每周一 02:30 (UTC)</option>
-              <option value="__custom__">${t('gitea_cron')}…</option>
-            </select>
-            <input id="giteaCronInput" placeholder="分 时 日 月 周" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:0.88em;width:150px">
-            <button onclick="giteaSyncSaveSchedule()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">${t('gitea_schedule_save')}</button>
-            <span id="giteaScheduleMsg" style="color:var(--textdim);font-size:0.85em"></span>
+          ${syncHtml}
+          <div style="margin-top:16px">
+            <h3 style="margin:0 0 12px;color:var(--textstrong)">🔧 ${t('gitea_sync_trigger')}</h3>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">▶️ ${t('gitea_sync_trigger')}</button>
+              <button id="giteaForceStopBtn" onclick="giteaForceStop()" style="background:var(--red);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em;display:none">⏹ ${t('gitea_force_stop')}</button>
+              <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.85em"></span>
+              <span id="giteaRunnerStatus" style="font-size:0.85em;color:var(--textdim)"></span>
+            </div>
           </div>
-        </div>`
-      + `<div class="card"><h3>📦 ${t('gitea_sync_targets')}</h3>
-          <div id="giteaTargets" style="display:flex;gap:14px;flex-wrap:wrap"></div>
-          <div style="display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap">
-            <span style="color:var(--textdim);font-size:0.85em">${t('gitea_keep_releases')}</span>
-            <input id="giteaKeepReleases" type="number" min="1" max="20" value="3" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:0.88em;width:70px">
-            <button onclick="giteaSaveConfig()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">${t('gitea_schedule_save')}</button>
-            <span id="giteaConfigMsg" style="color:var(--textdim);font-size:0.85em"></span>
+          <div style="margin-top:16px">
+            <h3 style="margin:0 0 12px;color:var(--textstrong)">📋 ${t('gitea_sync_history')}</h3>
+            <div id="giteaHistory"><p class="loading">${t('loading')}</p></div>
           </div>
-        </div>`
-      + `<div class="card"><h3>📜 ${t('gitea_versions')}</h3>
-          <div id="giteaVersions"><p class="loading">${t('loading')}</p></div>
-        </div>`
-      + `<div class="card"><h3>📋 ${t('gitea_sync_history')}</h3>
-          <div id="giteaHistory"><p class="loading">${t('loading')}</p></div>
-        </div>`;
+        </div>
+        
+        <!-- 同步设置 Tab -->
+        <div id="giteaTabSettings" class="gitea-tab-content" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div>
+              <h3 style="margin:0 0 12px;color:var(--textstrong)">⏰ ${t('gitea_schedule')}</h3>
+              <p style="color:var(--textdim);font-size:0.85em;margin:0 0 10px">${t('gitea_schedule_hint')}</p>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <select id="giteaCronSelect" onchange="giteaCronSelectChange()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:0.88em">
+                  <option value="0 2 * * *">每天 02:00 (UTC)</option>
+                  <option value="0 */12 * * *">每 12 小时</option>
+                  <option value="0 */6 * * *">每 6 小时</option>
+                  <option value="0 */3 * * *">每 3 小时</option>
+                  <option value="0 * * * *">每小时</option>
+                  <option value="30 2 * * 1">每周一 02:30 (UTC)</option>
+                  <option value="__custom__">${t('gitea_cron')}…</option>
+                </select>
+                <input id="giteaCronInput" placeholder="分 时 日 月 周" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:0.88em;width:150px">
+                <button onclick="giteaSyncSaveSchedule()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">${t('gitea_schedule_save')}</button>
+                <span id="giteaScheduleMsg" style="color:var(--textdim);font-size:0.85em"></span>
+              </div>
+            </div>
+            <div>
+              <h3 style="margin:0 0 12px;color:var(--textstrong)">📦 ${t('gitea_sync_targets')}</h3>
+              <div id="giteaTargets" style="display:flex;gap:14px;flex-wrap:wrap"></div>
+              <div style="display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap">
+                <span style="color:var(--textdim);font-size:0.85em">${t('gitea_keep_releases')}</span>
+                <input id="giteaKeepReleases" type="number" min="1" max="20" value="3" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:0.88em;width:70px">
+                <button onclick="giteaSaveConfig()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">${t('gitea_schedule_save')}</button>
+                <span id="giteaConfigMsg" style="color:var(--textdim);font-size:0.85em"></span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:24px">
+            <h3 style="margin:0 0 12px;color:var(--textstrong)">⚙️ ${t('gitea_timeout_settings')}</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:400px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.88em">
+                <span style="min-width:100px">${t('gitea_timeout_minutes')}:</span>
+                <input id="giteaTimeoutMinutes" type="number" min="1" max="1440" value="30" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;width:80px">
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.88em">
+                <input id="giteaAutoCleanup" type="checkbox" checked style="accent-color:var(--accent)">
+                <span>${t('gitea_auto_cleanup')}</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.88em">
+                <span style="min-width:100px">${t('gitea_cleanup_interval')}:</span>
+                <input id="giteaCleanupInterval" type="number" min="1" max="60" value="5" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;width:80px">
+                <span style="color:var(--textdim)">${t('gitea_minutes_unit')}</span>
+              </label>
+              <button onclick="giteaSaveWorkflowSettings()" style="background:var(--accentbtn);color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em;align-self:flex-start">${t('gitea_save_settings')}</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    
+    document.getElementById('main').innerHTML = `<div class="topbar"><h1>📦 ${title}</h1><span class="open-btn-wrap">${openAdminBtn(openUrl, t('open_gitea'), t('open_sso_hint'))}${openAdminBtn(P('update') + '/dsh/', t('open_update_server'))}</span></div>`
+      + aboutCard(t('client_sync_about'))
+      + tabHtml;
+    
+    // 加载数据
     giteaLoadSchedule();
     giteaLoadConfig();
     giteaLoadVersions();
     giteaLoadHistory();
-    updateSyncTriggerBtn(!!(d.sync_last_run && !d.sync_last_run.conclusion));
-    if (d.sync_last_run && !d.sync_last_run.conclusion) {
+    giteaLoadWorkflowSettings();
+    
+    // 加载日志（如果有运行中的任务）
+    if (giteaData.sync_last_run && giteaData.sync_last_run.id) {
+      giteaLoadLogs(giteaData.sync_last_run.id);
+    }
+    
+    updateSyncTriggerBtn(!!(giteaData.sync_last_run && !giteaData.sync_last_run.conclusion));
+    if (giteaData.sync_last_run && !giteaData.sync_last_run.conclusion) {
       clearTimeout(_giteaSyncTimer);
       _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
     }
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📦', title, openUrl, e.message, t('open_gitea'));
+  }
+}
+
+// Tab切换函数
+function switchGiteaTab(tabName) {
+  // 隐藏所有Tab内容
+  document.querySelectorAll('.gitea-tab-content').forEach(el => {
+    el.style.display = 'none';
+  });
+  // 移除所有Tab的active状态
+  document.querySelectorAll('.gitea-tab').forEach(el => {
+    el.classList.remove('active');
+    el.style.color = 'var(--textdim)';
+    el.style.borderBottom = 'none';
+  });
+  
+  // 显示选中的Tab内容
+  const tabContent = document.getElementById(`giteaTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+  if (tabContent) {
+    tabContent.style.display = 'block';
+  }
+  
+  // 设置选中Tab的样式
+  const tabButton = document.querySelector(`.gitea-tab[onclick="switchGiteaTab('${tabName}')"]`);
+  if (tabButton) {
+    tabButton.classList.add('active');
+    tabButton.style.color = 'var(--textstrong)';
+    tabButton.style.borderBottom = '2px solid var(--accent)';
   }
 }
 
@@ -3496,6 +3754,159 @@ async function giteaSyncTrigger() {
     if (r.ok && d.ok) {
       if (msg) { msg.textContent = t('gitea_sync_triggered'); msg.style.color = 'var(--green)'; }
       setTimeout(() => loadGitea(), 2000);
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
+async function giteaForceStop() {
+  if (!confirm(t('gitea_force_stop_confirm'))) return;
+  const btn = document.getElementById('giteaForceStopBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏹ ' + t('gitea_stopping'); }
+  const msg = document.getElementById('giteaSyncMsg');
+  try {
+    const r = await fetch(API + '/gitea/sync/force-stop', { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = d.message || t('gitea_force_stopped'); msg.style.color = 'var(--green)'; }
+      setTimeout(() => loadGitea(), 1000);
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⏹ ' + t('gitea_force_stop'); }
+  }
+}
+
+// 工作流管理函数
+async function giteaLoadWorkflowSettings() {
+  try {
+    const d = await (await fetch(API + '/gitea/workflow/settings')).json();
+    const timeoutInput = document.getElementById('giteaTimeoutMinutes');
+    const autoCleanupCheckbox = document.getElementById('giteaAutoCleanup');
+    const cleanupIntervalInput = document.getElementById('giteaCleanupInterval');
+    
+    if (timeoutInput && d.timeoutMinutes) timeoutInput.value = d.timeoutMinutes;
+    if (autoCleanupCheckbox) autoCleanupCheckbox.checked = d.autoCleanup !== false;
+    if (cleanupIntervalInput && d.cleanupIntervalMinutes) cleanupIntervalInput.value = d.cleanupIntervalMinutes;
+  } catch (e) {
+    console.error('Failed to load workflow settings:', e);
+  }
+}
+
+async function giteaSaveWorkflowSettings() {
+  const msg = document.getElementById('giteaRunnerStatus');
+  try {
+    const timeoutMinutes = parseInt(document.getElementById('giteaTimeoutMinutes').value, 10);
+    const autoCleanup = document.getElementById('giteaAutoCleanup').checked;
+    const cleanupIntervalMinutes = parseInt(document.getElementById('giteaCleanupInterval').value, 10);
+    
+    const r = await fetch(API + '/gitea/workflow/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timeoutMinutes, autoCleanup, cleanupIntervalMinutes }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = t('gitea_settings_saved'); msg.style.color = 'var(--green)'; }
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
+async function giteaLoadWorkflowRuns() {
+  try {
+    const d = await (await fetch(API + '/gitea/workflow/runs')).json();
+    const container = document.getElementById('giteaWorkflowRuns');
+    if (!container) return;
+    
+    const runs = d.runs || [];
+    if (runs.length === 0) {
+      container.innerHTML = `<p style="color:var(--textdim)">${t('gitea_no_runs')}</p>`;
+      return;
+    }
+    
+    let html = `<table style="width:100%;font-size:0.88em">
+      <tr>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">ID</th>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">${t('name')}</th>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">${t('status')}</th>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">${t('last_updated')}</th>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)">${t('actions')}</th>
+      </tr>`;
+    
+    for (const run of runs) {
+      let statusText, statusColor;
+      if (run.is_timeout) {
+        statusText = t('gitea_run_timeout');
+        statusColor = 'var(--red)';
+      } else if (run.conclusion === 'success') {
+        statusText = t('gitea_run_completed');
+        statusColor = 'var(--green)';
+      } else if (run.conclusion === 'failure') {
+        statusText = t('gitea_run_completed');
+        statusColor = 'var(--red)';
+      } else if (run.conclusion === 'cancelled') {
+        statusText = t('gitea_run_cancelled');
+        statusColor = 'var(--yellow)';
+      } else if (run.status === 'queued') {
+        statusText = t('gitea_run_queued');
+        statusColor = 'var(--yellow)';
+      } else {
+        statusText = t('gitea_run_running');
+        statusColor = 'var(--blue)';
+      }
+      
+      const time = run.completed_at 
+        ? new Date(run.completed_at).toLocaleString()
+        : run.started_at 
+          ? new Date(run.started_at).toLocaleString()
+          : '—';
+      
+      const canCancel = !run.conclusion && run.status !== 'completed';
+      
+      html += `<tr>
+        <td style="padding:6px 8px;border-bottom:1px solid var(--panel2)">${run.id}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid var(--panel2)">${run.name || '—'}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid var(--panel2);color:${statusColor}">
+          ${statusText}
+          ${run.duration_minutes ? ` (${run.duration_minutes}${t('gitea_minutes_unit')})` : ''}
+        </td>
+        <td style="padding:6px 8px;border-bottom:1px solid var(--panel2)">${time}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid var(--panel2)">
+          ${canCancel ? `<button onclick="giteaCancelRun(${run.id})" style="background:var(--red);color:#fff;border:none;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.8em">${t('gitea_cancel_run')}</button>` : ''}
+          ${run.html_url ? `<a href="${run.html_url}" target="_blank" style="margin-left:6px;font-size:0.8em">🔗</a>` : ''}
+        </td>
+      </tr>`;
+    }
+    
+    html += '</table>';
+    container.innerHTML = html;
+  } catch (e) {
+    const container = document.getElementById('giteaWorkflowRuns');
+    if (container) container.innerHTML = `<p style="color:var(--red)">${e.message}</p>`;
+  }
+}
+
+async function giteaCancelRun(runId) {
+  if (!confirm(t('gitea_delete_confirm'))) return;
+  
+  const msg = document.getElementById('giteaRunnerStatus');
+  try {
+    const r = await fetch(API + `/gitea/workflow/runs/${runId}/cancel`, { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = d.message || t('gitea_cleanup_done'); msg.style.color = 'var(--green)'; }
+      // 刷新列表
+      setTimeout(() => giteaLoadWorkflowRuns(), 1000);
     } else {
       throw new Error(d.error || ('HTTP ' + r.status));
     }
@@ -3550,11 +3961,8 @@ async function giteaSyncSaveSchedule() {
 
 const GITEA_TARGETS = [
   ['windows-x64', 'Windows x64'],
-  ['windows-arm64', 'Windows ARM64'],
   ['mac-x64', 'macOS x64'],
   ['mac-arm64', 'macOS ARM64'],
-  ['linux-x64', 'Linux x64'],
-  ['linux-arm64', 'Linux ARM64'],
 ];
 
 async function giteaLoadConfig() {
@@ -3602,17 +4010,43 @@ async function giteaLoadVersions() {
     const d = await (await fetch(API + '/gitea/sync/versions')).json();
     const versions = d.versions || [];
     if (!versions.length) { box.innerHTML = `<p class="loading">${t('gitea_no_versions')}</p>`; return; }
-    box.innerHTML = `<table><tr><th>${t('version')}</th><th>${t('last_updated')}</th><th>${t('gitea_sync_targets')}</th><th></th></tr>` +
+    const allPlatforms = ['windows-x64', 'mac-x64', 'mac-arm64'];
+    box.innerHTML = `<table><tr><th>${t('version')}</th><th>${t('last_updated')}</th><th>${t('gitea_sync_targets')}</th><th>${t('actions')}</th></tr>` +
       versions.map(v => {
         const files = Object.keys(v.files || {});
+        const missing = allPlatforms.filter(p => !files.includes(p));
+        const statusIcon = missing.length === 0 ? '✅' : '⚠️';
+        const statusText = missing.length === 0 ? '' : `<span style="color:var(--yellow);font-size:0.8em">缺 ${missing.join(',')}</span>`;
         return `<tr>
-          <td><code>${v.version}</code></td>
+          <td><code>${v.version}</code> ${statusIcon}</td>
           <td style="color:var(--textdim)">${v.date || '—'}</td>
-          <td style="color:var(--textdim);font-size:0.85em">${files.join('、')}</td>
-          <td><button onclick="giteaDeleteVersion('${v.version}')" style="background:var(--red);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('gitea_delete_version')}</button></td>
+          <td style="color:var(--textdim);font-size:0.85em">${files.join('、')} ${statusText}</td>
+          <td><button onclick="giteaResyncVersion('${v.version}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('gitea_resync')}</button></td>
         </tr>`;
       }).join('') + `</table>`;
   } catch (e) { box.innerHTML = `<p class="error">${e.message}</p>`; }
+}
+
+async function giteaResyncVersion(ver) {
+  if (!confirm(t('gitea_resync_confirm') + ' ' + ver + '？')) return;
+  const msg = document.getElementById('giteaSyncMsg');
+  if (msg) { msg.textContent = t('gitea_resyncing'); msg.style.color = 'var(--textdim)'; }
+  try {
+    const r = await fetch(API + '/gitea/sync/resync-version', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version: ver })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = d.message; msg.style.color = 'var(--green)'; }
+      giteaLoadVersions();
+    } else {
+      throw new Error(d.error || ('HTTP ' + r.status));
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
 }
 
 async function giteaDeleteVersion(ver) {
