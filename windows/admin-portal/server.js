@@ -1207,6 +1207,7 @@ app.get('/api/gitea/overview', keycloak.protect(), async (req, res) => {
           id: run.id,
           status: run.status,
           conclusion: run.conclusion,
+          started_at: _norm(run.started_at),
           completed_at: _norm(run.completed_at) || _norm(run.started_at) || null,
           display_title: run.display_title || '',
           failure_reason,

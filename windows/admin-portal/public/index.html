@@ -3371,7 +3371,11 @@ function giteaSyncCard(s, p, runs) {
   }
   
   // 计算已执行时间
-  const elapsed = currentRun && currentRun.elapsed_seconds ? currentRun.elapsed_seconds : null;
+  let elapsed = currentRun && currentRun.elapsed_seconds ? currentRun.elapsed_seconds : null;
+  // 如果没有 elapsed_seconds 但有 started_at 和 completed_at，自己算
+  if (!elapsed && currentRun && currentRun.started_at && currentRun.completed_at) {
+    elapsed = Math.floor((new Date(currentRun.completed_at) - new Date(currentRun.started_at)) / 1000);
+  }
   const elapsedStr = elapsed ? `${Math.floor(elapsed/60)}m${elapsed%60}s` : '—';
   
   // 构建任务选择器
@@ -3385,12 +3389,15 @@ function giteaSyncCard(s, p, runs) {
   return `<div class="card" id="giteaSyncCard"><h3>🔄 ${t('sync_last_run')} <span class="admin-badge">dsh-sync</span>
       <button class="gitea-sync-refresh" onclick="giteaSyncRefresh()" style="float:right;background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78em;font-weight:600">↻ ${t('refresh')}</button>
     </h3>
-    ${runs && runs.length > 1 ? `<div style="margin-bottom:12px">
-      <label style="font-size:0.85em;color:var(--textdim);margin-right:8px">${t('gitea_select_task')}:</label>
+    <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      ${runs && runs.length > 1 ? `<label style="font-size:0.85em;color:var(--textdim);margin-right:4px">${t('gitea_select_task')}:</label>
       <select id="giteaRunSelect" onchange="giteaSelectRun(this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:0.85em;max-width:400px">
         ${runOptions}
-      </select>
-    </div>` : ''}
+      </select>` : ''}
+      <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em">▶️ ${t('gitea_sync_trigger')}</button>
+      <button id="giteaForceStopBtn" onclick="giteaForceStop()" style="background:var(--red);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;display:none">⏹ ${t('gitea_force_stop')}</button>
+      <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.82em"></span>
+    </div>
     <table>
       <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
       <tr><td>${t('gitea_started_at')}</td><td>${currentRun && currentRun.started_at ? new Date(currentRun.started_at).toLocaleString() : '—'}</td></tr>
@@ -3620,15 +3627,6 @@ async function loadGitea(el) {
             <div id="giteaVersions"><p class="loading">${t('loading')}</p></div>
           </div>
           ${syncHtml}
-          <div style="margin-top:16px">
-            <h3 style="margin:0 0 12px;color:var(--textstrong)">🔧 ${t('gitea_sync_trigger')}</h3>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em">▶️ ${t('gitea_sync_trigger')}</button>
-              <button id="giteaForceStopBtn" onclick="giteaForceStop()" style="background:var(--red);color:#fff;border:none;padding:7px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.88em;display:none">⏹ ${t('gitea_force_stop')}</button>
-              <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.85em"></span>
-              <span id="giteaRunnerStatus" style="font-size:0.85em;color:var(--textdim)"></span>
-            </div>
-          </div>
           <div style="margin-top:16px">
             <h3 style="margin:0 0 12px;color:var(--textstrong)">📋 ${t('gitea_sync_history')}</h3>
             <div id="giteaHistory"><p class="loading">${t('loading')}</p></div>
