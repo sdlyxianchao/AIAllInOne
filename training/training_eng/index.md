@@ -67,22 +67,22 @@
 | # | Module | Type | Hours | Description | Links |
 |---|---|---|---|---|---|
 | M01 | Platform Overview & Architecture | Foundation | — | 6 layers / 16 ports / data flows / security: full platform map before touching anything | [Textbook](00-overview/platform-M01.md) |
-| M02 | Docker + Compose + Ollama | Foundation | 6 | Images/containers/volumes/networks, compose syntax, 8 port conflicts, 🔴 .env vars, Dify standalone, bge-m3 | [Package](15-docker-ollama/package.md) · [Refs](15-docker-ollama/references.md) |
+| M02 | Docker + Compose + Ollama | Foundation | 6 | Images/containers/volumes/networks, compose syntax, 8 port conflicts, 🔴 .env vars, Dify standalone, bge-m3 | [Outline](15-docker-ollama/outline.md) · [Textbook](15-docker-ollama/textbook.md) · [Plan](15-docker-ollama/plan.md) · [Exam](15-docker-ollama/exam.md) · [Refs](15-docker-ollama/references.md) |
 | M03 | Keycloak Unified Auth | Core | 6 | SSO/OIDC/AD federation: Realm/Client/User/Role, OIDC Clients, AD/LDAP User Federation, multi-IdP, troubleshooting | [Outline](01-keycloak/outline.md) · [Textbook](01-keycloak/textbook.md) · [Plan/Exam](01-keycloak/plan.md) · [Refs](01-keycloak/references.md) |
-| M04 | NewAPI LLM Routing | Core | 3 | Init wizard, channels→LiteLLM, key separation, OIDC (endpoint fix + server address + promote), cost/audit, rate limits | [Package](02-newapi/package.md) · [Refs](02-newapi/references.md) |
-| M05 | LiteLLM + Presidio | Core | 3 | config.yaml, regex redaction + BLOCK, Presidio endpoint pitfall, Redis semantic cache (bge-m3), Langfuse reporting | [Package](03-litellm-presidio/package.md) · [Refs](03-litellm-presidio/references.md) |
-| M06 | Dify AI Application Platform | Core | 6 | Standalone deploy pitfalls, model providers, five app types, High-quality KB, Knowledge API, Chatflow support bot, publish | [Package](04-dify/package.md) · [Refs](04-dify/references.md) |
-| M07 | Ghost Enterprise Portal | Core | 3 | SQLite pitfall, Corp Portal theme, content seed, posts/nav, MailHog code, Admin Center auto-login (TOTP) | [Package](05-ghost/package.md) · [Refs](05-ghost/references.md) |
-| M08 | Gitea + Runner | Core | 3 | Runner registration + 4 pitfalls, dsh-sync (sync-config.json), Actions syntax, SSO auto-registration, ROOT_URL | [Package](06-gitea-runner/package.md) · [Refs](06-gitea-runner/references.md) |
-| M09 | DSH Desktop Desktop Client | Core | 3 | Install/config, manual MCP (Skip to manual config), SSE notice, Skill URL install, skill-market (hostname), auto-update | [Package](07-dsh/package.md) · [Refs](07-dsh/references.md) |
-| M10 | MCP Gateway | Core | 3 | MCP protocol, 4 built-ins, external server aggregation, Skill market, search_knowledge chain (3 pitfalls), admin API | [Package](09-mcp-gateway/package.md) · [Refs](09-mcp-gateway/references.md) |
-| M11 | AI Admin Center | Core | 4 | Global Admin init, menu map, delegated admin (admin:product + provisioning), backup/restore, availability, reports, IM alerts | [Package](10-admin-center/package.md) · [Refs](10-admin-center/references.md) |
-| M12 | Update Server | Foundation | 1 | Distribution chain, upload/verify, latest.yml/version.txt/publish.url, 403 is normal, rollback guard | [Package](08-update-server/package.md) · [Refs](08-update-server/references.md) |
-| M13 | Monitoring & Alerting | Important | 2 | cadvisor collection, dashboards, 2 anti-false-positive rules, IM alerts (robots/apps), port conflicts | [Package](11-monitoring/package.md) · [Refs](11-monitoring/references.md) |
-| M14 | Langfuse Observability | Important | 1.5 | Trace interpretation, V4_WRITE_MODE=dual pitfall, SSO org pitfall, cost analysis, Prompt Management intro | [Package](12-langfuse/package.md) · [Refs](12-langfuse/references.md) |
-| M15 | Loki Unified Logging | Important | 1 | Labels-only philosophy, Unified Logs queries, LogQL basics, Docker Desktop mount pitfall | [Package](13-loki/package.md) · [Refs](13-loki/references.md) |
-| M16 | MailHog Mail Catcher | Foundation | 0.5 | Ghost mail exit, view codes at :8025, TOTP auto-login (exam merged into M07) | [Package](14-mailhog/package.md) · [Refs](14-mailhog/references.md) |
-| M17 | AI Agent Operations | Advanced | 3 | Principle, 10 prompt templates, best practices (reload/verify/secrets), health-check.ps1, command reference | [Package](16-ai-agent-ops/package.md) · [Refs](16-ai-agent-ops/references.md) |
+| M04 | NewAPI LLM Routing | Core | 3 | Init wizard, channels→LiteLLM, key separation, OIDC (endpoint fix + server address + promote), cost/audit, rate limits | [Outline](02-newapi/outline.md) · [Textbook](02-newapi/textbook.md) · [Plan](02-newapi/plan.md) · [Exam](02-newapi/exam.md) · [Refs](02-newapi/references.md) |
+| M05 | LiteLLM + Presidio | Core | 3 | config.yaml, regex redaction + BLOCK, Presidio endpoint pitfall, Redis semantic cache (bge-m3), Langfuse reporting | [Outline](03-litellm-presidio/outline.md) · [Textbook](03-litellm-presidio/textbook.md) · [Plan](03-litellm-presidio/plan.md) · [Exam](03-litellm-presidio/exam.md) · [Refs](03-litellm-presidio/references.md) |
+| M06 | Dify AI Application Platform | Core | 6 | Standalone deploy pitfalls, model providers, five app types, High-quality KB, Knowledge API, Chatflow support bot, publish | [Outline](04-dify/outline.md) · [Textbook](04-dify/textbook.md) · [Plan](04-dify/plan.md) · [Exam](04-dify/exam.md) · [Refs](04-dify/references.md) |
+| M07 | Ghost Enterprise Portal | Core | 3 | SQLite pitfall, Corp Portal theme, content seed, posts/nav, MailHog code, Admin Center auto-login (TOTP) | [Outline](05-ghost/outline.md) · [Textbook](05-ghost/textbook.md) · [Plan](05-ghost/plan.md) · [Exam](05-ghost/exam.md) · [Refs](05-ghost/references.md) |
+| M08 | Gitea + Runner | Core | 3 | Runner registration + 4 pitfalls, dsh-sync (sync-config.json), Actions syntax, SSO auto-registration, ROOT_URL | [Outline](06-gitea-runner/outline.md) · [Textbook](06-gitea-runner/textbook.md) · [Plan](06-gitea-runner/plan.md) · [Exam](06-gitea-runner/exam.md) · [Refs](06-gitea-runner/references.md) |
+| M09 | DSH Desktop Desktop Client | Core | 3 | Install/config, manual MCP (Skip to manual config), SSE notice, Skill URL install, skill-market (hostname), auto-update | [Outline](07-dsh/outline.md) · [Textbook](07-dsh/textbook.md) · [Plan](07-dsh/plan.md) · [Exam](07-dsh/exam.md) · [Refs](07-dsh/references.md) |
+| M10 | MCP Gateway | Core | 3 | MCP protocol, 4 built-ins, external server aggregation, Skill market, search_knowledge chain (3 pitfalls), admin API | [Outline](09-mcp-gateway/outline.md) · [Textbook](09-mcp-gateway/textbook.md) · [Plan](09-mcp-gateway/plan.md) · [Exam](09-mcp-gateway/exam.md) · [Refs](09-mcp-gateway/references.md) |
+| M11 | AI Admin Center | Core | 4 | Global Admin init, menu map, delegated admin (admin:product + provisioning), backup/restore, availability, reports, IM alerts | [Outline](10-admin-center/outline.md) · [Textbook](10-admin-center/textbook.md) · [Plan](10-admin-center/plan.md) · [Exam](10-admin-center/exam.md) · [Refs](10-admin-center/references.md) |
+| M12 | Update Server | Foundation | 1 | Distribution chain, upload/verify, latest.yml/version.txt/publish.url, 403 is normal, rollback guard | [Outline](08-update-server/outline.md) · [Textbook](08-update-server/textbook.md) · [Plan](08-update-server/plan.md) · [Exam](08-update-server/exam.md) · [Refs](08-update-server/references.md) |
+| M13 | Monitoring & Alerting | Important | 2 | cadvisor collection, dashboards, 2 anti-false-positive rules, IM alerts (robots/apps), port conflicts | [Outline](11-monitoring/outline.md) · [Textbook](11-monitoring/textbook.md) · [Plan](11-monitoring/plan.md) · [Exam](11-monitoring/exam.md) · [Refs](11-monitoring/references.md) |
+| M14 | Langfuse Observability | Important | 1.5 | Trace interpretation, V4_WRITE_MODE=dual pitfall, SSO org pitfall, cost analysis, Prompt Management intro | [Outline](12-langfuse/outline.md) · [Textbook](12-langfuse/textbook.md) · [Plan](12-langfuse/plan.md) · [Exam](12-langfuse/exam.md) · [Refs](12-langfuse/references.md) |
+| M15 | Loki Unified Logging | Important | 1 | Labels-only philosophy, Unified Logs queries, LogQL basics, Docker Desktop mount pitfall | [Outline](13-loki/outline.md) · [Textbook](13-loki/textbook.md) · [Plan](13-loki/plan.md) · [Exam](13-loki/exam.md) · [Refs](13-loki/references.md) |
+| M16 | MailHog Mail Catcher | Foundation | 0.5 | Ghost mail exit, view codes at :8025, TOTP auto-login (exam merged into M07) | [Outline](14-mailhog/outline.md) · [Textbook](14-mailhog/textbook.md) · [Plan](14-mailhog/plan.md) · [Exam](14-mailhog/exam.md) · [Refs](14-mailhog/references.md) |
+| M17 | AI Agent Operations | Advanced | 3 | Principle, 10 prompt templates, best practices (reload/verify/secrets), health-check.ps1, command reference | [Outline](16-ai-agent-ops/outline.md) · [Textbook](16-ai-agent-ops/textbook.md) · [Plan](16-ai-agent-ops/plan.md) · [Exam](16-ai-agent-ops/exam.md) · [Refs](16-ai-agent-ops/references.md) |
 
 ---
 
@@ -96,7 +96,7 @@
 
 > **Total = theory×0.4 + hands-on×0.4 + defense×0.2; ≥70 to graduate; any single <60 → make-up.** Any ⭐ key item failing fails the hands-on.
 
-**Exam docs**: [exam-package.md (scheme + 100-Q bank + checklist + scorecard)](17-exam/exam-package.md)
+**Exam docs**: [exam-overview.md (scheme)](17-exam/exam-overview.md) · [exam-theory.md (100-Q bank)](17-exam/exam-theory.md) · [exam-practical.md (checklist)](17-exam/exam-practical.md) · [exam-grading.md (scorecard)](17-exam/exam-grading.md)
 
 ---
 
@@ -122,8 +122,8 @@
 C:\AIAllInOne\training\training_eng\
 ├── index.md                     ← this file (Markdown portal, rendered online)
 ├── 00-overview\                 ← overview.md / schedule.md / platform-M01.md
-├── 01-keycloak\ … 16-ai-agent-ops\  ← per product: package.md + references.md
-├── 17-exam\                     ← exam-package.md (scheme/100 Q/checklist/scorecard)
+├── 01-keycloak\ … 16-ai-agent-ops\  ← per product: outline.md + plan.md + textbook.md + exam.md + references.md
+├── 17-exam\                     ← exam-overview.md / exam-theory.md / exam-practical.md / exam-grading.md
 └── 99-references\               ← video-index.md / policies-faq.md / README.md
 ```
 

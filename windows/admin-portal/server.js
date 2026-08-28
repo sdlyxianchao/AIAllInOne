@@ -146,13 +146,13 @@ if (KC_CLIENT_SECRET) {
 const keycloak = new Keycloak({ store: redisStore }, kcConfig);
 
 // 防止 iss 参数累积导致无限重定向循环：
-// Keycloak 回调后 URL 带 iss 参数，如果 session 建立失败再次刷新，
-// keycloak middleware 会再次读到 iss 并重定向，iss 不断追加。
-// 解决：在 keycloak middleware 之前，如果 URL 有 iss 参数就 301 到干净路径。
+// 正常页面刷新时如果 URL 带 iss 参数（上一次回调残留），keycloak middleware
+// 会再次重定向到 Keycloak，iss 不断追加形成死循环。
+// 解决：只在「非回调请求」时清除 iss 参数；回调请求（带 auth_callback 或 code）
+// 必须放行给 Keycloak middleware 完成 OAuth 登录流程。
 app.use((req, res, next) => {
-  if (req.query.iss) {
-    const cleanUrl = req.path;
-    return res.redirect(301, cleanUrl);
+  if (req.query.iss && !req.query.auth_callback && !req.query.code) {
+    return res.redirect(301, req.path);
   }
   next();
 });
