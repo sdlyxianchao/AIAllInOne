@@ -51,7 +51,7 @@ docker compose pull               # 新イメージ取得
 docker compose up -d              # 再構築
 ```
 
-> ⚠️ 重要な落とし穴：① WebSocket `NEXT_PUBLIC_SOCKET_URL` はイントラネット IP に設定；② ログインパスワードは base64 エンコード；③ パスワード忘れは `docker exec docker-api-1 flask reset-password`（8 文字以上）。
+> ⚠️ 重要な落とし穴：① WebSocket `NEXT_PUBLIC_SOCKET_URL` はイントラネット IP に設定；② ログインパスワードは base64 エンコード；③ パスワード忘れは `docker exec dify-api-1 flask reset-password`（8 文字以上）。
 
 > 📖 公式ドキュメント：Dify 公式ドキュメント https://docs.dify.ai · セルフホスト https://docs.dify.ai/getting-started/install-self-hosted
 

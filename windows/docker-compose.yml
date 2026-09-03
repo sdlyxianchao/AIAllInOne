@@ -6,6 +6,9 @@
 #   2. docker compose up -d
 # ============================================
 
+# Docker Desktop 里的项目（组）名
+name: ai-all-in-one
+
 # 全局日志轮转（防止容器日志无限增长占满磁盘）
 x-logging: &default-logging
   driver: json-file
@@ -700,20 +703,35 @@ services:
 # ==========================================
 volumes:
   keycloak-data:
+    name: windows_keycloak-data
   keycloak-db-data:
+    name: windows_keycloak-db-data
   litellm-db-data:
+    name: windows_litellm-db-data
   new-api-data:
+    name: windows_new-api-data
   new-api-db-data:
+    name: windows_new-api-db-data
   ghost-data:
+    name: windows_ghost-data
   gitea-data:
+    name: windows_gitea-data
   runner-data:
+    name: windows_runner-data
   admin-session-redis-data:
+    name: windows_admin-session-redis-data
   prometheus-data:
+    name: windows_prometheus-data
   grafana-data:
+    name: windows_grafana-data
   langfuse-postgres-data:
+    name: windows_langfuse-postgres-data
   langfuse-minio-data:
+    name: windows_langfuse-minio-data
   langfuse-clickhouse-data:
+    name: windows_langfuse-clickhouse-data
   loki-data:
+    name: windows_loki-data
 
 # ==========================================
 # Shared Network

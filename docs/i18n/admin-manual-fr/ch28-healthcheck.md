@@ -42,7 +42,7 @@ $trigger.Delay = "PT2M"   # Délai de 2 minutes après la connexion pour attendr
 Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-> 📌 Remarque : le script utilise `127.0.0.1` et non localhost ; la santé interne de LiteLLM utilise `/health/readiness` (sans authentification) ; `docker-init_permissions-1` Exited(0) est normal ; le serveur de mise à jour renvoyant 403 est normal (pas d'index.html par défaut) ; exit code 0 = succès, 1 = échec.
+> 📌 Remarque : le script utilise `127.0.0.1` et non localhost ; la santé interne de LiteLLM utilise `/health/readiness` (sans authentification) ; `dify-init_permissions-1` Exited(0) est normal ; le serveur de mise à jour renvoyant 403 est normal (pas d'index.html par défaut) ; exit code 0 = succès, 1 = échec.
 
 ---
 

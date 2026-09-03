@@ -42,7 +42,7 @@ $trigger.Delay = "PT2M"   # تأخير دقيقتين بعد تسجيل الدخ
 Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-> 📌 ملاحظة: يستخدم السكربت `127.0.0.1` وليس localhost؛ وتُستخدم `/health/readiness` لسلامة LiteLLM الداخلية (دون مصادقة)؛ وحالة Exited(0) للحاوية `docker-init_permissions-1` طبيعية؛ وعودة Update Server بالرمز 403 طبيعية (لعدم وجود index.html افتراضي)؛ وexit code يساوي 0 للنجاح و1 لوجود فشل.
+> 📌 ملاحظة: يستخدم السكربت `127.0.0.1` وليس localhost؛ وتُستخدم `/health/readiness` لسلامة LiteLLM الداخلية (دون مصادقة)؛ وحالة Exited(0) للحاوية `dify-init_permissions-1` طبيعية؛ وعودة Update Server بالرمز 403 طبيعية (لعدم وجود index.html افتراضي)؛ وexit code يساوي 0 للنجاح و1 لوجود فشل.
 
 ---
 

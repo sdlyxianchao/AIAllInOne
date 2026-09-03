@@ -44,7 +44,7 @@
 
 Covers 41 containers / 9 stages: daemon → containers → HTTP endpoints → LiteLLM/model registry → real LLM chain calls → AD auth chain → MCP/Skill → login prereqs → disk.
 
-Can be registered as a logon scheduled task (2-min delay). ⚠️ Credentials read from `.env`; `docker-init_permissions-1` Exited(0) is normal; Update Server 403 is normal.
+Can be registered as a logon scheduled task (2-min delay). ⚠️ Credentials read from `.env`; `dify-init_permissions-1` Exited(0) is normal; Update Server 403 is normal.
 
 ## 5. FAQ
 

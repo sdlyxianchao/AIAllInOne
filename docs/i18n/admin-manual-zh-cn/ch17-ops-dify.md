@@ -64,7 +64,7 @@ docker compose pull               # 拉新镜像
 docker compose up -d              # 重建
 ```
 
-> ⚠️ 关键坑：① WebSocket `NEXT_PUBLIC_SOCKET_URL` 要设内网 IP，否则对话一直连 `ws://localhost`；② 登录密码是 base64 编码（脚本登录需 `base64(password)` 先行）；③ 忘密码：`docker exec docker-api-1 flask reset-password --email ai_all_in_one_admin@<公司域名> --new-password '<新密码>'`（≥8 位）。
+> ⚠️ 关键坑：① WebSocket `NEXT_PUBLIC_SOCKET_URL` 要设内网 IP，否则对话一直连 `ws://localhost`；② 登录密码是 base64 编码（脚本登录需 `base64(password)` 先行）；③ 忘密码：`docker exec dify-api-1 flask reset-password --email ai_all_in_one_admin@<公司域名> --new-password '<新密码>'`（≥8 位）。
 
 > 📖 原厂文档：Dify 官方文档 https://docs.dify.ai · 自托管 https://docs.dify.ai/getting-started/install-self-hosted
 

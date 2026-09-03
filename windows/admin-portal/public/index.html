@@ -327,7 +327,7 @@ const I18N = {
     update_server_info: '更新服务器信息', gitea_tab_execute: '执行同步计划', gitea_tab_settings: '同步设置',
     gitea_execution_logs: '执行日志', gitea_toggle_logs: '展开/收起', gitea_clear_logs: '清空日志', gitea_copy_logs: '复制日志', gitea_logs_copied: '已复制', gitea_no_logs: '暂无日志', gitea_loading_logs: '加载日志中...', gitea_load_logs_error: '加载日志失败', gitea_detailed_logs: '详细日志', gitea_select_task: '选择任务', gitea_started_at: '启动时间', gitea_elapsed_time: '已执行时间', gitea_force_stop: '强制关闭', gitea_force_stop_confirm: '确定要强制关闭当前同步任务吗？', gitea_force_stopped: '已强制关闭', gitea_stopping: '关闭中...',
     pii: 'PII 脱敏', logs: '统一日志', backup: '备份与恢复', availability: '可用性测试',
-    avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DSH Desktop/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
+    avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DSH Desktop/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_restart: '重启', avail_restarting: '重启中...', avail_restarted: '已重启', avail_restart_fail: '重启失败', avail_restart_confirm: '确定要重启该服务吗？重启期间相关服务会短暂中断。', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
     presidio_state: '状态', pii_up: '正常', pii_down: '异常',
     pii_title: 'PII 脱敏 — 敏感数据防护', pii_presidio: 'Presidio 实体识别服务', pii_analyzer: '识别服务 (analyzer)', pii_anonymizer: '脱敏服务 (anonymizer)',
     pii_guardrails: 'LiteLLM 脱敏规则（guardrails）', pii_guardrail_name: '规则名', pii_guardrail_type: '类型', pii_guardrail_note: '说明',
@@ -472,7 +472,7 @@ const I18N = {
     update_server_info: 'Update Server Info', gitea_tab_execute: 'Execute Sync Plan', gitea_tab_settings: 'Sync Settings',
     gitea_execution_logs: 'Execution Logs', gitea_toggle_logs: 'Toggle Logs', gitea_clear_logs: 'Clear Logs', gitea_copy_logs: 'Copy Logs', gitea_logs_copied: 'Copied', gitea_no_logs: 'No logs available', gitea_loading_logs: 'Loading logs...', gitea_load_logs_error: 'Failed to load logs', gitea_detailed_logs: 'Detailed Logs', gitea_select_task: 'Select Task', gitea_started_at: 'Started At', gitea_elapsed_time: 'Elapsed Time', gitea_force_stop: 'Force Stop', gitea_force_stop_confirm: 'Are you sure you want to force stop the current sync?', gitea_force_stopped: 'Force stopped', gitea_stopping: 'Stopping...',
     pii: 'PII Redaction', logs: 'Unified Logs', backup: 'Backup & Restore', availability: 'Availability Test',
-    avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DSH Desktop/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
+    avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DSH Desktop/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_restart: 'Restart', avail_restarting: 'Restarting...', avail_restarted: 'Restarted', avail_restart_fail: 'Restart failed', avail_restart_confirm: 'Restart this service? It will be briefly unavailable during restart.', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
     presidio_state: 'State', pii_up: 'Up', pii_down: 'Down',
     pii_title: 'PII Redaction — Sensitive Data Protection', pii_presidio: 'Presidio Entity Recognition Services', pii_analyzer: 'Analyzer', pii_anonymizer: 'Anonymizer',
     pii_guardrails: 'LiteLLM Redaction Rules (guardrails)', pii_guardrail_name: 'Rule', pii_guardrail_type: 'Type', pii_guardrail_note: 'Note',
@@ -3073,19 +3073,28 @@ async function saveReportRetention() {
 // ═══ 可用性测试 ═══
 function escHtml(s) { return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
+// 可重启的服务 id 集合（由 /availability 的 defs.restartable 填充）
+let availRestartable = new Set();
+
 function availCard(r) {
   const ok = r.status === 'ok', fail = r.status === 'fail', running = r.status === 'running';
   const icon = ok ? '✅' : (fail ? '❌' : (running ? '⏳' : '⚠️'));
   const color = ok ? 'var(--green)' : (fail ? 'var(--red)' : (running ? 'var(--textdim)' : 'var(--yellow)'));
   const st = running ? t('avail_running') : r.status.toUpperCase();
   const lat = (r.latency_ms != null) ? `<span style="font-size:0.78em;color:var(--textdim)">${r.latency_ms} ms</span>` : '';
+  const restartBtn = availRestartable.has(r.id)
+    ? `<button onclick="restartOneAvail('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">↻ ${t('avail_restart')}</button>`
+    : '';
   return `<div class="svc-card" id="avail-${r.id}">
     <div class="svc-name">${icon} ${escHtml(r.name)}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <span style="font-size:0.78em;font-weight:600;color:${color}">${r.status.toUpperCase()}</span>${lat}
     </div>
     <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:0.78em;color:var(--text);min-height:34px;max-height:110px;overflow:auto;white-space:pre-wrap;word-break:break-all" id="avail-log-${r.id}">${escHtml(r.detail || '')}</div>
-    <button onclick="runOneAvail('${r.id}')" style="margin-top:8px;background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">▶ ${t('avail_test')}</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="runOneAvail('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">▶ ${t('avail_test')}</button>
+      ${restartBtn}
+    </div>
   </div>`;
 }
 
@@ -3117,6 +3126,7 @@ async function loadAvailability(el) {
     <div class="card"><h3>📋 ${t('avail_result')}</h3><div class="status-grid" id="availGrid"><p class="loading">${t('loading')}</p></div></div>`;
   try {
     const d = await (await fetch(API + '/availability')).json();
+    availRestartable = new Set((d.defs || []).filter(x => x.restartable).map(x => x.id));
     const iv = document.getElementById('availInterval');
     if (iv) iv.textContent = `${t('avail_interval')} ${d.interval_min} ${t('avail_min')}`;
     if (d.last && d.last.results && d.last.results.length) renderAvail(d.last);
@@ -3134,6 +3144,7 @@ async function runAllAvail(btn) {
   try {
     const d = await (await fetch(API + '/availability')).json();
     defs = d.defs || [];
+    availRestartable = new Set(defs.filter(x => x.restartable).map(x => x.id));
   } catch (e) {
     if (grid) grid.innerHTML = `<div class="error">${e.message}</div>`;
     if (btn) btn.disabled = false;
@@ -3176,6 +3187,33 @@ async function runOneAvail(id) {
     if (r.summary) renderAvailSummary(r.summary);
   } catch (e) {
     if (logEl) logEl.textContent = e.message;
+  }
+}
+
+// 重启单个服务（对应 Docker 容器），完成后自动重测该服务刷新状态
+async function restartOneAvail(id) {
+  if (!confirm(t('avail_restart_confirm'))) return;
+  const logEl = document.getElementById('avail-log-' + id);
+  const card = document.getElementById('avail-' + id);
+  const btns = card ? card.querySelectorAll('button') : [];
+  btns.forEach(b => { b.disabled = true; });
+  if (logEl) logEl.textContent = t('avail_restarting');
+  try {
+    const resp = await fetch(API + '/availability/restart/' + encodeURIComponent(id), { method: 'POST' });
+    const r = await resp.json().catch(() => ({}));
+    if (!resp.ok || r.ok === false) throw new Error(r.error || ('HTTP ' + resp.status));
+    const names = r.results || [];
+    const done = names.length > 4
+      ? `${names.length} 个容器`
+      : names.map(x => `${x.container}${x.action === 'started' ? '→启动' : '→重启'}`).join('，');
+    if (logEl) logEl.textContent = `${t('avail_restarted')}：${done}`;
+    // 重启完成后稍候自动重测，让卡片状态与结果更新
+    setTimeout(() => runOneAvail(id), 1000);
+  } catch (e) {
+    if (logEl) logEl.textContent = `${t('avail_restart_fail')}：${e.message}`;
+    alert(`${t('avail_restart_fail')}：${e.message}`);
+  } finally {
+    btns.forEach(b => { b.disabled = false; });
   }
 }
 
@@ -4064,7 +4102,7 @@ async function giteaLoadHistory() {
   if (!box) return;
   try {
     const d = await (await fetch(API + '/gitea/sync/history')).json();
-    const hist = (d.history || []).slice().reverse();
+    const hist = d.history || [];
     if (!hist.length) { box.innerHTML = `<p class="loading">${t('gitea_no_history')}</p>`; return; }
     const st = h => {
       if (h.status === 'success') return `<span style="color:var(--green)">${t('sync_success')}</span>`;

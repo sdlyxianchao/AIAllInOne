@@ -42,7 +42,7 @@ $trigger.Delay = "PT2M"   # ログイン後 2 分遅延させて Docker + コン
 Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-> 📌 注意：スクリプトは `127.0.0.1` を使い localhost は使いません。LiteLLM 内部ヘルスは `/health/readiness`（認証不要）。`docker-init_permissions-1` の Exited(0) は正常。Update Server の 403 は正常（デフォルト index.html なし）。exit code 0=通過、1=失敗あり。
+> 📌 注意：スクリプトは `127.0.0.1` を使い localhost は使いません。LiteLLM 内部ヘルスは `/health/readiness`（認証不要）。`dify-init_permissions-1` の Exited(0) は正常。Update Server の 403 は正常（デフォルト index.html なし）。exit code 0=通過、1=失敗あり。
 
 ---
 

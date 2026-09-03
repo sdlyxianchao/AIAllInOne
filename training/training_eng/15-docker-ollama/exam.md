@@ -10,7 +10,7 @@
 4. Container-to-container → B container name on ai-platform
 5. LiteLLM host access → B intranet IP:4001
 6. Container→host service → A host.docker.internal
-7. Dify network → B docker_default
+7. Dify network → B dify_default
 8. GRAPH_ENGINE un-fixed → B 4 Dify containers restart
 9. .wslconfig memory → B ~half host RAM (min 16GB)
 10. NOT a fix for slow pulls → C increase RAM

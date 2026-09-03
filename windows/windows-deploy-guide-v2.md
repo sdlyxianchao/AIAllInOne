@@ -482,6 +482,48 @@ DHCP 保留比在 Windows 里设静态 IP 更稳（路由器统一管理、不�
 
 <a id="files"></a>
 
+## 2.5 离线镜像导入（可选：无外网环境）
+
+> ⚠️ **如果目标机器无法访问 Docker Hub / ghcr.io（如内网、受限网络），必须使用离线镜像包方式部署。**
+> 即使能访问外网，也建议先导入镜像包（版本锁定，避免意外升级）。
+
+**Step 1: 下载镜像分卷文件**
+
+从 [GitHub Releases](https://github.com/sdlyxianchao/AIAllInOne/releases) 下载 `windows-image/` 目录下的分卷文件：
+
+- `ai-all-in-one-images.tar.gz.part00` + `.part01` + `.part02`（主平台镜像，共约 3.8 GB）
+- Dify 镜像请从 Docker Hub 直接拉取（部署指南第 5 章会自动处理）
+
+> **Gitee 用户**：[Gitee Releases](https://gitee.com/sdxianchao/AIAllInOne/releases) 同时包含 Dify 镜像分卷（`ai-all-in-one-dify-images.tar.gz.part00` + `.part01`），可一并下载导入。
+
+**Step 2: 合并分卷**
+
+```powershell
+# PowerShell — 在下载目录执行
+copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz
+```
+
+**Step 3: 导入镜像**
+
+```powershell
+# 把合并后的 ai-all-in-one-images.tar.gz 放到 windows-image/ 目录，然后执行
+cd windows-image
+powershell -ExecutionPolicy Bypass -File import-images.ps1
+```
+
+> 脚本会自动创建 `ai-platform` 网络并导入全部 28 个主平台镜像，幂等可重复执行。
+
+**Step 4: 确认导入成功**
+
+```powershell
+docker images | findstr keycloak gitea ghost langfuse new-api
+# 预期输出包含上述镜像名，说明导入成功
+```
+
+导入完成后，继续下面的配置步骤。`docker compose up -d` 时不会再拉取已导入的镜像。
+
+---
+
 ## 3. 配置文件说明
 
 三个核心配置文件已生成在 目录下：
@@ -743,7 +785,7 @@ findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 # 期望输出：GRAPH_ENGINE_SCALE_UP_THRESHOLD=50
 ```
 
-**⚠️ 为什么必须改这一行：**Dify 1.16.1 镜像把 `GRAPH_ENGINE_SCALE_UP_THRESHOLD` 字段类型从 `NonNegativeInt`（允许 0）升级为 `PositiveInt`（必须 > 0），但 `shared.env` 模板还停留在 `=0`。不改的话，`docker-api-1` / `docker-worker-1` / `docker-worker_beat-1` / `docker-api_websocket-1` 会一直 `Restarting (1)`，`docker logs docker-api-1` 能看到 `pydantic_core._pydantic_core.ValidationError`。这是上游版本升级的破坏性默认值变更，跟你的本地配置无关。
+**⚠️ 为什么必须改这一行：**Dify 1.16.1 镜像把 `GRAPH_ENGINE_SCALE_UP_THRESHOLD` 字段类型从 `NonNegativeInt`（允许 0）升级为 `PositiveInt`（必须 > 0），但 `shared.env` 模板还停留在 `=0`。不改的话，`dify-api-1` / `dify-worker-1` / `dify-worker_beat-1` / `dify-api_websocket-1` 会一直 `Restarting (1)`，`docker logs dify-api-1` 能看到 `pydantic_core._pydantic_core.ValidationError`。这是上游版本升级的破坏性默认值变更，跟你的本地配置无关。
 
 3 **启动 Dify**
 
@@ -779,7 +821,7 @@ Dify 的 Keycloak SSO 配置：Dify 设置 → 登录方式 → OIDC → 填入 
 **⚠️ 踩坑：Dify 忘记管理员密码时的重置方法：**Dify 密码哈希是 `pbkdf2_hmac('sha256', password, salt, 10000)`（**迭代 10000，不是常见的 100000**），无法直接反解。忘记密码用容器内命令重置（**新密码必须 ≥ 8 位**）：
 
 ```
-docker exec docker-api-1 flask reset-password \
+docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@<公司域名> \
   --new-password '<新密码>' \
   --password-confirm '<新密码>'
@@ -1625,7 +1667,7 @@ DIFY_DEFAULT_DATASET_ID=<知识库 UUID>
 
 **⚠️ 关键坑：**
 
-- **网络打通**：MCP Gateway 在 `ai-platform` 网络，Dify 在它自己的 `docker_default` 网络（compose 项目名 `docker`），两者默认不通。用宿主机内网 IP `http://<服务器IP>/v1` 从容器访问 Dify 的 80 端口即可。
+- **网络打通**：MCP Gateway 在 `ai-platform` 网络，Dify 在它自己的 `dify_default` 网络（compose 项目名 `dify`），两者默认不通。用宿主机内网 IP `http://<服务器IP>/v1` 从容器访问 Dify 的 80 端口即可。
 - **Knowledge Key 是账号级**：一个 key 可访问该账号所有知识库；如需「按用户分库」，Dify Knowledge API 不直接支持，需在 MCP 工具层做「用户 → dataset_id」映射。
 - **`GET /v1` 会 308**：检索请求必须用完整路径 `/v1/datasets/{id}/hit-testing`，不要只写 `/v1`。
 - **中文 query 用 curl `-d` 直传会 400**（编码问题）：用 `--data-binary @文件` 或脚本（Python/Node）发 UTF-8 请求。
@@ -2109,7 +2151,7 @@ Start-ScheduledTask -TaskName "AI-Platform-HealthCheck"
 - 脚本使用 `127.0.0.1` 而非 `localhost`，避免 Docker Desktop WSL2 IPv6 兼容性问题
 - 凭据从同目录 `.env` 读取（Keycloak 管理员、NewAPI DB/管理员密码），脚本本身不硬编码密码
 - LiteLLM 内部健康检查使用 `/health/readiness`（无需认证）而非 `/health`（需要 Bearer token）
-- `docker-init_permissions-1` 容器 Exited (0) 是正常的一次性初始化任务
+- `dify-init_permissions-1` 容器 Exited (0) 是正常的一次性初始化任务
 - Update Server 返回 HTTP 403 也是正常的（无默认 index.html，但服务在运行）
 - 脚本 exit code：0 = 全部通过，1 = 有失败项
 

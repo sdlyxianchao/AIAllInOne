@@ -51,7 +51,7 @@ docker compose pull               # Récupérer les nouvelles images
 docker compose up -d              # Reconstruire
 ```
 
-> ⚠️ Pièges clés : ① la WebSocket `NEXT_PUBLIC_SOCKET_URL` doit être réglée sur l'IP intranet ; ② le mot de passe de connexion est encodé en base64 ; ③ en cas de mot de passe oublié, utilisez `docker exec docker-api-1 flask reset-password` (≥ 8 caractères).
+> ⚠️ Pièges clés : ① la WebSocket `NEXT_PUBLIC_SOCKET_URL` doit être réglée sur l'IP intranet ; ② le mot de passe de connexion est encodé en base64 ; ③ en cas de mot de passe oublié, utilisez `docker exec dify-api-1 flask reset-password` (≥ 8 caractères).
 
 > 📖 Documentation officielle :documentation officielle de Dify https://docs.dify.ai · auto-hébergé https://docs.dify.ai/getting-started/install-self-hosted
 

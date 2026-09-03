@@ -46,7 +46,7 @@ docker compose config --quiet
 findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 ```
 
-> ⚠️ 為什麼必須改 `GRAPH_ENGINE_SCALE_UP_THRESHOLD`：Dify 1.16.1 把該欄位從「允許 0」升級為「必須 > 0」，但 `shared.env` 模板還是 0。不改的話 `docker-api-1` / `worker` / `worker_beat` / `api_websocket` 4 個容器啟動即崩，日誌報 `ValidationError: Input should be greater than 0`。
+> ⚠️ 為什麼必須改 `GRAPH_ENGINE_SCALE_UP_THRESHOLD`：Dify 1.16.1 把該欄位從「允許 0」升級為「必須 > 0」，但 `shared.env` 模板還是 0。不改的話 `dify-api-1` / `worker` / `worker_beat` / `api_websocket` 4 個容器啟動即崩，日誌報 `ValidationError: Input should be greater than 0`。
 
 ## 5.3 啟動 Dify
 
@@ -81,7 +81,7 @@ docker compose up -d web
 > ⚠️ **忘記管理員密碼重置**：Dify 密碼雜湊是 `pbkdf2_hmac('sha256', password, salt, 10000)`（迭代 10000），無法反解，用容器命令重置（新密碼 ≥ 8 位）：
 
 ```
-docker exec docker-api-1 flask reset-password \
+docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@<公司網域> \
   --new-password '<新密碼>' \
   --password-confirm '<新密碼>'

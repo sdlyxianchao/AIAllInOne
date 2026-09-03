@@ -46,7 +46,7 @@ docker compose config --quiet
 findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 ```
 
-> ⚠️ Pourquoi il faut impérativement modifier `GRAPH_ENGINE_SCALE_UP_THRESHOLD` : Dify 1.16.1 a fait passer ce champ de « 0 autorisé » à « doit être > 0 », mais le modèle `shared.env` contient encore 0. Sans correction, les 4 conteneurs `docker-api-1` / `worker` / `worker_beat` / `api_websocket` crashent au démarrage avec le journal `ValidationError: Input should be greater than 0`.
+> ⚠️ Pourquoi il faut impérativement modifier `GRAPH_ENGINE_SCALE_UP_THRESHOLD` : Dify 1.16.1 a fait passer ce champ de « 0 autorisé » à « doit être > 0 », mais le modèle `shared.env` contient encore 0. Sans correction, les 4 conteneurs `dify-api-1` / `worker` / `worker_beat` / `api_websocket` crashent au démarrage avec le journal `ValidationError: Input should be greater than 0`.
 
 ## 5.3 Démarrer Dify
 
@@ -81,7 +81,7 @@ docker compose up -d web
 > ⚠️ **Réinitialisation du mot de passe administrateur oublié** : le hachage du mot de passe Dify est `pbkdf2_hmac('sha256', password, salt, 10000)` (10 000 itérations), irréversible ; réinitialisez via une commande de conteneur (nouveau mot de passe ≥ 8 caractères) :
 
 ```
-docker exec docker-api-1 flask reset-password \
+docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@<domaine-entreprise> \
   --new-password '<nouveau-mot-de-passe>' \
   --password-confirm '<nouveau-mot-de-passe>'

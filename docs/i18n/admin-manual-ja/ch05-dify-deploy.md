@@ -46,7 +46,7 @@ docker compose config --quiet
 findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 ```
 
-> ⚠️ なぜ `GRAPH_ENGINE_SCALE_UP_THRESHOLD` を変更しなければならないか：Dify 1.16.1 はこのフィールドを「0 を許可」から「0 より大きい必須」に変更しましたが、`shared.env` テンプレートはまだ 0 のままです。変更しないと `docker-api-1` / `worker` / `worker_beat` / `api_websocket` の 4 コンテナが起動直後にクラッシュし、ログに `ValidationError: Input should be greater than 0` と表示されます。
+> ⚠️ なぜ `GRAPH_ENGINE_SCALE_UP_THRESHOLD` を変更しなければならないか：Dify 1.16.1 はこのフィールドを「0 を許可」から「0 より大きい必須」に変更しましたが、`shared.env` テンプレートはまだ 0 のままです。変更しないと `dify-api-1` / `worker` / `worker_beat` / `api_websocket` の 4 コンテナが起動直後にクラッシュし、ログに `ValidationError: Input should be greater than 0` と表示されます。
 
 ## 5.3 Dify の起動
 
@@ -81,7 +81,7 @@ docker compose up -d web
 > ⚠️ **管理者パスワードを忘れた場合のリセット**：Dify のパスワードハッシュは `pbkdf2_hmac('sha256', password, salt, 10000)`（反復 10000 回）で、逆算できません。コンテナコマンドでリセットします（新しいパスワードは 8 文字以上）：
 
 ```
-docker exec docker-api-1 flask reset-password \
+docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@<会社ドメイン> \
   --new-password '<新しいパスワード>' \
   --password-confirm '<新しいパスワード>'

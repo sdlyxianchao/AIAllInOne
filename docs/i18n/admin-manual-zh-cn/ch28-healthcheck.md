@@ -52,7 +52,7 @@ $trigger.Delay = "PT2M"   # 登录后延迟 2 分钟等 Docker + 容器启动
 Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-> 📌 注意：脚本用 `127.0.0.1` 不用 localhost；LiteLLM 内部健康用 `/health/readiness`（无需认证）；`docker-init_permissions-1` Exited(0) 正常；Update Server 返回 403 正常（无默认 index.html）；exit code 0=通过、1=有失败。
+> 📌 注意：脚本用 `127.0.0.1` 不用 localhost；LiteLLM 内部健康用 `/health/readiness`（无需认证）；`dify-init_permissions-1` Exited(0) 正常；Update Server 返回 403 正常（无默认 index.html）；exit code 0=通过、1=有失败。
 
 ---
 

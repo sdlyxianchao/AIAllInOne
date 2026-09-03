@@ -65,7 +65,7 @@ if ($NewApiDbPass) {
 # 2. Dify PostgreSQL dump
 Log "2. Dify PostgreSQL 备份"
 $pgDump = Join-Path $BackupDir "dify-postgres.sql"
-docker exec docker-db_postgres-1 sh -c "PGPASSWORD='$DifyDbPass' pg_dump -U postgres -d dify --clean --if-exists" 2>$null | Out-File -Encoding utf8 $pgDump
+docker exec dify-db_postgres-1 sh -c "PGPASSWORD='$DifyDbPass' pg_dump -U postgres -d dify --clean --if-exists" 2>$null | Out-File -Encoding utf8 $pgDump
 if ((Test-Path $pgDump) -and ((Get-Item $pgDump).Length -gt 1024)) { Ok "Dify PostgreSQL dump ($([math]::Round((Get-Item $pgDump).Length/1KB,1)) KB)" }
 else { Err "Dify PostgreSQL dump 失败或为空" }
 

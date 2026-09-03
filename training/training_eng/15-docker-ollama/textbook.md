@@ -46,7 +46,7 @@ services:
 
 ## 4. Dify standalone (D2 PM)
 
-Own compose (~15 containers, network `docker_default`) — not mixed with the main compose. Required fix: `shared.env` `GRAPH_ENGINE_SCALE_UP_THRESHOLD=0→50` (1.16.1 PositiveInt; else 4 containers restart-loop). WebSocket: `.env` `NEXT_PUBLIC_SOCKET_URL=ws://<SERVER_IP>` + compose web fallback + `docker compose up -d web` + hard refresh. Details in M06.
+Own compose (~15 containers, network `dify_default`) — not mixed with the main compose. Required fix: `shared.env` `GRAPH_ENGINE_SCALE_UP_THRESHOLD=0→50` (1.16.1 PositiveInt; else 4 containers restart-loop). WebSocket: `.env` `NEXT_PUBLIC_SOCKET_URL=ws://<SERVER_IP>` + compose web fallback + `docker compose up -d web` + hard refresh. Details in M06.
 
 ## 5. Ollama (optional but recommended)
 

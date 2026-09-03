@@ -42,7 +42,7 @@ $trigger.Delay = "PT2M"   # delay 2 minutes after login to wait for Docker + con
 Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-> 📌 Note: the script uses `127.0.0.1`, not localhost; LiteLLM internal health uses `/health/readiness` (no auth); `docker-init_permissions-1` Exited(0) is normal; the Update Server returning 403 is normal (no default index.html); exit code 0=pass, 1=has failures.
+> 📌 Note: the script uses `127.0.0.1`, not localhost; LiteLLM internal health uses `/health/readiness` (no auth); `dify-init_permissions-1` Exited(0) is normal; the Update Server returning 403 is normal (no default index.html); exit code 0=pass, 1=has failures.
 
 ---
 

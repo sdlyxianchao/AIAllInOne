@@ -68,7 +68,7 @@ $pgDump = Join-Path $BackupDir "dify-postgres.sql"
 if (Test-Path -LiteralPath $pgDump) {
     $difyPass = (Select-String -Path "$DeployDir\dify\docker\.env" -Pattern "^DB_PASSWORD=" | Select-Object -First 1).Line -replace "^DB_PASSWORD=", ""
     if (-not $difyPass) { $difyPass = "difyai123456" }
-    Get-Content -LiteralPath $pgDump -Raw | docker exec -i docker-db_postgres-1 sh -c "PGPASSWORD='$difyPass' psql -U postgres -d dify"
+    Get-Content -LiteralPath $pgDump -Raw | docker exec -i dify-db_postgres-1 sh -c "PGPASSWORD='$difyPass' psql -U postgres -d dify"
     if ($LASTEXITCODE -eq 0) { Log "  [OK] Dify PostgreSQL 已恢复" } else { Log "  [FAIL] Dify PostgreSQL 恢复失败" }
 } else { Log "  [跳过] 无 dify-postgres.sql" }
 

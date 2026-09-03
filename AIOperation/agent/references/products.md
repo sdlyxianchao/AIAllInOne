@@ -58,7 +58,7 @@
 |---|---|
 | Admin console | `<dify>` (Console, admin `DIFY_ADMIN_EMAIL`/`DIFY_ADMIN_PASSWORD`) |
 | Knowledge base API | `/v1/datasets/…` (Bearer `DIFY_KNOWLEDGE_API_KEY`) |
-| Data | PostgreSQL (`docker-db_postgres-1`, etc.; DB password in .env) |
+| Data | PostgreSQL (`dify-db_postgres-1`, etc.; DB password in .env) |
 
 **Common admin operations**:
 - App management: create/edit/publish Chatflow/Workflow/Agent apps

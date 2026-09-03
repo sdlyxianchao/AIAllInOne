@@ -93,19 +93,19 @@ $expected = @(
     @{n="ghost";e="Up"}, @{n="gitea";e="Up"}, @{n="gitea-runner";e="Up"},
     @{n="admin-portal";e="Up"}, @{n="update-server";e="Up"},
     # Dify（独立 compose）
-    @{n="docker-api-1";e="Up"}, @{n="docker-worker-1";e="Up"}, @{n="docker-worker_beat-1";e="Up"},
-    @{n="docker-api_websocket-1";e="Up"}, @{n="docker-web-1";e="Up"}, @{n="docker-nginx-1";e="Up"},
-    @{n="docker-plugin_daemon-1";e="Up"}, @{n="docker-agent_backend-1";e="Up"},
-    @{n="docker-sandbox-1";e="Up"}, @{n="docker-local_sandbox-1";e="Up"},
-    @{n="docker-db_postgres-1";e="Up"}, @{n="docker-redis-1";e="Up"}, @{n="docker-weaviate-1";e="Up"},
-    @{n="docker-ssrf_proxy-1";e="Up"}, @{n="docker-agent_ssrf_proxy-1";e="Up"},
-    @{n="docker-init_permissions-1";e="Exited"}
+    @{n="dify-api-1";e="Up"}, @{n="dify-worker-1";e="Up"}, @{n="dify-worker_beat-1";e="Up"},
+    @{n="dify-api_websocket-1";e="Up"}, @{n="dify-web-1";e="Up"}, @{n="dify-nginx-1";e="Up"},
+    @{n="dify-plugin_daemon-1";e="Up"}, @{n="dify-agent_backend-1";e="Up"},
+    @{n="dify-sandbox-1";e="Up"}, @{n="dify-local_sandbox-1";e="Up"},
+    @{n="dify-db_postgres-1";e="Up"}, @{n="dify-redis-1";e="Up"}, @{n="dify-weaviate-1";e="Up"},
+    @{n="dify-ssrf_proxy-1";e="Up"}, @{n="dify-agent_ssrf_proxy-1";e="Up"},
+    @{n="dify-init_permissions-1";e="Exited"}
 )
 
 foreach ($item in $expected) {
     $n = $item.n; $e = $item.e; $a = $cs[$n]
     if (-not $a) { F "$n  -  NOT FOUND"; continue }
-    if ($n -eq "docker-init_permissions-1") {
+    if ($n -eq "dify-init_permissions-1") {
         if ($a -match "Exited") { P "$n  -  Exited (one-shot init task, normal)" } else { F "$n  -  $a" }
         continue
     }
@@ -160,16 +160,16 @@ if ($LiteLLMKey) {
 } else { W "未读取到 LITELLM_MASTER_KEY，跳过模型检查" }
 
 # Dify API /health
-$da = docker exec docker-api-1 curl -sS -o /dev/null -w "%{http_code}" --max-time 5 http://127.0.0.1:5001/health 2>&1
+$da = docker exec dify-api-1 curl -sS -o /dev/null -w "%{http_code}" --max-time 5 http://127.0.0.1:5001/health 2>&1
 if ($da -match "^[23]\d\d") { P "Dify API :5001/health  -  HTTP $da" }
 else { F "Dify API :5001/health  -  $da" }
 
 # 容器 healthcheck
 $hc = @{
     "new-api-db"="new-api-db (MySQL)";
-    "docker-db_postgres-1"="Dify PostgreSQL";
-    "docker-redis-1"="Dify Redis";
-    "docker-sandbox-1"="Dify Sandbox"
+    "dify-db_postgres-1"="Dify PostgreSQL";
+    "dify-redis-1"="Dify Redis";
+    "dify-sandbox-1"="Dify Sandbox"
 }
 foreach ($cn in $hc.Keys) {
     $label = $hc[$cn]
@@ -300,7 +300,7 @@ if ($naStatus -match "^[23]\d\d") { P "NewAPI /api/status  -  HTTP $naStatus（D
 else { W "NewAPI /api/status  -  $naStatus" }
 
 # Dify 登录：Dify 已初始化 + 管理员账号存在
-$difyAccounts = (docker exec docker-db_postgres-1 psql -U postgres -d dify -t -A -c "SELECT COUNT(*) FROM accounts;" 2>$null).Trim()
+$difyAccounts = (docker exec dify-db_postgres-1 psql -U postgres -d dify -t -A -c "SELECT COUNT(*) FROM accounts;" 2>$null).Trim()
 if ($difyAccounts -match "^\d+$" -and [int]$difyAccounts -ge 1) { P "Dify 已初始化（accounts=$difyAccounts，登录可用）" }
 else { W "Dify 未初始化或账号数异常  -  accounts=$difyAccounts" }
 

@@ -42,7 +42,7 @@ $trigger.Delay = "PT2M"   # 로그인 후 2분 지연으로 Docker + 컨테이�
 Register-ScheduledTask -TaskName "AI-Platform-HealthCheck" -Action $action -Trigger $trigger -RunLevel Highest
 ```
 
-> 📌 주의: 스크립트는 `127.0.0.1` 사용, localhost 사용 안 함; LiteLLM 내부 상태는 `/health/readiness` 사용 (인증 불필요); `docker-init_permissions-1` Exited(0) 정상; Update Server 403 반환 정상 (기본 index.html 없음); exit code 0=통과, 1=실패 있음.
+> 📌 주의: 스크립트는 `127.0.0.1` 사용, localhost 사용 안 함; LiteLLM 내부 상태는 `/health/readiness` 사용 (인증 불필요); `dify-init_permissions-1` Exited(0) 정상; Update Server 403 반환 정상 (기본 index.html 없음); exit code 0=통과, 1=실패 있음.
 
 ---
 

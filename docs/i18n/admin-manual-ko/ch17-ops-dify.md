@@ -51,7 +51,7 @@ docker compose pull               # 새 이미지 가져오기
 docker compose up -d              # 재빌드
 ```
 
-> ⚠️ 핵심 함정: ① WebSocket `NEXT_PUBLIC_SOCKET_URL`을 내부망 IP로 설정; ② 로그인 비밀번호는 base64 인코딩; ③ 비밀번호 분실 시 `docker exec docker-api-1 flask reset-password` 사용 (8자 이상).
+> ⚠️ 핵심 함정: ① WebSocket `NEXT_PUBLIC_SOCKET_URL`을 내부망 IP로 설정; ② 로그인 비밀번호는 base64 인코딩; ③ 비밀번호 분실 시 `docker exec dify-api-1 flask reset-password` 사용 (8자 이상).
 
 > 📖 원문 문서:Dify 공식 문서 https://docs.dify.ai · 자체 호스팅 https://docs.dify.ai/getting-started/install-self-hosted
 

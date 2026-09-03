@@ -20,7 +20,7 @@
 |---|---|---|
 | WebSocket | app creation/workflow debug hangs, loops `ws://localhost` | `.env` `NEXT_PUBLIC_SOCKET_URL=ws://<SERVER_IP>` + compose web fallback + `docker compose up -d web` + hard refresh |
 | base64 password | script/API login fails; "click login nothing happens" | `POST /console/api/login` password is **base64** (obfuscation, not encryption) |
-| forgot admin password | cannot log in | `docker exec docker-api-1 flask reset-password --email ai_all_in_one_admin@<domain> --new-password '<new>' --password-confirm '<new>'` (≥8 chars; PBKDF2 10000 iters, not reversible) |
+| forgot admin password | cannot log in | `docker exec dify-api-1 flask reset-password --email ai_all_in_one_admin@<domain> --new-password '<new>' --password-confirm '<new>'` (≥8 chars; PBKDF2 10000 iters, not reversible) |
 
 > `GET /console/api/account/profile 401` when logged out is normal, not a backend fault.
 
@@ -55,7 +55,7 @@ Publish → WebApp link / iframe embed (Ghost portal) / Service API (`POST /v1/c
 | model error/no reply | NewAPI channel test; endpoint correct (`host.docker.internal:3000/v1`)? |
 | login no response | base64/cache; hard refresh; profile 401 normal |
 | forgot password | container reset-password (≥8) |
-| containers restart-loop | `docker logs docker-api-1` → ValidationError → GRAPH_ENGINE fix |
+| containers restart-loop | `docker logs dify-api-1` → ValidationError → GRAPH_ENGINE fix |
 
 ## 8. Security
 

@@ -75,6 +75,31 @@ cd AIAllInOne/windows
 docker compose up -d
 ```
 
+### Offline deployment (no internet required)
+
+For air-gapped or restricted networks, download the pre-built image pack from [Releases](https://github.com/sdlyxianchao/AIAllInOne/releases) and import before `docker compose up`. This skips all `docker pull` calls and pins every image to the tested version.
+
+**Download from GitHub Releases:** each image pack is split into chunks under 2 GB (GitHub upload limit). Download all parts, then merge and import:
+
+```powershell
+# Windows — merge split parts (from the directory containing the downloaded parts)
+copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz
+# Linux
+cat ai-all-in-one-images.tar.gz.part0* > ai-all-in-one-images.tar.gz
+```
+
+```powershell
+# Import (Windows — run from windows-image/)
+powershell -ExecutionPolicy Bypass -File import-images.ps1
+```
+
+```bash
+# Import (Linux — run from linux-image/)
+chmod +x import-images.sh && sudo ./import-images.sh
+```
+
+> **Dify images:** the GitHub Release contains only the main platform images. For Dify, the deployment guide pulls images directly from Docker Hub (no offline pack needed). If your environment has no Docker Hub access, see the [Gitee Release](https://gitee.com/sdxianchao/AIAllInOne/releases) which includes the Dify image pack as well.
+
 Two ways to go from here:
 
 1. **Automated (recommended)** — hand the deployment to an AI agent (WorkBuddy / OpenClaw / Microsoft Scout). It reads the deployment guide and configs, asks you for parameters (server IP, IdP, admin account, LLM keys), and configures everything step by step.

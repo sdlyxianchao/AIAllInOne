@@ -36,7 +36,7 @@
 | 场景 | 查哪个容器 | 关键字示例 |
 | --- | --- | --- |
 | NewAPI 登录失败 | `new-api` | `error` / `invalid_grant` |
-| Dify 对话报错 | `docker-web-1` / `docker-api-1` | `exception` / `traceback` |
+| Dify 对话报错 | `dify-web-1` / `dify-api-1` | `exception` / `traceback` |
 | Ghost 邮件没收到 | `ghost` | `mail` / `error` |
 | 告警没推出去 | `admin-portal` | `imalert` / `forwardAlert` |
 | 同步任务失败 | `gitea-runner` / `gitea` | `sync` / `fail` |

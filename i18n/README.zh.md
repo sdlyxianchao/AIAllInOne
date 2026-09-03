@@ -74,6 +74,37 @@ cd AIAllInOne/windows
 docker compose up -d
 ```
 
+### 离线部署（无需外网）
+
+如果目标机器无法访问 Docker Hub / ghcr.io（内网、受限网络），可从 [Releases](https://gitee.com/sdxianchao/AIAllInOne/releases) 下载预构建镜像包，导入后再执行 `docker compose up`。这样跳过所有 `docker pull`，且镜像版本锁定为已验证版本。
+
+**从 Gitee Releases 下载**：主平台镜像和 Dify 镜像均已分卷（每卷 < 2 GB）。下载全部分卷后合并导入：
+
+```powershell
+# Windows — 合并分卷（在下载目录执行）
+copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz
+# Dify 镜像（Gitee Release 包含）
+copy /b ai-all-in-one-dify-images.tar.gz.part00 + ai-all-in-one-dify-images.tar.gz.part01 ai-all-in-one-dify-images.tar.gz
+```
+
+```bash
+# Linux
+cat ai-all-in-one-images.tar.gz.part0* > ai-all-in-one-images.tar.gz
+cat ai-all-in-one-dify-images.tar.gz.part0* > ai-all-in-one-dify-images.tar.gz
+```
+
+```powershell
+# 导入镜像（Windows — 在 windows-image/ 目录执行）
+powershell -ExecutionPolicy Bypass -File import-images.ps1
+```
+
+```bash
+# 导入镜像（Linux — 在 linux-image/ 目录执行）
+chmod +x import-images.sh && sudo ./import-images.sh
+```
+
+> **说明**：Gitee Release 同时包含主平台镜像和 Dify 镜像离线包；GitHub Release 仅包含主平台镜像，Dify 需从 Docker Hub 拉取（部署指南中有说明）。
+
 接下来有两种方式：
 
 1. **自动部署（推荐）**——把部署交给 AI Agent（WorkBuddy / OpenClaw / Microsoft Scout）。它会读取部署文档和配置，向你收集参数（服务器 IP、身份源、管理员账号、LLM 密钥），然后一步步完成全部配置。[查看一键部署提示词 →](../windows/windows-deploy-guide-v2.md)

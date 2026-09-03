@@ -62,11 +62,19 @@ def update_progress(phase, status='running', total_files=0, done_files=0, total_
     global _started_at
     progress_path = os.path.join(BASE, 'dsh', 'sync-progress.json')
     os.makedirs(os.path.dirname(progress_path), exist_ok=True)
+    
+    # 计算已执行时间
+    try:
+        started_dt = datetime.datetime.fromisoformat(_started_at)
+        elapsed_s = (datetime.datetime.now() - started_dt).total_seconds()
+    except:
+        elapsed_s = 0
+    
     progress = {
         'phase': phase, 'status': status,
         'total_files': total_files, 'done_files': done_files,
         'total_mb': round(total_mb, 2), 'done_mb': round(done_mb, 2),
-        'started_at': _started_at, 'elapsed_s': 0, 'eta_s': None,
+        'started_at': _started_at, 'elapsed_s': round(elapsed_s, 1), 'eta_s': None,
         'failed': [], 'detail': detail
     }
     with open(progress_path, 'w', encoding='utf-8') as f:
@@ -172,7 +180,7 @@ def fetch_json(url, retries=3):
             else:
                 raise
 
-def download(url, dest, retries=2):
+def download(url, dest, retries=2, total_files=1, done_files=0):
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'dsh-sync'})
@@ -191,7 +199,7 @@ def download(url, dest, retries=2):
                         speed = downloaded / elapsed if elapsed > 0 else 0
                         update_progress(
                             phase='downloading', status='running',
-                            total_files=1, done_files=0,
+                            total_files=total_files, done_files=done_files,
                             total_mb=total_size / (1024 * 1024),
                             done_mb=downloaded / (1024 * 1024),
                             detail=f'Downloading: {downloaded/(1024*1024):.1f}/{total_size/(1024*1024):.1f} MB'
@@ -339,7 +347,7 @@ def main():
                 total_files=total_files, done_files=done_files,
                 detail=f'Downloading {fname} ({done_files+1}/{total_files})')
             print(f'[dsh-sync] Downloading {fname}...')
-            download(url, dest)
+            download(url, dest, total_files=total_files, done_files=done_files)
             files[plat] = fname
             done_files += 1
             print(f'[dsh-sync] Downloaded {fname} ({latest})')
@@ -389,6 +397,10 @@ def main():
             'version': f'v{latest}',
             'date': datetime.date.today().isoformat()
         })
+        
+        # 只保留最近10条记录
+        hist = hist[:10]
+        
         with open(hist_path, 'w', encoding='utf-8') as f:
             json.dump(hist, f, ensure_ascii=False, indent=2)
 
@@ -438,6 +450,9 @@ def main():
             'version': f'v{latest}',
             'date': datetime.date.today().isoformat()
         })
+        
+        # 只保留最近10条记录
+        hist = hist[:10]
         
         os.makedirs(os.path.dirname(hist_path), exist_ok=True)
         with open(hist_path, 'w', encoding='utf-8') as f:

@@ -41,7 +41,7 @@ DSH Desktop ─MCP→ MCP Gateway(:3100/mcp) ─HTTP→ Dify Knowledge API
 
 | Pitfall | Detail |
 |---|---|
-| network | MCP Gateway is on `ai-platform`; Dify is on its own `docker_default` network — reach Dify via host IP `http://<SERVER_IP>/v1` |
+| network | MCP Gateway is on `ai-platform`; Dify is on its own `dify_default` network — reach Dify via host IP `http://<SERVER_IP>/v1` |
 | key scope | Knowledge API key is account-level (all KBs); per-user isolation needs a user→dataset_id map in the tool layer |
 | request details | use full path `/v1/datasets/{id}/hit-testing` (bare `/v1` → 308); Chinese query via `curl -d` → 400; use `--data-binary @file` or scripts (UTF-8) |
 

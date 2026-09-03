@@ -46,7 +46,7 @@ docker compose config --quiet
 findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 ```
 
-> ⚠️ لماذا يجب تغيير `GRAPH_ENGINE_SCALE_UP_THRESHOLD`: رفع Dify 1.16.1 هذا الحقل من «يسمح بـ 0» إلى «يجب أن يكون > 0»، لكن قالب `shared.env` ما يزال 0. دون التغيير ستنهار الحاويات الأربع `docker-api-1` / `worker` / `worker_beat` / `api_websocket` فور الإقلاع، وستُظهر السجلات `ValidationError: Input should be greater than 0`.
+> ⚠️ لماذا يجب تغيير `GRAPH_ENGINE_SCALE_UP_THRESHOLD`: رفع Dify 1.16.1 هذا الحقل من «يسمح بـ 0» إلى «يجب أن يكون > 0»، لكن قالب `shared.env` ما يزال 0. دون التغيير ستنهار الحاويات الأربع `dify-api-1` / `worker` / `worker_beat` / `api_websocket` فور الإقلاع، وستُظهر السجلات `ValidationError: Input should be greater than 0`.
 
 ## 5.3 تشغيل Dify
 
@@ -81,7 +81,7 @@ docker compose up -d web
 > ⚠️ **إعادة تعيين كلمة مرور المدير عند نسيانها**: تجزئة كلمة المرور في Dify هي `pbkdf2_hmac('sha256', password, salt, 10000)` (بعدد تكرارات 10000) ولا يمكن فكّها عكسيًا، لذا أعد تعيينها عبر أمر في الحاوية (كلمة المرور الجديدة 8 أحرف فأكثر):
 
 ```
-docker exec docker-api-1 flask reset-password \
+docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@<نطاق-الشركة> \
   --new-password '<كلمة-مرور-جديدة>' \
   --password-confirm '<كلمة-مرور-جديدة>'

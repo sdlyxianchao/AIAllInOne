@@ -51,7 +51,7 @@ docker compose pull               # 拉新映像
 docker compose up -d              # 重建
 ```
 
-> ⚠️ 關鍵坑：① WebSocket `NEXT_PUBLIC_SOCKET_URL` 要設內網 IP；② 登入密碼是 base64 編碼；③ 忘密碼用 `docker exec docker-api-1 flask reset-password`（≥8 位）。
+> ⚠️ 關鍵坑：① WebSocket `NEXT_PUBLIC_SOCKET_URL` 要設內網 IP；② 登入密碼是 base64 編碼；③ 忘密碼用 `docker exec dify-api-1 flask reset-password`（≥8 位）。
 
 > 📖 原廠文件：Dify 官方文件 https://docs.dify.ai · 自託管 https://docs.dify.ai/getting-started/install-self-hosted
 

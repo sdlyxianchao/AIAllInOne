@@ -772,50 +772,35 @@ docker network ls | findstr ai-platform</code></pre>
 
 <div class="callout callout-warn">
   <strong>⚠️ If the target machine cannot access Docker Hub / ghcr.io (e.g. intranet, restricted network), you must use offline image packages to deploy.</strong>
-  Image packages are exported from a source machine (<code>linux-image/export-images.sh</code>), copied to the target machine, then imported.
   Even if internet access is available, importing images first is recommended (version-locked, avoids unexpected upgrades).
 </div>
 
-<p><strong>Step 0: Copy the following to the target machine (same directory structure)</strong></p>
-<pre><code>C:\AIAllInOne\
-├── windows\                         # Main platform deploy dir (docker-compose.yml, .env, admin-portal\, etc.)
-│   ├── docker-compose.yml
-│   ├── .env                         # Copied from .env.windows and customized
-│   ├── .env.windows                 # Windows template (all ports/passwords/URLs)
-│   ├── .env.example                 # Example env file
-│   ├── admin-portal\                # Source + node_modules (can skip npm install if pre-built)
-│   ├── mcp-gateway\
-│   ├── monitoring\                  # prometheus.yml / promtail.yml / alerts.yml
-│   └── scripts\                     # ghost-setup.ps1 / ghost-theme-setup.ps1 / health-check.ps1 / backup.ps1 / restore.ps1
-├── linux-image\                     # Offline image packages (copied from source machine)
-│   ├── ai-all-in-one-images.tar.gz        # Main platform images (~3.8 GB)
-│   ├── ai-all-in-one-dify-images.tar.gz   # Dify images (~2.5 GB)
-│   ├── export-images.sh                   # Source machine export script (reference only)
-│   └── import-images.sh                   # Target machine import script
-└── dify\                            # Dify standalone (separate compose)
-    └── docker\
-        ├── docker-compose.yaml
-        └── .env</code></pre>
+<p><strong>Step 1: Download image split files</strong></p>
+<p>Download the split files from <a href="https://github.com/sdlyxianchao/AIAllInOne/releases">GitHub Releases</a> under the <code>windows-image/</code> directory:</p>
+<ul>
+  <li><code>ai-all-in-one-images.tar.gz.part00</code> + <code>.part01</code> + <code>.part02</code> (main platform images, ~3.8 GB total)</li>
+  <li>Dify images: pull directly from Docker Hub (the deployment guide chapter 5 handles this automatically)</li>
+</ul>
+<div class="callout callout-info">
+  <strong>Gitee users:</strong> <a href="https://gitee.com/sdxianchao/AIAllInOne/releases">Gitee Releases</a> includes both main platform images AND Dify image splits (<code>ai-all-in-one-dify-images.tar.gz.part00</code> + <code>.part01</code>), so you can download and import both.
+</div>
 
-<p><strong>Step 1: Import main platform images</strong></p>
-<pre><code><span class="comment"># PowerShell or Git Bash</span>
-cd C:\AIAllInOne\linux-image
+<p><strong>Step 2: Merge split files</strong></p>
+<pre><code><span class="comment"># PowerShell — run in the download directory</span>
+copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz</code></pre>
 
-<span class="comment"># If using Git Bash:</span>
-chmod +x import-images.sh
-./import-images.sh        # Auto-checks and imports all images; idempotent, safe to re-run
+<p><strong>Step 3: Import images</strong></p>
+<pre><code><span class="comment"># Place the merged ai-all-in-one-images.tar.gz into windows-image\ directory, then run</span>
+cd windows-image
+powershell -ExecutionPolicy Bypass -File import-images.ps1</code></pre>
+<p>The script automatically creates the <code>ai-platform</code> network and imports all 28 main platform images (idempotent, safe to re-run).</p>
 
-<span class="comment"># If using PowerShell, import manually:</span>
-docker load -i ai-all-in-one-images.tar.gz
-docker load -i ai-all-in-one-dify-images.tar.gz</code></pre>
-<p>The script automatically verifies all 28 main platform images + 9 Dify images are present, importing any missing ones (<code>docker load</code> is idempotent).</p>
-
-<p><strong>Step 2: Verify image import</strong></p>
-<pre><code>docker images | findstr "keycloak gitea ghost langfuse new-api prometheus"
-<span class="comment"># Should show 7+ rows for core platform images</span></code></pre>
+<p><strong>Step 4: Verify image import</strong></p>
+<pre><code>docker images | findstr "keycloak gitea ghost langfuse new-api"
+<span class="comment"># Should show the above image names if import succeeded</span></code></pre>
 
 <div class="callout callout-info">
-  <strong>Offline deployment note:</strong> If the target machine has no internet, <code>npm install</code> will fail. Copy <code>admin-portal\node_modules\</code> and <code>mcp-gateway\node_modules\</code> from the source machine (directory structure must match), and skip npm install. Also, <code>docker compose up -d</code> <b>must be run after completing §3.5 image import</b> (otherwise compose will try to pull from the internet and time out).
+  <strong>Offline deployment note:</strong> If the target machine has no internet, <code>npm install</code> will fail. Copy <code>admin-portal\node_modules\</code> and <code>mcp-gateway\node_modules\</code> from the source machine (directory structure must match), and skip npm install. After importing, continue with the configuration steps below. <code>docker compose up -d</code> will skip pulling already-imported images.
 </div>
 
 <h2 id="start">4. Start Core Services</h2>
@@ -989,7 +974,7 @@ docker compose config --quiet
 findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 <span class="comment"># Expected: GRAPH_ENGINE_SCALE_UP_THRESHOLD=50</span></code></pre>
   <div class="callout callout-warn">
-    <strong>⚠️ Why this line must change:</strong> the Dify 1.16.1 image upgraded <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> from <code>NonNegativeInt</code> (allows 0) to <code>PositiveInt</code> (must be &gt; 0), but the <code>shared.env</code> template still has <code>=0</code>. Without the change, <code>docker-api-1</code> / <code>docker-worker-1</code> / <code>docker-worker_beat-1</code> / <code>docker-api_websocket-1</code> keep <code>Restarting (1)</code>, and <code>docker logs docker-api-1</code> shows <code>pydantic_core._pydantic_core.ValidationError</code>. This is an upstream breaking default change, unrelated to your local config.
+    <strong>⚠️ Why this line must change:</strong> the Dify 1.16.1 image upgraded <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> from <code>NonNegativeInt</code> (allows 0) to <code>PositiveInt</code> (must be &gt; 0), but the <code>shared.env</code> template still has <code>=0</code>. Without the change, <code>dify-api-1</code> / <code>dify-worker-1</code> / <code>docker-worker_beat-1</code> / <code>docker-api_websocket-1</code> keep <code>Restarting (1)</code>, and <code>docker logs dify-api-1</code> shows <code>pydantic_core._pydantic_core.ValidationError</code>. This is an upstream breaking default change, unrelated to your local config.
   </div>
 </div>
 
@@ -1023,7 +1008,7 @@ docker compose up -d web</code></pre>
 </div>
 <div class="callout callout-danger">
   <strong>⚠️ Pitfall: Dify admin password reset when forgotten:</strong> Dify's password hash is <code>pbkdf2_hmac('sha256', password, salt, 10000)</code> (<b>10000 iterations, not the common 100000</b>), can't be reverse-engineered. Reset via in-container command (<b>new password must be ≥ 8 chars</b>):
-  <pre style="margin:8px 0;"><code>docker exec docker-api-1 flask reset-password \
+  <pre style="margin:8px 0;"><code>docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@&lt;company-domain&gt; \
   --new-password '&lt;new-password&gt;' \
   --password-confirm '&lt;new-password&gt;'</code></pre>
@@ -1916,7 +1901,7 @@ DIFY_DEFAULT_DATASET_ID=&lt;knowledge-base UUID&gt;</code></pre>
 <div class="callout callout-warn">
   <strong>⚠️ Key pitfalls:</strong>
   <ul>
-    <li><b>Network reachability</b>: the MCP Gateway is on the <code>ai-platform</code> network while Dify is on its own <code>docker_default</code> network (compose project <code>docker</code>); they can't reach each other by default. Use the host's intranet IP <code>http://&lt;server-IP&gt;/v1</code> to reach Dify's port 80 from inside the container.</li>
+    <li><b>Network reachability</b>: the MCP Gateway is on the <code>ai-platform</code> network while Dify is on its own <code>dify_default</code> network (compose project <code>dify</code>); they can't reach each other by default. Use the host's intranet IP <code>http://&lt;server-IP&gt;/v1</code> to reach Dify's port 80 from inside the container.</li>
     <li><b>Knowledge Key is account-level</b>: one key can access all knowledge bases of that account; Dify's Knowledge API does not directly support "per-user knowledge bases" — you'd need a "user → dataset_id" mapping at the MCP tool layer.</li>
     <li><b><code>GET /v1</code> returns 308</b>: the retrieval request must use the full path <code>/v1/datasets/{id}/hit-testing</code>, not just <code>/v1</code>.</li>
     <li><b>Chinese query via curl <code>-d</code> returns 400</b> (encoding issue): use <code>--data-binary @file</code> or a script (Python/Node) to send the UTF-8 request.</li>
@@ -2387,7 +2372,7 @@ Start-ScheduledTask -TaskName "AI-Platform-HealthCheck"</code></pre>
     <li>The script uses <code>127.0.0.1</code> not <code>localhost</code>, to avoid Docker Desktop WSL2 IPv6 compatibility issues</li>
     <li>Credentials read from the sibling <code>.env</code> (Keycloak admin, NewAPI DB/admin passwords); the script itself doesn't hardcode passwords</li>
     <li>LiteLLM internal health uses <code>/health/readiness</code> (no auth) rather than <code>/health</code> (requires Bearer token)</li>
-    <li><code>docker-init_permissions-1</code> container Exited (0) is a normal one-time init task</li>
+    <li><code>dify-init_permissions-1</code> container Exited (0) is a normal one-time init task</li>
     <li>Update Server returning HTTP 403 is normal (no default index.html, but the service is running)</li>
     <li>Script exit code: 0 = all pass, 1 = some failures</li>
   </ul>
@@ -2762,7 +2747,7 @@ netsh advfirewall set allprofiles state on                             <span cla
 <ul>
   <li>Full pipeline verified: Prometheus rules → Alertmanager (9093) → webhook <code>admin-portal:3000/api/alert-webhook</code> → <code>/api/alerts</code> + imalert forwarding</li>
   <li>All 16 imalert API tests passed (receiver CRUD / rules / history / test send / 404 / 400 validation)</li>
-  <li>imalert storage: <code>admin-session-redis</code> (<b>not</b> <code>docker-redis-1</code>! The latter is for Dify)</li>
+  <li>imalert storage: <code>admin-session-redis</code> (<b>not</b> <code>dify-redis-1</code>! The latter is for Dify)</li>
   <li>Redis keys: <code>imalert:receivers</code> (JSON) / <code>imalert:rules</code> / <code>imalert:history</code> (List)</li>
   <li>receivers defaulting to empty array is normal initial state, not a fault</li>
 </ul>

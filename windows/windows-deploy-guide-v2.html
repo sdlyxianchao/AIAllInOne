@@ -824,50 +824,35 @@ docker network ls | findstr ai-platform</code></pre>
 
 <div class="callout callout-warn">
   <strong>⚠️ 如果目标机器无法访问 Docker Hub / ghcr.io（如内网、受限网络），必须使用离线镜像包方式部署。</strong>
-  镜像包由源机器导出（<code>linux-image/export-images.sh</code>），拷贝到目标机器后导入。
   即使能访问外网，也建议先导入镜像包（版本锁定，避免意外升级）。
 </div>
 
-<p><strong>Step 0: 拷贝以下内容到目标机器（保持目录结构）</strong></p>
-<pre><code>C:\AIAllInOne\
-├── windows\                         # 主平台部署目录（docker-compose.yml、.env、admin-portal\ 等）
-│   ├── docker-compose.yml
-│   ├── .env                         # 由 .env.windows 复制并修改
-│   ├── .env.windows                 # Windows 模板（含端口/密码/URL 全部变量）
-│   ├── .env.example                 # 示例环境变量
-│   ├── admin-portal\                # 源码 + node_modules（可跳过 npm install）
-│   ├── mcp-gateway\
-│   ├── monitoring\                  # prometheus.yml / promtail.yml / alerts.yml
-│   └── scripts\                     # ghost-setup.ps1 / ghost-theme-setup.ps1 / health-check.ps1 / backup.ps1 / restore.ps1
-├── linux-image\                     # 离线镜像包（从源机器拷贝）
-│   ├── ai-all-in-one-images.tar.gz        # 主平台镜像包（约 3.8GB）
-│   ├── ai-all-in-one-dify-images.tar.gz   # Dify 镜像包（约 2.5GB）
-│   ├── export-images.sh                   # 源机器导出脚本（仅参考）
-│   └── import-images.sh                   # 目标机器导入脚本
-└── dify\                            # Dify 独立部署（独立 compose）
-    └── docker\
-        ├── docker-compose.yaml
-        └── .env</code></pre>
+<p><strong>Step 1: 下载镜像分卷文件</strong></p>
+<p>从 <a href="https://github.com/sdlyxianchao/AIAllInOne/releases">GitHub Releases</a> 下载 <code>windows-image/</code> 目录下的分卷文件：</p>
+<ul>
+  <li><code>ai-all-in-one-images.tar.gz.part00</code> + <code>.part01</code> + <code>.part02</code>（主平台镜像，共约 3.8 GB）</li>
+  <li>Dify 镜像请从 Docker Hub 直接拉取（部署指南第 5 章会自动处理）</li>
+</ul>
+<div class="callout callout-info">
+  <strong>Gitee 用户</strong>：<a href="https://gitee.com/sdxianchao/AIAllInOne/releases">Gitee Releases</a> 同时包含 Dify 镜像分卷（<code>ai-all-in-one-dify-images.tar.gz.part00</code> + <code>.part01</code>），可一并下载导入。
+</div>
 
-<p><strong>Step 1: 导入主平台镜像</strong></p>
-<pre><code><span class="comment"># PowerShell 或 Git Bash</span>
-cd C:\AIAllInOne\linux-image
+<p><strong>Step 2: 合并分卷</strong></p>
+<pre><code><span class="comment"># PowerShell — 在下载目录执行</span>
+copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz</code></pre>
 
-<span class="comment"># 使用 Git Bash：</span>
-chmod +x import-images.sh
-./import-images.sh        # 自动检查并导入全部镜像，幂等可重复执行
+<p><strong>Step 3: 导入镜像</strong></p>
+<pre><code><span class="comment"># 把合并后的 ai-all-in-one-images.tar.gz 放到 windows-image\ 目录，然后执行</span>
+cd windows-image
+powershell -ExecutionPolicy Bypass -File import-images.ps1</code></pre>
+<p>脚本会自动创建 <code>ai-platform</code> 网络并导入全部 28 个主平台镜像，幂等可重复执行。</p>
 
-<span class="comment"># 使用 PowerShell 手动导入：</span>
-docker load -i ai-all-in-one-images.tar.gz
-docker load -i ai-all-in-one-dify-images.tar.gz</code></pre>
-<p>脚本会自动校验 28 个主平台镜像 + 9 个 Dify 镜像是否齐全，缺哪个导哪个（<code>docker load</code> 幂等）。</p>
-
-<p><strong>Step 2: 确认镜像导入成功</strong></p>
-<pre><code>docker images | findstr "keycloak gitea ghost langfuse new-api prometheus"
-<span class="comment"># 输出 7+ 行即主平台核心镜像已就位</span></code></pre>
+<p><strong>Step 4: 确认导入成功</strong></p>
+<pre><code>docker images | findstr "keycloak gitea ghost langfuse new-api"
+<span class="comment"># 预期输出包含上述镜像名，说明导入成功</span></code></pre>
 
 <div class="callout callout-info">
-  <strong>离线部署注意：</strong>若目标机器无外网，<code>npm install</code> 会失败。此时应把源机器上 <code>admin-portal\node_modules\</code>、<code>mcp-gateway\node_modules\</code> 目录一并拷贝过来（源码目录结构一致即可），跳过 npm install。同样地，<code>docker compose up -d</code> 之前<strong>必须先完成 §3.5 的镜像导入</strong>（否则 compose 会尝试从外网拉镜像而超时）。
+  <strong>离线部署注意：</strong>若目标机器无外网，<code>npm install</code> 会失败。此时应把源机器上 <code>admin-portal\node_modules\</code>、<code>mcp-gateway\node_modules\</code> 目录一并拷贝过来（源码目录结构一致即可），跳过 npm install。导入完成后，继续下面的配置步骤。<code>docker compose up -d</code> 时不会再拉取已导入的镜像。
 </div>
 
 <h2 id="start">4. 启动核心服务</h2>
@@ -1041,7 +1026,7 @@ docker compose config --quiet
 findstr "GRAPH_ENGINE_SCALE_UP_THRESHOLD" envs\core-services\shared.env
 <span class="comment"># 期望输出：GRAPH_ENGINE_SCALE_UP_THRESHOLD=50</span></code></pre>
   <div class="callout callout-warn">
-    <strong>⚠️ 为什么必须改这一行：</strong>Dify 1.16.1 镜像把 <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> 字段类型从 <code>NonNegativeInt</code>（允许 0）升级为 <code>PositiveInt</code>（必须 > 0），但 <code>shared.env</code> 模板还停留在 <code>=0</code>。不改的话，<code>docker-api-1</code> / <code>docker-worker-1</code> / <code>docker-worker_beat-1</code> / <code>docker-api_websocket-1</code> 会一直 <code>Restarting (1)</code>，<code>docker logs docker-api-1</code> 能看到 <code>pydantic_core._pydantic_core.ValidationError</code>。这是上游版本升级的破坏性默认值变更，跟你的本地配置无关。
+    <strong>⚠️ 为什么必须改这一行：</strong>Dify 1.16.1 镜像把 <code>GRAPH_ENGINE_SCALE_UP_THRESHOLD</code> 字段类型从 <code>NonNegativeInt</code>（允许 0）升级为 <code>PositiveInt</code>（必须 > 0），但 <code>shared.env</code> 模板还停留在 <code>=0</code>。不改的话，<code>dify-api-1</code> / <code>dify-worker-1</code> / <code>docker-worker_beat-1</code> / <code>docker-api_websocket-1</code> 会一直 <code>Restarting (1)</code>，<code>docker logs dify-api-1</code> 能看到 <code>pydantic_core._pydantic_core.ValidationError</code>。这是上游版本升级的破坏性默认值变更，跟你的本地配置无关。
   </div>
 </div>
 
@@ -1075,7 +1060,7 @@ docker compose up -d web</code></pre>
 </div>
 <div class="callout callout-danger">
   <strong>⚠️ 踩坑：Dify 忘记管理员密码时的重置方法：</strong>Dify 密码哈希是 <code>pbkdf2_hmac('sha256', password, salt, 10000)</code>（<b>迭代 10000，不是常见的 100000</b>），无法直接反解。忘记密码用容器内命令重置（<b>新密码必须 ≥ 8 位</b>）：
-  <pre style="margin:8px 0;"><code>docker exec docker-api-1 flask reset-password \
+  <pre style="margin:8px 0;"><code>docker exec dify-api-1 flask reset-password \
   --email ai_all_in_one_admin@&lt;公司域名&gt; \
   --new-password '&lt;新密码&gt;' \
   --password-confirm '&lt;新密码&gt;'</code></pre>
@@ -1968,7 +1953,7 @@ DIFY_DEFAULT_DATASET_ID=&lt;知识库 UUID&gt;</code></pre>
 <div class="callout callout-warn">
   <strong>⚠️ 关键坑：</strong>
   <ul>
-    <li><b>网络打通</b>：MCP Gateway 在 <code>ai-platform</code> 网络，Dify 在它自己的 <code>docker_default</code> 网络（compose 项目名 <code>docker</code>），两者默认不通。用宿主机内网 IP <code>http://&lt;服务器IP&gt;/v1</code> 从容器访问 Dify 的 80 端口即可。</li>
+    <li><b>网络打通</b>：MCP Gateway 在 <code>ai-platform</code> 网络，Dify 在它自己的 <code>dify_default</code> 网络（compose 项目名 <code>dify</code>），两者默认不通。用宿主机内网 IP <code>http://&lt;服务器IP&gt;/v1</code> 从容器访问 Dify 的 80 端口即可。</li>
     <li><b>Knowledge Key 是账号级</b>：一个 key 可访问该账号所有知识库；如需「按用户分库」，Dify Knowledge API 不直接支持，需在 MCP 工具层做「用户 → dataset_id」映射。</li>
     <li><b><code>GET /v1</code> 会 308</b>：检索请求必须用完整路径 <code>/v1/datasets/{id}/hit-testing</code>，不要只写 <code>/v1</code>。</li>
     <li><b>中文 query 用 curl <code>-d</code> 直传会 400</b>（编码问题）：用 <code>--data-binary @文件</code> 或脚本（Python/Node）发 UTF-8 请求。</li>
@@ -2548,7 +2533,7 @@ Start-ScheduledTask -TaskName "AI-Platform-HealthCheck"</code></pre>
     <li>脚本使用 <code>127.0.0.1</code> 而非 <code>localhost</code>，避免 Docker Desktop WSL2 IPv6 兼容性问题</li>
     <li>凭据从同目录 <code>.env</code> 读取（Keycloak 管理员、NewAPI DB/管理员密码），脚本本身不硬编码密码</li>
     <li>LiteLLM 内部健康检查使用 <code>/health/readiness</code>（无需认证）而非 <code>/health</code>（需要 Bearer token）</li>
-    <li><code>docker-init_permissions-1</code> 容器 Exited (0) 是正常的一次性初始化任务</li>
+    <li><code>dify-init_permissions-1</code> 容器 Exited (0) 是正常的一次性初始化任务</li>
     <li>Update Server 返回 HTTP 403 也是正常的（无默认 index.html，但服务在运行）</li>
     <li>脚本 exit code：0 = 全部通过，1 = 有失败项</li>
   </ul>
@@ -2923,7 +2908,7 @@ netsh advfirewall set allprofiles state on                             <span cla
 <ul>
   <li>全链路已验证：Prometheus 规则 → Alertmanager (9093) → webhook <code>admin-portal:3000/api/alert-webhook</code> → <code>/api/alerts</code> + imalert 转发</li>
   <li>imalert API 全部 16 项测试通过（receiver CRUD / rules / history / test send / 404 / 400 校验）</li>
-  <li>imalert 存储：<code>admin-session-redis</code>（<b>不是</b> <code>docker-redis-1</code>！后者是 Dify 的）</li>
+  <li>imalert 存储：<code>admin-session-redis</code>（<b>不是</b> <code>dify-redis-1</code>！后者是 Dify 的）</li>
   <li>Redis 键：<code>imalert:receivers</code>（JSON）/ <code>imalert:rules</code> / <code>imalert:history</code>（List）</li>
   <li>receivers 默认空数组是正常初始状态，非故障</li>
 </ul>

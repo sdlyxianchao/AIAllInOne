@@ -51,7 +51,7 @@ docker compose pull               # اسحب الصور الجديدة
 docker compose up -d              # أعد البناء
 ```
 
-> ⚠️ نقاط حرجة: ① يجب ضبط `NEXT_PUBLIC_SOCKET_URL` الخاص بـ WebSocket إلى عنوان IP الداخلي؛ ② كلمة مرور تسجيل الدخول مُرمَّزة بصيغة base64؛ ③ عند نسيان كلمة المرور استخدم `docker exec docker-api-1 flask reset-password` (8 أحرف فأكثر).
+> ⚠️ نقاط حرجة: ① يجب ضبط `NEXT_PUBLIC_SOCKET_URL` الخاص بـ WebSocket إلى عنوان IP الداخلي؛ ② كلمة مرور تسجيل الدخول مُرمَّزة بصيغة base64؛ ③ عند نسيان كلمة المرور استخدم `docker exec dify-api-1 flask reset-password` (8 أحرف فأكثر).
 
 > 📖 الوثائق الرسمية:وثائق Dify الرسمية https://docs.dify.ai · الاستضافة الذاتية https://docs.dify.ai/getting-started/install-self-hosted
 

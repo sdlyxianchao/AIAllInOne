@@ -77,7 +77,7 @@ const BACKUP_DIR = process.env.BACKUP_DIR || '/backups';          // 宿主机�
 const REPORT_DIR = process.env.REPORT_DIR || '/backups/reports';  // 历史报告保存目录（在 backups 卷内）
 const DEPLOY_DIR = process.env.DEPLOY_DIR || '/deploy';            // 部署目录（配置/脚本）只读挂载
 const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';       // Loki 统一日志
-const DIFY_DB_CONTAINER = process.env.DIFY_DB_CONTAINER || 'docker-db_postgres-1';
+const DIFY_DB_CONTAINER = process.env.DIFY_DB_CONTAINER || 'dify-db_postgres-1';
 const GITEA_CONTAINER = process.env.GITEA_CONTAINER || 'gitea';
 
 // ═══════════════════════════════════════════
@@ -2952,6 +2952,104 @@ const availabilityTestDefs = [
     } },
 ];
 
+// 各测试项 → 可安全重启的 Docker 容器名。仅映射到有明确宿主服务的项；
+// backup / docker 为纯状态检查（无对应容器），不在此列，前端不显示重启按钮。
+// 注：dify 不在本表——它是独立 compose 项目（项目名 dify），分层依赖，走 restartDifyStack()。
+const availabilityRestartMap = {
+  keycloak:        ['keycloak'],
+  newapi:          ['new-api'],
+  litellm:         ['litellm'],
+  'chat-dsh':      ['new-api'],                 // DSH Desktop 聊天经 NewAPI 网关
+  'chat-dify':     ['new-api'],                 // Dify 聊天经 NewAPI 网关
+  ghost:           ['ghost'],
+  gitea:           ['gitea', 'gitea-runner'],
+  mcp:             ['mcp-gateway'],
+  prometheus:      ['prometheus'],
+  grafana:         ['grafana'],
+  langfuse:        ['langfuse', 'langfuse-worker'],
+  loki:            ['loki'],
+  presidio:        ['presidio-analyzer', 'presidio-anonymizer'],
+  'sso-grafana':   ['grafana'],                 // SSO 为 Grafana 配置，重启 Grafana
+  'sso-langfuse':  ['langfuse', 'langfuse-worker'],
+  'update-server': ['update-server'],
+  redis:           ['admin-session-redis'],
+};
+
+// 测试项是否可重启（Dify 单独判断，其余看 availabilityRestartMap）
+function availabilityRestartable(id) {
+  if (id === 'dify') return true;
+  return !!(availabilityRestartMap[id] && availabilityRestartMap[id].length);
+}
+
+// 安全重启单个容器：运行中 → 优雅重启（SIGTERM 等待 t 秒后 SIGKILL）；停止/退出 → 直接启动
+async function safeRestartContainer(name) {
+  const c = docker.getContainer(name);
+  const info = await c.inspect().catch(() => null);
+  if (!info) throw new Error('容器不存在: ' + name);
+  if (info.State.Running) {
+    await c.restart({ t: 10 });
+    return 'restarted';
+  }
+  await c.start();
+  return 'started';
+}
+
+// ═══════════════════════════════════════════
+// Dify 平台独立重启逻辑
+// Dify 是独立 compose 项目（项目名 dify，配置在 dify/docker/docker-compose.yaml），
+// 与主平台（windows/docker-compose.yml）不是同一个栈，容器名以 dify- 前缀区分。
+// 它分层依赖：基础设施(db/redis/weaviate/沙箱) → 后端应用(api/worker/...) → 前端与入口(web/nginx)。
+// 重启策略：基础设施只「拉起停止的」不重启健康的（避免无谓中断数据库）；
+//          应用与入口「重启运行中的 + 拉起停止的」。
+// 通过 compose service label 动态发现容器，避免硬编码容器名。
+// ═══════════════════════════════════════════
+const DIFY_PROJECT = 'dify';
+const DIFY_INFRA_SERVICES = new Set([
+  'db_postgres', 'redis', 'weaviate', 'sandbox', 'local_sandbox', 'ssrf_proxy', 'agent_ssrf_proxy',
+]);
+// 应用层 + 入口层，按依赖顺序（后端先、前端/入口后）
+const DIFY_APP_SERVICES = [
+  'api', 'worker', 'worker_beat', 'api_websocket', 'plugin_daemon', 'agent_backend', 'web', 'nginx',
+];
+
+// 发现某 compose 项目的全部容器（含已停止的），返回 [{ service, name, running }]
+async function listProjectContainers(project) {
+  const all = await docker.listContainers({ all: true });
+  return all
+    .map(c => ({
+      service: c.Labels && c.Labels['com.docker.compose.service'],
+      name: (c.Names && c.Names[0] ? c.Names[0] : '').replace(/^\//, ''),
+      running: c.State === 'running',
+    }))
+    .filter(c => c.name && c.service && c.Labels && c.Labels['com.docker.compose.project'] === project);
+}
+
+// 重启整个 Dify 栈（按依赖顺序），返回每个容器的操作结果
+async function restartDifyStack() {
+  const containers = await listProjectContainers(DIFY_PROJECT);
+  const results = [];
+  const byService = {};
+  for (const c of containers) byService[c.service] = c;
+
+  // 1. 基础设施：只拉起停止的（健康的保持不动）
+  for (const svc of DIFY_INFRA_SERVICES) {
+    const c = byService[svc];
+    if (!c || c.running) continue;
+    try { results.push({ container: c.name, ok: true, action: await safeRestartContainer(c.name) }); }
+    catch (e) { results.push({ container: c.name, ok: false, error: e.message }); }
+  }
+
+  // 2. 应用 + 入口：重启运行中的、拉起停止的（层内并行，加快速度；层间已按依赖顺序）
+  const appTargets = DIFY_APP_SERVICES.map(s => byService[s]).filter(Boolean);
+  const settled = await Promise.allSettled(appTargets.map(async (c) => {
+    try { return { container: c.name, ok: true, action: await safeRestartContainer(c.name) }; }
+    catch (e) { return { container: c.name, ok: false, error: e.message }; }
+  }));
+  for (const s of settled) results.push(s.status === 'fulfilled' ? s.value : { container: '?', ok: false, error: String(s.reason) });
+
+  return results;
+}
+
 // 根据结果列表重算统计（全测、单测回写缓存共用）
 function computeAvailSummary(results) {
   return {
@@ -2991,7 +3089,12 @@ function startAvailabilityScheduler() {
 app.get('/api/availability', keycloak.protect(), async (req, res) => {
   res.json({
     interval_min: AVAILABILITY_INTERVAL_MIN,
-    defs: availabilityTestDefs.map(d => ({ id: d.id, name: d.name })),
+    defs: availabilityTestDefs.map(d => ({
+      id: d.id,
+      name: d.name,
+      restartable: availabilityRestartable(d.id),
+      containers: d.id === 'dify' ? ['Dify 独立服务栈（自动发现全部容器）'] : (availabilityRestartMap[d.id] || []),
+    })),
     last: lastAvailability,
   });
 });
@@ -3016,6 +3119,35 @@ app.post('/api/availability/test/:id', keycloak.protect(), protectAdmin('availab
     lastAvailability = { runAt: Date.now(), summary: computeAvailSummary([r]), results: [r] };
   }
   res.json({ ...r, summary: lastAvailability.summary });
+});
+
+// 安全重启某服务（对应 Docker 容器），成功后返回每个容器的操作结果
+app.post('/api/availability/restart/:id', keycloak.protect(), protectAdmin('availability'), async (req, res) => {
+  const def = availabilityTestDefs.find(d => d.id === req.params.id);
+  if (!def) return res.status(404).json({ error: '未知测试项 ' + req.params.id });
+  // Dify 是独立 compose 项目，走专门的栈级重启逻辑
+  let results;
+  if (def.id === 'dify') {
+    results = await restartDifyStack();
+  } else {
+    const containers = availabilityRestartMap[def.id];
+    if (!containers || !containers.length) return res.status(400).json({ error: '该服务不支持重启' });
+    results = [];
+    for (const name of containers) {
+      try {
+        const action = await safeRestartContainer(name);
+        results.push({ container: name, ok: true, action });
+      } catch (e) {
+        results.push({ container: name, ok: false, error: e.message });
+      }
+    }
+  }
+  const failed = results.filter(r => !r.ok);
+  if (failed.length) {
+    console.error('[availability] 重启 ' + def.id + ' 部分失败:', JSON.stringify(failed));
+    return res.status(500).json({ ok: false, error: `${failed.length}/${results.length} 个容器重启失败`, results });
+  }
+  res.json({ ok: true, results });
 });
 
 // ═══════════════════════════════════════════
