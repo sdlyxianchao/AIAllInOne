@@ -98,7 +98,7 @@ powershell -ExecutionPolicy Bypass -File import-images.ps1
 chmod +x import-images.sh && sudo ./import-images.sh
 ```
 
-> **Dify images:** the GitHub Release contains only the main platform images. For Dify, the deployment guide pulls images directly from Docker Hub (no offline pack needed). If your environment has no Docker Hub access, see the [Gitee Release](https://gitee.com/sdxianchao/AIAllInOne/releases) which includes the Dify image pack as well.
+> **Dify images:** the GitHub Release contains only the main platform images. For Dify, the deployment guide pulls images directly from Docker Hub (no offline pack needed). If your environment has no Docker Hub access, Chinese users can download both packs from 123pan (free, no speed limit): [main platform](https://4002626314.share.123pan.cn/123pan/66RzMh-39ryH) (~3.8 GB) · [Dify](https://4002626314.share.123pan.cn/123pan/66RzMh-96wVH) (~2.3 GB).
 
 Two ways to go from here:
 

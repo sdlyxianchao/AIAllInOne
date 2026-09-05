@@ -827,17 +827,21 @@ docker network ls | findstr ai-platform</code></pre>
   即使能访问外网，也建议先导入镜像包（版本锁定，避免意外升级）。
 </div>
 
-<p><strong>Step 1: 下载镜像分卷文件</strong></p>
+<p><strong>Step 1: 下载镜像文件</strong></p>
 <p>从 <a href="https://github.com/sdlyxianchao/AIAllInOne/releases">GitHub Releases</a> 下载 <code>windows-image/</code> 目录下的分卷文件：</p>
 <ul>
   <li><code>ai-all-in-one-images.tar.gz.part00</code> + <code>.part01</code> + <code>.part02</code>（主平台镜像，共约 3.8 GB）</li>
   <li>Dify 镜像请从 Docker Hub 直接拉取（部署指南第 5 章会自动处理）</li>
 </ul>
 <div class="callout callout-info">
-  <strong>Gitee 用户</strong>：<a href="https://gitee.com/sdxianchao/AIAllInOne/releases">Gitee Releases</a> 同时包含 Dify 镜像分卷（<code>ai-all-in-one-dify-images.tar.gz.part00</code> + <code>.part01</code>），可一并下载导入。
+  <strong>Gitee 用户</strong>：也可从 123云盘下载完整镜像包（不限速、无需登录）：
+  <ul>
+    <li>主平台镜像（~3.8 GB）：<a href="https://4002626314.share.123pan.cn/123pan/66RzMh-39ryH">下载</a></li>
+    <li>Dify 镜像（~2.3 GB）：<a href="https://4002626314.share.123pan.cn/123pan/66RzMh-96wVH">下载</a></li>
+  </ul>
 </div>
 
-<p><strong>Step 2: 合并分卷</strong></p>
+<p><strong>Step 2: 合并分卷</strong>（仅 GitHub Releases 下载的分卷需要，123云盘下载的完整包跳过此步）</p>
 <pre><code><span class="comment"># PowerShell — 在下载目录执行</span>
 copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz</code></pre>
 

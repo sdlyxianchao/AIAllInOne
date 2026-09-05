@@ -76,21 +76,20 @@ docker compose up -d
 
 ### 离线部署（无需外网）
 
-如果目标机器无法访问 Docker Hub / ghcr.io（内网、受限网络），可从 [Releases](https://gitee.com/sdxianchao/AIAllInOne/releases) 下载预构建镜像包，导入后再执行 `docker compose up`。这样跳过所有 `docker pull`，且镜像版本锁定为已验证版本。
+如果目标机器无法访问 Docker Hub / ghcr.io（内网、受限网络），可下载预构建镜像包，导入后再执行 `docker compose up`。这样跳过所有 `docker pull`，且镜像版本锁定为已验证版本。
 
-**从 Gitee Releases 下载**：主平台镜像和 Dify 镜像均已分卷（每卷 < 2 GB）。下载全部分卷后合并导入：
+**下载离线镜像包**（123云盘，不限速、无需登录）：
+
+| 镜像包 | 大小 | 下载链接 |
+|---|---|---|
+| 主平台镜像 | ~3.8 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-39ryH) |
+| Dify 镜像 | ~2.3 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-96wVH) |
+
+下载后放到对应的镜像目录：
 
 ```powershell
-# Windows — 合并分卷（在下载目录执行）
-copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz
-# Dify 镜像（Gitee Release 包含）
-copy /b ai-all-in-one-dify-images.tar.gz.part00 + ai-all-in-one-dify-images.tar.gz.part01 ai-all-in-one-dify-images.tar.gz
-```
-
-```bash
-# Linux
-cat ai-all-in-one-images.tar.gz.part0* > ai-all-in-one-images.tar.gz
-cat ai-all-in-one-dify-images.tar.gz.part0* > ai-all-in-one-dify-images.tar.gz
+# Windows — 把下载的文件放到 windows-image/ 目录
+# 文件名：ai-all-in-one-images.tar.gz 和 ai-all-in-one-dify-images.tar.gz
 ```
 
 ```powershell
@@ -103,7 +102,7 @@ powershell -ExecutionPolicy Bypass -File import-images.ps1
 chmod +x import-images.sh && sudo ./import-images.sh
 ```
 
-> **说明**：Gitee Release 同时包含主平台镜像和 Dify 镜像离线包；GitHub Release 仅包含主平台镜像，Dify 需从 Docker Hub 拉取（部署指南中有说明）。
+> **说明**：主平台和 Dify 镜像均通过123云盘提供下载。GitHub Release 仅包含主平台镜像分卷，Dify 需从 Docker Hub 拉取（部署指南中有说明）。
 
 接下来有两种方式：
 

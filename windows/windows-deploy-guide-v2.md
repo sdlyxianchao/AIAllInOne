@@ -487,16 +487,18 @@ DHCP 保留比在 Windows 里设静态 IP 更稳（路由器统一管理、不�
 > ⚠️ **如果目标机器无法访问 Docker Hub / ghcr.io（如内网、受限网络），必须使用离线镜像包方式部署。**
 > 即使能访问外网，也建议先导入镜像包（版本锁定，避免意外升级）。
 
-**Step 1: 下载镜像分卷文件**
+**Step 1: 下载镜像文件**
 
 从 [GitHub Releases](https://github.com/sdlyxianchao/AIAllInOne/releases) 下载 `windows-image/` 目录下的分卷文件：
 
 - `ai-all-in-one-images.tar.gz.part00` + `.part01` + `.part02`（主平台镜像，共约 3.8 GB）
 - Dify 镜像请从 Docker Hub 直接拉取（部署指南第 5 章会自动处理）
 
-> **Gitee 用户**：[Gitee Releases](https://gitee.com/sdxianchao/AIAllInOne/releases) 同时包含 Dify 镜像分卷（`ai-all-in-one-dify-images.tar.gz.part00` + `.part01`），可一并下载导入。
+> **Gitee 用户**：也可从 123云盘下载完整镜像包（不限速、无需登录）：
+> - 主平台镜像（~3.8 GB）：[下载](https://4002626314.share.123pan.cn/123pan/66RzMh-39ryH)
+> - Dify 镜像（~2.3 GB）：[下载](https://4002626314.share.123pan.cn/123pan/66RzMh-96wVH)
 
-**Step 2: 合并分卷**
+**Step 2: 合并分卷**（仅 GitHub Releases 下载的分卷需要，123云盘下载的完整包跳过此步）
 
 ```powershell
 # PowerShell — 在下载目录执行
