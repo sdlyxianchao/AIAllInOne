@@ -1344,37 +1344,114 @@ app.post('/api/gitea/sync/force-stop', async (req, res) => {
   }
 });
 
-// 重新同步指定版本（下载缺失的平台文件）
+// 重新同步指定版本（通过 Gitea Action 触发，input 字段名必须与 sync.yml 的 workflow_dispatch 一致）
 app.post('/api/gitea/sync/resync-version', async (req, res) => {
   try {
     const { version } = req.body;
     if (!version) return res.status(400).json({ error: '请提供版本号' });
-    
+
     const ver = version.startsWith('v') ? version : `v${version}`;
+    if (!/^v\d+\.\d+\.\d+$/.test(ver)) {
+      return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
+    }
     console.log(`[gitea] Triggering re-sync for version ${ver} via Gitea Action...`);
-    
+
     // 触发 Gitea Action，让同步脚本处理重新同步
+    // 注意：input 字段名必须与 sync.yml 中 workflow_dispatch.inputs 的字段名一致（sync_version），
+    // 否则 Gitea 会忽略 input，fallback 到默认行为（同步最新版）。
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
     const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         ref: 'main',
         inputs: {
-          resync_version: ver
+          sync_version: ver
         }
       }),
     });
-    
+
     if (resp.status === 204) {
       res.json({ ok: true, message: `已触发 ${ver} 重新同步任务，请在 Gitea Actions 中查看执行进度` });
     } else {
       const txt = await resp.text().catch(() => '');
       res.status(resp.status).json({ error: `触发失败 (HTTP ${resp.status}) ${txt}` });
     }
-  } catch (e) { 
+  } catch (e) {
     console.error('[gitea] Resync error:', e.message);
-    res.status(500).json({ error: e.message }); 
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 获取 GitHub 上所有可用的 DSH Desktop 版本
+app.get('/api/gitea/sync/github-releases', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const count = parseInt(req.query.count) || 20;
+    const resp = await fetch('https://api.github.com/repos/dataelement/dsh-desktop/releases?per_page=' + count, {
+      headers: { 'User-Agent': 'AI-Admin-Center', 'Accept': 'application/vnd.github+json' }
+    });
+    if (!resp.ok) return res.status(resp.status).json({ error: `GitHub API error: ${resp.status}` });
+    const releases = await resp.json();
+    
+    // 获取本地已有版本
+    let localVersions = [];
+    try {
+      const vr = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
+      const vData = JSON.parse(vr);
+      localVersions = (vData.versions || []).map(v => v.version);
+    } catch {}
+    
+    const result = releases
+      .filter(r => !r.draft)
+      .map(r => ({
+        tag: r.tag_name,
+        version: r.tag_name.replace(/^v/, ''),
+        date: (r.published_at || '').slice(0, 10),
+        prerelease: r.prerelease,
+        local: localVersions.includes(r.tag_name) || localVersions.includes(r.tag_name.replace(/^v/, '')),
+        assets: r.assets
+          .filter(a => a.name.endsWith('.exe') || a.name.endsWith('.dmg'))
+          .map(a => ({ name: a.name, size: a.size, sizeMB: Math.round(a.size / 1024 / 1024) }))
+      }));
+    
+    res.json({ releases: result, local_versions: localVersions });
+  } catch (e) {
+    console.error('[gitea] GitHub releases error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 同步指定版本（直接在 gitea-runner 容器里执行，不走 Gitea Actions）
+app.post('/api/gitea/sync/sync-version', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
+  try {
+    const { version } = req.body;
+    if (!version) return res.status(400).json({ error: '请提供版本号' });
+
+    const ver = version.startsWith('v') ? version : `v${version}`;
+    // 严格校验版本号，防止 shell 注入
+    if (!/^v\d+\.\d+\.\d+$/.test(ver)) {
+      return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
+    }
+    console.log(`[gitea] Syncing specific version ${ver} via runner exec...`);
+
+    // 在 runner 容器后台执行（runner 已挂载 docker.sock，有 python3）
+    // 用引号包裹变量防止含空格/特殊字符的版本号导致解析错误
+    const cmd = [
+      'sh', '-c',
+      `wget -q -O /tmp/sync_download.py 'http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync_download.py' ` +
+      `&& wget -q -O /tmp/sync-config.json 'http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync-config.json' ` +
+      `&& cd /tmp && PYTHONUNBUFFERED=1 python3 /tmp/sync_download.py --sync-version '${ver}'`
+    ];
+
+    // Fire-and-forget：用 dockerExecDetach 立即返回，不等脚本完成
+    dockerExecDetach('gitea-runner', cmd).catch(e =>
+      console.error(`[gitea] Sync ${ver} detach error:`, e.message)
+    );
+
+    res.json({ ok: true, message: `已触发 ${ver} 同步任务（在 Runner 容器中执行），请稍候查看进度` });
+  } catch (e) {
+    console.error('[gitea] Sync version error:', e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -1465,6 +1542,31 @@ app.post('/api/gitea/sync/config', keycloak.protect(), protectAdmin('gitea'), as
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// 把内容写入 update-server 容器内的文件（避免 echo ${b64} | base64 -d 的 shell 注入风险）
+// 流程：1) 在容器内创建一个 python 进程（AttachStdin=true + AttachStdout=false）
+//       2) 通过 hijack 连接把 base64 串写到 python 进程的 stdin
+//       3) python 进程收到后 base64.b64decode 后写到目标路径
+async function writeToUpdateContainer(nginxPath, content) {
+  const b64 = Buffer.from(content, 'utf8').toString('base64');
+  // 用单引号包裹 nginxPath（路径里不含单引号），base64 字符集安全
+  const script = `import sys,base64; open('${nginxPath}','wb').write(base64.b64decode(sys.stdin.read()))`;
+  const container = docker.getContainer(UPDATE_SERVER || 'update-server');
+  const exec = await container.exec({
+    Cmd: ['python3', '-c', script],
+    AttachStdin: true, AttachStdout: false, AttachStderr: true
+  });
+  const stream = await exec.start({ hijack: true });
+  // 直接把 base64 字符串写到 hijack duplex stream（写到 stdin 帧）
+  stream.write(Buffer.from(b64 + '\n'));
+  // 关闭 stdin 让 python 收到 EOF，base64.decode 完成，文件写入
+  stream.end && stream.end();
+  await new Promise((resolve) => {
+    stream.on('end', resolve);
+    stream.on('error', () => resolve());
+    setTimeout(resolve, 8000);  // 保险超时
+  });
+}
+
 // 追加一条同步历史到 update-server 的 sync-history.json（同步脚本与删除操作共用）
 async function appendSyncHistory(status, detail) {
   try {
@@ -1476,8 +1578,7 @@ async function appendSyncHistory(status, detail) {
     if (!Array.isArray(hist.history)) hist.history = [];
     hist.history.push({ time: new Date().toISOString(), status, detail: detail || '' });
     hist.history = hist.history.slice(-200);
-    const b64 = Buffer.from(JSON.stringify(hist, null, 2)).toString('base64');
-    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/dsh/sync-history.json`]);
+    await writeToUpdateContainer('/usr/share/nginx/html/dsh/sync-history.json', JSON.stringify(hist, null, 2));
   } catch (e) {
     console.error('记录同步历史失败:', e.message);
   }
@@ -1528,8 +1629,11 @@ app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('git
   try {
     const ver = (req.params.ver || '').replace(/[^a-zA-Z0-9.\-]/g, '');
     if (!ver) return res.status(400).json({ error: '无效版本号' });
-    // 1. 删除版本目录
-    await dockerExec('update-server', ['sh', '-c', `rm -rf "/usr/share/nginx/html/dsh/${ver}"`]);
+    if (!/^v?\d+\.\d+\.\d+$/.test(ver)) {
+      return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
+    }
+    // 1. 删除版本目录（nginx 路径，单引号包裹防止路径含特殊字符）
+    await dockerExec('update-server', ['sh', '-c', `rm -rf '/usr/share/nginx/html/dsh/${ver}'`]);
     // 2. 更新 versions.json（移除该版本）
     let d;
     try {
@@ -1537,11 +1641,11 @@ app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('git
       d = JSON.parse(stdout || '{"versions":[]}');
     } catch (e) { d = { versions: [] }; }
     d.versions = (d.versions || []).filter(v => v.version !== ver);
-    const b64 = Buffer.from(JSON.stringify(d, null, 2)).toString('base64');
-    await dockerExec('update-server', ['sh', '-c', `echo ${b64} | base64 -d > /usr/share/nginx/html/dsh/versions.json`]);
+    // 用 python stdin 写入，避免 echo ${b64} | base64 -d 的注入风险
+    await writeToUpdateContainer('/usr/share/nginx/html/dsh/versions.json', JSON.stringify(d, null, 2));
     // 3. 记录删除历史（软件信息已变化）
     await appendSyncHistory('success', `删除版本 ${ver}`);
-    // 4. 触发 rebuild_only 重建页面
+    // 4. 触发 rebuild_only 重建页面（保持向后兼容）
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
     await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
       method: 'POST',
@@ -2027,6 +2131,15 @@ function dockerExec(containerName, cmd) {
       stream.on('error', reject);
     } catch (e) { reject(e); }
   });
+}
+
+// 启动后台命令并立即返回（不等 stream end），用于 fire-and-forget 长时间任务
+// 返回 Promise<{ execId }> —— 不会 reject，除非 exec 创建阶段就失败
+async function dockerExecDetach(containerName, cmd) {
+  const container = docker.getContainer(containerName);
+  const exec = await container.exec({ Cmd: cmd, AttachStdout: false, AttachStderr: false });
+  await exec.start({ Detach: true });
+  return { execId: exec.id };
 }
 
 const GHOST_STATS_SCRIPT = `const fs=require('fs'),path=require('path');

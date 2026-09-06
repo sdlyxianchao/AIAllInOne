@@ -1,473 +1,662 @@
 #!/usr/bin/env python3
-import json, os, sys, urllib.request, datetime, time, subprocess, tarfile, io, socket, re
+"""
+DSH Desktop Sync Script
+=======================
+Checks GitHub for new DSH Desktop releases, downloads installers,
+deploys to update-server nginx, updates Ghost page and Admin Center.
 
+Runs in: Gitea Actions container (with docker.sock + volume mounted)
+Also works: manually on host machine
+
+Environment variables:
+  UPDATE_ROOT       - Persistent storage for downloaded files (default: /tmp/dsh-sync-output)
+  SYNC_CONFIG       - Path to sync-config.json (default: sync-config.json)
+  UPDATE_SERVER     - Update server container name (default: update-server)
+  ADMIN_PORTAL      - Admin portal container name (default: admin-portal)
+  DOCKER_SOCK       - Docker socket path (default: auto-detect)
+"""
+
+import json, os, sys, urllib.request, datetime, time, tarfile, io, socket, re, glob
+
+# ── Config ──────────────────────────────────────────────────────────
 BASE = os.environ.get('UPDATE_ROOT', '/tmp/dsh-sync-output')
 CONFIG_PATH = os.environ.get('SYNC_CONFIG', 'sync-config.json')
-REPO = 'dataelement/dsh-desktop'
-UPDATE_SERVER_CONTAINER = os.environ.get('UPDATE_SERVER_CONTAINER', 'update-server')
-ADMIN_PORTAL_URL = os.environ.get('ADMIN_PORTAL_URL', 'http://admin-portal:3000')
-_started_at = datetime.datetime.now().isoformat()
+UPDATE_SERVER = os.environ.get('UPDATE_SERVER', 'update-server')
+ADMIN_PORTAL = os.environ.get('ADMIN_PORTAL', 'admin-portal')
+DOCKER_SOCK = os.environ.get('DOCKER_SOCK', '')
 
-class UnixSocketHTTPConnection:
-    """HTTP connection via Unix socket"""
-    def __init__(self, socket_path, timeout=30):
-        self.socket_path = socket_path
+# Auto-detect Docker socket
+if not DOCKER_SOCK:
+    if os.path.exists('/var/run/docker.sock'):
+        DOCKER_SOCK = '/var/run/docker.sock'
+    elif os.path.exists('//./pipe/docker_engine'):
+        DOCKER_SOCK = '//./pipe/docker_engine'
+
+STARTED_AT = datetime.datetime.now().isoformat()
+LOG_LINES = []  # Collect all log lines for Admin Center
+
+
+# ── Logging ─────────────────────────────────────────────────────────
+def log(msg, level='info'):
+    ts = datetime.datetime.now().strftime('%H:%M:%S')
+    line = f'[{ts}] [{level.upper()}] {msg}'
+    print(line, flush=True)
+    LOG_LINES.append({'time': ts, 'level': level, 'msg': msg})
+
+
+# ── Docker Socket HTTP ──────────────────────────────────────────────
+class DockerSocket:
+    """Minimal HTTP client over Docker Unix socket or Windows named pipe."""
+    def __init__(self, timeout=60):
         self.timeout = timeout
-        self.sock = None
-    
-    def request(self, method, path, body=None, headers=None):
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock.settimeout(self.timeout)
-        self.sock.connect(self.socket_path)
-        
-        if headers is None:
-            headers = {}
-        
-        request = f"{method} {path} HTTP/1.1\r\n"
-        request += f"Host: localhost\r\n"
-        for key, value in headers.items():
-            request += f"{key}: {value}\r\n"
-        if body:
-            request += f"Content-Length: {len(body)}\r\n"
-        request += "\r\n"
-        
-        self.sock.sendall(request.encode())
-        if body:
-            self.sock.sendall(body)
-    
-    def getresponse(self):
-        response = b""
-        while True:
-            chunk = self.sock.recv(4096)
-            if not chunk:
-                break
-            response += chunk
-            if b"\r\n\r\n" in response:
-                break
-        
-        header_end = response.find(b"\r\n\r\n")
-        header = response[:header_end].decode()
-        body = response[header_end+4:]
-        
-        status_line = header.split("\r\n")[0]
-        status_code = int(status_line.split(" ")[1])
-        
-        return type('Response', (), {'status': status_code, 'read': lambda: body})()
-    
-    def close(self):
-        if self.sock:
-            self.sock.close()
 
-def update_progress(phase, status='running', total_files=0, done_files=0, total_mb=0, done_mb=0, detail=''):
-    global _started_at
-    progress_path = os.path.join(BASE, 'dsh', 'sync-progress.json')
-    os.makedirs(os.path.dirname(progress_path), exist_ok=True)
-    
-    # 计算已执行时间
-    try:
-        started_dt = datetime.datetime.fromisoformat(_started_at)
-        elapsed_s = (datetime.datetime.now() - started_dt).total_seconds()
-    except:
-        elapsed_s = 0
-    
-    progress = {
-        'phase': phase, 'status': status,
-        'total_files': total_files, 'done_files': done_files,
-        'total_mb': round(total_mb, 2), 'done_mb': round(done_mb, 2),
-        'started_at': _started_at, 'elapsed_s': round(elapsed_s, 1), 'eta_s': None,
-        'failed': [], 'detail': detail
-    }
-    with open(progress_path, 'w', encoding='utf-8') as f:
-        json.dump(progress, f, ensure_ascii=False, indent=2)
-    copy_to_update_server(progress_path, '/usr/share/nginx/html/dsh/sync-progress.json')
+    def call(self, method, path, body=b'', headers=None):
+        """Send request and return (status_code, response_body)."""
+        headers = headers or {}
+        if isinstance(body, str):
+            body = body.encode()
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.settimeout(self.timeout)
+        try:
+            sock.connect(DOCKER_SOCK)
+            req = f'{method} {path} HTTP/1.1\r\nHost: localhost\r\n'
+            for k, v in headers.items():
+                req += f'{k}: {v}\r\n'
+            if method in ('GET', 'HEAD'):
+                req += 'Connection: close\r\n\r\n'
+                sock.sendall(req.encode())
+            else:
+                req += f'Content-Length: {len(body)}\r\nConnection: close\r\n\r\n'
+                sock.sendall(req.encode() + body)
+            # Read full response
+            data = b''
+            while True:
+                try:
+                    chunk = sock.recv(65536)
+                    if not chunk:
+                        break
+                    data += chunk
+                except socket.timeout:
+                    break
+            if not data:
+                return 0, b''
+            header_end = data.find(b'\r\n\r\n')
+            header = data[:header_end].decode()
+            status_code = int(header.split('\r\n')[0].split(' ')[1])
+            resp_body = data[header_end + 4:]
+            return status_code, resp_body
+        finally:
+            sock.close()
 
-def copy_to_update_server(local_path, container_dest):
-    """Copy file to update-server container using Docker API via Unix socket"""
-    try:
-        tar_stream = io.BytesIO()
-        with tarfile.open(fileobj=tar_stream, mode='w') as tar:
-            arcname = os.path.basename(container_dest)
-            tar.add(local_path, arcname=arcname)
-        tar_stream.seek(0)
-        
-        conn = UnixSocketHTTPConnection('/var/run/docker.sock', timeout=30)
-        container_dest_dir = os.path.dirname(container_dest)
-        conn.request('PUT', f'/containers/{UPDATE_SERVER_CONTAINER}/archive?path={container_dest_dir}', 
-                    body=tar_stream.read(),
-                    headers={'Content-Type': 'application/x-tar'})
-        resp = conn.getresponse()
-        if resp.status == 200:
-            print(f'[dsh-sync] Copied {local_path} to update-server:{container_dest}')
-        else:
-            print(f'[dsh-sync] Failed to copy: {resp.status} {resp.read().decode()}')
-        conn.close()
-    except Exception as e:
-        print(f'[dsh-sync] Failed to copy {local_path}: {e}')
 
-def copy_dir_to_update_server(local_dir, container_dest):
-    """Copy directory contents to update-server container using Docker API via Unix socket"""
-    try:
-        tar_stream = io.BytesIO()
-        with tarfile.open(fileobj=tar_stream, mode='w') as tar:
-            for root, dirs, files in os.walk(local_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, local_dir)
-                    tar.add(file_path, arcname=arcname)
-        tar_stream.seek(0)
-        
-        conn = UnixSocketHTTPConnection('/var/run/docker.sock', timeout=60)
-        conn.request('PUT', f'/containers/{UPDATE_SERVER_CONTAINER}/archive?path={container_dest}', 
-                    body=tar_stream.read(),
-                    headers={'Content-Type': 'application/x-tar'})
-        resp = conn.getresponse()
-        if resp.status == 200:
-            print(f'[dsh-sync] Copied {local_dir} to update-server:{container_dest}')
-        else:
-            print(f'[dsh-sync] Failed to copy: {resp.status} {resp.read().decode()}')
-        conn.close()
-    except Exception as e:
-        print(f'[dsh-sync] Failed to copy {local_dir}: {e}')
+# ── Progress & History ──────────────────────────────────────────────
+def write_progress(phase, status='running', detail='', **kw):
+    path = os.path.join(BASE, 'dsh', 'sync-progress.json')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    elapsed = (datetime.datetime.now() - datetime.datetime.fromisoformat(STARTED_AT)).total_seconds()
+    obj = {'phase': phase, 'status': status, 'detail': detail,
+           'started_at': STARTED_AT, 'elapsed_s': round(elapsed, 1),
+           'logs': LOG_LINES[-20:]}  # Keep last 20 log lines
+    obj.update(kw)
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(obj, f, ensure_ascii=False, indent=2)
+    deploy_file_to_nginx(path, '/usr/share/nginx/html/dsh/sync-progress.json')
 
-def delete_from_update_server(container_path):
-    """Delete file/dir from update-server container using Docker API"""
-    try:
-        conn = UnixSocketHTTPConnection('/var/run/docker.sock', timeout=30)
-        conn.request('DELETE', f'/containers/{UPDATE_SERVER_CONTAINER}/archive?path={container_path}')
-        resp = conn.getresponse()
-        if resp.status == 200:
-            print(f'[dsh-sync] Deleted {container_path} from update-server')
-        else:
-            print(f'[dsh-sync] Failed to delete {container_path}: {resp.status}')
-        conn.close()
-    except Exception as e:
-        print(f'[dsh-sync] Failed to delete {container_path}: {e}')
 
-def update_ghost_page(version, date, files, all_versions=None):
-    """Update Ghost DSH Desktop page with new version info"""
+def add_history(status, detail, version=''):
+    path = os.path.join(BASE, 'dsh', 'sync-history.json')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    hist = []
+    if os.path.exists(path):
+        try:
+            with open(path, encoding='utf-8') as f:
+                hist = json.load(f)
+        except:
+            pass
+    hist.insert(0, {
+        'time': datetime.datetime.now().isoformat(),
+        'status': status, 'detail': detail,
+        'version': version, 'date': datetime.date.today().isoformat()
+    })
+    hist = hist[:20]
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(hist, f, ensure_ascii=False, indent=2)
+    deploy_file_to_nginx(path, '/usr/share/nginx/html/dsh/sync-history.json')
+
+
+# ── Docker API helpers ──────────────────────────────────────────────
+def deploy_file_to_nginx(local_path, nginx_dest):
+    """Copy a single file to update-server container via Docker API.
+    Uses curl (already installed in container) for reliable large file upload."""
+    if not DOCKER_SOCK:
+        log(f'No Docker socket, skip deploy {os.path.basename(local_path)}', 'warn')
+        return False
+    fname = os.path.basename(local_path)
+    dest_dir = os.path.dirname(nginx_dest)
+    tar_path = local_path + '.tar'
     try:
-        url = f'{ADMIN_PORTAL_URL}/api/ghost/update-dsh-page'
-        data = json.dumps({
-            'version': version,
-            'date': date,
-            'files': files,
-            'all_versions': all_versions or []
-        }).encode('utf-8')
-        
-        req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=30) as r:
-            result = json.loads(r.read().decode('utf-8'))
-            print(f'[dsh-sync] Ghost page updated: {result}')
+        # 1. Create tar archive
+        with tarfile.open(tar_path, 'w') as tar:
+            tar.add(local_path, arcname=fname)
+        # 2. Upload via curl over Unix socket
+        import subprocess
+        result = subprocess.run([
+            'curl', '-s', '-o', '/dev/null', '-w', '%{http_code}',
+            '--unix-socket', DOCKER_SOCK,
+            '-X', 'PUT',
+            '-H', 'Content-Type: application/x-tar',
+            '--data-binary', f'@{tar_path}',
+            f'http://localhost/containers/{UPDATE_SERVER}/archive?path={dest_dir}'
+        ], capture_output=True, text=True, timeout=300)
+        code = int(result.stdout.strip()) if result.stdout.strip().isdigit() else 0
+        if code == 200:
+            log(f'Deployed {fname} → update-server:{nginx_dest}')
             return True
+        else:
+            log(f'Deploy failed {fname}: HTTP {code} {result.stderr[:100]}', 'error')
+            return False
     except Exception as e:
-        print(f'[dsh-sync] Failed to update Ghost page: {e}')
+        log(f'Deploy error {fname}: {e}', 'error')
+        return False
+    finally:
+        if os.path.exists(tar_path):
+            os.remove(tar_path)
+
+
+def deploy_via_wget(url, nginx_dest, timeout_s=600):
+    """Download file directly inside update-server container using wget.
+    Returns True on success, False on failure."""
+    if not DOCKER_SOCK:
+        return False
+    dest_dir = os.path.dirname(nginx_dest)
+    fname = os.path.basename(nginx_dest)
+    try:
+        # 1. Create exec
+        exec_body = json.dumps({
+            'Cmd': ['sh', '-c', f'mkdir -p {dest_dir} && wget -q -O "{nginx_dest}" "{url}"'],
+            'AttachStdout': True, 'AttachStderr': True
+        }).encode()
+        code, body = DockerSocket(timeout=60).call(
+            'POST', f'/containers/{UPDATE_SERVER}/exec',
+            body=exec_body, headers={'Content-Type': 'application/json'})
+        if code != 201:
+            log(f'wget exec create failed: HTTP {code}', 'error')
+            return False
+        # body 可能包含 chunked 编码或 multiplexed header，提取JSON部分
+        body_text = body.decode('utf-8', errors='ignore')
+        json_start = body_text.find('{')
+        json_end = body_text.rfind('}')
+        if json_start < 0 or json_end < 0:
+            log(f'wget exec create: no JSON in response', 'error')
+            return False
+        exec_id = json.loads(body_text[json_start:json_end + 1]).get('Id')
+        if not exec_id:
+            log(f'wget exec create: no Id in response', 'error')
+            return False
+
+        # 2. Start exec (Detach=true)
+        code2, _ = DockerSocket(timeout=30).call(
+            'POST', f'/exec/{exec_id}/start',
+            body=b'{"Detach":true,"Tty":false}',
+            headers={'Content-Type': 'application/json'})
+        if code2 != 200:
+            log(f'wget exec start failed: HTTP {code2}', 'error')
+            return False
+
+        # 3. Poll exec inspect until done
+        deadline = time.time() + timeout_s
+        while time.time() < deadline:
+            time.sleep(5)
+            insp_code, insp_body = DockerSocket(timeout=30).call(
+                'GET', f'/exec/{exec_id}/json')
+            if insp_code == 200:
+                insp_text = insp_body.decode('utf-8', errors='ignore')
+                json_start = insp_text.find('{')
+                json_end = insp_text.rfind('}')
+                if json_start < 0 or json_end < 0:
+                    continue
+                insp = json.loads(insp_text[json_start:json_end + 1])
+                if insp.get('Running') is False:
+                    exit_code = insp.get('ExitCode', -1)
+                    if exit_code == 0:
+                        log(f'wget deployed {fname} → update-server:{nginx_dest}')
+                        return True
+                    else:
+                        log(f'wget failed: exit code {exit_code}', 'error')
+                        return False
+        log(f'wget timeout ({timeout_s}s)', 'error')
+        return False
+    except Exception as e:
+        log(f'wget error: {e}', 'error')
+        return False
+    except Exception as e:
+        log(f'Deploy error {os.path.basename(local_path)}: {e}', 'error')
         return False
 
-def load_config():
-    with open(CONFIG_PATH, encoding='utf-8') as f:
-        return json.load(f)
 
+def deploy_dir_to_nginx(local_dir, nginx_dest):
+    """Copy a directory to update-server container via Docker API.
+    Deploys file-by-file to avoid Broken pipe on large tar archives."""
+    if not DOCKER_SOCK:
+        log(f'No Docker socket, skip deploy dir', 'warn')
+        return False
+    ok = True
+    for root, dirs, files in os.walk(local_dir):
+        for fname in files:
+            fpath = os.path.join(root, fname)
+            arcname = os.path.relpath(fpath, local_dir)
+            dest = f'{nginx_dest}/{arcname}'
+            if not deploy_file_to_nginx(fpath, dest):
+                ok = False
+    if ok:
+        log(f'Deployed dir → update-server:{nginx_dest}')
+    return ok
+
+
+# ── GitHub API ──────────────────────────────────────────────────────
 def fetch_json(url, retries=3):
-    for attempt in range(retries):
+    for i in range(retries):
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'dsh-sync', 'Accept': 'application/vnd.github+json'})
-            with urllib.request.urlopen(req, timeout=60) as r:
+            req = urllib.request.Request(url, headers={
+                'User-Agent': 'dsh-sync/1.0',
+                'Accept': 'application/vnd.github+json'
+            })
+            with urllib.request.urlopen(req, timeout=120) as r:
                 return json.loads(r.read().decode('utf-8'))
         except Exception as e:
-            print(f'[dsh-sync] Attempt {attempt+1}/{retries} failed: {e}')
-            if attempt < retries - 1:
-                time.sleep(5)
+            log(f'Fetch {url} attempt {i+1}/{retries}: {e}', 'warn')
+            if i < retries - 1:
+                time.sleep(5 * (i + 1))
             else:
                 raise
 
-def download(url, dest, retries=2, total_files=1, done_files=0):
-    for attempt in range(retries):
+
+def download_file(url, dest, retries=3):
+    for i in range(retries):
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'dsh-sync'})
-            with urllib.request.urlopen(req, timeout=600) as r:
-                total_size = int(r.headers.get('Content-Length', 0))
+            req = urllib.request.Request(url, headers={'User-Agent': 'dsh-sync/1.0'})
+            with urllib.request.urlopen(req, timeout=None) as r:
+                total = int(r.headers.get('Content-Length', 0))
                 downloaded = 0
-                start_time = time.time()
+                start = time.time()
                 with open(dest, 'wb') as f:
                     while True:
-                        chunk = r.read(8192)
+                        chunk = r.read(65536)
                         if not chunk:
                             break
                         f.write(chunk)
                         downloaded += len(chunk)
-                        elapsed = time.time() - start_time
-                        speed = downloaded / elapsed if elapsed > 0 else 0
-                        update_progress(
-                            phase='downloading', status='running',
-                            total_files=total_files, done_files=done_files,
-                            total_mb=total_size / (1024 * 1024),
-                            done_mb=downloaded / (1024 * 1024),
-                            detail=f'Downloading: {downloaded/(1024*1024):.1f}/{total_size/(1024*1024):.1f} MB'
-                        )
-                return
+                        elapsed = time.time() - start
+                        speed = downloaded / elapsed / 1024 / 1024 if elapsed > 0 else 0
+                        if total > 0:
+                            pct = downloaded / total * 100
+                            log(f'  {os.path.basename(dest)}: {downloaded/1024/1024:.1f}/{total/1024/1024:.1f} MB ({pct:.0f}%) {speed:.1f} MB/s')
+            # Verify file size
+            fsize = os.path.getsize(dest)
+            if fsize == 0:
+                raise ValueError(f'Downloaded file is empty: {dest}')
+            log(f'  ✓ {os.path.basename(dest)} ({fsize/1024/1024:.1f} MB)')
+            return True
         except Exception as e:
-            print(f'[dsh-sync] Download attempt {attempt+1}/{retries} failed: {e}')
-            if attempt < retries - 1:
-                time.sleep(5)
+            log(f'Download {os.path.basename(dest)} attempt {i+1}/{retries}: {e}', 'warn')
+            if i < retries - 1:
+                time.sleep(10 * (i + 1))
             else:
-                raise
+                log(f'Failed to download {os.path.basename(dest)} after {retries} attempts', 'error')
+                return False
 
-def read_local_versions():
-    """Read all versions - try local file, then admin-portal API, then Docker API"""
-    # 1. Try local file first
-    try:
-        versions_path = os.path.join(BASE, 'dsh', 'versions.json')
-        if os.path.exists(versions_path):
-            with open(versions_path, encoding='utf-8') as f:
+
+# ── Version helpers ─────────────────────────────────────────────────
+def parse_version(v):
+    m = re.match(r'v?(\d+)\.(\d+)\.(\d+)', v or '')
+    return tuple(map(int, m.groups())) if m else (0, 0, 0)
+
+
+def newer(a, b):
+    return parse_version(a) > parse_version(b)
+
+
+def scan_local_versions():
+    """Scan actual directories to find versions with files."""
+    dsh_dir = os.path.join(BASE, 'dsh')
+    versions = []
+    if not os.path.isdir(dsh_dir):
+        return versions
+    for entry in sorted(os.listdir(dsh_dir)):
+        vpath = os.path.join(dsh_dir, entry)
+        if os.path.isdir(vpath) and re.match(r'v\d+\.\d+\.\d+', entry):
+            files = os.listdir(vpath)
+            if files:
+                versions.append({
+                    'version': entry,
+                    'date': datetime.date.fromtimestamp(os.path.getmtime(vpath)).isoformat(),
+                    'files': {f.replace('dsh-desktop-', '').replace('-setup.exe', '').replace('.dmg', ''): f for f in files}
+                })
+    return sorted(versions, key=lambda v: parse_version(v['version']), reverse=True)
+
+
+def load_versions_json():
+    """Load versions.json — try update-server first (authoritative), then local file."""
+    # 1. Try update-server directly (most authoritative)
+    if DOCKER_SOCK:
+        try:
+            content = docker_exec_read('/usr/share/nginx/html/dsh/versions.json')
+            if content:
+                data = json.loads(content)
+                versions = data.get('versions', [])
+                if versions:
+                    log(f'Read {len(versions)} versions from update-server')
+                    return versions
+        except Exception as e:
+            log(f'Failed to read versions from update-server: {e}', 'warn')
+
+    # 2. Try local file (no strict directory filter — avoid losing versions)
+    path = os.path.join(BASE, 'dsh', 'versions.json')
+    if os.path.exists(path):
+        try:
+            with open(path, encoding='utf-8') as f:
                 data = json.load(f)
                 versions = data.get('versions', [])
                 if versions:
                     return versions
+        except:
+            pass
+
+    return scan_local_versions()
+
+
+def docker_exec_read(container_path):
+    """Read a file from a container via Docker exec API.
+
+    Docker exec with Tty=false returns multiplexed stream (8-byte header per frame):
+    - byte 0: stream type (1=stdout, 2=stderr)
+    - bytes 1-3: padding
+    - bytes 4-7: payload length (big-endian uint32)
+    - bytes 8..8+length-1: payload
+    """
+    try:
+        exec_body = json.dumps({
+            'Cmd': ['cat', container_path],
+            'AttachStdout': True, 'AttachStderr': True
+        }).encode()
+        s = DockerSocket(timeout=15)
+        code, body = s.call('POST', f'/containers/{UPDATE_SERVER}/exec',
+                            body=exec_body, headers={'Content-Type': 'application/json'})
+        if code != 201:
+            return None
+        exec_id = json.loads(body).get('Id')
+        s2 = DockerSocket(timeout=30)
+        code2, out = s2.call('POST', f'/exec/{exec_id}/start',
+                              body=b'{"Detach":false,"Tty":false}',
+                              headers={'Content-Type': 'application/json'})
+        if code2 != 200 or not out:
+            return None
+        # 循环解析所有 multiplexed 帧
+        stdout_parts = []
+        i = 0
+        while i + 8 <= len(out):
+            stream_type = out[i]
+            length = int.from_bytes(out[i + 4:i + 8], 'big')
+            payload = out[i + 8:i + 8 + length]
+            if stream_type == 1:  # stdout
+                stdout_parts.append(payload)
+            i += 8 + length
+        if stdout_parts:
+            return b''.join(stdout_parts).decode('utf-8', errors='ignore')
+        # Fallback: 不是 multiplexed 格式
+        return out.decode('utf-8', errors='ignore')
     except:
         pass
-    
-    # 2. Try admin-portal API (no auth required, works from any container)
+    return None
+
+
+def save_versions_json(versions):
+    path = os.path.join(BASE, 'dsh', 'versions.json')
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump({'versions': versions}, f, ensure_ascii=False, indent=2)
+
+
+# ── Ghost page update ───────────────────────────────────────────────
+def update_ghost(version, date, files, all_versions):
+    """Update Ghost DSH download page via admin-portal internal API."""
     try:
-        url = f'{ADMIN_PORTAL_URL}/api/gitea/sync/versions-internal'
-        req = urllib.request.Request(url, headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=10) as r:
-            data = json.loads(r.read().decode('utf-8'))
-            versions = data.get('versions', [])
-            if versions:
-                print(f'[dsh-sync] Read {len(versions)} versions from admin-portal API')
-                return versions
+        url = f'http://{ADMIN_PORTAL}:3000/api/ghost/update-dsh-page'
+        data = json.dumps({
+            'version': version, 'date': date,
+            'files': files, 'all_versions': all_versions
+        }).encode()
+        req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            result = json.loads(r.read().decode())
+            log(f'Ghost page updated to {version}')
+            return True
     except Exception as e:
-        print(f'[dsh-sync] Failed to read versions from admin-portal: {e}')
-    
-    # 3. Try Docker API as fallback
-    try:
-        conn = UnixSocketHTTPConnection('/var/run/docker.sock', timeout=10)
-        exec_body = json.dumps({'Cmd': ['cat', '/usr/share/nginx/html/dsh/versions.json'], 'AttachStdout': True, 'AttachStderr': True})
-        conn.request('POST', f'/containers/{UPDATE_SERVER_CONTAINER}/exec', body=exec_body.encode(), headers={'Content-Type': 'application/json'})
-        exec_resp = conn.getresponse()
-        if exec_resp.status == 201:
-            exec_data = json.loads(exec_resp.read())
-            exec_id = exec_data.get('Id')
-            conn2 = UnixSocketHTTPConnection('/var/run/docker.sock', timeout=10)
-            conn2.request('POST', f'/exec/{exec_id}/start', body=b'{"Detach":false,"Tty":false}', headers={'Content-Type': 'application/json'})
-            start_resp = conn2.getresponse()
-            if start_resp.status == 200:
-                output = start_resp.read().decode('utf-8', errors='ignore')
-                json_start = output.find('{')
-                if json_start >= 0:
-                    data = json.loads(output[json_start:])
-                    return data.get('versions', [])
-        conn.close()
-    except Exception as e:
-        print(f'[dsh-sync] Failed to read versions from Docker API: {e}')
-    
-    return []
-
-def get_latest_version(versions):
-    """Get the latest version from versions list"""
-    if not versions:
-        return None
-    def version_key(v):
-        m = re.match(r'v?(\d+)\.(\d+)\.(\d+)', v.get('version', ''))
-        if m:
-            return tuple(map(int, m.groups()))
-        return (0, 0, 0)
-    
-    sorted_versions = sorted(versions, key=version_key, reverse=True)
-    return sorted_versions[0] if sorted_versions else None
-
-def cleanup_old_versions(versions, keep_releases):
-    """Remove old versions beyond keep_releases limit"""
-    if len(versions) <= keep_releases:
-        return versions
-    
-    def version_key(v):
-        m = re.match(r'v?(\d+)\.(\d+)\.(\d+)', v.get('version', ''))
-        if m:
-            return tuple(map(int, m.groups()))
-        return (0, 0, 0)
-    
-    sorted_versions = sorted(versions, key=version_key, reverse=True)
-    to_keep = sorted_versions[:keep_releases]
-    to_remove = sorted_versions[keep_releases:]
-    
-    for v in to_remove:
-        ver = v.get('version', '')
-        if ver:
-            print(f'[dsh-sync] Removing old version: {ver}')
-            delete_from_update_server(f'/usr/share/nginx/html/dsh/{ver}')
-    
-    return to_keep
-
-def main():
-    print('[dsh-sync] Starting sync...')
-    update_progress(phase='starting', status='running', detail='Starting sync...')
-    cfg = load_config()
-    platforms = cfg.get('platforms', {})
-    prefix = cfg.get('download_prefix', '')
-    repo = cfg.get('repo', REPO)
-    keep_releases = cfg.get('keep_releases', 3)
-    print(f'[dsh-sync] Config loaded, repo={repo}, platforms={list(platforms.keys())}, keep_releases={keep_releases}')
-
-    update_progress(phase='connecting_github', status='running', detail='Connecting to GitHub...')
-    api_url = f'https://api.github.com/repos/{repo}/releases/latest'
-    print(f'[dsh-sync] Fetching {api_url}')
-    rel = fetch_json(api_url)
-    latest = rel.get('tag_name', '').lstrip('v')
-    assets = {a['name']: a['browser_download_url'] for a in rel.get('assets', [])}
-    print(f'[dsh-sync] Latest version: {latest}')
-
-    update_progress(phase='checking_version', status='running', detail=f'Checking version: {latest}')
-    
-    # Read existing versions (from admin-portal API or Docker API)
-    existing_versions = read_local_versions()
-    latest_version_info = get_latest_version(existing_versions)
-    local = latest_version_info.get('version', '').lstrip('v') if latest_version_info else ''
-    print(f'[dsh-sync] Local version: {local}, existing versions: {[v.get("version") for v in existing_versions]}')
-
-    if not local or _newer(latest, local):
-        print(f'[dsh-sync] New version available, downloading...')
-        
-        dsh_dir = os.path.join(BASE, 'dsh')
-        version_dir = os.path.join(dsh_dir, f'v{latest}')
-        os.makedirs(version_dir, exist_ok=True)
-        
-        files = {}
-        total_files = len(platforms)
-        done_files = 0
-        for plat, fname in platforms.items():
-            url = assets.get(fname)
-            if not url:
-                print(f'[dsh-sync] No asset found for {fname}')
-                continue
-            if prefix:
-                url = prefix + url
-            dest = os.path.join(version_dir, fname)
-            update_progress(phase='downloading', status='running',
-                total_files=total_files, done_files=done_files,
-                detail=f'Downloading {fname} ({done_files+1}/{total_files})')
-            print(f'[dsh-sync] Downloading {fname}...')
-            download(url, dest, total_files=total_files, done_files=done_files)
-            files[plat] = fname
-            done_files += 1
-            print(f'[dsh-sync] Downloaded {fname} ({latest})')
-
-        update_progress(phase='updating_page', status='running', detail='Updating version info...')
-        
-        # Update versions list - preserve existing versions!
-        new_version_entry = {
-            'version': f'v{latest}',
-            'date': datetime.date.today().isoformat(),
-            'files': files
-        }
-        
-        existing_versions = [v for v in existing_versions if v.get('version') != f'v{latest}']
-        existing_versions.insert(0, new_version_entry)
-        existing_versions = cleanup_old_versions(existing_versions, keep_releases)
-        
-        versions_path = os.path.join(dsh_dir, 'versions.json')
-        with open(versions_path, 'w', encoding='utf-8') as f:
-            json.dump({'versions': existing_versions}, f, ensure_ascii=False, indent=2)
-        
-        with open(os.path.join(BASE, 'version.txt'), 'w', encoding='utf-8') as f:
-            f.write(f'v{latest}')
-
-        hist_path = os.path.join(dsh_dir, 'sync-history.json')
-        hist = []
-        # 先从 update-server 读取已有历史
-        try:
-            url = f'{ADMIN_PORTAL_URL}/api/gitea/sync/history-internal'
-            req = urllib.request.Request(url, headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=10) as r:
-                data = json.loads(r.read().decode('utf-8'))
-                hist = data.get('history', [])
-        except Exception as e:
-            print(f'[dsh-sync] Failed to read history from admin-portal: {e}')
-            # 尝试从本地文件读取
-            try:
-                with open(hist_path, encoding='utf-8') as f:
-                    hist = json.load(f)
-            except (OSError, ValueError):
-                pass
-        # 写入前端期望的格式：{time, status, detail, version, date}
-        hist.insert(0, {
-            'time': datetime.datetime.now().isoformat(),
-            'status': 'success',
-            'detail': f'Synced v{latest} ({len(files)} files)',
-            'version': f'v{latest}',
-            'date': datetime.date.today().isoformat()
-        })
-        
-        # 只保留最近10条记录
-        hist = hist[:10]
-        
-        with open(hist_path, 'w', encoding='utf-8') as f:
-            json.dump(hist, f, ensure_ascii=False, indent=2)
-
-        print('[dsh-sync] Copying files to update-server...')
-        copy_dir_to_update_server(version_dir, f'/usr/share/nginx/html/dsh/v{latest}')
-        copy_to_update_server(versions_path, '/usr/share/nginx/html/dsh/versions.json')
-        copy_to_update_server(os.path.join(BASE, 'version.txt'), '/usr/share/nginx/html/version.txt')
-        copy_to_update_server(hist_path, '/usr/share/nginx/html/dsh/sync-history.json')
-
-        # Update Ghost page with ALL versions
-        print('[dsh-sync] Updating Ghost page...')
-        update_ghost_page(
-            version=f'v{latest}',
-            date=datetime.date.today().isoformat(),
-            files=files,
-            all_versions=existing_versions
-        )
-
-        print(f'[dsh-sync] Updated to v{latest}, total versions: {len(existing_versions)}')
-        update_progress(phase='done', status='done', total_files=total_files, done_files=done_files, detail=f'Sync complete: v{latest}')
-    else:
-        print(f'[dsh-sync] No update (local={local}, latest={latest})')
-        update_progress(phase='no_change', status='done', detail=f'No new version (local={local}, latest={latest})')
-    
-    # 每次同步都记录到 sync-history（无论是否有新版本）
-    try:
-        hist_path = os.path.join(BASE, 'dsh', 'sync-history.json')
-        hist = []
-        try:
-            url = f'{ADMIN_PORTAL_URL}/api/gitea/sync/history-internal'
-            req = urllib.request.Request(url, headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=10) as r:
-                data = json.loads(r.read().decode('utf-8'))
-                hist = data.get('history', [])
-        except:
-            try:
-                with open(hist_path, encoding='utf-8') as f:
-                    hist = json.load(f)
-            except:
-                pass
-        
-        has_update = not local or _newer(latest, local)
-        hist.insert(0, {
-            'time': datetime.datetime.now().isoformat(),
-            'status': 'success',
-            'detail': f'New version v{latest} synced' if has_update else f'No update (latest: v{latest})',
-            'version': f'v{latest}',
-            'date': datetime.date.today().isoformat()
-        })
-        
-        # 只保留最近10条记录
-        hist = hist[:10]
-        
-        os.makedirs(os.path.dirname(hist_path), exist_ok=True)
-        with open(hist_path, 'w', encoding='utf-8') as f:
-            json.dump(hist, f, ensure_ascii=False, indent=2)
-        copy_to_update_server(hist_path, '/usr/share/nginx/html/dsh/sync-history.json')
-        print(f'[dsh-sync] Sync history updated')
-    except Exception as e:
-        print(f'[dsh-sync] Failed to update sync history: {e}')
-
-def _newer(a, b):
-    pa = re.match(r'(\d+)\.(\d+)\.(\d+)', a or '')
-    pb = re.match(r'(\d+)\.(\d+)\.(\d+)', b or '')
-    if not pa or not pb:
+        log(f'Ghost page update failed: {e}', 'warn')
         return False
-    return tuple(map(int, pa.groups())) > tuple(map(int, pb.groups()))
+
+
+# ── GitHub releases listing ─────────────────────────────────────────
+def list_github_releases(repo, count=20):
+    """Fetch all releases from GitHub, return list of {tag, date, assets}."""
+    releases = []
+    page = 1
+    while len(releases) < count:
+        url = f'https://api.github.com/repos/{repo}/releases?per_page=100&page={page}'
+        data = fetch_json(url)
+        if not data:
+            break
+        for r in data:
+            if r.get('draft'):
+                continue
+            releases.append({
+                'tag': r.get('tag_name', ''),
+                'version': r.get('tag_name', '').lstrip('v'),
+                'date': r.get('published_at', '')[:10],
+                'prerelease': r.get('prerelease', False),
+                'assets': [{
+                    'name': a['name'],
+                    'size': a['size'],
+                    'url': a['browser_download_url']
+                } for a in r.get('assets', [])]
+            })
+            if len(releases) >= count:
+                break
+        page += 1
+    return releases
+
+
+def sync_specific_version(repo, version, platforms, targets, prefix=''):
+    """Download a specific version from GitHub and deploy."""
+    version_clean = version.lstrip('v')
+    log(f'Syncing specific version: v{version_clean}')
+
+    # Find the release
+    url = f'https://api.github.com/repos/{repo}/releases/tags/v{version_clean}'
+    try:
+        rel = fetch_json(url)
+    except:
+        # Try without v prefix
+        url = f'https://api.github.com/repos/{repo}/releases/tags/{version_clean}'
+        try:
+            rel = fetch_json(url)
+        except Exception as e:
+            log(f'Release not found: v{version_clean} — {e}', 'error')
+            return False
+
+    assets = {a['name']: a['browser_download_url'] for a in rel.get('assets', [])}
+    log(f'Found release: {rel.get("tag_name")} ({len(assets)} assets)')
+
+    dsh_dir = os.path.join(BASE, 'dsh')
+    version_dir = os.path.join(dsh_dir, f'v{version_clean}')
+    os.makedirs(version_dir, exist_ok=True)
+
+    downloaded_files = {}
+    total = len(targets)
+    for idx, plat in enumerate(targets):
+        fname = platforms.get(plat)
+        if not fname:
+            continue
+        dl_url = assets.get(fname)
+        if not dl_url:
+            log(f'Asset not found: {fname}', 'warn')
+            continue
+        if prefix:
+            dl_url = prefix + dl_url
+        nginx_dest = f'/usr/share/nginx/html/dsh/v{version_clean}/{fname}'
+        local_dest = os.path.join(version_dir, fname)
+        # Skip if already downloaded locally
+        if os.path.exists(local_dest) and os.path.getsize(local_dest) > 0:
+            log(f'  Already exists locally: {fname} ({os.path.getsize(local_dest)/1024/1024:.1f} MB)')
+            downloaded_files[plat] = fname
+            continue
+        log(f'Downloading [{idx+1}/{total}] {fname}...')
+        write_progress('downloading', detail=f'Downloading {fname} ({idx+1}/{total})')
+        # 方案A: 在 update-server 容器内直接 wget（避免大文件通过 Docker tar API 的 Broken pipe）
+        if deploy_via_wget(dl_url, nginx_dest, timeout_s=600):
+            downloaded_files[plat] = fname
+            log(f'  ✓ {fname} deployed via wget')
+        else:
+            # 方案B: 本地下载 + tar deploy（fallback）
+            log(f'  wget failed, falling back to local download + tar...', 'warn')
+            if download_file(dl_url, local_dest):
+                if deploy_file_to_nginx(local_dest, nginx_dest):
+                    downloaded_files[plat] = fname
+                    log(f'  ✓ {fname} deployed via tar')
+                else:
+                    log(f'  ✗ {fname} tar deploy also failed', 'error')
+
+    if not downloaded_files:
+        log('No files downloaded', 'error')
+        return False
+
+    log(f'Downloaded {len(downloaded_files)}/{total} platform files')
+
+    # Update versions.json — 以 update-server 为权威，合并新版本
+    remote_versions = load_versions_json()
+    log(f'Base versions before merge: {[v["version"] for v in remote_versions]}')
+
+    new_entry = {
+        'version': f'v{version_clean}',
+        'date': datetime.date.today().isoformat(),
+        'files': downloaded_files
+    }
+    merged = [v for v in remote_versions if v['version'] != f'v{version_clean}']
+    merged.insert(0, new_entry)
+    merged.sort(key=lambda v: parse_version(v['version']), reverse=True)
+    save_versions_json(merged)
+    log(f'Merged versions: {[v["version"] for v in merged]}')
+
+    # Deploy versions.json（小文件，用 tar API）
+    deploy_ok = True
+    versions_json_path = os.path.join(BASE, 'dsh', 'versions.json')
+    if not deploy_file_to_nginx(versions_json_path, '/usr/share/nginx/html/dsh/versions.json'):
+        deploy_ok = False
+    log(f'Deployed versions.json: {[v["version"] for v in merged]}')
+
+    # Update Ghost page（传合并后的完整列表，确保历史完整）
+    update_ghost(
+        version=f'v{version_clean}',
+        date=datetime.date.today().isoformat(),
+        files=downloaded_files,
+        all_versions=merged
+    )
+
+    status = 'success' if deploy_ok else 'partial'
+    detail = f'v{version_clean} synced ({len(downloaded_files)} files)' + ('' if deploy_ok else ' — deploy failed')
+    add_history(status, detail, f'v{version_clean}')
+
+    write_progress('done', status='done', detail=f'Sync complete: v{version_clean}')
+    log(f'✅ v{version_clean} synced: {list(downloaded_files.values())}')
+    return True
+
+
+# ── Main ────────────────────────────────────────────────────────────
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='DSH Desktop Sync')
+    parser.add_argument('--list-releases', action='store_true', help='List all GitHub releases (JSON output)')
+    parser.add_argument('--sync-version', type=str, help='Sync a specific version (e.g. 0.7.1 or v0.7.1)')
+    parser.add_argument('--count', type=int, default=20, help='Number of releases to list (default: 20)')
+    args = parser.parse_args()
+
+    log('='*50)
+    log('DSH Desktop Sync — Starting')
+    log(f'UPDATE_ROOT: {BASE}')
+    log(f'Docker socket: {DOCKER_SOCK or "NOT FOUND"}')
+    log('='*50)
+
+    # Load config
+    try:
+        with open(CONFIG_PATH, encoding='utf-8') as f:
+            cfg = json.load(f)
+    except Exception as e:
+        log(f'Failed to load config: {e}', 'error')
+        sys.exit(1)
+
+    repo = cfg.get('repo', 'dataelement/dsh-desktop')
+    platforms = cfg.get('platforms', {})
+    targets = cfg.get('targets', list(platforms.keys()))
+    keep = cfg.get('keep_releases', 5)
+    prefix = cfg.get('download_prefix', '')
+
+    # ── Mode: List releases ─────────────────────────────────────────
+    if args.list_releases:
+        log(f'Fetching releases from {repo}...')
+        releases = list_github_releases(repo, args.count)
+        # Merge with local status
+        local_versions = load_versions_json()
+        local_tags = {v['version'] for v in local_versions}
+        for r in releases:
+            r['local'] = r['version'] in local_tags or f'v{r["version"]}' in local_tags
+        print(json.dumps({'releases': releases, 'local_versions': [v['version'] for v in local_versions]}, indent=2))
+        return
+
+    # ── Mode: Sync specific version ─────────────────────────────────
+    if args.sync_version:
+        write_progress('connecting', detail=f'Syncing version {args.sync_version}...')
+        success = sync_specific_version(repo, args.sync_version, platforms, targets, prefix)
+        if not success:
+            sys.exit(1)
+        return
+
+    # ── Mode: Auto-sync latest ──────────────────────────────────────
+    write_progress('connecting', detail='Connecting to GitHub...')
+
+    # Fetch latest release
+    try:
+        rel = fetch_json(f'https://api.github.com/repos/{repo}/releases/latest')
+    except Exception as e:
+        log(f'Failed to fetch latest release: {e}', 'error')
+        write_progress('error', status='error', detail=f'GitHub API error: {e}')
+        add_history('error', f'GitHub API error: {e}')
+        sys.exit(1)
+
+    latest_tag = rel.get('tag_name', '')
+    latest = latest_tag.lstrip('v')
+    assets = {a['name']: a['browser_download_url'] for a in rel.get('assets', [])}
+    log(f'Latest release: {latest_tag} ({len(assets)} assets)')
+
+    write_progress('checking', detail=f'Latest: {latest}, checking local...')
+
+    # Check local versions
+    local_versions = load_versions_json()
+    local_latest = local_versions[0]['version'].lstrip('v') if local_versions else ''
+    log(f'Local latest: {local_latest or "(none)"}')
+    log(f'Local versions: {[v["version"] for v in local_versions]}')
+
+    # Determine if we need to download
+    if local_latest and not newer(latest, local_latest):
+        log(f'Already up to date ({local_latest})')
+        write_progress('done', status='done', detail=f'Already up to date: v{local_latest}')
+        add_history('success', f'No update (latest: v{latest})', latest)
+        return
+
+    log(f'New version available: v{latest} (local: v{local_latest or "none"})')
+    success = sync_specific_version(repo, latest, platforms, targets, prefix)
+    if not success:
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

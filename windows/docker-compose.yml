@@ -350,7 +350,7 @@ services:
     ports:
       - "10086:3000"
     working_dir: /app
-    command: sh -c "node server.js"
+    command: sh -c "apk add --no-cache python3 >/dev/null 2>&1; node server.js"
     environment:
       - PORT=3000
       - SERVER_PUBLIC_URL=${SERVER_PUBLIC_URL}

@@ -3431,9 +3431,11 @@ function giteaSyncCard(s, p, runs) {
         ${runOptions}
       </select>` : ''}
       <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em">▶️ ${t('gitea_sync_trigger')}</button>
+      <button onclick="giteaFetchGithubReleases()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em">📥 从 GitHub 拉取版本</button>
       <button id="giteaForceStopBtn" onclick="giteaForceStop()" style="background:var(--red);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;display:none">⏹ ${t('gitea_force_stop')}</button>
       <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.82em"></span>
     </div>
+    <div id="giteaGithubReleases" style="display:none;margin-bottom:12px"></div>
     <table>
       <tr><td style="width:25%">${t('status')}</td><td style="color:${statusColor}">${statusTxt}</td></tr>
       <tr><td>${t('gitea_started_at')}</td><td>${currentRun && currentRun.started_at ? new Date(currentRun.started_at).toLocaleString() : '—'}</td></tr>
@@ -3796,6 +3798,78 @@ async function giteaSyncTrigger() {
   }
 }
 
+async function giteaFetchGithubReleases() {
+  const container = document.getElementById('giteaGithubReleases');
+  if (!container) return;
+  container.style.display = 'block';
+  container.innerHTML = '<div style="color:var(--textdim);padding:8px">⏳ 正在从 GitHub 拉取版本列表...</div>';
+  try {
+    const r = await fetch(API + '/gitea/sync/github-releases?count=20');
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
+    
+    const releases = d.releases || [];
+    const localVers = d.local_versions || [];
+    
+    let html = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:400px;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h4 style="margin:0;font-size:0.9em;color:var(--textstrong)">GitHub 可用版本 (${releases.length})</h4>
+        <button onclick="document.getElementById('giteaGithubReleases').style.display='none'" style="background:none;border:none;color:var(--textdim);cursor:pointer;font-size:1.1em">✕</button>
+      </div>
+      <table style="width:100%;font-size:0.82em">
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:4px 8px;color:var(--textdim)">版本</th>
+          <th style="text-align:left;padding:4px 8px;color:var(--textdim)">日期</th>
+          <th style="text-align:left;padding:4px 8px;color:var(--textdim)">文件</th>
+          <th style="text-align:center;padding:4px 8px;color:var(--textdim)">本地</th>
+          <th style="text-align:center;padding:4px 8px;color:var(--textdim)">操作</th>
+        </tr>`;
+    
+    for (const rel of releases) {
+      const fileStr = rel.assets.map(a => `${a.name} (${a.sizeMB}MB)`).join(', ') || '无安装包';
+      const localBadge = rel.local 
+        ? '<span style="color:var(--green)">✓ 已有</span>'
+        : '<span style="color:var(--textdim)">—</span>';
+      const syncBtn = rel.assets.length > 0
+        ? `<button onclick="giteaSyncSpecificVersion('${rel.tag}')" style="background:var(--accentbtn);color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.78em">${rel.local ? '重新同步' : '同步'}</button>`
+        : '<span style="color:var(--textdim)">—</span>';
+      const preBadge = rel.prerelease ? ' <span style="color:var(--orange);font-size:0.75em">RC</span>' : '';
+      html += `<tr style="border-bottom:1px solid var(--panel2)">
+        <td style="padding:4px 8px;color:var(--textstrong)">${rel.tag}${preBadge}</td>
+        <td style="padding:4px 8px;color:var(--textdim)">${rel.date}</td>
+        <td style="padding:4px 8px;color:var(--textdim);font-size:0.78em;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fileStr}</td>
+        <td style="padding:4px 8px;text-align:center">${localBadge}</td>
+        <td style="padding:4px 8px;text-align:center">${syncBtn}</td>
+      </tr>`;
+    }
+    html += '</table></div>';
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = `<div style="color:var(--red);padding:8px">❌ ${e.message}</div>`;
+  }
+}
+
+async function giteaSyncSpecificVersion(tag) {
+  const msg = document.getElementById('giteaSyncMsg');
+  if (msg) { msg.textContent = `⏳ 正在触发 ${tag} 同步...`; msg.style.color = 'var(--textdim)'; }
+  try {
+    const r = await fetch(API + '/gitea/sync/sync-version', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version: tag })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok) {
+      if (msg) { msg.textContent = d.message; msg.style.color = 'var(--green)'; }
+      setTimeout(() => loadGitea(), 2000);
+    } else {
+      throw new Error(d.error || 'HTTP ' + r.status);
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
 async function giteaForceStop() {
   if (!confirm(t('gitea_force_stop_confirm'))) return;
   const btn = document.getElementById('giteaForceStopBtn');
@@ -4066,7 +4140,8 @@ async function giteaResyncVersion(ver) {
   const msg = document.getElementById('giteaSyncMsg');
   if (msg) { msg.textContent = t('gitea_resyncing'); msg.style.color = 'var(--textdim)'; }
   try {
-    const r = await fetch(API + '/gitea/sync/resync-version', {
+    // 直接通过 runner exec 同步（绕过 Gitea workflow_dispatch 字段名错配的问题）
+    const r = await fetch(API + '/gitea/sync/sync-version', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ version: ver })
