@@ -199,6 +199,30 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 
 ## 📋 Changelog
 
+### v1.06 (2026-09-06)
+
+- **Fixed: DSH Desktop sync broken pipe** — rewrote `deploy_file_to_nginx` to use `wget` inside the update-server container instead of Docker tar API, fixing Broken pipe on 160MB+ installer files
+- **Fixed: Ghost DSH page update** — admin-portal container now installs `python3` at startup (required for Ghost database update script)
+- **Fixed: Docker API JSON parsing** — `docker_exec_read` now correctly parses chunked transfer encoding responses
+- **Fixed: sync-version field mismatch** — unified `resync_version` → `sync_version` across admin-portal, Gitea workflow, and frontend
+- **Improved: `export-images.ps1`** — added `-Version` parameter for versioned image filenames (e.g. `ai-all-in-one-images-1.0.6.tar.gz`)
+- **Improved: `publish.ps1`** — removed Gitee image splitting (Gitee uses 123pan for distribution), auto-extracts version number from tag
+
+### v1.05 (2026-09-02)
+
+- **Fixed: Keycloak SSO redirect loop** — improved `iss` parameter stripping to only apply on non-callback requests, allowing OAuth login flow to complete normally
+- **Fixed: Dify database container name** — corrected `docker-db_postgres-1` → `dify-db_postgres-1` in admin-portal
+- **New: Availability test restart buttons** — each test item now shows a one-click restart button for its associated Docker container
+- **New: Offline deployment guide** — added instructions for downloading and importing pre-built image packs from Releases
+- **Improved: Deployment guides and scripts** — updated Windows/Linux deploy guides, backup/restore scripts
+
+### v1.04 (2026-08-30)
+
+- **Improved: Admin Center sidebar reorganized** — groups renamed to "应用服务 / 平台基础设施 / 运维监控 / 系统管理"; LiteLLM moved to 应用服务, Keycloak moved to 平台基础设施
+- **Fixed: `iss` parameter redirect loop** — added middleware to strip `iss` query parameters before Keycloak middleware
+- **Improved: LiteLLM config** — updated to latest recommended settings
+- **Improved: README i18n** — all 8 language versions updated with new changelog entries
+
 ### v1.03 (2026-08-28)
 
 - **Improved: Admin Center sidebar reorganized** — groups renamed to "应用服务 / 平台基础设施 / 运维监控 / 系统管理"; LiteLLM moved to 应用服务, Keycloak moved to 平台基础设施, "企业 IM 告警" merged into "监控告警 + IM 通知", "PII 脱敏" standalone removed (now part of LiteLLM name), "客户端软件同步" renamed to "桌面客户端管理"

@@ -157,6 +157,30 @@ Consulta la guía completa en [CONTRIBUTING.md](../CONTRIBUTING.md); en la [hoja
 
 ## 📋 Registro de cambios
 
+### v1.06（2026-09-06）
+
+- **Corregido: DSH Desktop sync Broken pipe** — reescritura de `deploy_file_to_nginx` para usar `wget` dentro del contenedor update-server en lugar de la API Docker tar, corrigiendo el problema de Broken pipe en archivos de instalación de más de 160 MB
+- **Corregido: actualización de la página Ghost DSH** — el contenedor admin-portal ahora instala `python3` al inicio (necesario para el script de actualización de la base de datos Ghost)
+- **Corregido: análisis JSON de Docker API** — `docker_exec_read` ahora analiza correctamente las respuestas chunked transfer encoding
+- **Corregido: inconsistencia del nombre de campo sync-version** — unificación de `resync_version` → `sync_version` (admin-portal, Gitea workflow, frontend)
+- **Mejorado: `export-images.ps1`** — añadido parámetro `-Version` para nombres de archivos de imagen con número de versión
+- **Mejorado: `publish.ps1`** — eliminada la lógica de分割 de imágenes Gitee (Gitee usa 123pan para distribución), extracción automática del número de versión desde el tag
+
+### v1.05（2026-09-02）
+
+- **Corregido: bucle de redirección Keycloak SSO** — mejora de la lógica de eliminación del parámetro `iss` para borrar solo en solicitudes no-callback, permitiendo que el flujo de inicio de sesión OAuth se complete normalmente
+- **Corregido: nombre del contenedor de base de datos Dify** — corrección de `docker-db_postgres-1` → `dify-db_postgres-1` en admin-portal
+- **Nuevo: botones de reinicio de pruebas de disponibilidad** — cada elemento de prueba ahora muestra un botón de reinicio con un clic para su contenedor Docker asociado
+- **Nuevo: guía de implementación sin conexión** — añadidas instrucciones para descargar e importar paquetes de imágenes preconstruidos desde Releases
+- **Mejorado: guías de implementación y scripts** — actualización de guías de implementación Windows/Linux, scripts de respaldo/restauración
+
+### v1.04（2026-08-30）
+
+- **Mejorado: reestructuración de la barra lateral del Centro de administración** — grupos renombrados a「Servicios de aplicación / Infraestructura de plataforma / Supervisión de operaciones / Administración del sistema」；LiteLLM movido a Servicios de aplicación, Keycloak movido a Infraestructura de plataforma
+- **Corregido: bucle de redirección del parámetro `iss`** — añadido middleware para eliminar los parámetros de consulta `iss` antes del procesamiento del middleware Keycloak
+- **Mejorado: configuración de LiteLLM** — actualizada a los últimos parámetros recomendados
+- **Mejorado: internacionalización del README** — actualizadas las 8 versiones lingüísticas
+
 ### v1.03（2026-08-28）
 
 - **Mejora: reorganización de la barra lateral del centro de administración** — grupos renombrados a "应用服务（Servicios de aplicación）/ 平台基础设施（Infraestructura de plataforma）/ 运维监控（Supervisión de operaciones）/ 系统管理（Administración del sistema）"; LiteLLM movido a 应用服务, Keycloak movido a 平台基础设施, "企业 IM 告警" fusionado en "监控告警 + IM 通知", "PII 脱敏" eliminado como elemento independiente (integrado en el nombre de LiteLLM), "客户端软件同步" renombrado a "桌面客户端管理"

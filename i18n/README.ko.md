@@ -157,6 +157,30 @@ windows-deploy-guide-v2.html을 정독하세요 — 이번 배포의 유일한 �
 
 ## 📋 변경 이력
 
+### v1.06（2026-09-06）
+
+- **수정: DSH Desktop 동기화 Broken pipe** — `deploy_file_to_nginx`를 update-server 컨테이너 내에서 `wget`을 사용하여 직접 다운로드하도록 재작성하여 160MB 이상 설치 파일의 Broken pipe 문제 수정
+- **수정: Ghost DSH 페이지 업데이트** — admin-portal 컨테이너 시작 시 `python3` 설치 (Ghost 데이터베이스 업데이트 스크립트 필요)
+- **수정: Docker API JSON 파싱** — `docker_exec_read`가 chunked transfer encoding 응답을 올바르게 파싱하도록 수정
+- **수정: sync-version 필드명 불일치** — `resync_version` → `sync_version`으로 통일 (admin-portal, Gitea 워크플로우, 프론트엔드)
+- **개선: `export-images.ps1`** — 버전 번호가 포함된 이미지 파일명을 위한 `-Version` 매개변수 추가
+- **개선: `publish.ps1`** — Gitee 이미지 분할 로직 제거 (Gitee는 123pan 사용하여 배포), tag에서 버전 번호 자동 추출
+
+### v1.05（2026-09-02）
+
+- **수정: Keycloak SSO 리디렉션 루프** — `iss` 매개변수 제거 로직을 개선하여 비콜백 요청 시에만 클리어하고 OAuth 로그인 흐름이 정상적으로 완료되도록 수정
+- **수정: Dify 데이터베이스 컨테이너 이름** — admin-portal에서 `docker-db_postgres-1`을 `dify-db_postgres-1`로 수정
+- **신규: 가용성 테스트 재시작 버튼** — 각 테스트 항목에 연결된 Docker 컨테이너를 원클릭으로 재시작하는 버튼 표시
+- **신규: 오프라인 배포 설명** — Releases에서 빌드된 이미지 패키지를 다운로드하고 가져오는 설명 추가
+- **개선: 배포 가이드 및 스크립트** — Windows/Linux 배포 가이드, 백업/복원 스크립트 업데이트
+
+### v1.04（2026-08-30）
+
+- **개선: 관리 센터 사이드바 재구성** — 그룹 이름을「애플리케이션 서비스 / 플랫폼 인프라 / 운영 모니터링 / 시스템 관리」로 변경；LiteLLM을 애플리케이션 서비스로 이동, Keycloak을 플랫폼 인프라로 이동
+- **수정: `iss` 매개변수 리디렉션 루프** — Keycloak 미들웨어 처리 전에 `iss` 쿼리 매개변수를 제거하는 미들웨어 추가
+- **개선: LiteLLM 설정** — 최신 권장 설정으로 업데이트
+- **개선: README 국제화** — 모든 8개 언어 버전 업데이트
+
 ### v1.03（2026-08-28）
 
 - **개선: 관리 센터 사이드바 재구성** — 그룹명을 "应用服务（애플리케이션 서비스）/ 平台基础设施（플랫폼 인프라）/ 运维监控（운영 모니터링）/ 系统管理（시스템 관리）"로 변경; LiteLLM을 应用服务로 이동, Keycloak을 平台基础设施로 이동, "企业 IM 告警"을 "监控告警 + IM 通知"에 통합, "PII 脱敏" 독립 항목 제거(LiteLLM 이름에 통합), "客户端软件同步"을 "桌面客户端管理"로 이름 변경

@@ -202,6 +202,30 @@ chmod +x import-images.sh && sudo ./import-images.sh
 
 ## 📋 更新日志
 
+### v1.06（2026-09-06）
+
+- **修复：DSH Desktop 同步 Broken pipe** — 重写 `deploy_file_to_nginx`，改用在 update-server 容器内 `wget` 直接下载，修复160MB+安装包文件的 Broken pipe 问题
+- **修复：Ghost DSH 页面更新** — admin-portal 容器启动时安装 `python3`（Ghost 数据库更新脚本需要）
+- **修复：Docker API JSON 解析** — `docker_exec_read` 现在正确解析 chunked transfer encoding 响应
+- **修复：sync-version 字段名不匹配** — 统一 `resync_version` → `sync_version`（admin-portal、Gitea workflow、前端）
+- **改进：`export-images.ps1`** — 新增 `-Version` 参数，支持带版本号的镜像文件名（如 `ai-all-in-one-images-1.0.6.tar.gz`）
+- **改进：`publish.ps1`** — 移除 Gitee 镜像分卷逻辑（Gitee 使用123云盘分发），自动从 tag 提取版本号
+
+### v1.05（2026-09-02）
+
+- **修复：Keycloak SSO 重定向循环** — 改进 `iss` 参数剥离逻辑，仅在非回调请求时清除，允许 OAuth 登录流程正常完成
+- **修复：Dify 数据库容器名** — 修正 admin-portal 中 `docker-db_postgres-1` → `dify-db_postgres-1`
+- **新增：可用性测试重启按钮** — 每个测试项现在显示一键重启关联 Docker 容器的按钮
+- **新增：离线部署说明** — 添加从 Releases 下载预构建镜像包并导入的说明
+- **改进：部署指南和脚本** — 更新 Windows/Linux 部署指南、备份/恢复脚本
+
+### v1.04（2026-08-30）
+
+- **改进：管理中心侧边栏重组** — 分组更名为「应用服务 / 平台基础设施 / 运维监控 / 系统管理」；LiteLLM 移至应用服务，Keycloak 移至平台基础设施
+- **修复：`iss` 参数重定向循环** — 添加中间件在 Keycloak 中间件处理前剥离 `iss` 查询参数
+- **改进：LiteLLM 配置** — 更新至最新推荐设置
+- **改进：README 国际化** — 全部8种语言版本更新
+
 ### v1.03（2026-08-28）
 
 - **改进：管理中心侧边栏重组** — 分组更名为「应用服务 / 平台基础设施 / 运维监控 / 系统管理」；LiteLLM 移至应用服务，Keycloak 移至平台基础设施，「企业 IM 告警」合并入「监控告警 + IM 通知」，「PII 脱敏」独立项移除（现为 LiteLLM 名称的一部分），「客户端软件同步」更名为「桌面客户端管理」

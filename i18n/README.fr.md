@@ -157,6 +157,30 @@ Le guide complet figure dans [CONTRIBUTING.md](../CONTRIBUTING.md) ; la [feuille
 
 ## 📋 Journal des modifications
 
+### v1.06（2026-09-06）
+
+- **Corrigé : DSH Desktop sync Broken pipe** — réécriture de `deploy_file_to_nginx` pour utiliser `wget` dans le conteneur update-server au lieu de l'API Docker tar, corrigeant le problème de Broken pipe sur les fichiers d'installation de plus de 160 Mo
+- **Corrigé : mise à jour de la page Ghost DSH** — le conteneur admin-portal installe maintenant `python3` au démarrage (nécessaire pour le script de mise à jour de la base de données Ghost)
+- **Corrigé : parsing JSON Docker API** — `docker_exec_read` analyse maintenant correctement les réponses chunked transfer encoding
+- **Corrigé : incohérence du nom de champ sync-version** — unification de `resync_version` → `sync_version` (admin-portal, Gitea workflow, frontend)
+- **Amélioré : `export-images.ps1`** — ajout du paramètre `-Version` pour les noms de fichiers image avec numéro de version
+- **Amélioré : `publish.ps1`** — suppression de la logique de分割 des images Gitee (Gitee utilise 123pan pour la distribution), extraction automatique du numéro de version depuis le tag
+
+### v1.05（2026-09-02）
+
+- **Corrigé : boucle de redirection Keycloak SSO** — amélioration de la logique de suppression du paramètre `iss` pour n'effacer que sur les requêtes non-callback, permettant au flux de connexion OAuth de se terminer normalement
+- **Corrigé : nom du conteneur de base de données Dify** — correction de `docker-db_postgres-1` → `dify-db_postgres-1` dans admin-portal
+- **Nouveau : boutons de redémarrage des tests de disponibilité** — chaque élément de test affiche maintenant un bouton de redémarrage en un clic pour son conteneur Docker associé
+- **Nouveau : guide de déploiement hors ligne** — ajout des instructions pour télécharger et importer les packs d'images pré-construits depuis les Releases
+- **Amélioré : guides de déploiement et scripts** — mise à jour des guides de déploiement Windows/Linux, des scripts de sauvegarde/restauration
+
+### v1.04（2026-08-30）
+
+- **Amélioré : restructuration de la barre latérale du Centre d'administration** — les groupes renommés en「Services d'application / Infrastructure de plateforme / Surveillance des opérations / Administration système」；LiteLLM déplacé vers Services d'application, Keycloak déplacé vers Infrastructure de plateforme
+- **Corrigé : boucle de redirection du paramètre `iss`** — ajout d'un middleware pour supprimer les paramètres de requête `iss` avant le traitement du middleware Keycloak
+- **Amélioré : configuration LiteLLM** — mise à jour vers les derniers paramètres recommandés
+- **Amélioré : internationalisation du README** — mise à jour des 8 versions linguistiques
+
 ### v1.03（2026-08-28）
 
 - **Amélioration : restructuration de la barre latérale du centre d'administration** — groupes renommés en « 应用服务 (Services applicatifs) / 平台基础设施 (Infrastructure plateforme) / 运维监控 (Supervision opérations) / 系统管理 (Administration système) » ; LiteLLM déplacé vers 应用服务, Keycloak déplacé vers 平台基础设施, « 企业 IM 告警 » fusionné dans « 监控告警 + IM 通知 », « PII 脱敏 » supprimé en tant qu'élément autonome (intégré au nom LiteLLM), « 客户端软件同步 » renommé en « 桌面客户端管理 »

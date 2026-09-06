@@ -157,6 +157,30 @@ docker compose up -d
 
 ## 📋 更新日誌
 
+### v1.06（2026-09-06）
+
+- **修正：DSH Desktop 同步 Broken pipe** — 重寫 `deploy_file_to_nginx`，改用在 update-server 容器內 `wget` 直接下載，修正160MB+安裝套件檔案的 Broken pipe 問題
+- **修正：Ghost DSH 頁面更新** — admin-portal 容器啟動時安裝 `python3`（Ghost 資料庫更新腳本需要）
+- **修正：Docker API JSON 解析** — `docker_exec_read` 現在正確解析 chunked transfer encoding 回應
+- **修正：sync-version 欄位名稱不匹配** — 統一 `resync_version` → `sync_version`（admin-portal、Gitea workflow、前端）
+- **改進：`export-images.ps1`** — 新增 `-Version` 參數，支援帶版本號的映像檔名稱（如 `ai-all-in-one-images-1.0.6.tar.gz`）
+- **改進：`publish.ps1`** — 移除 Gitee 映像分割邏輯（Gitee 使用123雲端硬碟分發），自動從 tag 擷取版本號
+
+### v1.05（2026-09-02）
+
+- **修正：Keycloak SSO 重新導向迴圈** — 改進 `iss` 參數剝離邏輯，僅在非回呼請求時清除，允許 OAuth 登入流程正常完成
+- **修正：Dify 資料庫容器名稱** — 修正 admin-portal 中 `docker-db_postgres-1` → `dify-db_postgres-1`
+- **新增：可用性測試重新啟動按鈕** — 每個測試項現在顯示一鍵重新啟動關聯 Docker 容器的按鈕
+- **新增：離線部署說明** — 新增從 Releases 下載預建構映像套件並匯入的說明
+- **改進：部署指南和腳本** — 更新 Windows/Linux 部署指南、備份/還原腳本
+
+### v1.04（2026-08-30）
+
+- **改進：管理中心側邊欄重組** — 分組更名為「應用服務 / 平台基礎設施 / 運維監控 / 系統管理」；LiteLLM 移至應用服務，Keycloak 移至平台基礎設施
+- **修正：`iss` 參數重新導向迴圈** — 新增中介軟體在 Keycloak 中介軟體處理前剝離 `iss` 查詢參數
+- **改進：LiteLLM 設定** — 更新至最新建議設定
+- **改進：README 國際化** — 全部8種語言版本更新
+
 ### v1.03（2026-08-28）
 
 - **改進：管理中心側邊欄重組** — 分組更名為「應用服務 / 平台基礎設施 / 運維監控 / 系統管理」；LiteLLM 移至應用服務，Keycloak 移至平台基礎設施，「企業 IM 告警」合併入「監控告警 + IM 通知」，「PII 脫敏」獨立項移除（現為 LiteLLM 名稱的一部分），「客戶端軟體同步」更名為「桌面客戶端管理」
