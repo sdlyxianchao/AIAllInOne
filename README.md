@@ -1,6 +1,6 @@
 # AI AllInOne — Enterprise AI Platform, Self-hosted & Open Source
 
-> 📖 **Languages**: English · [简体中文](i18n/README.zh.md) · [繁體中文](i18n/README.zh-TW.md) · [Français](i18n/README.fr.md) · [Español](i18n/README.es.md) · [Português](i18n/README.pt.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [العربية](i18n/README.ar.md)
+> 📖 **Languages**: English · [简体中文](i18n/README.zh.md)
 
 > ⭐ **If this project helps you, give it a star — it's free and helps more people find it.**
 
@@ -83,9 +83,7 @@ For air-gapped or restricted networks, download the pre-built image pack from [R
 
 ```powershell
 # Windows — merge split parts (from the directory containing the downloaded parts)
-copy /b ai-all-in-one-images.tar.gz.part00 + ai-all-in-one-images.tar.gz.part01 + ai-all-in-one-images.tar.gz.part02 ai-all-in-one-images.tar.gz
-# Linux
-cat ai-all-in-one-images.tar.gz.part0* > ai-all-in-one-images.tar.gz
+copy /b ai-all-in-one-images-1.06.tar.gz.part00 + ai-all-in-one-images-1.06.tar.gz.part01 ai-all-in-one-images-1.06.tar.gz
 ```
 
 ```powershell
@@ -93,12 +91,7 @@ cat ai-all-in-one-images.tar.gz.part0* > ai-all-in-one-images.tar.gz
 powershell -ExecutionPolicy Bypass -File import-images.ps1
 ```
 
-```bash
-# Import (Linux — run from linux-image/)
-chmod +x import-images.sh && sudo ./import-images.sh
-```
-
-> **Dify images:** the GitHub Release contains only the main platform images. For Dify, the deployment guide pulls images directly from Docker Hub (no offline pack needed). If your environment has no Docker Hub access, Chinese users can download both packs from 123pan (free, no speed limit): [main platform](https://4002626314.share.123pan.cn/123pan/66RzMh-39ryH) (~3.8 GB) · [Dify](https://4002626314.share.123pan.cn/123pan/66RzMh-96wVH) (~2.3 GB).
+> **Note:** GitHub Releases only contains the **main platform** images (Keycloak, NewAPI, Ghost, Gitea, LiteLLM, monitoring, etc. — ~3.8 GB). **Dify images are NOT included** — Dify pulls its images directly from Docker Hub during first startup (`docker compose up`). If your environment has no Docker Hub access, download the Dify image pack from [Gitee Releases](https://gitee.com/sdxianchao/AIAllInOne/releases).
 
 Two ways to go from here:
 

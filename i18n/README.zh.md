@@ -1,6 +1,6 @@
 # AI AllInOne — 开源自托管的企业 AI 平台
 
-> 📖 **语言**：[English](../README.md) · **简体中文** · [繁體中文](README.zh-TW.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [العربية](README.ar.md)
+> 📖 **语言**：[English](../README.md) · **简体中文**
 
 > ⭐ **如果这个项目帮到了你，给个 Star 吧——免费，还能让更多人找到它。**
 
@@ -82,14 +82,16 @@ docker compose up -d
 
 | 镜像包 | 大小 | 下载链接 |
 |---|---|---|
-| 主平台镜像 | ~3.8 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-39ryH) |
-| Dify 镜像 | ~2.3 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-96wVH) |
+| 主平台镜像（v1.06） | ~3.8 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-Q6wVH) |
+| Dify 镜像（v1.06） | ~2.4 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-2JQVH) |
+
+> **历史版本镜像**：[v1.05 主平台](https://4002626314.share.123pan.cn/123pan/66RzMh-uyTjH) · [v1.05 Dify](https://4002626314.share.123pan.cn/123pan/66RzMh-UyTjH)
 
 下载后放到对应的镜像目录：
 
 ```powershell
 # Windows — 把下载的文件放到 windows-image/ 目录
-# 文件名：ai-all-in-one-images.tar.gz 和 ai-all-in-one-dify-images.tar.gz
+# 文件名：ai-all-in-one-images-1.06.tar.gz 和 ai-all-in-one-dify-images-1.06.tar.gz
 ```
 
 ```powershell
@@ -101,6 +103,8 @@ powershell -ExecutionPolicy Bypass -File import-images.ps1
 # 导入镜像（Linux — 在 linux-image/ 目录执行）
 chmod +x import-images.sh && sudo ./import-images.sh
 ```
+
+> **说明**：Gitee Release 同时包含主平台和 Dify 两个镜像包。GitHub Release 仅包含主平台镜像，Dify 需从 Docker Hub 拉取或从123云盘下载。
 
 > **说明**：主平台和 Dify 镜像均通过123云盘提供下载。GitHub Release 仅包含主平台镜像分卷，Dify 需从 Docker Hub 拉取（部署指南中有说明）。
 
