@@ -68,14 +68,14 @@
 ### 1.1 架构总览
 
 <div style="margin: 12px 24px;">
-<svg style="width:100%; max-width:1200px;" viewBox="0 0 1200 1000" xmlns="http://www.w3.org/2000/svg">
+<svg style="width:100%; max-width:1300px;" viewBox="0 0 1300 1000" xmlns="http://www.w3.org/2000/svg">
 <!-- ====== Layer Background Bands ====== -->
-<rect fill="#d2a8ff08" height="90" rx="4" stroke="#d2a8ff22" stroke-width="0.5" width="1200" x="0" y="30"></rect>
-<rect fill="#d2992208" height="95" rx="4" stroke="#d2992222" stroke-width="0.5" width="1200" x="0" y="140"></rect>
-<rect fill="#1f6feb08" height="90" rx="4" stroke="#1f6feb22" stroke-width="0.5" width="1200" x="0" y="255"></rect>
-<rect fill="#39c5cf08" height="60" rx="4" stroke="#39c5cf22" stroke-width="0.5" width="1200" x="0" y="365"></rect>
-<rect fill="#6e40c908" height="100" rx="4" stroke="#6e40c922" stroke-width="0.5" width="1200" x="0" y="545"></rect>
-<rect fill="#58a6ff08" height="75" rx="4" stroke="#58a6ff22" stroke-width="0.5" width="1200" x="0" y="665"></rect>
+<rect fill="#d2a8ff08" height="90" rx="4" stroke="#d2a8ff22" stroke-width="0.5" width="1300" x="0" y="30"></rect>
+<rect fill="#d2992208" height="95" rx="4" stroke="#d2992222" stroke-width="0.5" width="1300" x="0" y="140"></rect>
+<rect fill="#1f6feb08" height="90" rx="4" stroke="#1f6feb22" stroke-width="0.5" width="1300" x="0" y="255"></rect>
+<rect fill="#39c5cf08" height="60" rx="4" stroke="#39c5cf22" stroke-width="0.5" width="1300" x="0" y="365"></rect>
+<rect fill="#6e40c908" height="100" rx="4" stroke="#6e40c922" stroke-width="0.5" width="1300" x="0" y="545"></rect>
+<rect fill="#58a6ff08" height="75" rx="4" stroke="#58a6ff22" stroke-width="0.5" width="1300" x="0" y="665"></rect>
 <!-- ====== Layer Labels ====== -->
 <rect fill="#d2a8ff22" height="18" rx="9" width="56" x="8" y="36"></rect><text fill="#d2a8ff" font-size="10" font-weight="600" text-anchor="middle" x="36" y="49">用户层</text>
 <rect fill="#d2992222" height="18" rx="9" width="76" x="8" y="146"></rect><text fill="#d29922" font-size="10" font-weight="600" text-anchor="middle" x="46" y="159">门户&amp;应用</text>
@@ -97,20 +97,17 @@
 <g filter="url(#sh)"><rect fill="url(#g-blue)" height="70" rx="10" stroke="#1f6feb" stroke-width="2" width="300" x="700" y="160"></rect><rect fill="#58a6ff" height="70" rx="2" width="4" x="700" y="160"></rect></g>
 <text fill="#58a6ff" font-size="14" font-weight="700" x="720" y="183">🤖 Dify</text>
 <text fill="#8b949e" font-size="11" x="720" y="200">Web AI 应用 · 知识库(RAG) · Agent/Workflow</text>
-<!-- BGE-Reranker (Dify 知识库重排序) -->
-<g filter="url(#sh)"><rect fill="#0d2b33" height="36" rx="8" stroke="#39c5cf" stroke-width="1" width="180" x="700" y="237"></rect><rect fill="#39c5cf" height="36" rx="2" width="3" x="700" y="237"></rect></g>
-<text fill="#39c5cf" font-size="10" font-weight="600" x="712" y="252">🔄 BGE-Reranker</text>
-<text fill="#8b949e" font-size="8" x="712" y="265">Rerank 重排序 · 知识库检索增强</text>
-<path d="M 850 230 L 850 237" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1"></path>
-<!-- BGE-M3 Embedder (语义缓存 + 知识库向量化) -->
-<g filter="url(#sh)"><rect fill="#0d2b33" height="36" rx="8" stroke="#39c5cf" stroke-width="1" width="180" x="900" y="237"></rect><rect fill="#39c5cf" height="36" rx="2" width="3" x="900" y="237"></rect></g>
-<text fill="#39c5cf" font-size="10" font-weight="600" x="912" y="252">📐 BGE-M3 Embedder</text>
-<text fill="#8b949e" font-size="8" x="912" y="265">Embedding 向量化 · 语义缓存</text>
-<path d="M 990 230 L 990 237" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1"></path>
+<!-- BGE-Reranker + BGE-M3 Embedder (Dify 右侧，Layer 2 内) -->
+<g><rect fill="#0d2b33" height="28" rx="6" stroke="#39c5cf" stroke-width="0.8" width="150" x="1010" y="162"></rect><rect fill="#39c5cf" height="28" rx="2" width="3" x="1010" y="162"></rect></g>
+<text fill="#39c5cf" font-size="9" font-weight="600" x="1022" y="174">BGE-Reranker</text>
+<text fill="#8b949e" font-size="7" x="1022" y="185">Rerank · 知识库重排序</text>
+<g><rect fill="#0d2b33" height="28" rx="6" stroke="#39c5cf" stroke-width="0.8" width="150" x="1010" y="196"></rect><rect fill="#39c5cf" height="28" rx="2" width="3" x="1010" y="196"></rect></g>
+<text fill="#39c5cf" font-size="9" font-weight="600" x="1022" y="208">BGE-M3 Embedder</text>
+<text fill="#8b949e" font-size="7" x="1022" y="219">Embedding · 语义缓存</text>
 <!-- ====== Layer 3: LLM Routing ====== -->
-<g filter="url(#sh)"><rect fill="url(#g-blue)" height="60" rx="10" stroke="#1f6feb" stroke-width="1.5" width="220" x="130" y="275"></rect><rect fill="#58a6ff" height="60" rx="2" width="4" x="130" y="275"></rect></g>
-<text fill="#58a6ff" font-size="13" font-weight="600" x="150" y="297">🔀 NewAPI</text>
-<text fill="#8b949e" font-size="10" x="150" y="314">LLM Router · 计费 · 限流</text>
+<g filter="url(#sh)"><rect fill="url(#g-blue)" height="60" rx="10" stroke="#1f6feb" stroke-width="1.5" width="200" x="150" y="275"></rect><rect fill="#58a6ff" height="60" rx="2" width="4" x="150" y="275"></rect></g>
+<text fill="#58a6ff" font-size="13" font-weight="580" x="170" y="297">🔀 NewAPI</text>
+<text fill="#8b949e" font-size="10" x="170" y="314">LLM Router · 计费 · 限流</text>
 <g filter="url(#sh)"><rect fill="url(#g-green)" height="60" rx="10" stroke="#1a7f37" stroke-width="1.5" width="240" x="440" y="275"></rect><rect fill="#56d364" height="60" rx="2" width="4" x="440" y="275"></rect></g>
 <text fill="#56d364" font-size="13" font-weight="600" x="460" y="297">🛡️ LiteLLM + Presidio</text>
 <text fill="#8b949e" font-size="10" x="460" y="314">PII 脱敏 → 还原（内置正则 + Presidio）</text>
@@ -128,22 +125,22 @@
 <g filter="url(#sh)"><rect fill="url(#g-purple)" height="60" rx="10" stroke="#6e40c9" stroke-width="1.5" width="205" x="60" y="565"></rect><rect fill="#d2a8ff" height="60" rx="2" width="4" x="60" y="565"></rect></g>
 <text fill="#d2a8ff" font-size="13" font-weight="600" x="80" y="588">🔐 Keycloak</text>
 <text fill="#8b949e" font-size="10" x="80" y="605">SSO / OIDC / RBAC</text>
-<g filter="url(#sh)"><rect fill="url(#g-purple)" height="60" rx="10" stroke="#6e40c9" stroke-width="1.5" width="205" x="285" y="565"></rect><rect fill="#d2a8ff" height="60" rx="2" width="4" x="285" y="565"></rect></g>
-<text fill="#d2a8ff" font-size="13" font-weight="600" x="305" y="588">🔌 MCP Gateway</text>
-<text fill="#8b949e" font-size="10" x="305" y="605">Skill / MCP Hub · search_knowledge 检索</text>
-<g filter="url(#sh)"><rect fill="url(#g-red)" height="60" rx="10" stroke="#da3633" stroke-width="1.5" width="205" x="510" y="565"></rect><rect fill="#f85149" height="60" rx="2" width="4" x="510" y="565"></rect></g>
-<text fill="#f85149" font-size="13" font-weight="600" x="530" y="588">🔧 Gitea</text>
-<text fill="#8b949e" font-size="10" x="530" y="605">源码 + Actions CI/CD</text>
-<g filter="url(#sh)"><rect fill="url(#g-green)" height="60" rx="10" stroke="#1a7f37" stroke-width="1.5" width="205" x="735" y="565"></rect><rect fill="#56d364" height="60" rx="2" width="4" x="735" y="565"></rect></g>
-<text fill="#56d364" font-size="13" font-weight="600" x="755" y="588">📦 更新服务器</text>
-<text fill="#8b949e" font-size="10" x="755" y="605">DSH Desktop 安装包托管</text>
-<g filter="url(#sh)"><rect fill="url(#g-amber)" height="60" rx="10" stroke="#d29922" stroke-width="1.5" width="205" x="960" y="565"></rect><rect fill="#d29922" height="60" rx="2" width="4" x="960" y="565"></rect></g>
-<text fill="#d29922" font-size="13" font-weight="600" x="980" y="588">📈 监控 · 日志</text>
-<text fill="#8b949e" font-size="10" x="980" y="605">Prometheus · Grafana · cadvisor · Loki</text>
+<g filter="url(#sh)"><rect fill="url(#g-purple)" height="60" rx="10" stroke="#6e40c9" stroke-width="1.5" width="205" x="320" y="565"></rect><rect fill="#d2a8ff" height="60" rx="2" width="4" x="320" y="565"></rect></g>
+<text fill="#d2a8ff" font-size="13" font-weight="600" x="340" y="588">🔌 MCP Gateway</text>
+<text fill="#8b949e" font-size="10" x="340" y="605">Skill / MCP Hub · search_knowledge 检索</text>
+<g filter="url(#sh)"><rect fill="url(#g-red)" height="60" rx="10" stroke="#da3633" stroke-width="1.5" width="205" x="580" y="565"></rect><rect fill="#f85149" height="60" rx="2" width="4" x="580" y="565"></rect></g>
+<text fill="#f85149" font-size="13" font-weight="600" x="600" y="588">🔧 Gitea</text>
+<text fill="#8b949e" font-size="10" x="600" y="605">源码 + Actions CI/CD</text>
+<g filter="url(#sh)"><rect fill="url(#g-green)" height="60" rx="10" stroke="#1a7f37" stroke-width="1.5" width="205" x="820" y="565"></rect><rect fill="#56d364" height="60" rx="2" width="4" x="820" y="565"></rect></g>
+<text fill="#56d364" font-size="13" font-weight="600" x="840" y="588">📦 更新服务器</text>
+<text fill="#8b949e" font-size="10" x="840" y="605">DSH Desktop 安装包托管</text>
+<g filter="url(#sh)"><rect fill="url(#g-amber)" height="60" rx="10" stroke="#d29922" stroke-width="1.5" width="205" x="1060" y="565"></rect><rect fill="#d29922" height="60" rx="2" width="4" x="1060" y="565"></rect></g>
+<text fill="#d29922" font-size="13" font-weight="600" x="1080" y="588">📈 监控 · 日志</text>
+<text fill="#8b949e" font-size="10" x="1080" y="605">Prometheus · Grafana · cadvisor · Loki</text>
 <!-- ====== Layer 6: Management ====== -->
-<g filter="url(#sh)"><rect fill="url(#g-blue)" height="55" rx="10" stroke="#58a6ff" stroke-width="2" width="1040" x="80" y="675"></rect><rect fill="#58a6ff" height="55" rx="2" width="4" x="80" y="675"></rect></g>
-<text fill="#58a6ff" font-size="15" font-weight="700" text-anchor="middle" x="600" y="698">🏢 AI 管理中心（统一管理员门户 + Keycloak 鉴权）</text>
-<text fill="#8b949e" font-size="11" text-anchor="middle" x="600" y="718">Dashboard 容器状态/业务指标 · 产品内嵌统计页 · 审计/成本报表 · Keycloak SSO</text>
+<g filter="url(#sh)"><rect fill="url(#g-blue)" height="55" rx="10" stroke="#58a6ff" stroke-width="2" width="1200" x="80" y="675"></rect><rect fill="#58a6ff" height="55" rx="2" width="4" x="80" y="675"></rect></g>
+<text fill="#58a6ff" font-size="15" font-weight="700" text-anchor="middle" x="700" y="698">🏢 AI 管理中心（统一管理员门户 + Keycloak 鉴权）</text>
+<text fill="#8b949e" font-size="11" text-anchor="middle" x="700" y="718">Dashboard 容器状态/业务指标 · 产品内嵌统计页 · 审计/成本报表 · Keycloak SSO</text>
 <!-- ====== Connections ====== -->
 <path d="M 250 105 L 250 275" fill="none" marker-end="url(#ar)" stroke="#58a6ff" stroke-width="2"></path>
 <text fill="#58a6ff" font-size="9" font-weight="600" x="258" y="190">LLM 请求</text>
@@ -163,21 +160,21 @@
 <path d="M 880 105 L 880 130 L 850 130 L 850 160" fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
 <!-- 可观测：浏览器 -> Langfuse -->
 <path d="M 950 105 L 950 370 L 700 370 L 700 380" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="5" stroke-width="1.5"></path>
-<text fill="#39c5cf" font-size="8" font-weight="600" x="960" y="240">查看追踪</text>
+<text fill="#39c5cf" font-size="8" font-weight="600" x="1160" y="240">查看追踪</text>
 <!-- 监控：浏览器 -> Grafana -->
-<path d="M 1080 105 L 1080 400 L 1062 400 L 1062 565" fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
+<path d="M 1080 95 L 1170 95 L 1170 565 " fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
 <!-- CI/CD -->
 <path d="M 612 565 L 735 565" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="5" stroke-width="1.5"></path>
 <text fill="#56d364" font-size="7" font-weight="600" text-anchor="middle" x="674" y="558">构建产物</text>
-<path d="M 1062 565 L 1175 565 L 1175 15 L 250 15 L 250 50" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="5" stroke-width="1.5"></path>
+<path d="M 1062 565 L 1200 565 L 1200 15 L 250 15 L 250 50" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="5" stroke-width="1.5"></path>
 <text fill="#56d364" font-size="9" font-weight="600" text-anchor="middle" x="700" y="11">⓵ DSH Desktop 自动更新（检查 version.txt → 下载安装）</text>
 <!-- Keycloak OIDC -->
 <path d="M 162 565 L 162 445" fill="none" opacity="0.85" stroke="#d2a8ff" stroke-dasharray="4" stroke-width="2"></path>
 <path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" marker-end="url(#ap)" opacity="0.3" stroke="#d2a8ff" stroke-dasharray="2,4" stroke-width="1"></path>
 <text fill="#d2a8ff" font-size="10" font-weight="700" text-anchor="middle" x="162" y="442">↑ OIDC SSO → 全部 Web 产品</text>
 <!-- MCP -->
-<path d="M 387 565 L 387 455" fill="none" opacity="0.85" stroke="#d2a8ff" stroke-dasharray="4" stroke-width="2"></path>
-<path d="M 387 455 L 250 455 L 250 105" fill="none" marker-end="url(#ap)" opacity="0.9" stroke="#d2a8ff" stroke-dasharray="5,3" stroke-width="2.5"></path>
+<path d="M 387 565 L 387 470" fill="none" opacity="0.85" stroke="#d2a8ff" stroke-dasharray="4" stroke-width="2"></path>
+<path d="M 387 470 L 140 470 L 140 105" fill="none" marker-end="url(#ap)" opacity="0.9" stroke="#d2a8ff" stroke-dasharray="5,3" stroke-width="2.5"></path>
 <text fill="#d2a8ff" font-size="10" font-weight="700" text-anchor="middle" x="387" y="448">↑ Skill/MCP → DSH Desktop · Dify</text>
 <!-- RAG 检索链路：MCP Gateway → Dify 知识库 -->
 <path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="7" stroke-width="2.5"></path>
@@ -186,7 +183,7 @@
 <path d="M 80 675 L 80 645 L 1120 645 L 1120 675" fill="none" opacity="0.5" stroke="#58a6ff" stroke-dasharray="4" stroke-width="1"></path>
 <text fill="#58a6ff" font-size="9" font-weight="600" text-anchor="middle" x="600" y="641">↑ AI 管理中心（Keycloak 鉴权 → Dashboard → 全部产品入口 + 审计/成本）</text>
 <!-- ====== Legend ====== -->
-<rect fill="#161b22" height="205" rx="8" stroke="#30363d" stroke-width="1" width="1160" x="20" y="770"></rect>
+<rect fill="#161b22" height="205" rx="8" stroke="#30363d" stroke-width="1" width="1260" x="20" y="770"></rect>
 <text fill="#58a6ff" font-size="13" font-weight="700" x="40" y="795">📊 数据流说明</text>
 <line stroke="#58a6ff" stroke-width="2" x1="40" x2="80" y1="815" y2="815"></line>
 <text fill="#c9d1d9" font-size="11" x="90" y="819">LLM 请求流：DSH Desktop / Dify → NewAPI → LiteLLM 脱敏 → 外部模型 → 响应还原 PII → 返回</text>
@@ -194,19 +191,19 @@
 <text fill="#c9d1d9" font-size="11" x="90" y="844">可观测流：LiteLLM success_callback → Langfuse 追踪每次调用（提示词/响应/延迟/token/成本）</text>
 <line stroke="#56d364" stroke-dasharray="5" stroke-width="1.5" x1="40" x2="80" y1="865" y2="865"></line>
 <text fill="#c9d1d9" font-size="11" x="90" y="869">自动更新流：Gitea Actions 构建 → 更新服务器 → DSH Desktop 自动下载安装</text>
-<line stroke="#d29922" stroke-dasharray="5" stroke-width="1.5" x1="620" x2="660" y1="815" y2="815"></line>
-<text fill="#c9d1d9" font-size="11" x="670" y="819">门户流：浏览器 → Ghost 门户 → 浏览新闻/下载/跳转 Dify</text>
-<line stroke="#d29922" stroke-width="1.5" x1="620" x2="660" y1="840" y2="840"></line>
-<text fill="#c9d1d9" font-size="11" x="670" y="844">监控流：浏览器 → Grafana 大盘（Prometheus + cadvisor 容器资源/告警）</text>
-<line opacity="0.7" stroke="#d2a8ff" stroke-dasharray="3" stroke-width="1" x1="620" x2="660" y1="865" y2="865"></line>
-<text fill="#c9d1d9" font-size="11" x="670" y="869">认证流：Keycloak OIDC SSO 统一登录（全部 Web 产品共用 ai_all_in_one_admin）</text>
+<line stroke="#d29922" stroke-dasharray="5" stroke-width="1.5" x1="720" x2="760" y1="815" y2="815"></line>
+<text fill="#c9d1d9" font-size="11" x="770" y="819">门户流：浏览器 → Ghost 门户 → 浏览新闻/下载/跳转 Dify</text>
+<line stroke="#d29922" stroke-width="1.5" x1="720" x2="760" y1="840" y2="840"></line>
+<text fill="#c9d1d9" font-size="11" x="770" y="844">监控流：浏览器 → Grafana 大盘（Prometheus + cadvisor 容器资源/告警）</text>
+<line opacity="0.7" stroke="#d2a8ff" stroke-dasharray="3" stroke-width="1" x1="720" x2="760" y1="865" y2="865"></line>
+<text fill="#c9d1d9" font-size="11" x="770" y="869">认证流：Keycloak OIDC SSO 统一登录（全部 Web 产品共用 ai_all_in_one_admin）</text>
 <line opacity="0.7" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1.5" x1="40" x2="80" y1="890" y2="890"></line>
 <text fill="#c9d1d9" font-size="11" x="90" y="894">统一日志流：Promtail 采集各容器日志 → Loki 聚合 → AI 管理中心「统一日志」页查询</text>
 <line stroke="#30363d" stroke-width="0.5" x1="40" x2="1160" y1="895" y2="895"></line>
 <text fill="#d2a8ff" font-size="10" font-weight="700" x="40" y="912">🔐 组件交互：</text>
 <text fill="#8b949e" font-size="9" x="40" y="927">Keycloak OIDC SSO → 全部 Web 产品　　MCP Gateway 提供 Skill/MCP → DSH Desktop/Dify　　LiteLLM 上报 → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
 <text fill="#8b949e" font-size="9" x="40" y="942">Gitea 构建 → 更新服务器 + Ghost 公告　　AI 管理中心 — 统一管理门户（Dashboard + 产品内嵌页 + 审计/成本报表 + 备份恢复 + 统一日志）</text>
-<rect fill="#1c2331" height="24" rx="6" stroke="#30363d" width="1120" x="40" y="950"></rect>
+<rect fill="#1c2331" height="24" rx="6" stroke="#30363d" width="1240" x="40" y="950"></rect>
 <text fill="#8b949e" font-size="10" text-anchor="middle" x="600" y="966">16 个独立开源组件 · 全部 Docker 部署 · 零代码开发 · 通过 URL + API Key / OIDC 互连 · Keycloak 统一 SSO</text>
 </svg></div>
 

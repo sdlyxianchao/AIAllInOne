@@ -175,180 +175,143 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
 
 <h3>1.1 Architecture Overview</h3>
 <div style="margin: 12px 24px;">
-<svg viewBox="0 0 1200 1000" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1200px;">
-  <!-- ====== Layer Background Bands ====== -->
-  <rect x="0" y="30" width="1200" height="90" rx="4" fill="#d2a8ff08" stroke="#d2a8ff22" stroke-width="0.5"/>
-  <rect x="0" y="140" width="1200" height="95" rx="4" fill="#d2992208" stroke="#d2992222" stroke-width="0.5"/>
-  <rect x="0" y="255" width="1200" height="90" rx="4" fill="#1f6feb08" stroke="#1f6feb22" stroke-width="0.5"/>
-  <rect x="0" y="365" width="1200" height="60" rx="4" fill="#39c5cf08" stroke="#39c5cf22" stroke-width="0.5"/>
-  <rect x="0" y="545" width="1200" height="100" rx="4" fill="#6e40c908" stroke="#6e40c922" stroke-width="0.5"/>
-  <rect x="0" y="665" width="1200" height="75" rx="4" fill="#58a6ff08" stroke="#58a6ff22" stroke-width="0.5"/>
-
-  <!-- ====== Layer Labels ====== -->
-  <rect x="8" y="36" width="56" height="18" rx="9" fill="#d2a8ff22"/><text x="36" y="49" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Users</text>
-  <rect x="8" y="146" width="76" height="18" rx="9" fill="#d2992222"/><text x="46" y="159" text-anchor="middle" fill="#d29922" font-size="10" font-weight="600">Portal&amp;Apps</text>
-  <rect x="8" y="261" width="66" height="18" rx="9" fill="#1f6feb22"/><text x="41" y="274" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">LLM Route</text>
-  <rect x="8" y="371" width="76" height="18" rx="9" fill="#39c5cf22"/><text x="46" y="384" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="600">Observability</text>
-  <rect x="8" y="551" width="66" height="18" rx="9" fill="#6e40c922"/><text x="41" y="564" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="600">Infrastructure</text>
-  <rect x="8" y="671" width="56" height="18" rx="9" fill="#58a6ff22"/><text x="36" y="684" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">Unified Admin</text>
-
-  <!-- ====== Layer 1: User ====== -->
-  <g filter="url(#sh)"><rect x="120" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="120" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
-  <text x="140" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🖥️ DSH Desktop Desktop Client</text>
-  <text x="140" y="90" fill="#8b949e" font-size="10">Win/Mac/Linux · local file access · MCP/Skill</text>
-
-  <g filter="url(#sh)"><rect x="820" y="50" width="260" height="55" rx="10" fill="url(#g-purple)" stroke="#d2a8ff" stroke-width="1.5"/><rect x="820" y="50" width="4" height="55" rx="2" fill="#d2a8ff"/></g>
-  <text x="840" y="73" fill="#d2a8ff" font-size="13" font-weight="700">🌐 Browser Users</text>
-  <text x="840" y="90" fill="#8b949e" font-size="10">Access portal / Dify Web / Grafana / Langfuse</text>
-
-  <!-- ====== Layer 2: Portal & App ====== -->
-  <g filter="url(#sh)"><rect x="300" y="160" width="300" height="70" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="2"/><rect x="300" y="160" width="4" height="70" rx="2" fill="#d29922"/></g>
-  <text x="320" y="183" fill="#d29922" font-size="14" font-weight="700">📰 Ghost Portal</text>
-  <text x="320" y="200" fill="#8b949e" font-size="11">News · download center · Dify entry · help docs</text>
-
-  <g filter="url(#sh)"><rect x="700" y="160" width="300" height="70" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="2"/><rect x="700" y="160" width="4" height="70" rx="2" fill="#58a6ff"/></g>
-  <text x="720" y="183" fill="#58a6ff" font-size="14" font-weight="700">🤖 Dify</text>
-  <text x="720" y="200" fill="#8b949e" font-size="11">Web AI app · Knowledge base (RAG) · Agent/Workflow</text>
-  <!-- BGE-Reranker (Dify knowledge-base re-ranking) -->
-  <g filter="url(#sh)"><rect x="700" y="237" width="180" height="36" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="1"/><rect x="700" y="237" width="3" height="36" rx="2" fill="#39c5cf"/></g>
-  <text x="712" y="252" fill="#39c5cf" font-size="10" font-weight="600">🔄 BGE-Reranker</text>
-  <text x="712" y="265" fill="#8b949e" font-size="8">Re-ranking · knowledge retrieval boost</text>
-  <path d="M 850 230 L 850 237" fill="none" stroke="#39c5cf" stroke-width="1" stroke-dasharray="3" marker-end="url(#at)"/>
-  <!-- BGE-M3 Embedder (semantic cache + KB vectorization) -->
-  <g filter="url(#sh)"><rect x="900" y="237" width="180" height="36" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="1"/><rect x="900" y="237" width="3" height="36" rx="2" fill="#39c5cf"/></g>
-  <text x="912" y="252" fill="#39c5cf" font-size="10" font-weight="600">📐 BGE-M3 Embedder</text>
-  <text x="912" y="265" fill="#8b949e" font-size="8">Embedding · semantic cache</text>
-  <path d="M 990 230 L 990 237" fill="none" stroke="#39c5cf" stroke-width="1" stroke-dasharray="3" marker-end="url(#at)"/>
-
-  <!-- ====== Layer 3: LLM Routing ====== -->
-  <g filter="url(#sh)"><rect x="130" y="275" width="220" height="60" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="1.5"/><rect x="130" y="275" width="4" height="60" rx="2" fill="#58a6ff"/></g>
-  <text x="150" y="297" fill="#58a6ff" font-size="13" font-weight="600">🔀 NewAPI</text>
-  <text x="150" y="314" fill="#8b949e" font-size="10">LLM Router · billing · rate limiting</text>
-
-  <g filter="url(#sh)"><rect x="440" y="275" width="240" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="440" y="275" width="4" height="60" rx="2" fill="#56d364"/></g>
-  <text x="460" y="297" fill="#56d364" font-size="13" font-weight="600">🛡️ LiteLLM + Presidio</text>
-  <text x="460" y="314" fill="#8b949e" font-size="10">PII masking → restore (built-in regex + Presidio)</text>
-
-  <path d="M 780 280 Q 755 280 755 305 Q 755 323 770 327 Q 775 340 800 340 Q 815 347 845 347 Q 880 347 895 340 Q 920 340 925 327 Q 940 323 940 305 Q 940 280 915 280 Q 905 270 880 270 Q 860 267 845 270 Q 820 270 810 275 Q 800 275 780 280 Z" fill="url(#g-cloud)" stroke="#484f58" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="847" y="303" text-anchor="middle" fill="#8b949e" font-size="13" font-weight="600">☁️ External LLM</text>
-  <text x="847" y="320" text-anchor="middle" fill="#8b949e" font-size="10">GPT-4 · Claude · DeepSeek</text>
-
-  <!-- ====== Layer 4: Observability (Langfuse) ====== -->
-  <g filter="url(#sh)"><rect x="440" y="380" width="260" height="50" rx="10" fill="#0d2b33" stroke="#39c5cf" stroke-width="1.5"/><rect x="440" y="380" width="4" height="50" rx="2" fill="#39c5cf"/></g>
-  <text x="460" y="401" fill="#39c5cf" font-size="13" font-weight="600">🔍 Langfuse Observability</text>
-  <text x="460" y="418" fill="#8b949e" font-size="10">Prompt/response/latency/token/cost tracing</text>
-  <!-- LiteLLM -> Langfuse bypass -->
-  <path d="M 560 335 L 560 380" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#at)"/>
-  <text x="568" y="360" fill="#39c5cf" font-size="8" font-weight="600">report</text>
-
-  <!-- ====== Layer 5: Infrastructure ====== -->
-  <g filter="url(#sh)"><rect x="60" y="565" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="60" y="565" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
-  <text x="80" y="588" fill="#d2a8ff" font-size="13" font-weight="600">🔐 Keycloak</text>
-  <text x="80" y="605" fill="#8b949e" font-size="10">SSO / OIDC / RBAC</text>
-
-  <g filter="url(#sh)"><rect x="285" y="565" width="205" height="60" rx="10" fill="url(#g-purple)" stroke="#6e40c9" stroke-width="1.5"/><rect x="285" y="565" width="4" height="60" rx="2" fill="#d2a8ff"/></g>
-  <text x="305" y="588" fill="#d2a8ff" font-size="13" font-weight="600">🔌 MCP Gateway</text>
-  <text x="305" y="605" fill="#8b949e" font-size="10">Skill / MCP hub · search_knowledge retrieval</text>
-
-  <g filter="url(#sh)"><rect x="510" y="565" width="205" height="60" rx="10" fill="url(#g-red)" stroke="#da3633" stroke-width="1.5"/><rect x="510" y="565" width="4" height="60" rx="2" fill="#f85149"/></g>
-  <text x="530" y="588" fill="#f85149" font-size="13" font-weight="600">🔧 Gitea</text>
-  <text x="530" y="605" fill="#8b949e" font-size="10">Source + Actions CI/CD</text>
-
-  <g filter="url(#sh)"><rect x="735" y="565" width="205" height="60" rx="10" fill="url(#g-green)" stroke="#1a7f37" stroke-width="1.5"/><rect x="735" y="565" width="4" height="60" rx="2" fill="#56d364"/></g>
-  <text x="755" y="588" fill="#56d364" font-size="13" font-weight="600">📦 Update Server</text>
-  <text x="755" y="605" fill="#8b949e" font-size="10">DSH Desktop installer hosting</text>
-
-  <g filter="url(#sh)"><rect x="960" y="565" width="205" height="60" rx="10" fill="url(#g-amber)" stroke="#d29922" stroke-width="1.5"/><rect x="960" y="565" width="4" height="60" rx="2" fill="#d29922"/></g>
-  <text x="980" y="588" fill="#d29922" font-size="13" font-weight="600">📈 Monitoring · Logging</text>
-  <text x="980" y="605" fill="#8b949e" font-size="10">Prometheus · Grafana · cadvisor · Loki</text>
-
-  <!-- ====== Layer 6: Management ====== -->
-  <g filter="url(#sh)"><rect x="80" y="675" width="1040" height="55" rx="10" fill="url(#g-blue)" stroke="#58a6ff" stroke-width="2"/><rect x="80" y="675" width="4" height="55" rx="2" fill="#58a6ff"/></g>
-  <text x="600" y="698" text-anchor="middle" fill="#58a6ff" font-size="15" font-weight="700">🏢 AI Admin Center (unified admin portal + Keycloak auth)</text>
-  <text x="600" y="718" text-anchor="middle" fill="#8b949e" font-size="11">Dashboard container status/business metrics · embedded product stats · audit/cost reports · Keycloak SSO</text>
-
-  <!-- ====== Connections ====== -->
-  <path d="M 250 105 L 250 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
-  <text x="258" y="190" fill="#58a6ff" font-size="9" font-weight="600">LLM request</text>
-  <path d="M 850 230 L 850 247 L 240 247 L 240 275" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
-  <path d="M 350 305 L 440 305" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
-  <text x="395" y="299" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">① forward</text>
-  <path d="M 680 305 L 750 305" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
-  <text x="718" y="299" text-anchor="middle" fill="#58a6ff" font-size="8" font-weight="600">② masked</text>
-  <path d="M 750 323 L 680 320" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ag)"/>
-  <text x="718" y="337" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">③ response</text>
-  <path d="M 440 320 L 350 320" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#ag)"/>
-  <text x="395" y="337" text-anchor="middle" fill="#56d364" font-size="8" font-weight="600">④ restore PII</text>
-
-  <!-- Portal flow -->
-  <path d="M 950 105 L 950 135 L 450 135 L 450 160" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
-  <text x="700" y="128" text-anchor="middle" fill="#d29922" font-size="8" font-weight="600">portal entry</text>
-  <path d="M 600 195 L 700 195" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
-  <path d="M 880 105 L 880 130 L 850 130 L 850 160" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
-
-  <!-- Observability: browser -> Langfuse -->
-  <path d="M 950 105 L 950 370 L 700 370 L 700 380" fill="none" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#at)"/>
-  <text x="960" y="240" fill="#39c5cf" font-size="8" font-weight="600">view traces</text>
-
-  <!-- Monitoring: browser -> Grafana -->
-  <path d="M 1080 105 L 1080 400 L 1062 400 L 1062 565" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ay)"/>
-
-  <!-- CI/CD -->
-  <path d="M 612 565 L 735 565" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
-  <text x="674" y="558" text-anchor="middle" fill="#56d364" font-size="7" font-weight="600">build artifact</text>
-  <path d="M 1062 565 L 1175 565 L 1175 15 L 250 15 L 250 50" fill="none" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5" marker-end="url(#ag)"/>
-  <text x="700" y="11" text-anchor="middle" fill="#56d364" font-size="9" font-weight="600">⓵ DSH Desktop auto-update (check version.txt → download & install)</text>
-
-  <!-- Keycloak OIDC -->
-  <path d="M 162 565 L 162 445" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
-  <path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="2,4" opacity="0.3" marker-end="url(#ap)"/>
-  <text x="162" y="442" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ OIDC SSO → all web products</text>
-
-  <!-- MCP -->
-  <path d="M 387 565 L 387 455" fill="none" stroke="#d2a8ff" stroke-width="2" stroke-dasharray="4" opacity="0.85"/>
-  <path d="M 387 455 L 250 455 L 250 105" fill="none" stroke="#d2a8ff" stroke-width="2.5" stroke-dasharray="5,3" opacity="0.9" marker-end="url(#ap)"/>
-  <text x="387" y="448" text-anchor="middle" fill="#d2a8ff" font-size="10" font-weight="700">↑ Skill/MCP → DSH Desktop · Dify</text>
-  <!-- RAG retrieval: MCP Gateway → Dify knowledge base -->
-  <path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" stroke="#39c5cf" stroke-width="2.5" stroke-dasharray="7" marker-end="url(#at)"/>
-  <text x="577" y="498" text-anchor="middle" fill="#39c5cf" font-size="10" font-weight="700">RAG retrieval: search_knowledge → Dify knowledge base</text>
-
-  <!-- Management bracket -->
-  <path d="M 80 675 L 80 645 L 1120 645 L 1120 675" fill="none" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4" opacity="0.5"/>
-  <text x="600" y="641" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">↑ AI Admin Center (Keycloak auth → Dashboard → all product entries + audit/cost)</text>
-
-  <!-- ====== Legend ====== -->
-  <rect x="20" y="770" width="1160" height="205" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="40" y="795" fill="#58a6ff" font-size="13" font-weight="700">📊 Data flow legend</text>
-
-  <line x1="40" y1="815" x2="80" y2="815" stroke="#58a6ff" stroke-width="2"/>
-  <text x="90" y="819" fill="#c9d1d9" font-size="11">LLM request flow: DSH Desktop / Dify → NewAPI → LiteLLM masking → external model → restore PII → return</text>
-
-  <line x1="40" y1="840" x2="80" y2="840" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="844" fill="#c9d1d9" font-size="11">Observability flow: LiteLLM success_callback → Langfuse traces every call (prompt/response/latency/token/cost)</text>
-
-  <line x1="40" y1="865" x2="80" y2="865" stroke="#56d364" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="90" y="869" fill="#c9d1d9" font-size="11">Auto-update flow: Gitea Actions build → update server → DSH Desktop auto-download & install</text>
-
-  <line x1="620" y1="815" x2="660" y2="815" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5"/>
-  <text x="670" y="819" fill="#c9d1d9" font-size="11">Portal flow: browser → Ghost portal → browse news/download/redirect to Dify</text>
-
-  <line x1="620" y1="840" x2="660" y2="840" stroke="#d29922" stroke-width="1.5"/>
-  <text x="670" y="844" fill="#c9d1d9" font-size="11">Monitoring flow: browser → Grafana dashboard (Prometheus + cadvisor container resources/alerts)</text>
-
-  <line x1="620" y1="865" x2="660" y2="865" stroke="#d2a8ff" stroke-width="1" stroke-dasharray="3" opacity="0.7"/>
-  <text x="670" y="869" fill="#c9d1d9" font-size="11">Auth flow: Keycloak OIDC SSO unified login (all web products share ai_all_in_one_admin)</text>
-
-  <line x1="40" y1="890" x2="80" y2="890" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="3" opacity="0.7"/>
-  <text x="90" y="894" fill="#c9d1d9" font-size="11">Unified logging flow: Promtail collects container logs → Loki aggregation → AI Admin Center "Unified Logs" query</text>
-
-  <line x1="40" y1="895" x2="1160" y2="895" stroke="#30363d" stroke-width="0.5"/>
-  <text x="40" y="912" fill="#d2a8ff" font-size="10" font-weight="700">🔐 Component interactions:</text>
-  <text x="40" y="927" fill="#8b949e" font-size="9">Keycloak OIDC SSO → all web products　　MCP Gateway provides Skill/MCP → DSH Desktop/Dify　　LiteLLM report → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
-  <text x="40" y="942" fill="#8b949e" font-size="9">Gitea build → update server + Ghost announcement　　AI Admin Center — unified admin portal (Dashboard + embedded product pages + audit/cost reports + backup/restore + unified logs)</text>
-
-  <rect x="40" y="950" width="1120" height="24" rx="6" fill="#1c2331" stroke="#30363d"/>
-  <text x="600" y="966" text-anchor="middle" fill="#8b949e" font-size="10">16 independent open-source components · all Docker-deployed · zero code · interconnected via URL + API Key / OIDC · Keycloak unified SSO</text>
-
+<svg viewBox="0 0 1300 1000" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:1300px;">
+<!-- ====== Layer Background Bands ====== -->
+<rect fill="#d2a8ff08" height="90" rx="4" stroke="#d2a8ff22" stroke-width="0.5" width="1300" x="0" y="30"></rect>
+<rect fill="#d2992208" height="95" rx="4" stroke="#d2992222" stroke-width="0.5" width="1300" x="0" y="140"></rect>
+<rect fill="#1f6feb08" height="90" rx="4" stroke="#1f6feb22" stroke-width="0.5" width="1300" x="0" y="255"></rect>
+<rect fill="#39c5cf08" height="60" rx="4" stroke="#39c5cf22" stroke-width="0.5" width="1300" x="0" y="365"></rect>
+<rect fill="#6e40c908" height="100" rx="4" stroke="#6e40c922" stroke-width="0.5" width="1300" x="0" y="545"></rect>
+<rect fill="#58a6ff08" height="75" rx="4" stroke="#58a6ff22" stroke-width="0.5" width="1300" x="0" y="665"></rect>
+<!-- ====== Layer Labels ====== -->
+<rect fill="#d2a8ff22" height="18" rx="9" width="56" x="8" y="36"></rect><text fill="#d2a8ff" font-size="10" font-weight="600" text-anchor="middle" x="36" y="49">User</text>
+<rect fill="#d2992222" height="18" rx="9" width="76" x="8" y="146"></rect><text fill="#d29922" font-size="10" font-weight="600" text-anchor="middle" x="46" y="159">Portal &amp; App</text>
+<rect fill="#1f6feb22" height="18" rx="9" width="66" x="8" y="261"></rect><text fill="#58a6ff" font-size="10" font-weight="600" text-anchor="middle" x="41" y="274">LLM Routing</text>
+<rect fill="#39c5cf22" height="18" rx="9" width="76" x="8" y="371"></rect><text fill="#39c5cf" font-size="10" font-weight="600" text-anchor="middle" x="46" y="384">Observability</text>
+<rect fill="#6e40c922" height="18" rx="9" width="66" x="8" y="551"></rect><text fill="#d2a8ff" font-size="10" font-weight="600" text-anchor="middle" x="41" y="564">Infrastructure</text>
+<rect fill="#58a6ff22" height="18" rx="9" width="56" x="8" y="671"></rect><text fill="#58a6ff" font-size="10" font-weight="600" text-anchor="middle" x="36" y="684">Admin</text>
+<!-- ====== Layer 1: User ====== -->
+<g filter="url(#sh)"><rect fill="url(#g-purple)" height="55" rx="10" stroke="#d2a8ff" stroke-width="1.5" width="260" x="120" y="50"></rect><rect fill="#d2a8ff" height="55" rx="2" width="4" x="120" y="50"></rect></g>
+<text fill="#d2a8ff" font-size="13" font-weight="700" x="140" y="73">DSH Desktop Client</text>
+<text fill="#8b949e" font-size="10" x="140" y="90">Win/Mac/Linux · Local file read/write · MCP/Skill</text>
+<g filter="url(#sh)"><rect fill="url(#g-purple)" height="55" rx="10" stroke="#d2a8ff" stroke-width="1.5" width="260" x="820" y="50"></rect><rect fill="#d2a8ff" height="55" rx="2" width="4" x="820" y="50"></rect></g>
+<text fill="#d2a8ff" font-size="13" font-weight="700" x="840" y="73">Browser Users</text>
+<text fill="#8b949e" font-size="10" x="840" y="90">Portal / Dify Web / Grafana / Langfuse</text>
+<!-- ====== Layer 2: Portal & App ====== -->
+<g filter="url(#sh)"><rect fill="url(#g-amber)" height="70" rx="10" stroke="#d29922" stroke-width="2" width="300" x="300" y="160"></rect><rect fill="#d29922" height="70" rx="2" width="4" x="300" y="160"></rect></g>
+<text fill="#d29922" font-size="14" font-weight="700" x="320" y="183">Ghost Enterprise Portal</text>
+<text fill="#8b949e" font-size="11" x="320" y="200">News · Download Center · Dify Entry · Help</text>
+<g filter="url(#sh)"><rect fill="url(#g-blue)" height="70" rx="10" stroke="#1f6feb" stroke-width="2" width="300" x="700" y="160"></rect><rect fill="#58a6ff" height="70" rx="2" width="4" x="700" y="160"></rect></g>
+<text fill="#58a6ff" font-size="14" font-weight="700" x="720" y="183">Dify</text>
+<text fill="#8b949e" font-size="11" x="720" y="200">Web AI App · Knowledge Base (RAG) · Agent/Workflow</text>
+<!-- BGE-Reranker + BGE-M3 Embedder -->
+<g><rect fill="#0d2b33" height="28" rx="6" stroke="#39c5cf" stroke-width="0.8" width="150" x="1010" y="162"></rect><rect fill="#39c5cf" height="28" rx="2" width="3" x="1010" y="162"></rect></g>
+<text fill="#39c5cf" font-size="9" font-weight="600" x="1022" y="174">BGE-Reranker</text>
+<text fill="#8b949e" font-size="7" x="1022" y="185">Re-ranking · knowledge retrieval</text>
+<g><rect fill="#0d2b33" height="28" rx="6" stroke="#39c5cf" stroke-width="0.8" width="150" x="1010" y="196"></rect><rect fill="#39c5cf" height="28" rx="2" width="3" x="1010" y="196"></rect></g>
+<text fill="#39c5cf" font-size="9" font-weight="600" x="1022" y="208">BGE-M3 Embedder</text>
+<text fill="#8b949e" font-size="7" x="1022" y="219">Embedding · semantic cache</text>
+<!-- ====== Layer 3: LLM Routing ====== -->
+<g filter="url(#sh)"><rect fill="url(#g-blue)" height="60" rx="10" stroke="#1f6feb" stroke-width="1.5" width="200" x="150" y="275"></rect><rect fill="#58a6ff" height="60" rx="2" width="4" x="150" y="275"></rect></g>
+<text fill="#58a6ff" font-size="13" font-weight="600" x="170" y="297">NewAPI</text>
+<text fill="#8b949e" font-size="10" x="170" y="314">LLM Router · Billing · Rate Limiting</text>
+<g filter="url(#sh)"><rect fill="url(#g-green)" height="60" rx="10" stroke="#1a7f37" stroke-width="1.5" width="240" x="440" y="275"></rect><rect fill="#56d364" height="60" rx="2" width="4" x="440" y="275"></rect></g>
+<text fill="#56d364" font-size="13" font-weight="600" x="460" y="297">LiteLLM + Presidio</text>
+<text fill="#8b949e" font-size="10" x="460" y="314">PII Redaction → Restore</text>
+<path d="M 780 280 Q 755 280 755 305 Q 755 323 770 327 Q 775 340 800 340 Q 815 347 845 347 Q 880 347 895 340 Q 920 340 925 327 Q 940 323 940 305 Q 940 280 915 280 Q 905 270 880 270 Q 860 267 845 270 Q 820 270 810 275 Q 800 275 780 280 Z" fill="url(#g-cloud)" stroke="#484f58" stroke-dasharray="5" stroke-width="1.5"></path>
+<text fill="#8b949e" font-size="13" font-weight="600" text-anchor="middle" x="847" y="303">External LLM</text>
+<text fill="#8b949e" font-size="10" text-anchor="middle" x="847" y="320">GPT-4 · Claude · DeepSeek</text>
+<!-- ====== Layer 4: Observability (Langfuse) ====== -->
+<g filter="url(#sh)"><rect fill="#0d2b33" height="50" rx="10" stroke="#39c5cf" stroke-width="1.5" width="260" x="440" y="380"></rect><rect fill="#39c5cf" height="50" rx="2" width="4" x="440" y="380"></rect></g>
+<text fill="#39c5cf" font-size="13" font-weight="600" x="460" y="401">Langfuse Observability</text>
+<text fill="#8b949e" font-size="10" x="460" y="418">Prompt / Response / Latency / Token / Cost</text>
+<path d="M 560 335 L 560 380" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="4" stroke-width="1.5"></path>
+<text fill="#39c5cf" font-size="8" font-weight="600" x="568" y="360">report</text>
+<!-- ====== Layer 5: Infrastructure ====== -->
+<g filter="url(#sh)"><rect fill="url(#g-purple)" height="60" rx="10" stroke="#6e40c9" stroke-width="1.5" width="205" x="60" y="565"></rect><rect fill="#d2a8ff" height="60" rx="2" width="4" x="60" y="565"></rect></g>
+<text fill="#d2a8ff" font-size="13" font-weight="600" x="80" y="588">Keycloak</text>
+<text fill="#8b949e" font-size="10" x="80" y="605">SSO / OIDC / RBAC</text>
+<g filter="url(#sh)"><rect fill="url(#g-purple)" height="60" rx="10" stroke="#6e40c9" stroke-width="1.5" width="205" x="320" y="565"></rect><rect fill="#d2a8ff" height="60" rx="2" width="4" x="320" y="565"></rect></g>
+<text fill="#d2a8ff" font-size="13" font-weight="600" x="340" y="588">MCP Gateway</text>
+<text fill="#8b949e" font-size="10" x="340" y="605">Skill / MCP Hub · search_knowledge</text>
+<g filter="url(#sh)"><rect fill="url(#g-red)" height="60" rx="10" stroke="#da3633" stroke-width="1.5" width="205" x="580" y="565"></rect><rect fill="#f85149" height="60" rx="2" width="4" x="580" y="565"></rect></g>
+<text fill="#f85149" font-size="13" font-weight="600" x="600" y="588">Gitea</text>
+<text fill="#8b949e" font-size="10" x="600" y="605">Source Control + Actions CI/CD</text>
+<g filter="url(#sh)"><rect fill="url(#g-green)" height="60" rx="10" stroke="#1a7f37" stroke-width="1.5" width="205" x="820" y="565"></rect><rect fill="#56d364" height="60" rx="2" width="4" x="820" y="565"></rect></g>
+<text fill="#56d364" font-size="13" font-weight="600" x="840" y="588">Update Server</text>
+<text fill="#8b949e" font-size="10" x="840" y="605">DSH Desktop Distribution</text>
+<g filter="url(#sh)"><rect fill="url(#g-amber)" height="60" rx="10" stroke="#d29922" stroke-width="1.5" width="205" x="1060" y="565"></rect><rect fill="#d29922" height="60" rx="2" width="4" x="1060" y="565"></rect></g>
+<text fill="#d29922" font-size="13" font-weight="600" x="1080" y="588">Monitoring · Logging</text>
+<text fill="#8b949e" font-size="10" x="1080" y="605">Prometheus · Grafana · cadvisor · Loki</text>
+<!-- ====== Layer 6: Management ====== -->
+<g filter="url(#sh)"><rect fill="url(#g-blue)" height="55" rx="10" stroke="#58a6ff" stroke-width="2" width="1200" x="80" y="675"></rect><rect fill="#58a6ff" height="55" rx="2" width="4" x="80" y="675"></rect></g>
+<text fill="#58a6ff" font-size="15" font-weight="700" text-anchor="middle" x="700" y="698">AI Admin Center (Unified Admin Portal + Keycloak Auth)</text>
+<text fill="#8b949e" font-size="11" text-anchor="middle" x="700" y="718">Dashboard · Product Metrics · Audit / Cost Reports · Keycloak SSO</text>
+<!-- ====== Connections ====== -->
+<path d="M 250 105 L 250 275" fill="none" marker-end="url(#ar)" stroke="#58a6ff" stroke-width="2"></path>
+<text fill="#58a6ff" font-size="9" font-weight="600" x="258" y="190">LLM Request</text>
+<path d="M 850 230 L 850 247 L 240 247 L 240 275" fill="none" marker-end="url(#ar)" stroke="#58a6ff" stroke-width="2"></path>
+<path d="M 350 305 L 440 305" fill="none" marker-end="url(#ar)" stroke="#58a6ff" stroke-width="2"></path>
+<text fill="#58a6ff" font-size="8" font-weight="600" text-anchor="middle" x="395" y="299">1. Forward</text>
+<path d="M 680 305 L 750 305" fill="none" marker-end="url(#ar)" stroke="#58a6ff" stroke-width="2"></path>
+<text fill="#58a6ff" font-size="8" font-weight="600" text-anchor="middle" x="718" y="299">2. Redacted</text>
+<path d="M 750 323 L 680 320" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="4" stroke-width="1.5"></path>
+<text fill="#56d364" font-size="8" font-weight="600" text-anchor="middle" x="718" y="337">3. Response</text>
+<path d="M 440 320 L 350 320" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="4" stroke-width="1.5"></path>
+<text fill="#56d364" font-size="8" font-weight="600" text-anchor="middle" x="395" y="337">4. Restore PII</text>
+<!-- Portal flow -->
+<path d="M 950 105 L 950 135 L 450 135 L 450 160" fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
+<text fill="#d29922" font-size="8" font-weight="600" text-anchor="middle" x="700" y="128">Portal Entry</text>
+<path d="M 600 195 L 700 195" fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
+<path d="M 880 105 L 880 130 L 850 130 L 850 160" fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
+<!-- Observability: Browser -> Langfuse -->
+<path d="M 950 105 L 950 370 L 700 370 L 700 380" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="5" stroke-width="1.5"></path>
+<text fill="#39c5cf" font-size="8" font-weight="600" x="1160" y="240">View Traces</text>
+<!-- Monitoring: Browser -> Grafana -->
+<path d="M 1080 95 L 1170 95 L 1170 565 " fill="none" marker-end="url(#ay)" stroke="#d29922" stroke-dasharray="5" stroke-width="1.5"></path>
+<!-- CI/CD -->
+<path d="M 612 565 L 735 565" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="5" stroke-width="1.5"></path>
+<text fill="#56d364" font-size="7" font-weight="600" text-anchor="middle" x="674" y="558">Build Artifact</text>
+<path d="M 1062 565 L 1200 565 L 1200 15 L 250 15 L 250 50" fill="none" marker-end="url(#ag)" stroke="#56d364" stroke-dasharray="5" stroke-width="1.5"></path>
+<text fill="#56d364" font-size="9" font-weight="600" text-anchor="middle" x="700" y="11">1. DSH Desktop Auto-Update (check version.txt → download → install)</text>
+<!-- Keycloak OIDC -->
+<path d="M 162 565 L 162 445" fill="none" opacity="0.85" stroke="#d2a8ff" stroke-dasharray="4" stroke-width="2"></path>
+<path d="M 162 445 Q 162 435 600 435 L 850 435 L 850 230" fill="none" marker-end="url(#ap)" opacity="0.3" stroke="#d2a8ff" stroke-dasharray="2,4" stroke-width="1"></path>
+<text fill="#d2a8ff" font-size="10" font-weight="700" text-anchor="middle" x="162" y="442">↑ OIDC SSO → All Web Products</text>
+<!-- MCP -->
+<path d="M 387 565 L 387 470" fill="none" opacity="0.85" stroke="#d2a8ff" stroke-dasharray="4" stroke-width="2"></path>
+<path d="M 387 470 L 140 470 L 140 105" fill="none" marker-end="url(#ap)" opacity="0.9" stroke="#d2a8ff" stroke-dasharray="5,3" stroke-width="2.5"></path>
+<text fill="#d2a8ff" font-size="10" font-weight="700" text-anchor="middle" x="387" y="448">↑ Skill/MCP → DSH Desktop · Dify</text>
+<!-- RAG Retrieval: MCP Gateway → Dify KB -->
+<path d="M 430 565 L 430 505 L 725 505 L 725 230" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="7" stroke-width="2.5"></path>
+<text fill="#39c5cf" font-size="10" font-weight="700" text-anchor="middle" x="577" y="498">RAG: search_knowledge → Dify Knowledge Base</text>
+<!-- Management bracket -->
+<path d="M 80 675 L 80 645 L 1120 645 L 1120 675" fill="none" opacity="0.5" stroke="#58a6ff" stroke-dasharray="4" stroke-width="1"></path>
+<text fill="#58a6ff" font-size="9" font-weight="600" text-anchor="middle" x="600" y="641">↑ AI Admin Center (Keycloak Auth → Dashboard → All Products + Audit/Cost)</text>
+<!-- ====== Legend ====== -->
+<rect fill="#161b22" height="205" rx="8" stroke="#30363d" stroke-width="1" width="1260" x="20" y="770"></rect>
+<text fill="#58a6ff" font-size="13" font-weight="700" x="40" y="795">Data Flow</text>
+<line stroke="#58a6ff" stroke-width="2" x1="40" x2="80" y1="815" y2="815"></line>
+<text fill="#c9d1d9" font-size="11" x="90" y="819">LLM Request: DSH Desktop / Dify → NewAPI → LiteLLM Redaction → External Model → Response PII Restore → Return</text>
+<line stroke="#39c5cf" stroke-dasharray="5" stroke-width="1.5" x1="40" x2="80" y1="840" y2="840"></line>
+<text fill="#c9d1d9" font-size="11" x="90" y="844">Observability: LiteLLM success_callback → Langfuse traces (prompt/response/latency/token/cost)</text>
+<line stroke="#56d364" stroke-dasharray="5" stroke-width="1.5" x1="40" x2="80" y1="865" y2="865"></line>
+<text fill="#c9d1d9" font-size="11" x="90" y="869">Auto-Update: Gitea Actions Build → Update Server → DSH Desktop Auto-Download</text>
+<line stroke="#d29922" stroke-dasharray="5" stroke-width="1.5" x1="720" x2="760" y1="815" y2="815"></line>
+<text fill="#c9d1d9" font-size="11" x="770" y="819">Portal: Browser → Ghost Portal → News / Download / Jump to Dify</text>
+<line stroke="#d29922" stroke-width="1.5" x1="720" x2="760" y1="840" y2="840"></line>
+<text fill="#c9d1d9" font-size="11" x="770" y="844">Monitoring: Browser → Grafana Dashboard (Prometheus + cadvisor Container Resources / Alerts)</text>
+<line opacity="0.7" stroke="#d2a8ff" stroke-dasharray="3" stroke-width="1" x1="720" x2="760" y1="865" y2="865"></line>
+<text fill="#c9d1d9" font-size="11" x="770" y="869">Auth: Keycloak OIDC SSO Unified Login (all Web products share ai_all_in_one_admin)</text>
+<line opacity="0.7" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1.5" x1="40" x2="80" y1="890" y2="890"></line>
+<text fill="#c9d1d9" font-size="11" x="90" y="894">Unified Logging: Promtail collects container logs → Loki aggregation → AI Admin Center 'Unified Logs' page</text>
+<line stroke="#30363d" stroke-width="0.5" x1="40" x2="1160" y1="895" y2="895"></line>
+<text fill="#d2a8ff" font-size="10" font-weight="700" x="40" y="912">Component Interactions:</text>
+<text fill="#8b949e" font-size="9" x="40" y="927">Keycloak OIDC SSO → All Web Products　　MCP Gateway → DSH Desktop/Dify　　LiteLLM → Langfuse　　Prometheus/cadvisor → Grafana　　Promtail → Loki</text>
+<text fill="#8b949e" font-size="9" x="40" y="942">Gitea Build → Update Server + Ghost Announcements　　AI Admin Center — Unified Admin Portal (Dashboard + Product Pages + Audit/Cost Reports + Backup/Restore + Unified Logs)</text>
+<rect fill="#1c2331" height="24" rx="6" stroke="#30363d" width="1240" x="40" y="950"></rect>
+<text fill="#8b949e" font-size="10" text-anchor="middle" x="600" y="966">16 Independent Open-Source Components · All Docker Deployed · Zero-Code Development · Connected via URL + API Key / OIDC · Keycloak Unified SSO</text>
+</svg>
 </div>
 
 <h3>1.2 Port Allocation Table</h3>
