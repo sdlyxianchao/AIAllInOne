@@ -84,7 +84,7 @@ For air-gapped or restricted networks, download the pre-built image pack from [R
 
 ```powershell
 # Windows — merge split parts (from the directory containing the downloaded parts)
-copy /b ai-all-in-one-images-1.06.tar.gz.part00 + ai-all-in-one-images-1.06.tar.gz.part01 ai-all-in-one-images-1.06.tar.gz
+copy /b ai-all-in-one-images-1.07.tar.gz.part00 + ai-all-in-one-images-1.07.tar.gz.part01 + ai-all-in-one-images-1.07.tar.gz.part02 ai-all-in-one-images-1.07.tar.gz
 ```
 
 ```powershell
@@ -193,11 +193,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 
 ## 📋 Changelog
 
-### v1.06 (2026-09-06)
+### v1.07 (2026-09-08)
 
 - **New: BGE-Reranker** — added `dify-reranker` container (BGE-Reranker-v2-M3) for knowledge-base retrieval re-ranking, significantly improving Dify RAG accuracy
 - **New: BGE-M3 Embedder** — added `dify-embedder` container serving bge-m3 embedding model internally, replacing external Ollama dependency — zero external dependencies for AI model services
-- **Improved: LiteLLM model table** — AI Admin Center now shows 4-column model table (model / task type / description / deployment) instead of a single-column list
+- **Improved: LiteLLM model table** — AI Admin Center now shows 4-column model table (model / task type / description / deployment) + related AI services section
+- **Improved: Dify admin page** — added Embedding and Rerank configuration guides with one-click test buttons
+- **Improved: All documentation** — updated deploy guides, training materials, admin manual for new model containers
+
+### v1.06 (2026-09-06)
 - **Fixed: DSH Desktop sync broken pipe** — rewrote `deploy_file_to_nginx` to use `wget` inside the update-server container instead of Docker tar API, fixing Broken pipe on 160MB+ installer files
 - **Fixed: Ghost DSH page update** — admin-portal container now installs `python3` at startup (required for Ghost database update script)
 - **Fixed: Docker API JSON parsing** — `docker_exec_read` now correctly parses chunked transfer encoding responses

@@ -83,16 +83,16 @@ docker compose up -d
 
 | 镜像包 | 大小 | 下载链接 |
 |---|---|---|
-| 主平台镜像（v1.06） | ~3.8 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-Q6wVH) |
-| Dify 镜像（v1.06） | ~2.4 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-2JQVH) |
+| 主平台镜像（v1.07） | ~4.2 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-byTjH) |
+| Dify 镜像（v1.07） | ~2.4 GB | [下载](https://4002626314.share.123pan.cn/123pan/66RzMh-k6wVH) |
 
-> **历史版本镜像**：[v1.05 主平台](https://4002626314.share.123pan.cn/123pan/66RzMh-uyTjH) · [v1.05 Dify](https://4002626314.share.123pan.cn/123pan/66RzMh-UyTjH)
+> **历史版本镜像**：[v1.06 主平台](https://4002626314.share.123pan.cn/123pan/66RzMh-Q6wVH) · [v1.06 Dify](https://4002626314.share.123pan.cn/123pan/66RzMh-2JQVH) · [v1.05 主平台](https://4002626314.share.123pan.cn/123pan/66RzMh-uyTjH) · [v1.05 Dify](https://4002626314.share.123pan.cn/123pan/66RzMh-UyTjH)
 
 下载后放到对应的镜像目录：
 
 ```powershell
 # Windows — 把下载的文件放到 windows-image/ 目录
-# 文件名：ai-all-in-one-images-1.06.tar.gz 和 ai-all-in-one-dify-images-1.06.tar.gz
+# 文件名：ai-all-in-one-images-1.07.tar.gz 和 ai-all-in-one-dify-images-1.07.tar.gz
 ```
 
 ```powershell
@@ -207,11 +207,16 @@ chmod +x import-images.sh && sudo ./import-images.sh
 
 ## 📋 更新日志
 
-### v1.06（2026-09-06）
+### v1.07（2026-09-08）
 
 - **新增：BGE-Reranker** — 新增 `dify-reranker` 容器（BGE-Reranker-v2-M3），用于知识库检索重排序，显著提升 Dify RAG 准确率
 - **新增：BGE-M3 Embedder** — 新增 `dify-embedder` 容器内部提供 bge-m3 embedding 模型，替代外部 Ollama 依赖——AI 模型服务零外部依赖
-- **改进：LiteLLM 模型表格** — AI 管理中心模型表格从单列改为四列（模型 / 任务类型 / 详细说明 / 部署方式）
+- **改进：LiteLLM 模型表格** — AI 管理中心模型表格从单列改为四列（模型 / 任务类型 / 详细说明 / 部署方式）+ 关联 AI 服务区域
+- **改进：Dify 管理页面** — 新增 Embedding 和 Rerank 配置指南，含一键测试按钮
+- **改进：全部文档** — 更新部署文档、培训教材、管理员手册，适配新模型容器
+
+### v1.06（2026-09-06）
+
 - **修复：DSH Desktop 同步 Broken pipe** — 重写 `deploy_file_to_nginx`，改用在 update-server 容器内 `wget` 直接下载，修复160MB+安装包文件的 Broken pipe 问题
 - **修复：Ghost DSH 页面更新** — admin-portal 容器启动时安装 `python3`（Ghost 数据库更新脚本需要）
 - **修复：Docker API JSON 解析** — `docker_exec_read` 现在正确解析 chunked transfer encoding 响应
