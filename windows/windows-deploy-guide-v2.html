@@ -736,7 +736,7 @@ docker network ls | findstr ai-platform</code></pre>
   <tr><th>变量</th><th>类型</th><th>说明</th></tr>
   <tr><td><code>DEEPSEEK_API_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>外部 LLM API Key，不配则链路不通</td></tr>
   <tr><td><code>LITELLM_MASTER_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>LiteLLM 内部鉴权密钥，NewAPI 需要用</td></tr>
-  <tr><td><code>OLLAMA_API_BASE</code></td><td style="color:#8b949e">⚪ 默认</td><td>本地 embedding 地址（语义缓存向量化），默认 <code>http://host.docker.internal:11434</code>（宿主机 Ollama 的 bge-m3）</td></tr>
+  <tr><td><code>OLLAMA_API_BASE</code></td><td style="color:#8b949e">⚪ 不再需要</td><td><s>本地 embedding 地址</s>，已改为 <code>dify-embedder</code> 容器内部提供，无需外部 Ollama</td></tr>
   <tr><td><code>LITELLM_REDIS_PASSWORD</code></td><td style="color:#8b949e">⚪ 默认</td><td>litellm-redis 密码（语义缓存要求该变量存在，内网无鉴权留空即可）</td></tr>
   <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>MySQL root 密码，首次创建后不宜改</td></tr>
   <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 立即</td><td>Keycloak 管理员密码</td></tr>
@@ -1490,11 +1490,11 @@ litellm_settings:
     ttl: 3600            <span class="comment"># 缓存 1 小时，按数据更新频率调</span>
     similarity_threshold: 0.8
     <span class="comment"># 0.9+ 接近精确匹配；0.7~0.8 推荐平衡点；0.6~0.7 更激进省钱</span>
-    redis_semantic_cache_embedding_model: bge-m3  <span class="comment"># 本地 embedding（model_list 已注册，走宿主机 Ollama）</span>
+    redis_semantic_cache_embedding_model: bge-m3  <span class="comment"># 本地 embedding（model_list 已注册，走 dify-embedder 容器）</span>
     redis_semantic_cache_index_name: litellm_semantic_cache_index</code></pre>
   <div class="verify">
     <ul>
-      <li><b>前置（3 步）</b>：① <code>docker-compose.yml</code> 的 <code>litellm-redis</code> 镜像换成 <code>redis/redis-stack-server</code>（原生 redis 兼容，RediSearch 提供向量检索）；② 宿主机装 Ollama 并 <code>ollama pull bge-m3</code>，<code>.env</code> 设 <code>OLLAMA_API_BASE=http://host.docker.internal:11434</code>（容器经 <code>host.docker.internal</code> 访问宿主机，完全本地免费）；③ litellm 容器环境变量补 <code>REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}</code>——<b>RedisSemanticCache 强制要求该变量（可空）</b>，不补会启动报 <code>Missing required Redis configuration: REDIS_PASSWORD</code></li>
+      <li><b>前置（2 步）</b>：① <code>docker-compose.yml</code> 的 <code>litellm-redis</code> 镜像换成 <code>redis/redis-stack-server</code>（原生 redis 兼容，RediSearch 提供向量检索）；② litellm 容器环境变量补 <code>REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}</code>——<b>RedisSemanticCache 强制要求该变量（可空）</b>，不补会启动报 <code>Missing required Redis configuration: REDIS_PASSWORD</code>。bge-m3 embedding 由 <code>dify-embedder</code> 容器自动提供（<code>docker compose up -d</code> 即启动），<b>无需外部 Ollama</b>。</li>
       <li><b>验证命中</b>：连续两次<b>语义相近但措辞不同</b>的请求（如「介绍一下公司AI平台有哪些功能」vs「平台有哪些主要功能」），第二次响应带 <code>X-Litellm-Cache-Key</code> + <code>X-Litellm-Semantic-Similarity</code>（实测 0.92），耗时从十几秒降到 &lt;0.5 秒</li>
       <li><b>适用建议</b>：确定性任务（知识库问答 / 固定模板 / <code>temperature=0</code>）收益最大；需要实时/个性化内容用请求头 <code>no-cache</code> 绕过</li>
       <li><b>关闭缓存</b>：<code>cache: false</code> 或注释整块，重启 <code>litellm</code></li>
@@ -1929,7 +1929,7 @@ if (name === 'platform_health') {
 
 <h4>第 1 步：Dify 侧准备（embedding 模型 + 知识库 + Knowledge Key）</h4>
 <ol>
-  <li><b>配 embedding 模型</b>：Dify 后台 → 设置 → 模型供应商 → <b>OpenAI-API-compatible</b> → 添加一个 embedding 模型（内网无 embedding 时可用宿主机本地 Ollama 跑 <code>bge-m3</code>，1024 维中文 embedding），再在「模型供应商」里把它设为<b>默认 text-embedding 模型</b>（不设默认会报「Default model not found for text-embedding」）。</li>
+  <li><b>配 embedding 模型</b>：Dify 后台 → 设置 → 模型供应商 → <b>OpenAI-API-compatible</b> → 添加 embedding 模型。平台已内置 <code>dify-embedder</code> 容器提供 BAAI/bge-m3（1024 维中文 embedding），API Base URL 填 <code>http://host.docker.internal:11435/v1</code>，API Key 留空，模型名 <code>BAAI/bge-m3</code>。在「模型供应商」里把它设为<b>默认 text-embedding 模型</b>（不设默认会报「Default model not found for text-embedding」）。</li>
   <li><b>创建知识库</b>：知识库 → 创建 → 索引方式选<b>高质量（High quality）</b> → 上传文档 → 按需配检索参数（混合检索、top_k、score_threshold）。</li>
   <li><b>建 Knowledge API Key</b>：知识库 → <b>API 访问</b> → 创建「Knowledge API Key」，记下：
     <ul>

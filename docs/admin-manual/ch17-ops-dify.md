@@ -32,7 +32,11 @@
 
 ## 17.3 Model Providers
 
-- **Add model**: Settings → Model Providers → OpenAI-API-compatible → API endpoint `http://host.docker.internal:3000/v1` (via NewAPI) + `dify-key`;
+- **Add LLM model**: Settings → Model Providers → OpenAI-API-compatible → API endpoint `http://host.docker.internal:3000/v1` (via NewAPI) + `dify-key`;
+
+- **Add embedding model** (for RAG): the platform includes a built-in `dify-embedder` container providing BAAI/bge-m3. API Base URL `http://host.docker.internal:11435/v1`, API Key empty, model name `BAAI/bge-m3`, set as **default text-embedding** model;
+
+- **Add Rerank model** (recommended for RAG): the platform includes a built-in `dify-reranker` container. Add a custom provider → API Base URL `http://host.docker.internal:1234/v1`, API Key empty, model name `bge-reranker-v2-m3`, task type **Rerank**. Then enable Rerank in knowledge-base retrieval settings (Top-K 5, Rerank Top-N 3);
 
 - **System model settings**: set the default chat / reasoning / embedding models.
 

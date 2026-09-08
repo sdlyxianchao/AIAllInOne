@@ -209,6 +209,11 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <g filter="url(#sh)"><rect x="700" y="160" width="300" height="70" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="2"/><rect x="700" y="160" width="4" height="70" rx="2" fill="#58a6ff"/></g>
   <text x="720" y="183" fill="#58a6ff" font-size="14" font-weight="700">🤖 Dify</text>
   <text x="720" y="200" fill="#8b949e" font-size="11">Web AI app · Knowledge base (RAG) · Agent/Workflow</text>
+  <!-- BGE-Reranker (Dify knowledge-base re-ranking) -->
+  <g filter="url(#sh)"><rect x="760" y="237" width="180" height="36" rx="8" fill="#0d2b33" stroke="#39c5cf" stroke-width="1"/><rect x="760" y="237" width="3" height="36" rx="2" fill="#39c5cf"/></g>
+  <text x="772" y="252" fill="#39c5cf" font-size="10" font-weight="600">🔄 BGE-Reranker</text>
+  <text x="772" y="265" fill="#8b949e" font-size="8">Re-ranking · knowledge retrieval boost</text>
+  <path d="M 850 230 L 850 237" fill="none" stroke="#39c5cf" stroke-width="1" stroke-dasharray="3" marker-end="url(#at)"/>
 
   <!-- ====== Layer 3: LLM Routing ====== -->
   <g filter="url(#sh)"><rect x="130" y="275" width="220" height="60" rx="10" fill="url(#g-blue)" stroke="#1f6feb" stroke-width="1.5"/><rect x="130" y="275" width="4" height="60" rx="2" fill="#58a6ff"/></g>
@@ -363,6 +368,8 @@ When everything is done, run end-to-end tests: all containers Up, Keycloak SSO l
   <tr><td>14</td><td><strong>Loki</strong></td><td>Unified log aggregation (internal)</td><td><code>http://127.0.0.1:3110</code></td><td>— (viewed via AI Admin Center "Unified Logs")</td><td>loki</td></tr>
   <tr><td>15</td><td><strong>Promtail</strong></td><td>Container log collection (internal)</td><td>—</td><td>— (pushes to Loki)</td><td>promtail</td></tr>
   <tr><td>16</td><td><strong>MailHog</strong></td><td>Local mail sink (Ghost codes/notifications)</td><td><code>http://127.0.0.1:8025</code></td><td><code>http://&lt;server-IP&gt;:8025</code></td><td>mailhog</td></tr>
+  <tr><td>17</td><td><strong>BGE-Reranker</strong></td><td>Rerank model (Dify knowledge-base retrieval)</td><td><code>http://127.0.0.1:1234</code></td><td>— (internal, called by Dify only)</td><td>dify-reranker</td></tr>
+  <tr><td>18</td><td><strong>BGE-M3 Embedder</strong></td><td>Embedding model (semantic cache + Dify KB)</td><td><code>http://127.0.0.1:11435</code></td><td>— (internal, for LiteLLM semantic cache)</td><td>dify-embedder</td></tr>
 </table>
 
 <div class="callout callout-warn">
@@ -671,6 +678,7 @@ docker network ls | findstr ai-platform</code></pre>
   <strong>litellm-config.yaml notes:</strong>
   <ul>
     <li><code>model_list</code> — defines available external models; NewAPI calls them through LiteLLM. Only <code>deepseek-chat</code> is enabled by default; uncomment others + set .env as needed</li>
+    <li><code>bge-reranker-v2-m3</code> (Rerank model) is NOT in LiteLLM — it's served by the <code>dify-reranker</code> container and configured directly in Dify model providers</li>
     <li><code>general_settings.master_key</code> — LiteLLM admin key, reads <code>LITELLM_MASTER_KEY</code> from <code>.env</code></li>
     <li>PII masking (Presidio) is temporarily commented out. The newer LiteLLM guardrail API changed incompatibly. To re-enable, see <a href="https://docs.litellm.ai/docs/proxy/guardrails/presidio" target="_blank">LiteLLM official docs</a></li>
     <li>Currently using stable <code>v1.95.1</code> (<code>main-latest</code> has known bugs)</li>
@@ -684,7 +692,7 @@ docker network ls | findstr ai-platform</code></pre>
   <tr><th>Variable</th><th>Type</th><th>Notes</th></tr>
   <tr><td><code>DEEPSEEK_API_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>External LLM API key; the pipeline fails without it</td></tr>
   <tr><td><code>LITELLM_MASTER_KEY</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>LiteLLM internal auth key, needed by NewAPI</td></tr>
-  <tr><td><code>OLLAMA_API_BASE</code></td><td style="color:#8b949e">⚪ Default</td><td>Local embedding endpoint (semantic cache vectorization), default <code>http://host.docker.internal:11434</code> (host Ollama bge-m3)</td></tr>
+  <tr><td><code>OLLAMA_API_BASE</code></td><td style="color:#8b949e">⚪ No longer needed</td><td><s>Local embedding endpoint</s> — now provided by <code>dify-embedder</code> container internally, no external Ollama required</td></tr>
   <tr><td><code>LITELLM_REDIS_PASSWORD</code></td><td style="color:#8b949e">⚪ Default</td><td>litellm-redis password (semantic cache requires this var to exist; leave empty for the internal no-auth instance)</td></tr>
   <tr><td><code>NEWAPI_DB_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>MySQL root password; avoid changing after initial creation</td></tr>
   <tr><td><code>KEYCLOAK_ADMIN_PASSWORD</code></td><td style="color:#f85149;font-weight:700">🔴 Immediate</td><td>Keycloak admin password</td></tr>
@@ -1431,11 +1439,11 @@ litellm_settings:
     ttl: 3600            <span class="comment"># cache 1 hour, adjust per data update frequency</span>
     similarity_threshold: 0.8
     <span class="comment"># 0.9+ near exact match; 0.7~0.8 recommended balance; 0.6~0.7 more aggressive savings</span>
-    redis_semantic_cache_embedding_model: bge-m3  <span class="comment"># local embedding (registered in model_list, served by host Ollama)</span>
+    redis_semantic_cache_embedding_model: bge-m3  <span class="comment"># local embedding (registered in model_list, served by dify-embedder container)</span>
     redis_semantic_cache_index_name: litellm_semantic_cache_index</code></pre>
   <div class="verify">
     <ul>
-      <li><b>Prerequisites (3 steps)</b>: ① change the <code>litellm-redis</code> image in <code>docker-compose.yml</code> to <code>redis/redis-stack-server</code> (fully Redis-compatible; RediSearch provides vector search); ② install Ollama on the host and <code>ollama pull bge-m3</code>, set <code>OLLAMA_API_BASE=http://host.docker.internal:11434</code> in <code>.env</code> (the container reaches the host via <code>host.docker.internal</code>, fully local and free); ③ add <code>REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}</code> to the litellm container environment — <b>RedisSemanticCache requires this variable (may be empty)</b>; without it startup fails with <code>Missing required Redis configuration: REDIS_PASSWORD</code></li>
+      <li><b>Prerequisites (2 steps)</b>: ① change the <code>litellm-redis</code> image in <code>docker-compose.yml</code> to <code>redis/redis-stack-server</code> (fully Redis-compatible; RediSearch provides vector search); ② add <code>REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}</code> to the litellm container environment — <b>RedisSemanticCache requires this variable (may be empty)</b>; without it startup fails with <code>Missing required Redis configuration: REDIS_PASSWORD</code>. The bge-m3 embedding model is automatically provided by the <code>dify-embedder</code> container (<code>docker compose up -d</code> starts it), <b>no external Ollama needed</b>.</li>
       <li><b>Verify a hit</b>: send two requests that are <b>semantically similar but worded differently</b> (e.g. "what features does the company AI platform have" vs "list the main capabilities of the platform"), the second returns <code>X-Litellm-Cache-Key</code> + <code>X-Litellm-Semantic-Similarity</code> (measured 0.92), latency drops from ~17s to &lt;0.5s</li>
       <li><b>Best for</b>: deterministic tasks (knowledge-base Q&A / fixed templates / <code>temperature=0</code>); for real-time or personalized content, bypass with the <code>no-cache</code> request header</li>
       <li><b>Disable cache</b>: <code>cache: false</code> or comment the block, restart <code>litellm</code></li>
@@ -1873,7 +1881,24 @@ if (name === 'platform_health') {
 
 <h4>Step 1: Dify-side prep (embedding model + knowledge base + Knowledge Key)</h4>
 <ol>
-  <li><b>Configure an embedding model</b>: Dify admin → Settings → Model Providers → <b>OpenAI-API-compatible</b> → add an embedding model (if the intranet has none, you can run <code>bge-m3</code> on the host's local Ollama — a 1024-dim Chinese embedding model), then set it as the <b>default text-embedding model</b> in Model Providers (without a default you'll get "Default model not found for text-embedding").</li>
+  <li><b>Configure an embedding model</b>: Dify admin → Settings → Model Providers → <b>OpenAI-API-compatible</b> → add an embedding model. The platform includes a built-in <code>dify-embedder</code> container providing BAAI/bge-m3 (1024-dim Chinese embedding). API Base URL: <code>http://host.docker.internal:11435/v1</code>, API Key: empty, model name: <code>BAAI/bge-m3</code>. Set it as the <b>default text-embedding model</b> in Model Providers (without a default you'll get "Default model not found for text-embedding").</li>
+  <li><b>Configure a Rerank model (recommended)</b>: The platform includes a built-in <code>dify-reranker</code> container (BGE-Reranker-v2-M3, same series as bge-m3, best accuracy). In Dify admin → Settings → Model Providers → add a custom provider:
+    <ul>
+      <li>Provider name: <code>BGE-Reranker</code></li>
+      <li>API Base URL: <code>http://host.docker.internal:1234/v1</code></li>
+      <li>API Key: leave empty (local deployment, no auth needed)</li>
+      <li>Model name: <code>bge-reranker-v2-m3</code></li>
+      <li>Task type: <b>Rerank</b></li>
+    </ul>
+  </li>
+  <li><b>Enable Rerank in knowledge base</b>: Knowledge → target knowledge base → Settings → Retrieval Configuration:
+    <ul>
+      <li>✅ Enable Rerank</li>
+      <li>Rerank model: <code>bge-reranker-v2-m3</code></li>
+      <li>Top-K: 5 (Embedding retrieval count)</li>
+      <li>Rerank Top-N: 3 (re-ranked result count)</li>
+    </ul>
+  </li>
   <li><b>Create a knowledge base</b>: Knowledge → Create → choose <b>High quality</b> indexing → upload documents → configure retrieval params as needed (hybrid search, top_k, score_threshold).</li>
   <li><b>Create a Knowledge API Key</b>: Knowledge → <b>API Access</b> → create a "Knowledge API Key", note:
     <ul>

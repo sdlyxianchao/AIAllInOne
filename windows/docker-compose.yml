@@ -161,8 +161,6 @@ services:
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
       - LANGFUSE_HOST=http://langfuse:3000
-      # 本地 embedding（语义缓存向量化）—— 宿主机 Ollama 的 bge-m3，免费本地模型
-      - OLLAMA_API_BASE=${OLLAMA_API_BASE:-http://host.docker.internal:11434}
       # Redis 语义缓存连接：RedisSemanticCache 强制要求 REDIS_PASSWORD 变量（可空）。
       # litellm-redis 为内网无鉴权实例，默认空密码；若开启 Redis 密码则在此填。
       - REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}
@@ -204,6 +202,46 @@ services:
     container_name: litellm-redis
     restart: always
     logging: *default-logging
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # BGE-Reranker — Rerank 模型服务（Dify 知识库检索重排序）
+  # 基于 transformers，CPU 运行，兼容 OpenAI /v1/rerank 接口
+  # 模型通过 volume 挂载（首次需从 ModelScope 下载到 windows/dify-reranker/model-cache/）
+  # ==========================================
+  dify-reranker:
+    build: ./dify-reranker
+    container_name: dify-reranker
+    restart: always
+    logging: *default-logging
+    ports:
+      - "1234:80"
+    environment:
+      - MODEL_ID=BAAI/bge-reranker-v2-m3
+      - MODEL_PATH=/model-cache/BAAI/bge-reranker-v2-m3
+    volumes:
+      - ./dify-reranker/model-cache:/model-cache
+    networks:
+      - ai-platform
+
+  # ==========================================
+  # BGE-M3 Embedding — 本地 Embedding 模型服务（替代外部 Ollama）
+  # 基于 transformers，CPU 运行，兼容 OpenAI /v1/embeddings 接口
+  # 模型通过 volume 挂载（首次需从 ModelScope 下载到 windows/dify-embedder/model-cache/）
+  # ==========================================
+  dify-embedder:
+    build: ./dify-embedder
+    container_name: dify-embedder
+    restart: always
+    logging: *default-logging
+    ports:
+      - "11435:80"
+    environment:
+      - MODEL_ID=BAAI/bge-m3
+      - MODEL_PATH=/model-cache/BAAI/bge-m3
+    volumes:
+      - ./dify-embedder/model-cache:/model-cache
     networks:
       - ai-platform
 

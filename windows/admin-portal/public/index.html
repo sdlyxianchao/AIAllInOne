@@ -229,6 +229,8 @@ const I18N = {
     litellm_admin_panel: 'LiteLLM 管理后台', litellm_model_hub: '模型中心', litellm_model_cost_map: '模型价格地图', litellm_api_docs: 'API 文档', litellm_fallback_login: '备用登录',
     litellm_quick_links: '快捷入口', litellm_quick_links_hint: '管理后台：创建/编辑密钥（SSO 登录）；模型中心：查看代理上可用模型；价格地图：各模型单价对比；API 文档：Swagger 全量接口。',
     litellm_models: '可用模型', litellm_models_hint: '当前 LiteLLM 代理已配置的模型（来自 /v1/models），NewAPI 渠道即聚合这些模型。', litellm_pii_on: 'PII 脱敏已启用', no_models: '暂无模型', models_list: '已接入模型',
+    litellm_task: '任务类型', litellm_model_desc: '详细说明', litellm_deploy: '部署方式',
+    litellm_related_services: '关联 AI 服务', litellm_related_hint: '以下服务不在 LiteLLM 代理中，由各自容器独立提供，直接在 Dify 中配置使用。',
     newapi_title: 'NewAPI — LLM 路由网关', loading_newapi: '正在加载 NewAPI 数据...', newapi_fail: '无法获取 NewAPI 数据（需 ai-platform-admin 角色）：',
     enabled: '启用', disabled: '禁用', admin_role: '管理员', user_role: '普通用户', other_role: '其他', usd: '美元', unlimited: '不限',
     channel: '渠道', model: '模型', used_quota: '已用配额', username: '用户名', role: '角色', quota: '配额', used: '已用', requests: '请求数', remain_quota: '剩余配额',
@@ -374,6 +376,8 @@ const I18N = {
     litellm_admin_panel: 'Admin Panel', litellm_model_hub: 'Model Hub', litellm_model_cost_map: 'Model Cost Map', litellm_api_docs: 'API Docs', litellm_fallback_login: 'Fallback Login',
     litellm_quick_links: 'Quick Links', litellm_quick_links_hint: 'Admin Panel: create/edit keys (SSO login). Model Hub: models available on the proxy. Cost Map: per-model price comparison. API Docs: full Swagger API.',
     litellm_models: 'Available Models', litellm_models_hint: 'Models configured on this LiteLLM proxy (from /v1/models); NewAPI channels aggregate these models.', litellm_pii_on: 'PII redaction enabled', no_models: 'No models', models_list: 'Models',
+    litellm_task: 'Task Type', litellm_model_desc: 'Description', litellm_deploy: 'Deployment',
+    litellm_related_services: 'Related AI Services', litellm_related_hint: 'These services are not in the LiteLLM proxy — they run in their own containers and are configured directly in Dify.',
     newapi_title: 'NewAPI — LLM Router', loading_newapi: 'Loading NewAPI data...', newapi_fail: 'Cannot get NewAPI data (requires ai-platform-admin role): ',
     enabled: 'Enabled', disabled: 'Disabled', admin_role: 'Admin', user_role: 'User', other_role: 'Other', usd: 'USD', unlimited: 'Unlimited',
     channel: 'Channel', model: 'Models', used_quota: 'Used quota', username: 'Username', role: 'Role', quota: 'Quota', used: 'Used', requests: 'Requests', remain_quota: 'Remaining',
@@ -1313,7 +1317,7 @@ function renderDashboard(data) {
 // 按产品分组 Docker 服务（Dify 的 docker-* 单独一组，其余按产品名）
 function groupServices(services) {
   const defs = [
-    { name: 'svc_dify', icon: '🤖', match: n => n.startsWith('docker-') },
+    { name: 'svc_dify', icon: '🤖', match: n => n.startsWith('docker-') || n === 'dify-reranker' || n === 'dify-embedder' },
     { name: 'svc_keycloak', icon: '🔐', match: n => n === 'keycloak' },
     { name: 'svc_newapi', icon: '🔀', match: n => n.startsWith('new-api') },
     { name: 'svc_litellm', icon: '🛡️', match: n => n.startsWith('litellm') },
@@ -1569,7 +1573,14 @@ async function loadLitellm(el) {
     ]);
     const base = (info.url || '').replace(/\/$/, '');
     const modelsList = models.models || [];
-    const modelsTable = pagedTable('litellm_models', modelsList, `<tr><th>${t('model')}</th></tr>`, m => `<tr><td><code style="color:var(--code)">${m}</code></td></tr>`);
+    const modelDetails = models.modelDetails || [];
+    const relatedServices = models.relatedServices || [];
+    const modelsTable = pagedTable('litellm_models', modelDetails, `<tr><th>${t('model')}</th><th>${t('litellm_task') || '任务类型'}</th><th style="min-width:200px">${t('litellm_model_desc') || '详细说明'}</th><th>${t('litellm_deploy') || '部署方式'}</th></tr>`, m => `<tr><td><code style="color:var(--code)">${m.id}</code></td><td style="color:var(--accent);white-space:nowrap">${m.task}</td><td style="line-height:1.5;font-size:0.9em">${m.desc}</td><td style="color:var(--textdim);font-size:0.85em;white-space:nowrap">${m.deploy}</td></tr>`);
+    const relatedTable = relatedServices.length > 0 ? pagedTable('litellm_related', relatedServices, `<tr><th>${t('model')}</th><th>${t('litellm_task') || '任务类型'}</th><th style="min-width:200px">${t('litellm_model_desc') || '详细说明'}</th><th>${t('litellm_deploy') || '部署方式'}</th></tr>`, m => `<tr><td><code style="color:var(--accent)">${m.id}</code></td><td style="color:var(--accent);white-space:nowrap">${m.task}</td><td style="line-height:1.5;font-size:0.9em">${m.desc}</td><td style="color:var(--textdim);font-size:0.85em;white-space:nowrap">${m.deploy}</td></tr>`) : '';
+    const relatedSection = relatedServices.length > 0 ? `<div class="card"><h3>🔗 ${t('litellm_related_services') || '关联 AI 服务'}</h3>
+          <p style="color:var(--textdim);margin:0 0 8px">${t('litellm_related_hint') || '以下服务不在 LiteLLM 代理中，由各自容器独立提供，直接在 Dify 中配置使用。'}</p>
+          ${relatedTable}
+        </div>` : '';
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ ${t('litellm_title')}</h1></div>`
       + aboutCard(t('litellm_about'))
       + metricsCard([
@@ -1580,6 +1591,7 @@ async function loadLitellm(el) {
           <p style="color:var(--textdim);margin:0 0 8px">${t('litellm_models_hint')}</p>
           ${modelsList.length === 0 ? `<p class="loading">${t('no_models')}</p>` : modelsTable}
         </div>`
+      + relatedSection
       + `<div class="card" style="text-align:right;padding:10px 16px"><a href="${base}/fallback/login" target="_blank" style="color:var(--textdim);text-decoration:none;font-size:0.85em">🔑 ${t('litellm_fallback_login')} ↗</a></div>`;
   } catch (e) {
     document.getElementById('main').innerHTML = `<div class="topbar"><h1>🛡️ LiteLLM</h1></div><div class="card"><p class="error">${t('litellm_fail')}${e.message}</p></div>`;
@@ -3303,6 +3315,53 @@ async function loadDify(el) {
           </div>
           <div id="difyRagResult" style="margin-top:10px"></div>
         </div>`
+      + `<div class="card"><h3>📐 BGE-M3 Embedding 配置指南</h3>
+          <p style="color:var(--textdim);font-size:0.85em;margin:0 0 12px">Embedding 模型将文本转为向量，是知识库检索和语义缓存的基础。平台已内置 <code>dify-embedder</code> 容器（BAAI/bge-m3，1024 维中文 embedding），按以下步骤在 Dify 中启用：</p>
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:8px">📋 配置步骤</div>
+            <ol style="margin:0;padding-left:20px;line-height:2;color:var(--text)">
+              <li>Dify 后台 → <strong>设置 → 模型供应商</strong> → 找到 <strong>OpenAI-API-compatible</strong> → 添加模型</li>
+              <li>模型名称：<code>BAAI/bge-m3</code></li>
+              <li>API Base URL：<code style="background:var(--panel);padding:2px 6px;border-radius:4px">http://host.docker.internal:11435/v1</code></li>
+              <li>API Key：<strong>留空</strong>（本地部署无需鉴权）</li>
+              <li>设为<strong>默认 text-embedding 模型</strong>（不设默认会报 "Default model not found for text-embedding"）</li>
+            </ol>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button onclick="testEmbedder()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">🧪 测试 Embedder 服务</button>
+            <span id="embedderStatus" style="font-size:0.85em;color:var(--textdim)">点击测试 dify-embedder 容器是否正常工作</span>
+          </div>
+          <div id="embedderTestResult" style="margin-top:10px"></div>
+        </div>`
+      + `<div class="card"><h3>🔄 BGE-Reranker 重排序配置指南</h3>
+          <p style="color:var(--textdim);font-size:0.85em;margin:0 0 12px">Rerank 模型对知识库检索结果重新排序，显著提升准确率。平台已内置 <code>dify-reranker</code> 容器（BGE-Reranker-v2-M3），按以下步骤在 Dify 中启用：</p>
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:8px">📋 配置步骤</div>
+            <ol style="margin:0;padding-left:20px;line-height:2;color:var(--text)">
+              <li>Dify 后台 → <strong>设置 → 模型供应商</strong> → 添加自定义供应商</li>
+              <li>供应商名称：<code>BGE-Reranker</code></li>
+              <li>API Base URL：<code style="background:var(--panel);padding:2px 6px;border-radius:4px">http://host.docker.internal:1234/v1</code></li>
+              <li>API Key：<strong>留空</strong>（本地部署无需鉴权）</li>
+              <li>模型名称：<code>bge-reranker-v2-m3</code></li>
+              <li>任务类型：<strong>Rerank</strong></li>
+            </ol>
+          </div>
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+            <div style="font-weight:600;color:var(--accent);margin-bottom:8px">🔧 知识库启用 Rerank</div>
+            <ol style="margin:0;padding-left:20px;line-height:2;color:var(--text)">
+              <li>知识库 → 目标知识库 → <strong>设置</strong></li>
+              <li>检索配置 → ✅ <strong>启用 Rerank</strong></li>
+              <li>Rerank 模型选择：<code>bge-reranker-v2-m3</code></li>
+              <li>Top-K: <strong>5</strong>（Embedding 检索返回数）</li>
+              <li>Rerank Top-N: <strong>3</strong>（重排序后返回数）</li>
+            </ol>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button onclick="testReranker()" style="background:var(--accentbtn);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85em">🧪 测试 Reranker 服务</button>
+            <span id="rerankerStatus" style="font-size:0.85em;color:var(--textdim)">点击测试 dify-reranker 容器是否正常工作</span>
+          </div>
+          <div id="rerankerTestResult" style="margin-top:10px"></div>
+        </div>`
       + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">🧩 ${t('dify_apps')}（${(d.app_list || []).length}）</p>
         ${(d.app_list || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : appTable}
         <p style="color:var(--textdim);margin:14px 0 8px">🗂️ ${t('dify_workspaces')}（${(d.workspace_list || []).length}）</p>
@@ -3329,6 +3388,46 @@ async function difyRetrieve() {
       </div>`).join('');
   } catch (e) {
     if (box) box.innerHTML = `<p style="color:var(--red)">${e.message}</p>`;
+  }
+}
+
+async function testReranker() {
+  const statusEl = document.getElementById('rerankerStatus');
+  const resultEl = document.getElementById('rerankerTestResult');
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--yellow)">⏳ 测试中…</span>';
+  if (resultEl) resultEl.innerHTML = '';
+  try {
+    const r = await (await fetch(API + '/dify/reranker-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: '什么是人工智能？', documents: ['人工智能是计算机科学的一个分支，研究如何使计算机模拟人类智能', '今天天气不错，适合出去散步', '机器学习是人工智能的一个子领域，通过数据训练模型'] }) })).json();
+    if (r.error) throw new Error(r.error);
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">✅ Reranker 服务正常</span>`;
+    if (resultEl) {
+      const rows = (r.results || []).map((x, i) => `<tr><td>${i + 1}</td><td style="font-size:0.85em">${(r.documents || [])[x.index] || '—'}</td><td style="color:var(--accent);font-weight:600">${x.relevance_score.toFixed(4)}</td></tr>`).join('');
+      resultEl.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-size:0.85em;color:var(--textdim);margin-bottom:8px">测试查询：「什么是人工智能？」 · 返回 Top-${(r.results || []).length}</div>
+        <table><tr><th>排名</th><th>文档片段</th><th>相关度分数</th></tr>${rows}</table>
+      </div>`;
+    }
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">❌ 测试失败</span>`;
+    if (resultEl) resultEl.innerHTML = `<p style="color:var(--red);font-size:0.85em">${e.message}</p>`;
+  }
+}
+
+async function testEmbedder() {
+  const statusEl = document.getElementById('embedderStatus');
+  const resultEl = document.getElementById('embedderTestResult');
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--yellow)">⏳ 测试中…</span>';
+  if (resultEl) resultEl.innerHTML = '';
+  try {
+    const r = await (await fetch(API + '/dify/embedder-test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: '人工智能是计算机科学的一个分支' }) })).json();
+    if (r.error) throw new Error(r.error);
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">✅ Embedder 服务正常</span>`;
+    if (resultEl) resultEl.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px">
+        <div style="font-size:0.85em;color:var(--textdim)">模型：<code>${r.model}</code> · 向量维度：<strong>${r.dims}</strong> · 耗时：<strong>${r.elapsed_ms}ms</strong></div>
+      </div>`;
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">❌ 测试失败</span>`;
+    if (resultEl) resultEl.innerHTML = `<p style="color:var(--red);font-size:0.85em">${e.message}</p>`;
   }
 }
 

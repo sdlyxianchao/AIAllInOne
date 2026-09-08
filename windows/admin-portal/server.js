@@ -71,6 +71,8 @@ const PROMETHEUS_INTERNAL_URL = process.env.PROMETHEUS_INTERNAL_URL || 'http://p
 const LANGFUSE_INTERNAL_URL = process.env.LANGFUSE_INTERNAL_URL || 'http://langfuse:3000';
 const PRESIDIO_ANALYZER_URL = process.env.PRESIDIO_ANALYZER_URL || 'http://presidio-analyzer:3000';
 const PRESIDIO_ANONYMIZER_URL = process.env.PRESIDIO_ANONYMIZER_URL || 'http://presidio-anonymizer:3000';
+const DIFY_RERANKER_URL = process.env.DIFY_RERANKER_URL || 'http://dify-reranker:80';
+const DIFY_EMBEDDER_URL = process.env.DIFY_EMBEDDER_URL || 'http://dify-embedder:80';
 const LANGFUSE_CLICKHOUSE_PASSWORD = process.env.LANGFUSE_CLICKHOUSE_PASSWORD || 'CHANGE_ME_CLICKHOUSE_PASSWORD';
 // 备份 / 日志
 const BACKUP_DIR = process.env.BACKUP_DIR || '/backups';          // 宿主机备份目录挂载点
@@ -941,9 +943,22 @@ app.get('/api/litellm/models', keycloak.protect(), async (req, res) => {
     const r = await fetch(`${LITELLM_INTERNAL_URL}/v1/models`, { headers: { 'Authorization': `Bearer ${LITELLM_MASTER_KEY}` } });
     const data = await r.json();
     const models = ((data && data.data) || []).map(m => m.id);
-    res.json({ models, count: models.length });
+    // 模型详细说明（用途、任务类型、部署方式等）
+    const modelInfo = {
+      'deepseek-chat':          { task: '对话 / 通用', desc: 'DeepSeek V3 对话模型，通用问答与代码生成', deploy: 'DeepSeek 云端 API' },
+      'deepseek-v4-flash':      { task: '对话 / Agent', desc: 'DeepSeek V4 Flash，Agent 优化，DSH Desktop 默认模型', deploy: 'DeepSeek 云端 API' },
+      'deepseek-v4-pro':        { task: '对话 / Agent', desc: 'DeepSeek V4 Pro 旗舰 Agent 模型，推理能力最强', deploy: 'DeepSeek 云端 API' },
+      'bge-m3':                 { task: 'Embedding 向量化', desc: 'BGE-M3 文本向量化模型，用于语义缓存(redis-semantic)向量检索', deploy: '本地 dify-embedder 容器 (:11435)' },
+    };
+    const enriched = models.map(id => ({ id, ...(modelInfo[id] || { task: '—', desc: '—', deploy: '—' }) }));
+    // 关联服务（非 LiteLLM 模型，但与平台 AI 能力相关）
+    const relatedServices = [
+      { id: 'bge-reranker-v2-m3', task: 'Rerank 重排序', desc: 'BGE-Reranker-v2-M3 检索重排序模型，提升 Dify 知识库检索准确率：Embedding Top-K → Rerank → Top-N。在 Dify 模型供应商中配置，不在 LiteLLM 中。', deploy: '本地 dify-reranker 容器 (:1234)' },
+      { id: 'bge-m3 (dify-embedder)', task: 'Embedding 向量化', desc: 'BGE-M3 文本向量化模型，用于 Dify 知识库索引和 LiteLLM 语义缓存。由 dify-embedder 容器提供，替代外部 Ollama。', deploy: '本地 dify-embedder 容器 (:11435)' },
+    ];
+    res.json({ models, count: models.length, modelDetails: enriched, relatedServices });
   } catch (e) {
-    res.json({ models: [], count: 0, error: e.message });
+    res.json({ models: [], count: 0, modelDetails: [], relatedServices: [], error: e.message });
   }
 });
 
@@ -2298,6 +2313,50 @@ app.post('/api/dify/retrieve', keycloak.protect(), async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ---- Reranker 测试（验证 dify-reranker 容器是否正常工作）----
+app.post('/api/dify/reranker-test', keycloak.protect(), async (req, res) => {
+  try {
+    const query = String((req.body && req.body.query) || '').trim();
+    const documents = (req.body && req.body.documents) || [];
+    if (!query || !documents.length) return res.status(400).json({ error: 'query 和 documents 不能为空' });
+    const rerankerUrl = process.env.DIFY_RERANKER_URL || 'http://dify-reranker:80';
+    const resp = await fetch(`${rerankerUrl}/v1/rerank`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'bge-reranker-v2-m3', query, documents, top_n: documents.length }),
+    });
+    if (!resp.ok) {
+      const t = await resp.text().catch(() => '');
+      return res.status(resp.status).json({ error: `Reranker 服务异常（HTTP ${resp.status}）：${t.slice(0, 300)}` });
+    }
+    const data = await resp.json();
+    res.json({ results: data.results || [], documents });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ---- Embedder 测试（验证 dify-embedder 容器是否正常工作）----
+app.post('/api/dify/embedder-test', keycloak.protect(), async (req, res) => {
+  try {
+    const text = String((req.body && req.body.text) || '').trim();
+    if (!text) return res.status(400).json({ error: 'text 不能为空' });
+    const embedderUrl = process.env.DIFY_EMBEDDER_URL || 'http://dify-embedder:80';
+    const t0 = Date.now();
+    const resp = await fetch(`${embedderUrl}/v1/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: text, model: 'BAAI/bge-m3' }),
+    });
+    const elapsed = Date.now() - t0;
+    if (!resp.ok) {
+      const t = await resp.text().catch(() => '');
+      return res.status(resp.status).json({ error: `Embedder 服务异常（HTTP ${resp.status}）：${t.slice(0, 300)}` });
+    }
+    const data = await resp.json();
+    const emb = ((data.data || [])[0] || {}).embedding || [];
+    res.json({ model: (data.model || 'BAAI/bge-m3'), dims: emb.length, elapsed_ms: elapsed });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ---- Update Server（DSH Desktop 分发：安装包清单 + 更新时间）----
 app.get('/api/update/overview', keycloak.protect(), async (req, res) => {
   try {
@@ -3028,6 +3087,18 @@ const availabilityTestDefs = [
       if (!a.ok || !an.ok) throw new Error(`analyzer=${a.status} anonymizer=${an.status}`);
       return 'analyzer + anonymizer 均正常';
     } },
+  { id: 'dify-reranker', name: 'BGE-Reranker 重排序', run: async () => {
+      const r = await fetch(`${DIFY_RERANKER_URL}/health`);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json().catch(() => ({}));
+      return `模型 BAAI/bge-reranker-v2-m3 · ${d.status || 'healthy'}`;
+    } },
+  { id: 'dify-embedder', name: 'BGE-M3 Embedding', run: async () => {
+      const r = await fetch(`${DIFY_EMBEDDER_URL}/health`);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json().catch(() => ({}));
+      return `模型 BAAI/bge-m3 · 1024 维 · ${d.status || 'healthy'}`;
+    } },
   { id: 'sso-grafana', name: 'Grafana SSO', run: async () => {
       const r = await fetch(`${GRAFANA_URL}/login/generic_oauth`, { redirect: 'manual' });
       const loc = r.headers.get('location') || '';
@@ -3085,6 +3156,8 @@ const availabilityRestartMap = {
   'sso-grafana':   ['grafana'],                 // SSO 为 Grafana 配置，重启 Grafana
   'sso-langfuse':  ['langfuse', 'langfuse-worker'],
   'update-server': ['update-server'],
+  'dify-reranker':  ['dify-reranker'],
+  'dify-embedder':  ['dify-embedder'],
   redis:           ['admin-session-redis'],
 };
 
@@ -3287,7 +3360,7 @@ const REPORT_L = {
     kBackupLatest: '最近备份', kBackupCount: '备份数量', kBackupList: '备份列表', kBackupNo: '暂无备份',
     kPresidio: 'Presidio 服务', kAnalyzer: '识别(analyzer)', kAnonymizer: '脱敏(anonymizer)',
     footer: '本报告由 AI 管理中心自动生成。', noData: '无数据', errLabel: '获取失败',
-    pnames: { newapi: 'NewAPI 网关', litellm: 'LiteLLM 脱敏代理', keycloak: 'Keycloak 认证', dify: 'Dify 平台', ghost: 'Ghost 门户', gitea: 'Gitea 源码', mcp: 'MCP Gateway', prometheus: 'Prometheus 监控', grafana: 'Grafana 大盘', langfuse: 'Langfuse 可观测', loki: 'Loki 日志', presidio: 'Presidio PII 脱敏', update: '更新服务器', redis: 'Redis 会话' },
+    pnames: { newapi: 'NewAPI 网关', litellm: 'LiteLLM 脱敏代理', keycloak: 'Keycloak 认证', dify: 'Dify 平台', ghost: 'Ghost 门户', gitea: 'Gitea 源码', mcp: 'MCP Gateway', prometheus: 'Prometheus 监控', grafana: 'Grafana 大盘', langfuse: 'Langfuse 可观测', loki: 'Loki 日志', presidio: 'Presidio PII 脱敏', 'dify-reranker': 'BGE-Reranker 重排序', 'dify-embedder': 'BGE-M3 Embedding', update: '更新服务器', redis: 'Redis 会话' },
   },
   en: {
     title: 'AI Platform System Report', metaGen: 'Generated at', metaPeriod: 'Period', metaDays: 'days',
@@ -3306,7 +3379,7 @@ const REPORT_L = {
     kBackupLatest: 'Latest backup', kBackupCount: 'Backup count', kBackupList: 'Backup list', kBackupNo: 'No backups',
     kPresidio: 'Presidio service', kAnalyzer: 'Analyzer', kAnonymizer: 'Anonymizer',
     footer: 'This report was auto-generated by AI Admin Center.', noData: 'No data', errLabel: 'Failed',
-    pnames: { newapi: 'NewAPI Gateway', litellm: 'LiteLLM Proxy', keycloak: 'Keycloak Auth', dify: 'Dify Platform', ghost: 'Ghost Portal', gitea: 'Gitea Source', mcp: 'MCP Gateway', prometheus: 'Prometheus', grafana: 'Grafana', langfuse: 'Langfuse', loki: 'Loki Logs', presidio: 'Presidio PII', update: 'Update Server', redis: 'Redis Session' },
+    pnames: { newapi: 'NewAPI Gateway', litellm: 'LiteLLM Proxy', keycloak: 'Keycloak Auth', dify: 'Dify Platform', ghost: 'Ghost Portal', gitea: 'Gitea Source', mcp: 'MCP Gateway', prometheus: 'Prometheus', grafana: 'Grafana', langfuse: 'Langfuse', loki: 'Loki Logs', presidio: 'Presidio PII', 'dify-reranker': 'BGE-Reranker', 'dify-embedder': 'BGE-M3 Embedding', update: 'Update Server', redis: 'Redis Session' },
   },
 };
 
@@ -3330,6 +3403,8 @@ async function collectProductStatus() {
     add('langfuse', async () => { const r = await fetch(`${LANGFUSE_INTERNAL_URL}/api/public/health`); const d = await r.json(); return `v${d.version || '—'}`; }),
     add('loki', async () => { const r = await fetch(`${LOKI_URL}/ready`); if (!r.ok) throw new Error('HTTP ' + r.status); return 'ready'; }),
     add('presidio', async () => { const [a, an] = await Promise.all([fetch(`${PRESIDIO_ANALYZER_URL}/health`), fetch(`${PRESIDIO_ANONYMIZER_URL}/health`)]); if (!a.ok || !an.ok) throw new Error(`analyzer=${a.status} anonymizer=${an.status}`); return 'OK'; }),
+    add('dify-reranker', async () => { const r = await fetch(`${DIFY_RERANKER_URL}/health`); if (!r.ok) throw new Error('HTTP ' + r.status); return 'BAAI/bge-reranker-v2-m3'; }),
+    add('dify-embedder', async () => { const r = await fetch(`${DIFY_EMBEDDER_URL}/health`); if (!r.ok) throw new Error('HTTP ' + r.status); return 'BAAI/bge-m3'; }),
     add('update', async () => { const { stdout } = await dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']); return `DSH Desktop ${(stdout || '').trim() || '—'}`; }),
     add('redis', async () => { const { stdout } = await dockerExec('admin-session-redis', ['redis-cli', 'ping']); if (!/PONG/i.test(stdout)) throw new Error('no PONG'); return 'PONG'; }),
   ]);

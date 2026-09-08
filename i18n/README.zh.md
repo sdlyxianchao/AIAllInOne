@@ -43,6 +43,7 @@ AI AllInOne 是一套**开源免费**、开箱即用的企业内网 AI 平台：
 | 认证 | Keycloak | SSO / OIDC，AD/LDAP 联邦或本地账号 |
 | LLM 路由 | NewAPI | 渠道、密钥、额度、审计、成本 |
 | PII 脱敏 | LiteLLM + Presidio | 调用模型前自动脱敏敏感信息 |
+| Rerank 重排序 | BGE-Reranker (dify-reranker) | 对知识库检索结果重排序，提升准确率（BGE-Reranker-v2-M3） |
 | AI 应用 | Dify | 可视化 AI 应用 / Agent 平台 + 统一知识库（RAG） |
 | 企业门户 | Ghost | 公司公告与新闻门户（内置定制 Corp Portal 主题） |
 | 源码 / CI | Gitea + Runner | 内部 Git + Actions 自动化 |
@@ -208,6 +209,9 @@ chmod +x import-images.sh && sudo ./import-images.sh
 
 ### v1.06（2026-09-06）
 
+- **新增：BGE-Reranker** — 新增 `dify-reranker` 容器（BGE-Reranker-v2-M3），用于知识库检索重排序，显著提升 Dify RAG 准确率
+- **新增：BGE-M3 Embedder** — 新增 `dify-embedder` 容器内部提供 bge-m3 embedding 模型，替代外部 Ollama 依赖——AI 模型服务零外部依赖
+- **改进：LiteLLM 模型表格** — AI 管理中心模型表格从单列改为四列（模型 / 任务类型 / 详细说明 / 部署方式）
 - **修复：DSH Desktop 同步 Broken pipe** — 重写 `deploy_file_to_nginx`，改用在 update-server 容器内 `wget` 直接下载，修复160MB+安装包文件的 Broken pipe 问题
 - **修复：Ghost DSH 页面更新** — admin-portal 容器启动时安装 `python3`（Ghost 数据库更新脚本需要）
 - **修复：Docker API JSON 解析** — `docker_exec_read` 现在正确解析 chunked transfer encoding 响应

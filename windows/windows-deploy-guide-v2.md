@@ -97,6 +97,11 @@
 <g filter="url(#sh)"><rect fill="url(#g-blue)" height="70" rx="10" stroke="#1f6feb" stroke-width="2" width="300" x="700" y="160"></rect><rect fill="#58a6ff" height="70" rx="2" width="4" x="700" y="160"></rect></g>
 <text fill="#58a6ff" font-size="14" font-weight="700" x="720" y="183">🤖 Dify</text>
 <text fill="#8b949e" font-size="11" x="720" y="200">Web AI 应用 · 知识库(RAG) · Agent/Workflow</text>
+<!-- BGE-Reranker (Dify 知识库重排序) -->
+<g filter="url(#sh)"><rect fill="#0d2b33" height="36" rx="8" stroke="#39c5cf" stroke-width="1" width="180" x="760" y="237"></rect><rect fill="#39c5cf" height="36" rx="2" width="3" x="760" y="237"></rect></g>
+<text fill="#39c5cf" font-size="10" font-weight="600" x="772" y="252">🔄 BGE-Reranker</text>
+<text fill="#8b949e" font-size="8" x="772" y="265">Rerank 重排序 · 知识库检索增强</text>
+<path d="M 850 230 L 850 237" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1"></path>
 <!-- ====== Layer 3: LLM Routing ====== -->
 <g filter="url(#sh)"><rect fill="url(#g-blue)" height="60" rx="10" stroke="#1f6feb" stroke-width="1.5" width="220" x="130" y="275"></rect><rect fill="#58a6ff" height="60" rx="2" width="4" x="130" y="275"></rect></g>
 <text fill="#58a6ff" font-size="13" font-weight="600" x="150" y="297">🔀 NewAPI</text>
@@ -222,6 +227,8 @@
 | 14 | **Loki** | 统一日志聚合（内部） | `http://127.0.0.1:3110` | —（经 AI 管理中心「统一日志」查看） | loki |
 | 15 | **Promtail** | 容器日志采集（内部） | — | —（推送到 Loki） | promtail |
 | 16 | **MailHog** | 本地邮件接收器（Ghost 验证码/通知） | `http://127.0.0.1:8025` | `http://<服务器IP>:8025` | mailhog |
+| 17 | **BGE-Reranker** | Rerank 重排序模型（Dify 知识库检索） | `http://127.0.0.1:1234` | —（内部服务，仅被 Dify 调用） | dify-reranker |
+| 18 | **BGE-M3 Embedder** | Embedding 向量化模型（语义缓存 + Dify 知识库） | `http://127.0.0.1:11435` | —（内部服务，LiteLLM 语义缓存用） | dify-embedder |
 
 **容器间通信：**所有容器通过 `ai-platform` Docker 网络互访，使用容器名作为主机名。 例如 NewAPI 访问 LiteLLM 用 `http://litellm:4000`，不经过 localhost。  
 **数据库/缓存（MySQL、Redis、PostgreSQL）不对用户开放**，仅在 Docker 网络内部通信。
@@ -534,11 +541,12 @@ docker images | findstr keycloak gitea ghost langfuse new-api
 |---|---|---|
 | `.env.windows` | 所有密码和外部 API Key | **必须修改**：填入 DeepSeek API Key（其他 provider 按需取消注释） |
 | `litellm-config.yaml` | LiteLLM 模型列表 + Presidio PII 脱敏规则 | 通常不需要改（如只用 DeepSeek，删除 OpenAI/Claude 条目即可） |
-| `docker-compose.yml` | 7 个核心服务的 Docker 编排 | 已预配置（含 Keycloak `KC_HOSTNAME=<服务器IP>` + `keycloak-data` 持久化卷） |
+| `docker-compose.yml` | 核心服务的 Docker 编排（含 BGE-Reranker） | 已预配置（含 Keycloak `KC_HOSTNAME=<服务器IP>` + `keycloak-data` 持久化卷） |
 
 **litellm-config.yaml 说明：**
 
 - `model_list` — 定义可用外部模型，NewAPI 通过 LiteLLM 调用它们。默认仅启用 `deepseek-chat`，其他模型按需取消注释 + 配 .env
+- `bge-reranker-v2-m3`（Rerank 重排序模型）不在 LiteLLM 中，由 `dify-reranker` 容器独立提供，直接在 Dify 模型供应商中配置
 - `general_settings.master_key` — LiteLLM 管理员密钥，读取 `.env` 中的 `LITELLM_MASTER_KEY`
 - PII 脱敏（Presidio）已临时注释。新版 LiteLLM 的 guardrail API 变更导致不兼容。后需启用时参考 [LiteLLM 官方文档](https://docs.litellm.ai/docs/proxy/guardrails/presidio)
 - 当前使用稳定版本 `v1.95.1`（`main-latest` 存在已知 bug）
@@ -551,7 +559,7 @@ docker images | findstr keycloak gitea ghost langfuse new-api
 |---|---|---|
 | `DEEPSEEK_API_KEY` | 🔴 立即 | 外部 LLM API Key，不配则链路不通 |
 | `LITELLM_MASTER_KEY` | 🔴 立即 | LiteLLM 内部鉴权密钥，NewAPI 需要用 |
-| `OLLAMA_API_BASE` | ⚪ 默认 | 本地 embedding 地址（语义缓存向量化），默认 `http://host.docker.internal:11434`（宿主机 Ollama 的 bge-m3） |
+| `OLLAMA_API_BASE` | ⚪ 不再需要 | ~~本地 embedding 地址~~，已改为 `dify-embedder` 容器内部提供，无需外部 Ollama |
 | `LITELLM_REDIS_PASSWORD` | ⚪ 默认 | litellm-redis 密码（语义缓存要求该变量存在，内网无鉴权留空即可） |
 | `NEWAPI_DB_PASSWORD` | 🔴 立即 | MySQL root 密码，首次创建后不宜改 |
 | `KEYCLOAK_ADMIN_PASSWORD` | 🔴 立即 | Keycloak 管理员密码 |
@@ -1206,13 +1214,13 @@ litellm_settings:
     ttl: 3600            # 缓存 1 小时，按数据更新频率调
     similarity_threshold: 0.8
     # 0.9+ 接近精确匹配；0.7~0.8 推荐平衡点；0.6~0.7 更激进省钱
-    redis_semantic_cache_embedding_model: bge-m3  # 本地 embedding（model_list 已注册，走宿主机 Ollama）
+    redis_semantic_cache_embedding_model: bge-m3  # 本地 embedding（model_list 已注册，走 dify-embedder 容器）
     redis_semantic_cache_index_name: litellm_semantic_cache_index
 ```
 
 **✅ 验证：**
 
-- **前置（3 步）**：① `docker-compose.yml` 的 `litellm-redis` 镜像换成 `redis/redis-stack-server`（原生 redis 兼容，RediSearch 提供向量检索）；② 宿主机装 Ollama 并 `ollama pull bge-m3`，`.env` 设 `OLLAMA_API_BASE=http://host.docker.internal:11434`（容器经 `host.docker.internal` 访问宿主机，完全本地免费）；③ litellm 容器环境变量补 `REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}`——**RedisSemanticCache 强制要求该变量（可空）**，不补会启动报 `Missing required Redis configuration: REDIS_PASSWORD`
+- **前置（2 步）**：① `docker-compose.yml` 的 `litellm-redis` 镜像换成 `redis/redis-stack-server`（原生 redis 兼容，RediSearch 提供向量检索）；② litellm 容器环境变量补 `REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}`——**RedisSemanticCache 强制要求该变量（可空）**，不补会启动报 `Missing required Redis configuration: REDIS_PASSWORD`。bge-m3 embedding 模型由 `dify-embedder` 容器自动提供（`docker compose up -d` 即启动），**无需外部 Ollama**。
 - **验证命中**：连续两次**语义相近但措辞不同**的请求（如「介绍一下公司AI平台有哪些功能」vs「平台有哪些主要功能」），第二次响应带 `X-Litellm-Cache-Key` + `X-Litellm-Semantic-Similarity`（实测 0.92），耗时从十几秒降到 <0.5 秒
 - **适用建议**：确定性任务（知识库问答 / 固定模板 / `temperature=0`）收益最大；需要实时/个性化内容用请求头 `no-cache` 绕过
 - **关闭缓存**：`cache: false` 或注释整块，重启 `litellm`
@@ -1642,7 +1650,18 @@ DSH Desktop ──MCP──> MCP Gateway (:3100/mcp) ──HTTP──> Dify Know
 
 #### 第 1 步：Dify 侧准备（embedding 模型 + 知识库 + Knowledge Key）
 
-1. **配 embedding 模型**：Dify 后台 → 设置 → 模型供应商 → **OpenAI-API-compatible** → 添加一个 embedding 模型（内网无 embedding 时可用宿主机本地 Ollama 跑 `bge-m3`，1024 维中文 embedding），再在「模型供应商」里把它设为**默认 text-embedding 模型**（不设默认会报「Default model not found for text-embedding」）。
+1. **配 embedding 模型**：Dify 后台 → 设置 → 模型供应商 → **OpenAI-API-compatible** → 添加 embedding 模型。平台已内置 `dify-embedder` 容器提供 BAAI/bge-m3（1024 维中文 embedding），API Base URL 填 `http://host.docker.internal:11435/v1`，API Key 留空，模型名 `BAAI/bge-m3`。在「模型供应商」里把它设为**默认 text-embedding 模型**（不设默认会报「Default model not found for text-embedding」）。
+2. **配 Rerank 模型（推荐）**：平台已内置 `dify-reranker` 容器（BGE-Reranker-v2-M3，与 bge-m3 同系列，效果最佳）。在 Dify 后台 → 设置 → 模型供应商 → 添加自定义供应商：
+    - 供应商名称：`BGE-Reranker`
+    - API Base URL：`http://host.docker.internal:1234/v1`
+    - API Key：留空（本地部署无需鉴权）
+    - 模型名称：`bge-reranker-v2-m3`
+    - 任务类型：**Rerank**
+3. **在知识库中启用 Rerank**：知识库 → 目标知识库 → 设置 → 检索配置：
+    - ✅ 启用 Rerank
+    - Rerank 模型：`bge-reranker-v2-m3`
+    - Top-K：5（Embedding 检索返回数）
+    - Rerank Top-N：3（重排序后返回数）
 2. **创建知识库**：知识库 → 创建 → 索引方式选**高质量（High quality）** → 上传文档 → 按需配检索参数（混合检索、top_k、score_threshold）。
 3. **建 Knowledge API Key**：知识库 → **API 访问** → 创建「Knowledge API Key」，记下：
     - key：`dataset-...` 前缀的 Bearer token

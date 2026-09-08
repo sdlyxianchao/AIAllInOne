@@ -91,7 +91,7 @@ $expected = @(
     @{n="keycloak";e="Up"}, @{n="new-api";e="Up"}, @{n="new-api-db";e="Up"}, @{n="new-api-redis";e="Up"},
     @{n="litellm";e="Up"}, @{n="litellm-redis";e="Up"}, @{n="mcp-gateway";e="Up"},
     @{n="ghost";e="Up"}, @{n="gitea";e="Up"}, @{n="gitea-runner";e="Up"},
-    @{n="admin-portal";e="Up"}, @{n="update-server";e="Up"},
+    @{n="admin-portal";e="Up"}, @{n="update-server";e="Up"}, @{n="dify-reranker";e="Up"}, @{n="dify-embedder";e="Up"},
     # Dify（独立 compose）
     @{n="dify-api-1";e="Up"}, @{n="dify-worker-1";e="Up"}, @{n="dify-worker_beat-1";e="Up"},
     @{n="dify-api_websocket-1";e="Up"}, @{n="dify-web-1";e="Up"}, @{n="dify-nginx-1";e="Up"},

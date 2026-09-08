@@ -14,7 +14,7 @@ side: success_callback → Langfuse
 
 ## 2. litellm-config.yaml structure
 
-- `model_list` (default: only `deepseek-chat`; enable OpenAI/Claude by uncommenting + adding .env keys)
+- `model_list` (default: `deepseek-chat`, `deepseek-v4-flash`, `deepseek-v4-pro`, `bge-m3` embedding; enable OpenAI/Claude by uncommenting + adding .env keys. Note: `bge-reranker-v2-m3` (Rerank) is NOT in LiteLLM — it's served by the `dify-reranker` container and configured directly in Dify)
 - `litellm_settings` (cache, cache_params, success_callback langfuse)
 - `general_settings` (master_key from `.env`)
 - guardrails (commented out — v1.95.1's guardrail format changed; re-enable per official docs later)
@@ -22,6 +22,36 @@ side: success_callback → Langfuse
 ⚠️ Stay on stable **v1.95.1** (main-latest has a known bug).
 
 **Add a model**: uncomment .env key → uncomment yaml model block → `docker compose up -d litellm` → "fetch models" in NewAPI channel.
+
+### Built-in model inventory
+
+| Model | Type | Purpose | Deployment |
+|---|---|---|---|
+| `deepseek-chat` | Chat | General Q&A and code generation | DeepSeek cloud API |
+| `deepseek-v4-flash` | Chat / Agent | Agent-optimized, DSH Desktop default | DeepSeek cloud API |
+| `deepseek-v4-pro` | Chat / Agent | Flagship agent model, strongest reasoning | DeepSeek cloud API |
+| `bge-m3` | Embedding | Text vectorization for semantic cache (redis-semantic) | Local dify-embedder container (:11435) |
+
+> **Related service (not in LiteLLM):** `bge-reranker-v2-m3` (Rerank) is served by the `dify-reranker` container independently, configured directly in Dify model providers — see M06 textbook.
+
+### BGE-Reranker (re-ranking model)
+
+**What is Rerank?** Embedding models turn documents and queries into vectors for semantic similarity search (Top-K). A Rerank model **re-sorts** those Top-K results and returns the most relevant Top-N. Using both together significantly improves knowledge-base retrieval accuracy.
+
+**Platform deployment**: `dify-reranker` container (transformers + PyTorch CPU), port 1234, running `BAAI/bge-reranker-v2-m3` (same series as bge-m3, best open-source Rerank model, multilingual). The `dify-embedder` container provides bge-m3 embedding (port 11435). Both containers are managed by `docker compose up -d`, **no external Ollama needed**.
+
+**Dify-side config** (Reranker bypasses LiteLLM, configured directly in Dify):
+1. Settings → Model Providers → add custom provider
+2. API Base URL: `http://host.docker.internal:1234/v1`, API Key: leave empty
+3. Model name: `bge-reranker-v2-m3`, Task type: **Rerank**
+4. Knowledge base → Retrieval Configuration → Enable Rerank → select `bge-reranker-v2-m3`
+
+**Verify**:
+```bash
+curl -X POST http://127.0.0.1:1234/v1/rerank \
+  -H "Content-Type: application/json" \
+  -d '{"model":"bge-reranker-v2-m3","query":"What is AI?","documents":["AI is a branch of computer science","Nice weather today","Machine learning is a subfield of AI"],"top_n":2}'
+```
 
 ## 3. PII redaction
 
@@ -45,10 +75,10 @@ Presidio analyzer/anonymizer for fine-grained entities (names, emails).
 
 `type: redis-semantic` — local `bge-m3` embeds requests, compares similarity (≥threshold) across users; hits cost `Key-Spend: 0.0`.
 
-**Prereq 3 steps**:
+**Prereq 2 steps**:
 1. `litellm-redis` image → `redis/redis-stack-server`
-2. Host Ollama + `ollama pull bge-m3`; `.env` `OLLAMA_API_BASE=http://host.docker.internal:11434`
-3. litellm env `REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}` (required even if empty)
+2. litellm env `REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}` (required even if empty)
+3. bge-m3 embedding is automatically provided by the `dify-embedder` container (`docker compose up -d` starts it), **no external Ollama needed**
 
 **Config**: `similarity_threshold: 0.8` (0.9+ exact, 0.7–0.8 balanced, 0.6–0.7 aggressive), ttl 3600, embedding model bge-m3.
 

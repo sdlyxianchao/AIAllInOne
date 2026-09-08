@@ -26,11 +26,12 @@
 
 ## 3. Model providers
 
-Settings → Model Providers → **OpenAI-API-compatible** → model name `deepseek-chat` (match NewAPI channel), API key = dify-key, **API endpoint `http://host.docker.internal:3000/v1`**. For RAG also add an **embedding model** (local Ollama bge-m3) and set it as the **default text-embedding** (else "Default model not found"). Test → reply = chain OK.
+Settings → Model Providers → **OpenAI-API-compatible** → model name `deepseek-chat` (match NewAPI channel), API key = dify-key, **API endpoint `http://host.docker.internal:3000/v1`**. For RAG also add an **embedding model**: the platform includes a built-in `dify-embedder` container providing BAAI/bge-m3 (1024-dim). API Base URL `http://host.docker.internal:11435/v1`, API Key empty, model name `BAAI/bge-m3`, set as **default text-embedding** (else "Default model not found"). **(Recommended)** Also add a **Rerank model**: the platform includes a built-in `dify-reranker` container (BGE-Reranker-v2-M3). Add a custom provider → API Base URL `http://host.docker.internal:1234/v1`, API Key empty, model name `bge-reranker-v2-m3`, task type **Rerank**. Enable Rerank in knowledge-base retrieval settings for significantly better accuracy. Test → reply = chain OK.
 
 ## 4. Knowledge base (unified RAG)
 
 - Create KB → upload docs → index mode **High quality** (needs embedding).
+- **(Recommended) Enable Rerank**: KB → Settings → Retrieval Configuration → ✅ Enable Rerank → select `bge-reranker-v2-m3` → Top-K 5, Rerank Top-N 3. Re-ranks Embedding's Top-K results for better accuracy.
 - Chunking & retrieval params (top_k, score_threshold, hybrid).
 - **Knowledge API key**: KB → API Access → create → record `key` (dataset-...) + `dataset_id` (UUID in URL). Fill `.env`: `DIFY_API_BASE=http://<SERVER_IP>/v1`, `DIFY_KNOWLEDGE_API_KEY`, `DIFY_DEFAULT_DATASET_ID` → restart mcp-gateway → DSH Desktop gets `search_knowledge` (M10).
 - RAG app: new Chatflow → knowledge retrieval node → LLM with retrieved context → debug → publish.
@@ -52,6 +53,7 @@ Publish → WebApp link / iframe embed (Ghost portal) / Service API (`POST /v1/c
 | app creation spins | WebSocket (see §2) |
 | KB no hits | default embedding set? index completed (High quality processing→done)? retrieval params? |
 | "Default model not found for text-embedding" | set default embedding |
+| Rerank config not working | check dify-reranker container running (`docker ps | grep dify-reranker`); API Base URL `http://host.docker.internal:1234/v1`; task type = Rerank |
 | model error/no reply | NewAPI channel test; endpoint correct (`host.docker.internal:3000/v1`)? |
 | login no response | base64/cache; hard refresh; profile 401 normal |
 | forgot password | container reset-password (≥8) |

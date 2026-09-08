@@ -8,8 +8,9 @@ LLM proxy gateway — unified 100+ model API, PII redaction, Redis semantic cach
 
 - Explain chain position (NewAPI → LiteLLM → external → restore)
 - Read/write `litellm-config.yaml` (model_list / litellm_settings / general_settings)
+- Understand built-in model inventory (deepseek-chat/v4-flash/v4-pro, bge-m3 embedding) and their purposes; understand that bge-reranker-v2-m3 (Rerank) is served by a separate container, not in LiteLLM
 - Understand dual redaction (built-in regex filter + Presidio)
-- Configure & verify Redis semantic cache (bge-m3)
+- Configure & verify Redis semantic cache (bge-m3, provided by dify-embedder container)
 - Configure Langfuse reporting
 - Troubleshoot (keys, model 404, guardrail not global, Presidio endpoint 404)
 

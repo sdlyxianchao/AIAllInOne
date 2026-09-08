@@ -50,7 +50,9 @@
 
 ## 17.4 模型供应商与成员
 
-- **添加模型**：设置 → 模型供应商 → OpenAI-API-compatible → API endpoint `http://host.docker.internal:3000/v1`（走 NewAPI）+ `dify-key`；
+- **添加 LLM 模型**：设置 → 模型供应商 → OpenAI-API-compatible → API endpoint `http://host.docker.internal:3000/v1`（走 NewAPI）+ `dify-key`；
+- **添加 Embedding 模型**（RAG 用）：平台已内置 `dify-embedder` 容器提供 BAAI/bge-m3。API Base URL `http://host.docker.internal:11435/v1`，API Key 留空，模型名 `BAAI/bge-m3`，设为**默认 text-embedding 模型**；
+- **添加 Rerank 模型**（推荐）：平台已内置 `dify-reranker` 容器。添加自定义供应商 → API Base URL `http://host.docker.internal:1234/v1`，API Key 留空，模型名 `bge-reranker-v2-m3`，任务类型选 **Rerank**。在知识库检索配置中启用 Rerank 可显著提升准确率；
 - **系统模型设置**：指定默认聊天/推理/嵌入模型；
 - **成员**：邀请成员进工作空间，设 Owner/Admin/Editor/Normal 角色；
 - **登录方式**：设置 → 登录方式 → 已接 OIDC（Keycloak）实现 SSO。

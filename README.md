@@ -43,6 +43,7 @@ AI AllInOne is a ready-to-use, **open-source** enterprise intranet AI platform: 
 | Auth | Keycloak | SSO / OIDC, AD/LDAP federation or local accounts |
 | LLM routing | NewAPI | Channels, keys, quotas, audit, cost |
 | PII redaction | LiteLLM + Presidio | Auto-redact sensitive info before model calls |
+| Rerank | BGE-Reranker (dify-reranker) | Re-rank knowledge-base retrieval results for higher accuracy (BGE-Reranker-v2-M3) |
 | AI applications | Dify | Visual AI app / Agent platform + unified knowledge base (RAG) |
 | Enterprise portal | Ghost | Company announcements & news portal (custom Corp Portal theme included) |
 | Source / CI | Gitea + Runner | Internal Git + Actions automation |
@@ -194,6 +195,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 
 ### v1.06 (2026-09-06)
 
+- **New: BGE-Reranker** — added `dify-reranker` container (BGE-Reranker-v2-M3) for knowledge-base retrieval re-ranking, significantly improving Dify RAG accuracy
+- **New: BGE-M3 Embedder** — added `dify-embedder` container serving bge-m3 embedding model internally, replacing external Ollama dependency — zero external dependencies for AI model services
+- **Improved: LiteLLM model table** — AI Admin Center now shows 4-column model table (model / task type / description / deployment) instead of a single-column list
 - **Fixed: DSH Desktop sync broken pipe** — rewrote `deploy_file_to_nginx` to use `wget` inside the update-server container instead of Docker tar API, fixing Broken pipe on 160MB+ installer files
 - **Fixed: Ghost DSH page update** — admin-portal container now installs `python3` at startup (required for Ghost database update script)
 - **Fixed: Docker API JSON parsing** — `docker_exec_read` now correctly parses chunked transfer encoding responses

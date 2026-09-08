@@ -8,7 +8,7 @@ The web AI app platform. Employees use AI in the browser (chat assistants, agent
 
 - Explain deployment (standalone ~15 containers, port 80, via NewAPI)
 - Fix deploy issues (GRAPH_ENGINE, WebSocket, base64 password, reset-password)
-- Configure model providers (LLM + embedding)
+- Configure model providers (LLM + embedding + Rerank)
 - Create chat/text/agent/workflow apps and publish
 - Create knowledge base (high-quality index) + RAG apps + Knowledge API key
 - Manage members

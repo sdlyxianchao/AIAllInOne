@@ -46,6 +46,21 @@ litellm_settings:
 
 3. `docker compose up -d litellm`。
 
+## 8.4 平台内置模型清单
+
+平台在 `litellm-config.yaml` 中预配置了以下模型：
+
+| 模型名 | 类型 | 用途 | 部署方式 |
+|---|---|---|---|
+| `deepseek-chat` | 对话 | 通用问答与代码生成 | DeepSeek 云端 API |
+| `deepseek-v4-flash` | 对话 / Agent | Agent 优化，DSH Desktop 默认模型 | DeepSeek 云端 API |
+| `deepseek-v4-pro` | 对话 / Agent | 旗舰 Agent 模型，推理能力最强 | DeepSeek 云端 API |
+| `bge-m3` | Embedding | 文本向量化，用于语义缓存 | 本地 dify-embedder 容器 (:11435) |
+
+> **注意：**`bge-reranker-v2-m3`（Rerank）不在 LiteLLM 中，由 `dify-reranker` 容器独立提供，直接在 Dify 模型供应商中配置。见第 17 章。
+
+`bge-reranker-v2-m3` 由 `dify-reranker` 容器（`ghcr.io/huggingface/text-generation-inference:latest`）提供，运行 `BAAI/bge-reranker-v2-m3`（与 bge-m3 同系列，开源最强 Rerank 模型）。Dify 知识库启用 Rerank 后，Embedding 检索 Top-K 结果会经 Rerank 重排序返回 Top-N，显著提升检索准确率。
+
 > 📖 原厂文档：LiteLLM 官方文档 https://docs.litellm.ai · Presidio guardrail https://docs.litellm.ai/docs/proxy/guardrails/presidio
 
 ---

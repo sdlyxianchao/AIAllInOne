@@ -46,6 +46,21 @@ litellm_settings:
 
 3. `docker compose up -d litellm`.
 
+## 8.4 Built-in Model Inventory
+
+The platform ships with these models pre-configured in `litellm-config.yaml`:
+
+| Model | Type | Purpose | Deployment |
+|---|---|---|---|
+| `deepseek-chat` | Chat | General Q&A and code generation | DeepSeek cloud API |
+| `deepseek-v4-flash` | Chat / Agent | Agent-optimized, DSH Desktop default | DeepSeek cloud API |
+| `deepseek-v4-pro` | Chat / Agent | Flagship agent model, strongest reasoning | DeepSeek cloud API |
+| `bge-m3` | Embedding | Text vectorization for semantic cache | Local dify-embedder container (:11435) |
+
+> **Note:** `bge-reranker-v2-m3` (Rerank) is NOT in LiteLLM — it's served by the `dify-reranker` container and configured directly in Dify model providers. See Chapter 17.
+
+The `bge-reranker-v2-m3` model is served by the `dify-reranker` container (`ghcr.io/huggingface/text-generation-inference:latest`), which runs `BAAI/bge-reranker-v2-m3` — the same series as `bge-m3`, the best open-source Rerank model. It is used by Dify knowledge bases to re-rank Embedding retrieval results (Top-K → Rerank → Top-N), significantly improving retrieval accuracy.
+
 > 📖 Vendor docs:LiteLLM official docs https://docs.litellm.ai · Presidio guardrail https://docs.litellm.ai/docs/proxy/guardrails/presidio
 
 ---

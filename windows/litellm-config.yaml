@@ -64,13 +64,14 @@ model_list:
       api_base: https://api.deepseek.com/v1
 
   # --- 本地 embedding：bge-m3（语义缓存 redis-semantic 的向量化模型）---
-  # HOW: 宿主机需安装 Ollama 并预拉 bge-m3（ollama pull bge-m3）。
-  #      容器经 host.docker.internal 访问宿主机 Ollama，完全本地、免费。
-  # 也可换成 NewAPI 上任意 embedding 渠道（model: openai/<模型名> + api_base: http://newapi:3000/v1）。
+  # HOW: 由 dify-embedder 容器提供（transformers + PyTorch CPU），无需外部 Ollama。
+  #      容器经 ai-platform 网络访问 dify-embedder:80。
+  #      首次需从 ModelScope 下载模型到 dify-embedder/model-cache/。
   - model_name: bge-m3
     litellm_params:
-      model: ollama/bge-m3
-      api_base: http://host.docker.internal:11434
+      model: openai/bge-m3
+      api_base: http://dify-embedder:80/v1
+      api_key: "no-key"
 
 # ============================================================
 # Guardrails（内容安全 + PII 脱敏）

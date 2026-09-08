@@ -14,7 +14,7 @@
 
 ## 2. Lab Checklist
 
-- [ ] Provider (deepseek-chat via host.docker.internal:3000/v1 + bge-m3 default) tested (S)
+- [ ] Provider (deepseek-chat via host.docker.internal:3000/v1 + bge-m3 via dify-embedder + Rerank via dify-reranker) tested (S)
 - [ ] Chatbot replies
 - [ ] KB High quality indexed
 - [ ] Chatflow retrieval hits (S)
