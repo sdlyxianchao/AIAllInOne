@@ -98,10 +98,15 @@
 <text fill="#58a6ff" font-size="14" font-weight="700" x="720" y="183">🤖 Dify</text>
 <text fill="#8b949e" font-size="11" x="720" y="200">Web AI 应用 · 知识库(RAG) · Agent/Workflow</text>
 <!-- BGE-Reranker (Dify 知识库重排序) -->
-<g filter="url(#sh)"><rect fill="#0d2b33" height="36" rx="8" stroke="#39c5cf" stroke-width="1" width="180" x="760" y="237"></rect><rect fill="#39c5cf" height="36" rx="2" width="3" x="760" y="237"></rect></g>
-<text fill="#39c5cf" font-size="10" font-weight="600" x="772" y="252">🔄 BGE-Reranker</text>
-<text fill="#8b949e" font-size="8" x="772" y="265">Rerank 重排序 · 知识库检索增强</text>
+<g filter="url(#sh)"><rect fill="#0d2b33" height="36" rx="8" stroke="#39c5cf" stroke-width="1" width="180" x="700" y="237"></rect><rect fill="#39c5cf" height="36" rx="2" width="3" x="700" y="237"></rect></g>
+<text fill="#39c5cf" font-size="10" font-weight="600" x="712" y="252">🔄 BGE-Reranker</text>
+<text fill="#8b949e" font-size="8" x="712" y="265">Rerank 重排序 · 知识库检索增强</text>
 <path d="M 850 230 L 850 237" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1"></path>
+<!-- BGE-M3 Embedder (语义缓存 + 知识库向量化) -->
+<g filter="url(#sh)"><rect fill="#0d2b33" height="36" rx="8" stroke="#39c5cf" stroke-width="1" width="180" x="900" y="237"></rect><rect fill="#39c5cf" height="36" rx="2" width="3" x="900" y="237"></rect></g>
+<text fill="#39c5cf" font-size="10" font-weight="600" x="912" y="252">📐 BGE-M3 Embedder</text>
+<text fill="#8b949e" font-size="8" x="912" y="265">Embedding 向量化 · 语义缓存</text>
+<path d="M 990 230 L 990 237" fill="none" marker-end="url(#at)" stroke="#39c5cf" stroke-dasharray="3" stroke-width="1"></path>
 <!-- ====== Layer 3: LLM Routing ====== -->
 <g filter="url(#sh)"><rect fill="url(#g-blue)" height="60" rx="10" stroke="#1f6feb" stroke-width="1.5" width="220" x="130" y="275"></rect><rect fill="#58a6ff" height="60" rx="2" width="4" x="130" y="275"></rect></g>
 <text fill="#58a6ff" font-size="13" font-weight="600" x="150" y="297">🔀 NewAPI</text>
