@@ -2,53 +2,71 @@
 
 *第三部分 · 維運篇*
 
-> 全量資料每日備份、一鍵恢復。
+> 兩級備份、完整性校驗、獨立腳本。
 
 [← 第26章：MailHog 郵件接收器](ch26-ops-mailhog.md) · [📖 目錄](index.md) · [第28章：健康檢查與開機自檢 →](ch28-healthcheck.md)
 
 ---
 
-**入口**：AI 管理中心「💾 備份與恢復」頁，或命令列 `scripts/backup.ps1` / `restore.ps1`。每日 02:00 計劃任務自動備份，保留 7 天。
+**位置**：`C:\AIAllInOne\Backup\` — 獨立 PowerShell 腳本，與 AI 管理中心解耦。
 
-## 27.1 備份項
-
-| 備份項 | 方式 |
+| 腳本 | 用途 |
 | --- | --- |
-| NewAPI MySQL | `mysqldump` |
-| Dify PostgreSQL | `pg_dump` |
-| Langfuse PostgreSQL | `pg_dump` |
-| Ghost / Gitea / Grafana SQLite | 檔案複製 |
-| Keycloak | **realm export（JSON）** |
-| 配置檔案 | 檔案複製 |
+| `backup-docker.ps1` | 備份（兩級） |
+| `restore-docker.ps1` | 恢復（兩種策略） |
+| `check_backup.ps1` | 校驗備份完整性（5 層檢查） |
+| `fix-backup-task.ps1` | 修復定時備份計劃任務 |
+
+## 27.1 備份等級
+
+| 等級 | 包含內容 | 適用場景 |
+| --- | --- | --- |
+| **L1**（默認） | 配置文件 + 所有資料庫 dump（MySQL、PostgreSQL ×4、SQLite ×2） | 每日快照，速度快 |
+| **L2** | L1 + `docker_data.vhdx`（含全部 Docker 鏡像和卷） | 完整災難恢復——換數據盤即可恢復 |
 
 ## 27.2 手動備份
 
+```powershell
+# L1 快照
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 1
+
+# L2 完整備份（會短暫停止平台）
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 2
+
+# 演練模式
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 2 -DryRun
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1
+
+## 27.3 定時備份
+
+計劃任務 `AI-Platform-Backup` 每天 02:00 運行。如果報錯，用修復腳本：
+
+```powershell
+C:\AIAllInOne\Backup\fix-backup-task.ps1 -Apply -BackupRoot "F:\Backup\Docker"
 ```
-
-## 27.3 定時備份（計劃任務）
-
-已註冊計劃任務 `AI-Platform-Backup`（每天 02:00）。未自動註冊可手動建：任務計劃程式 → 新建 → 程式 `powershell.exe`，參數 `-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1`，觸發器每天 02:00。
-
-> 📌 備份預設在 C 盤，建議定期把 `C:\AIAllInOne\backups\` 同步到另一塊盤或物件儲存做異地容災。
 
 ## 27.4 恢復
 
-```
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001
+```powershell
+C:\AIAllInOne\Backup\restore-docker.ps1 -BackupDir "C:\AIAllInOne\Backup\backups\backup_20260912_020000"
 ```
 
-指令碼要求輸入 `yes` 確認（加 `-Force` 跳過，僅指令碼/CI 用）。也可在 AI 管理中心「備份與恢復」頁點某次備份的「恢復」一鍵恢復。
+兩種恢復策略（自動選擇）：VHDX 替換（瞬間恢復）或選擇性恢復（逐個資料庫導入）。
 
-## 27.5 關鍵坑（演練已驗證）
+## 27.5 備份校驗
+
+```powershell
+C:\AIAllInOne\Backup\check_backup.ps1 "C:\AIAllInOne\Backup\backups\backup_20260912_020000"
+```
+
+5 層檢查：路徑與元信息 → 完備性 → 完整性 → 內部一致性 → 自恢復性。
+
+## 27.6 關鍵坑
 
 > ⚠️
-> - Keycloak 必須用 **realm export/import（JSON）**，pg_dump 還原會丟 default role 關聯導致起不來；
-> - SQLite 還原後屬主是 root，需 chown 到對應 uid（grafana=472、gitea=1000），否則報 readonly；
-> - pg_dump 帶 `--clean --if-exists` 避免還原衝突；
-> - 舊版 backup.ps1 用 `Copy-Item` 批次複製時點號檔案 `.env` 導致整批靜默失敗，已改逐檔案 `-LiteralPath`；
-> - AI 管理中心備份用 base64 中轉 + tar-fs 保證二進位制安全（docker exec 的 stdout 走 utf8 會損壞 SQLite .db）。
+> - Keycloak 必須用 **realm export/import（JSON）**，pg_dump 還原會丟失 default role 關聯；
+> - L2 備份會短暫停止整個平台（Docker Desktop + WSL 關閉才能安全拷貝 VHDX）；
+> - 恢復前務必先用 `check_backup.ps1` 校驗備份完整性。
 
 ---
 

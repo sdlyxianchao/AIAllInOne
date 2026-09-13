@@ -48,7 +48,7 @@ Because everything is just files + commands + APIs, the agent can see and change
 | Edit the AI Admin Center | edit `admin-portal/public/index.html` (UI) or `admin-portal/server.js` (API) |
 | Manage Gitea + sync | Gitea API: trigger workflows, read run status/logs, edit repo files |
 | Manage the Ghost portal | read/write the Ghost SQLite DB, edit theme templates, import the content seed |
-| Backup & restore | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| Backup & restore | `Backup/backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | Publish a release | `publish.ps1` (build + commit + push to GitHub) |
 | Clean up | `docker image prune`, remove old backups, etc. (with your confirmation) |
 | Troubleshoot | port conflicts, Docker Desktop issues, DNS/proxy, etc. |
@@ -103,6 +103,8 @@ The agent asks for the publish address and language, then runs `ghost-content-im
 
 > "Run a full backup now and confirm it succeeded."
 
+The agent runs `Backup/backup-docker.ps1 -Level 1` (snapshot) or `-Level 2` (full VHDX). For restore, it runs `Backup/restore-docker.ps1 -BackupDir <path>`. Always verify with `Backup/check_backup.ps1` before restoring.
+
 ### 4.9 Publish a release to GitHub
 
 > "Publish a new release v0.7 with the message 'feat: …'."
@@ -139,5 +141,5 @@ The agent scans (`docker system df`, unused images, volumes, old backups) and li
 | Start all services | `docker compose up -d` |
 | Compose status | `docker compose ps` |
 | Trigger Gitea sync | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
-| Run a backup | `powershell .\scripts\backup.ps1` |
+| Run a backup | `powershell C:\AIAllInOne\Backup\backup-docker.ps1 -Level 1` |
 | Publish a release | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |

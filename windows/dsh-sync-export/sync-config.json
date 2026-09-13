@@ -5,6 +5,7 @@
   "download_prefix": "",
   "keep_releases": 5,
   "market_url": "http://192.168.31.117:3100",
+  "CANCELTASK": false,
   "platforms": {
     "windows-x64": "dsh-desktop-windows-x64-setup.exe",
     "mac-x64": "dsh-desktop-mac-x64.dmg",

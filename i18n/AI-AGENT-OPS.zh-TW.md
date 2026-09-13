@@ -48,7 +48,7 @@ Agent 能做的：
 | 改 AI 管理中心 | 改 `admin-portal/public/index.html`（介面）或 `admin-portal/server.js`（介面 API） |
 | 管理 Gitea + 同步 | Gitea API：觸發工作流程、讀執行狀態／日誌、改倉庫檔案 |
 | 管理 Ghost 入口網站 | 讀寫 Ghost SQLite 庫、改主題模板、匯入內容種子 |
-| 備份與還原 | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| 備份與還原 | `Backup/backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | 發佈版本 | `publish.ps1`（建置 + 提交 + 推送到 GitHub） |
 | 清理 | `docker image prune`、刪舊備份等（需你確認） |
 | 排除故障 | 埠口衝突、Docker Desktop 問題、DNS／代理等 |

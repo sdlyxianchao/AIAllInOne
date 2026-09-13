@@ -35,7 +35,7 @@
 | start all | `docker compose up -d` |
 | compose status | `docker compose ps` |
 | trigger Gitea sync | `POST /api/v1/repos/<user>/dsh-sync/actions/workflows/sync.yml/dispatches` |
-| backup | `powershell .\scripts\backup.ps1` |
+| backup | `powershell C:\AIAllInOne\Backup\backup-docker.ps1 -Level 1` |
 | release | `powershell .\publish.ps1 -Version v0.x -CommitMessage "…"` |
 
 ## 4. Built-in health check (health-check.ps1)

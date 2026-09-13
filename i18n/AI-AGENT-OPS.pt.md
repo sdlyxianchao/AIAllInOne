@@ -48,7 +48,7 @@ Como tudo é só arquivos + comandos + APIs, o agente consegue ver e mudar tudo 
 | Editar o Centro de Administração de IA | editar `admin-portal/public/index.html` (UI) ou `admin-portal/server.js` (API) |
 | Gerenciar Gitea + sincronização | API do Gitea: disparar workflows, ler status/logs, editar arquivos do repositório |
 | Gerenciar o portal Ghost | ler/escrever o banco SQLite do Ghost, editar templates do tema, importar o conteúdo de exemplo |
-| Backup e restauração | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| Backup e restauração | `Backup/backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | Publicar uma versão | `publish.ps1` (build + commit + push para o GitHub) |
 | Limpar | `docker image prune`, remover backups antigos etc. (com sua confirmação) |
 | Solucionar problemas | conflitos de porta, problemas do Docker Desktop, DNS/proxy etc. |

@@ -154,6 +154,12 @@ services:
       - GENERIC_USER_ROLE_ATTRIBUTE=${LITELLM_UI_ROLE_ATTR:-litellm_role}
       - PROXY_BASE_URL=${LITELLM_UI_PROXY_BASE_URL}
       - AUTO_REDIRECT_UI_LOGIN_TO_SSO=${LITELLM_UI_AUTO_SSO:-false}
+      # Langfuse LLM 可观测
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_HOST=http://langfuse:3000
+      # 小米 MiMo API Key
+      - XIAOMI_API_KEY=${XIAOMI_API_KEY}
       # PII 脱敏（Presidio）端点 —— litellm 会自动拼 /analyze、/anonymize，这里填 base URL 即可
       - PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:3000
       - PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:3000
@@ -388,7 +394,7 @@ services:
     ports:
       - "10086:3000"
     working_dir: /app
-    command: sh -c "apk add --no-cache python3 >/dev/null 2>&1; node server.js"
+    command: sh -c "node server.js"
     environment:
       - PORT=3000
       - SERVER_PUBLIC_URL=${SERVER_PUBLIC_URL}
@@ -423,11 +429,13 @@ services:
       - ALERT_IM_WEBHOOK_URL=${ALERT_IM_WEBHOOK_URL:-}
       - ALERT_IM_TYPE=${ALERT_IM_TYPE:-}
       - AVAILABILITY_INTERVAL_MIN=${AVAILABILITY_INTERVAL_MIN:-10}
+      - REPORT_DIR=/reports
       - TZ=Asia/Shanghai
     volumes:
       - ./admin-portal:/app
       - /var/run/docker.sock:/var/run/docker.sock
-      - ../backups:/backups
+      # 历史报告独立目录（原先借用 ../backups:/backups，备份功能移除后解耦）
+      - ../reports:/reports
       - .:/deploy:ro
     networks:
       - ai-platform
@@ -583,10 +591,10 @@ services:
 
   # 一次性初始化：创建 langfuse 的 S3 bucket
   langfuse-minio-init:
-    image: minio/mc:latest
+    image: minio/minio:latest
     container_name: langfuse-minio-init
     entrypoint: >
-      sh -c "mc alias set local http://langfuse-minio:9000 ${LANGFUSE_MINIO_USER} ${LANGFUSE_MINIO_PASSWORD} && mc mb -p local/langfuse || true"
+      sh -c "/usr/bin/mc alias set local http://langfuse-minio:9000 $${LANGFUSE_MINIO_USER} $${LANGFUSE_MINIO_PASSWORD} && /usr/bin/mc mb -p local/langfuse || true"
     depends_on:
       - langfuse-minio
     networks:

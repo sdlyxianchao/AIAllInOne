@@ -2,53 +2,60 @@
 
 *Troisième partie · Exploitation*
 
-> Sauvegarde quotidienne complète des données et restauration en un clic.
+> Sauvegarde à deux niveaux, vérification d'intégrité, scripts indépendants.
 
 [← Chapitre 26 : MailHog, récepteur d'e-mails](ch26-ops-mailhog.md) · [📖 Index](index.md) · [Chapitre 28 : Contrôle de santé et auto-vérification au démarrage →](ch28-healthcheck.md)
 
 ---
 
-**Accès** : page « 💾 Sauvegarde et restauration » du Centre d'administration IA, ou en ligne de commande `scripts/backup.ps1` / `restore.ps1`. Tâche planifiée automatique à 02:00 chaque jour, rétention de 7 jours.
+**Emplacement** : `C:\AIAllInOne\Backup\` — scripts PowerShell indépendants du Centre d'administration IA.
 
-## 27.1 Éléments de sauvegarde
-
-| Élément de sauvegarde | Méthode |
+| Script | Usage |
 | --- | --- |
-| MySQL de NewAPI | `mysqldump` |
-| PostgreSQL de Dify | `pg_dump` |
-| PostgreSQL de Langfuse | `pg_dump` |
-| SQLite de Ghost / Gitea / Grafana | Copie de fichiers |
-| Keycloak | **export du realm (JSON)** |
-| Fichiers de configuration | Copie de fichiers |
+| `backup-docker.ps1` | Sauvegarde (deux niveaux) |
+| `restore-docker.ps1` | Restauration (deux stratégies) |
+| `check_backup.ps1` | Vérification d'intégrité (5 couches) |
+| `fix-backup-task.ps1` | Réparation de la tâche planifiée |
+
+## 27.1 Niveaux de sauvegarde
+
+| Niveau | Contenu | Usage |
+| --- | --- | --- |
+| **L1** (défaut) | Fichiers de config + dumps DB | Instantané quotidien |
+| **L2** | L1 + `docker_data.vhdx` | Reprise complète après sinistre |
 
 ## 27.2 Sauvegarde manuelle
 
+```powershell
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 1
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 2
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 2 -DryRun
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1
+
+## 27.3 Sauvegarde planifiée
+
+```powershell
+C:\AIAllInOne\Backup\fix-backup-task.ps1 -Apply -BackupRoot "F:\Backup\Docker"
 ```
-
-## 27.3 Sauvegarde planifiée (tâche planifiée)
-
-La tâche planifiée `AI-Platform-Backup` est déjà enregistrée (tous les jours à 02:00). Si elle n'a pas été enregistrée automatiquement, créez-la manuellement : Planificateur de tâches → Nouvelle → programme `powershell.exe`, arguments `-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1`, déclencheur tous les jours à 02:00.
-
-> 📌 La sauvegarde se fait par défaut sur le disque C ; il est conseillé de synchroniser régulièrement `C:\AIAllInOne\backups\` vers un autre disque ou un stockage objet pour la reprise sur sinistre hors site.
 
 ## 27.4 Restauration
 
-```
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001
+```powershell
+C:\AIAllInOne\Backup\restore-docker.ps1 -BackupDir "C:\AIAllInOne\Backup\backups\backup_20260912_020000"
 ```
 
-Le script demande la saisie de `yes` pour confirmer (ajoutez `-Force` pour l'ignorer, réservé aux scripts/CI). Vous pouvez aussi cliquer sur « Restaurer » d'une sauvegarde dans la page « Sauvegarde et restauration » du Centre d'administration IA.
+## 27.5 Vérification
 
-## 27.5 Pièges clés (validés par exercice)
+```powershell
+C:\AIAllInOne\Backup\check_backup.ps1 "C:\AIAllInOne\Backup\backups\backup_20260912_020000"
+```
+
+## 27.6 Pièges clés
 
 > ⚠️
-> - Keycloak doit utiliser **l'export/import du realm (JSON)** ; une restauration pg_dump perd l'association des rôles par défaut et empêche le démarrage ;
-> - Après restauration, SQLite appartient à root ; faites un chown vers l'uid correspondant (grafana=472, gitea=1000), sinon readonly ;
-> - pg_dump avec `--clean --if-exists` pour éviter les conflits de restauration ;
-> - L'ancien backup.ps1 utilisait `Copy-Item` en copie par lots ; le fichier pointé `.env` faisait échouer tout le lot en silence ; corrigé en copie fichier par fichier avec `-LiteralPath` ;
-> - La sauvegarde du Centre d'administration IA passe par base64 + tar-fs pour garantir la sécurité binaire (la stdout de docker exec en utf8 corromprait le SQLite .db).
+> - Keycloak doit utiliser **l'export/import du realm (JSON)** ;
+> - L2 arrête brièvement la plateforme ;
+> - Toujours vérifier avec `check_backup.ps1` avant de restaurer.
 
 ---
 

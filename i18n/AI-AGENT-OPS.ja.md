@@ -48,7 +48,7 @@
 | AI 管理センターの編集 | `admin-portal/public/index.html`（UI）または `admin-portal/server.js`（API）を編集 |
 | Gitea + 同期の管理 | Gitea API：ワークフローのトリガー、実行状態／ログの読み取り、リポジトリファイルの編集 |
 | Ghost ポータルの管理 | Ghost の SQLite DB の読み書き、テーマテンプレートの編集、サンプルコンテンツのインポート |
-| バックアップと復元 | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| バックアップと復元 | `Backup/backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | リリースの公開 | `publish.ps1`（ビルド + コミット + GitHub へのプッシュ） |
 | クリーンアップ | `docker image prune`、古いバックアップの削除など（要確認） |
 | トラブルシューティング | ポート競合、Docker Desktop の問題、DNS／プロキシなど |

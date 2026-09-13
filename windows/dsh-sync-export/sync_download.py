@@ -25,6 +25,14 @@ UPDATE_SERVER = os.environ.get('UPDATE_SERVER', 'update-server')
 ADMIN_PORTAL = os.environ.get('ADMIN_PORTAL', 'admin-portal')
 DOCKER_SOCK = os.environ.get('DOCKER_SOCK', '')
 
+# CANCELTASK: 从 Gitea 仓库的 sync-config.json 读取（admin-portal 的强制停止功能）
+# 脚本在关键步骤周期性检查此标志，如果为 True 则优雅退出
+GITEA_CONFIG_URL = os.environ.get('GITEA_CONFIG_URL',
+    'http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync-config.json')
+_CANCEL_CHECK_INTERVAL = 10  # 每 10 秒检查一次
+_last_cancel_check = 0
+_CANCELLED = False
+
 # Auto-detect Docker socket
 if not DOCKER_SOCK:
     if os.path.exists('/var/run/docker.sock'):
@@ -42,6 +50,42 @@ def log(msg, level='info'):
     line = f'[{ts}] [{level.upper()}] {msg}'
     print(line, flush=True)
     LOG_LINES.append({'time': ts, 'level': level, 'msg': msg})
+
+
+# ── CANCELTASK 检查（强制停止功能）─────────────────────────────────
+def check_cancel(force=False):
+    """检查 Gitea 仓库的 sync-config.json 中 CANCELTASK 是否为 True。
+    周期性检查（每 _CANCEL_CHECK_INTERVAL 秒一次），避免频繁请求。
+    force=True 时跳过间隔检查，立即执行。"""
+    global _last_cancel_check, _CANCELLED
+    if _CANCELLED:
+        return True
+    now = time.time()
+    if not force and (now - _last_cancel_check) < _CANCEL_CHECK_INTERVAL:
+        return False
+    _last_cancel_check = now
+    try:
+        req = urllib.request.Request(GITEA_CONFIG_URL, headers={'User-Agent': 'dsh-sync/1.0'})
+        with urllib.request.urlopen(req, timeout=5) as r:
+            cfg = json.loads(r.read().decode('utf-8'))
+            if cfg.get('CANCELTASK') is True:
+                _CANCELLED = True
+                log('CANCELTASK=true detected, cancelling...', 'warn')
+                return True
+    except Exception as e:
+        # 网络错误不视为取消，继续执行
+        log(f'Cancel check failed (non-fatal): {e}', 'debug')
+    return False
+
+
+def handle_cancel():
+    """如果已取消，写入进度和历史记录后退出。"""
+    if not _CANCELLED:
+        return
+    log('Task cancelled by user (CANCELTASK=true)', 'warn')
+    write_progress('cancelled', status='cancelled', detail='Cancelled by user')
+    add_history('cancelled', 'Sync cancelled by user (force stop)')
+    sys.exit(0)
 
 
 # ── Docker Socket HTTP ──────────────────────────────────────────────
@@ -104,6 +148,24 @@ def write_progress(phase, status='running', detail='', **kw):
 
 
 def add_history(status, detail, version=''):
+    """记录同步历史——优先写入 Admin Center 数据库，同时保留 JSON 文件备份。"""
+    # 1. 写入 Admin Center 数据库（通过 API）
+    try:
+        url = f'http://{ADMIN_PORTAL}:3000/api/gitea/sync/record-history'
+        data = json.dumps({
+            'status': status, 'detail': detail, 'version': version
+        }).encode()
+        req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            result = json.loads(r.read().decode())
+            if result.get('ok'):
+                log(f'History recorded to DB: {status} {version}')
+            else:
+                log(f'History DB response: {result}', 'warn')
+    except Exception as e:
+        log(f'History DB write failed (fallback to JSON): {e}', 'warn')
+
+    # 2. 写入 JSON 文件备份（兼容旧逻辑）
     path = os.path.join(BASE, 'dsh', 'sync-history.json')
     os.makedirs(os.path.dirname(path), exist_ok=True)
     hist = []
@@ -122,6 +184,21 @@ def add_history(status, detail, version=''):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(hist, f, ensure_ascii=False, indent=2)
     deploy_file_to_nginx(path, '/usr/share/nginx/html/dsh/sync-history.json')
+
+
+def sync_versions_to_db():
+    """同步完成后，触发 Admin Center 从 update-server 扫描版本并写入数据库。"""
+    try:
+        url = f'http://{ADMIN_PORTAL}:3000/api/gitea/sync/sync-versions-from-server'
+        req = urllib.request.Request(url, data=b'{}', headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            result = json.loads(r.read().decode())
+            if result.get('ok'):
+                log('Versions synced to DB')
+            else:
+                log(f'Versions DB sync response: {result}', 'warn')
+    except Exception as e:
+        log(f'Versions DB sync failed: {e}', 'warn')
 
 
 # ── Docker API helpers ──────────────────────────────────────────────
@@ -486,6 +563,7 @@ def sync_specific_version(repo, version, platforms, targets, prefix=''):
 
     assets = {a['name']: a['browser_download_url'] for a in rel.get('assets', [])}
     log(f'Found release: {rel.get("tag_name")} ({len(assets)} assets)')
+    check_cancel() and handle_cancel()
 
     dsh_dir = os.path.join(BASE, 'dsh')
     version_dir = os.path.join(dsh_dir, f'v{version_clean}')
@@ -494,6 +572,8 @@ def sync_specific_version(repo, version, platforms, targets, prefix=''):
     downloaded_files = {}
     total = len(targets)
     for idx, plat in enumerate(targets):
+        # 周期性检查 CANCELTASK（每 10 秒一次，不阻塞下载）
+        check_cancel() and handle_cancel()
         fname = platforms.get(plat)
         if not fname:
             continue
@@ -554,6 +634,9 @@ def sync_specific_version(repo, version, platforms, targets, prefix=''):
         deploy_ok = False
     log(f'Deployed versions.json: {[v["version"] for v in merged]}')
 
+    # 最后一次取消检查（Ghost 更新前）
+    check_cancel(force=True) and handle_cancel()
+
     # Update Ghost page（传合并后的完整列表，确保历史完整）
     update_ghost(
         version=f'v{version_clean}',
@@ -565,6 +648,9 @@ def sync_specific_version(repo, version, platforms, targets, prefix=''):
     status = 'success' if deploy_ok else 'partial'
     detail = f'v{version_clean} synced ({len(downloaded_files)} files)' + ('' if deploy_ok else ' — deploy failed')
     add_history(status, detail, f'v{version_clean}')
+
+    # 触发 Admin Center 从 update-server 同步版本到数据库
+    sync_versions_to_db()
 
     write_progress('done', status='done', detail=f'Sync complete: v{version_clean}')
     log(f'✅ v{version_clean} synced: {list(downloaded_files.values())}')
@@ -599,6 +685,10 @@ def main():
     targets = cfg.get('targets', list(platforms.keys()))
     keep = cfg.get('keep_releases', 5)
     prefix = cfg.get('download_prefix', '')
+
+    # 启动时检查一次 CANCELTASK（如果之前已设置为 true，直接退出）
+    if check_cancel(force=True):
+        handle_cancel()
 
     # ── Mode: List releases ─────────────────────────────────────────
     if args.list_releases:

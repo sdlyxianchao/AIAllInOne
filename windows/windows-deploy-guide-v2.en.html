@@ -2415,7 +2415,7 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
 <div class="verify">Verify: send a request containing a phone number/email → the original value is replaced with <code>[REDACTED]</code> in the model reply; send one containing "internal confidential" → directly returns <code>Content blocked</code>.</div>
 
 <h3>13.2 Data backup &amp; restore</h3>
-<p>The backup script <code>scripts\backup.ps1</code> backs up all critical data daily to <code>C:\AIAllInOne\backups\</code>, auto-retaining the last 7 days.</p>
+<p>The backup script <code>Backup\backup-docker.ps1</code> backs up all critical data daily to <code>C:\AIAllInOne\backups\</code>, auto-retaining the last 7 days.</p>
 <table>
   <tr><th>Backup item</th><th>Content</th><th>Method</th></tr>
   <tr><td>NewAPI</td><td>MySQL (new-api DB: users/channels/keys/logs)</td><td><code>mysqldump</code></td></tr>
@@ -2426,17 +2426,17 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
 </table>
 <div class="step">
   <span class="step-num">1</span><strong>Run manually once</strong>
-  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\backup-docker.ps1</code></pre>
 </div>
 <div class="step">
   <span class="step-num">2</span><strong>Scheduled execution (Windows Task Scheduler)</strong>
-  <p>The scheduled task <code>AI-Platform-Backup</code> is registered (daily 02:00, current user). If not auto-registered, create it manually in "Task Scheduler": Action → New → program <code>powershell.exe</code>, argument <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>, trigger daily 02:00.</p>
+  <p>The scheduled task <code>AI-Platform-Backup</code> is registered (daily 02:00, current user). If not auto-registered, create it manually in "Task Scheduler": Action → New → program <code>powershell.exe</code>, argument <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\backup-docker.ps1</code>, trigger daily 02:00.</p>
 </div>
 <div class="note">⚠️ Backups are on the C drive by default; sync <code>C:\AIAllInOne\backups\</code> to another disk or object storage periodically for off-site disaster recovery.</div>
 <div class="step">
-  <span class="step-num">3</span><strong>Restore (<code>scripts\restore.ps1</code>)</strong>
+  <span class="step-num">3</span><strong>Restore (<code>Backup\restore-docker.ps1</code>)</strong>
   <p>Restore all data from a backup directory (MySQL / PostgreSQL / SQLite / config):</p>
-  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\restore-docker.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
   <p>The script asks for <code>yes</code> confirmation before executing (add <code>-Force</code> to skip, scripts/CI only).</p>
 </div>
 <div class="step">
@@ -2590,7 +2590,7 @@ schtasks /query /tn "AI-HealthCheck" /v /fo list</code></pre>
 <div class="step">
   <span class="step-num">2</span><strong>Daily backup (daily at 02:00)</strong>
   <pre><code><span class="comment"># Create a scheduled task for daily backup</span>
-schtasks /create /tn "AI-Backup" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1" /sc daily /st 02:00 /f
+schtasks /create /tn "AI-Backup" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\backup-docker.ps1" /sc daily /st 02:00 /f
 
 <span class="comment"># Verify</span>
 schtasks /query /tn "AI-Backup" /v /fo list</code></pre>

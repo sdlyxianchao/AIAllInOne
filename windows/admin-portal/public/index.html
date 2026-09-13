@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -69,6 +69,15 @@
   .svc-card .svc-status{font-size:0.85em;margin-bottom:4px}
   .svc-card .svc-status.running{color:var(--green)}.svc-card .svc-status.exited,.svc-card .svc-status.dead{color:var(--red)}.svc-card .svc-status.created{color:var(--yellow)}
   .svc-card .svc-image{color:var(--textdim);font-size:0.78em}
+  /* ── 可用性测试卡片状态描边：整卡高亮（通过=绿，失败=红加粗，测试中=虚线） ── */
+  .svc-card.avail-ok{border:2px solid var(--green);box-shadow:0 0 0 3px rgba(86,211,100,.10)}
+  .svc-card.avail-ok:hover{border-color:var(--green)}
+  .svc-card.avail-fail{border:2px solid var(--red);box-shadow:0 0 0 3px rgba(248,81,73,.16)}
+  .svc-card.avail-fail:hover{border-color:var(--red)}
+  .svc-card.avail-warn{border:2px solid var(--yellow);box-shadow:0 0 0 3px rgba(210,153,34,.12)}
+  .svc-card.avail-warn:hover{border-color:var(--yellow)}
+  .svc-card.avail-running{border:2px dashed var(--border)}
+  .svc-card.avail-running:hover{border-color:var(--accent)}
   /* ── Service groups (Docker) ── */
   .docker-shell{border:1px solid var(--accentbtn);border-radius:12px;padding:16px;margin-bottom:14px;background:linear-gradient(180deg,var(--bg),var(--panel))}
   .docker-shell .docker-tip{color:var(--textdim);font-size:0.82em;margin:2px 0 14px}
@@ -126,7 +135,6 @@
       <a class="nav-item" data-product="monitoring" onclick="loadMonitoring(this)">📈 <span data-i18n="monitoring">监控告警 + IM 通知</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3030</span></a>
       <a class="nav-item" data-product="observability" onclick="loadObservability(this)">🔍 <span data-i18n="observability">LLM 可观测</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">:3010</span></a>
       <a class="nav-item" data-product="logs" onclick="loadLogs(this)">📜 <span data-i18n="logs">统一日志</span> <span style="margin-left:auto;font-size:0.75em;color:var(--textdim)">Loki</span></a>
-      <a class="nav-item" data-product="backup" onclick="loadBackup(this)">💾 <span data-i18n="backup">备份与恢复</span></a>
       <a class="nav-item" data-product="report" onclick="loadReport(this)">📄 <span data-i18n="report">报告生成</span></a>
     </div>
   </div>
@@ -323,24 +331,23 @@ const I18N = {
     search_ph: '搜索…', per_page: '每页', prev_page: '上一页', next_page: '下一页', no_results: '无匹配结果',
     sync_fail_reason: '失败原因', litellm_new_model: '新建模型',
     gitea_sync_trigger: '手动触发同步', gitea_sync_triggered: '已触发，正在后台执行', gitea_schedule: '自动同步计划', gitea_cron: 'cron 表达式', gitea_schedule_save: '保存', gitea_schedule_saved: '已保存', gitea_schedule_hint: '定时表达式：分 时 日 月 周（UTC 时间）。预设选项可直接选，也可自定义。',
-    gitea_sync_targets: '同步平台与架构', gitea_keep_releases: '保留版本数', gitea_versions: '已同步版本', gitea_delete_version: '删除', gitea_config_saved: '已保存', gitea_no_versions: '暂无已同步版本', gitea_delete_confirm: '确定删除版本', gitea_sync_history: '同步历史', gitea_no_history: '暂无同步历史', gitea_hist_sync: '同步', gitea_hist_rebuild: '重建页面', gitea_hist_delete: '删除版本',
+    gitea_sync_targets: '同步平台与架构', gitea_keep_releases: '保留版本数', gitea_versions: '已同步版本', gitea_delete_version: '删除', gitea_config_saved: '已保存', gitea_no_versions: '暂无已同步版本', gitea_delete_confirm: '确定删除版本', gitea_delete_warn: '将删除该版本在全部分平台上的安装包文件，此操作不可恢复。', gitea_deleting: '删除中…', gitea_sync_history: '同步历史', gitea_no_history: '暂无同步历史', gitea_hist_sync: '同步', gitea_hist_rebuild: '重建页面', gitea_hist_delete: '删除版本',
     gitea_workflow_management: '工作流管理', gitea_timeout_settings: '超时设置', gitea_timeout_minutes: '超时时间（分钟）', gitea_auto_cleanup: '自动清理超时任务', gitea_cleanup_interval: '清理检查间隔', gitea_minutes_unit: '分钟', gitea_save_settings: '保存设置', gitea_runner_management: 'Runner 管理', gitea_restart_runner: '重启 Runner', gitea_cleanup_timeout: '清理超时任务', gitea_workflow_runs: '工作流运行记录', gitea_cancel_run: '取消', gitea_run_timeout: '已超时', gitea_run_running: '运行中', gitea_run_completed: '已完成', gitea_run_queued: '排队中', gitea_run_cancelled: '已取消', gitea_no_runs: '暂无工作流运行记录', gitea_settings_saved: '设置已保存', gitea_runner_restarted: 'Runner 已重启', gitea_cleanup_done: '清理完成',
     client_sync: '客户端软件同步', client_sync_about: '管理 DSH Desktop 客户端的自动同步任务和安装包分发。包含 Gitea 源码管理、同步任务调度和更新服务器功能。',
     update_server_info: '更新服务器信息', gitea_tab_execute: '执行同步计划', gitea_tab_settings: '同步设置',
     gitea_execution_logs: '执行日志', gitea_toggle_logs: '展开/收起', gitea_clear_logs: '清空日志', gitea_copy_logs: '复制日志', gitea_logs_copied: '已复制', gitea_no_logs: '暂无日志', gitea_loading_logs: '加载日志中...', gitea_load_logs_error: '加载日志失败', gitea_detailed_logs: '详细日志', gitea_select_task: '选择任务', gitea_started_at: '启动时间', gitea_elapsed_time: '已执行时间', gitea_force_stop: '强制关闭', gitea_force_stop_confirm: '确定要强制关闭当前同步任务吗？', gitea_force_stopped: '已强制关闭', gitea_stopping: '关闭中...',
-    pii: 'PII 脱敏', logs: '统一日志', backup: '备份与恢复', availability: '可用性测试',
+    pii: 'PII 脱敏', logs: '统一日志', availability: '可用性测试',
     avail_desc: '定时 + 手动测试各模块可用性：认证、LLM 链路、聊天（以 DSH Desktop/Dify 名义经 NewAPI）、各服务与 SSO。', avail_run_all: '🩺 测试所有功能', avail_test: '测试', avail_restart: '重启', avail_restarting: '重启中...', avail_restarted: '已重启', avail_restart_fail: '重启失败', avail_restart_confirm: '确定要重启该服务吗？重启期间相关服务会短暂中断。', avail_interval: '测试间隔', avail_min: '分钟', avail_none: '尚未测试，点击「测试所有功能」', avail_running: '测试中...', avail_fail: '失败', avail_last: '上次测试', avail_pass: '通过', avail_result: '测试结果',
     presidio_state: '状态', pii_up: '正常', pii_down: '异常',
     pii_title: 'PII 脱敏 — 敏感数据防护', pii_presidio: 'Presidio 实体识别服务', pii_analyzer: '识别服务 (analyzer)', pii_anonymizer: '脱敏服务 (anonymizer)',
     pii_guardrails: 'LiteLLM 脱敏规则（guardrails）', pii_guardrail_name: '规则名', pii_guardrail_type: '类型', pii_guardrail_note: '说明',
     pii_litellm_models: 'LiteLLM 已接入模型', pii_note: '所有经 LiteLLM 的模型调用都会先经过上述脱敏规则（default_on）：中文手机号/身份证/银行卡/邮箱/信用代码/护照/IP 及英文人名/邮箱/信用卡等敏感信息会被自动打码或拦截。',
-    backup_title: '备份与恢复', backup_desc: '数据备份 = NewAPI(MySQL) + Dify(PostgreSQL) + Ghost/Gitea(SQLite) + 配置文件。每日 02:00 定时备份，保留 7 天。',
-    backup_run: '立即备份', backup_running: '备份执行中...', backup_list: '备份列表', backup_time: '备份', backup_files: '文件', backup_no: '暂无备份记录', backup_confirm: '确认恢复到', backup_restore: '恢复', backup_restore_warn: '⚠️ 恢复会覆盖现有数据，请谨慎操作！', backup_result: '执行结果', backup_pass: '成功', backup_fail: '失败', backup_log: '备份日志',
+    report_file: '文件', report_time: '生成时间',
     logs_title: '统一日志', logs_desc: '聚合所有容器日志（Loki + Promtail）。按容器/级别筛选，支持关键字搜索、导出与自动刷新。', logs_container: '容器', logs_keyword: '关键字', logs_search_btn: '查询', logs_results: '日志结果', logs_empty: '无匹配日志', logs_all: '全部',
     logs_level: '级别', logs_level_all: '全部级别', logs_level_error: '错误', logs_level_warn: '警告', logs_level_info: '信息', logs_per_page: '条数', logs_export: '导出', logs_copy: '复制', logs_copied: '已复制', logs_auto_refresh: '自动刷新', logs_total: '共 N 条',
-    report: '报告生成', report_title: '报告生成 — 系统详细报告', report_desc: '按自定义条件生成系统报告：一段时间的系统状态、使用情况、客户端统计、最近问题、可用性、备份与 PII 状态。',
+    report: '报告生成', report_title: '报告生成 — 系统详细报告', report_desc: '按自定义条件生成系统报告：一段时间的系统状态、使用情况、客户端统计、最近问题、可用性、PII 状态。',
     report_conditions: '报告条件', report_days: '统计周期', report_days_1: '最近 1 天', report_days_7: '最近 7 天', report_days_30: '最近 30 天', report_days_90: '最近 90 天',
-    report_sections: '包含内容', report_sec_system: '系统总览', report_sec_usage: '使用统计', report_sec_client: '客户端统计', report_sec_issues: '最近问题', report_sec_avail: '可用性测试', report_sec_backup: '备份状态', report_sec_pii: 'PII 脱敏',
+    report_sections: '包含内容', report_sec_system: '系统总览', report_sec_usage: '使用统计', report_sec_client: '客户端统计', report_sec_issues: '最近问题', report_sec_avail: '可用性测试', report_sec_pii: 'PII 脱敏',
     report_generate: '📄 生成报告', report_generating: '正在生成报告...', report_download: '⬇️ 导出为 .md 文件', report_preview: '报告预览', report_lang: '报告语言与当前界面语言一致', report_need_admin: '生成报告需要 ai-platform-admin 角色', report_view_rendered: '📖 渲染预览', report_view_source: '📝 Markdown 源码',
     report_none: '暂无报告，点击「生成报告」生成。', report_history: '历史报告', report_history_desc: '生成的报告自动保存在服务器，按保留策略自动清理。',
     report_no_history: '暂无历史报告', report_view: '查看', report_delete: '删除', report_download_file: '下载', report_delete_confirm: '确认删除报告「', report_size: '大小',
@@ -470,24 +477,23 @@ const I18N = {
     search_ph: 'Search…', per_page: 'Per page', prev_page: 'Prev', next_page: 'Next', no_results: 'No results',
     sync_fail_reason: 'Failure Reason', litellm_new_model: 'Add Model',
     gitea_sync_trigger: 'Trigger Sync', gitea_sync_triggered: 'Triggered, running in background', gitea_schedule: 'Sync Schedule', gitea_cron: 'Cron expression', gitea_schedule_save: 'Save', gitea_schedule_saved: 'Saved', gitea_schedule_hint: 'Schedule: min hour day month weekday (UTC). Pick a preset or enter a custom expression.',
-    gitea_sync_targets: 'Sync Targets', gitea_keep_releases: 'Keep Releases', gitea_versions: 'Synced Versions', gitea_delete_version: 'Delete', gitea_config_saved: 'Saved', gitea_no_versions: 'No versions synced yet', gitea_delete_confirm: 'Delete version', gitea_sync_history: 'Sync History', gitea_no_history: 'No sync history yet', gitea_hist_sync: 'Sync', gitea_hist_rebuild: 'Rebuild page', gitea_hist_delete: 'Delete version',
+    gitea_sync_targets: 'Sync Targets', gitea_keep_releases: 'Keep Releases', gitea_versions: 'Synced Versions', gitea_delete_version: 'Delete', gitea_config_saved: 'Saved', gitea_no_versions: 'No versions synced yet', gitea_delete_confirm: 'Delete version', gitea_delete_warn: 'All installer files of this version will be deleted. This cannot be undone.', gitea_deleting: 'Deleting…', gitea_sync_history: 'Sync History', gitea_no_history: 'No sync history yet', gitea_hist_sync: 'Sync', gitea_hist_rebuild: 'Rebuild page', gitea_hist_delete: 'Delete version',
     gitea_workflow_management: 'Workflow Management', gitea_timeout_settings: 'Timeout Settings', gitea_timeout_minutes: 'Timeout (minutes)', gitea_auto_cleanup: 'Auto cleanup timeout tasks', gitea_cleanup_interval: 'Cleanup check interval', gitea_minutes_unit: 'minutes', gitea_save_settings: 'Save Settings', gitea_runner_management: 'Runner Management', gitea_restart_runner: 'Restart Runner', gitea_cleanup_timeout: 'Cleanup Timeout Tasks', gitea_workflow_runs: 'Workflow Runs', gitea_cancel_run: 'Cancel', gitea_run_timeout: 'Timeout', gitea_run_running: 'Running', gitea_run_completed: 'Completed', gitea_run_queued: 'Queued', gitea_run_cancelled: 'Cancelled', gitea_no_runs: 'No workflow runs yet', gitea_settings_saved: 'Settings saved', gitea_runner_restarted: 'Runner restarted', gitea_cleanup_done: 'Cleanup done',
     client_sync: 'Client Software Sync', client_sync_about: 'Manage DSH Desktop client auto-sync tasks and installer distribution. Includes Gitea source management, sync task scheduling, and update server functionality.',
     update_server_info: 'Update Server Info', gitea_tab_execute: 'Execute Sync Plan', gitea_tab_settings: 'Sync Settings',
     gitea_execution_logs: 'Execution Logs', gitea_toggle_logs: 'Toggle Logs', gitea_clear_logs: 'Clear Logs', gitea_copy_logs: 'Copy Logs', gitea_logs_copied: 'Copied', gitea_no_logs: 'No logs available', gitea_loading_logs: 'Loading logs...', gitea_load_logs_error: 'Failed to load logs', gitea_detailed_logs: 'Detailed Logs', gitea_select_task: 'Select Task', gitea_started_at: 'Started At', gitea_elapsed_time: 'Elapsed Time', gitea_force_stop: 'Force Stop', gitea_force_stop_confirm: 'Are you sure you want to force stop the current sync?', gitea_force_stopped: 'Force stopped', gitea_stopping: 'Stopping...',
-    pii: 'PII Redaction', logs: 'Unified Logs', backup: 'Backup & Restore', availability: 'Availability Test',
+    pii: 'PII Redaction', logs: 'Unified Logs', availability: 'Availability Test',
     avail_desc: 'Scheduled + manual availability tests: auth, LLM chain, chat (as DSH Desktop/Dify via NewAPI), services and SSO.', avail_run_all: '🩺 Test All', avail_test: 'Test', avail_restart: 'Restart', avail_restarting: 'Restarting...', avail_restarted: 'Restarted', avail_restart_fail: 'Restart failed', avail_restart_confirm: 'Restart this service? It will be briefly unavailable during restart.', avail_interval: 'Interval', avail_min: 'min', avail_none: 'Not tested yet, click "Test All"', avail_running: 'Testing...', avail_fail: 'Failed', avail_last: 'Last run', avail_pass: 'Passed', avail_result: 'Results',
     presidio_state: 'State', pii_up: 'Up', pii_down: 'Down',
     pii_title: 'PII Redaction — Sensitive Data Protection', pii_presidio: 'Presidio Entity Recognition Services', pii_analyzer: 'Analyzer', pii_anonymizer: 'Anonymizer',
     pii_guardrails: 'LiteLLM Redaction Rules (guardrails)', pii_guardrail_name: 'Rule', pii_guardrail_type: 'Type', pii_guardrail_note: 'Note',
     pii_litellm_models: 'Models behind LiteLLM', pii_note: 'All LiteLLM traffic passes the guardrails (default_on): CN mobile/ID/bank card/email/credit code/passport/IP and EN name/email/credit card are masked or blocked.',
-    backup_title: 'Backup & Restore', backup_desc: 'Backup = NewAPI(MySQL) + Dify(PostgreSQL) + Ghost/Gitea(SQLite) + config files. Scheduled daily 02:00, kept 7 days.',
-    backup_run: 'Backup Now', backup_running: 'Running backup...', backup_list: 'Backup List', backup_time: 'Backup', backup_files: 'Files', backup_no: 'No backups yet', backup_confirm: 'Restore from', backup_restore: 'Restore', backup_restore_warn: 'Restore will overwrite current data!', backup_result: 'Result', backup_pass: 'OK', backup_fail: 'Failed', backup_log: 'Backup Log',
+    report_file: 'File', report_time: 'Generated',
     logs_title: 'Unified Logs', logs_desc: 'Aggregated container logs (Loki + Promtail). Filter by container/level, keyword search, export & auto-refresh.', logs_container: 'Container', logs_keyword: 'Keyword', logs_search_btn: 'Search', logs_results: 'Log Results', logs_empty: 'No matching logs', logs_all: 'All',
     logs_level: 'Level', logs_level_all: 'All levels', logs_level_error: 'Error', logs_level_warn: 'Warning', logs_level_info: 'Info', logs_per_page: 'Limit', logs_export: 'Export', logs_copy: 'Copy', logs_copied: 'Copied', logs_auto_refresh: 'Auto-refresh', logs_total: 'Total N',
-    report: 'Report', report_title: 'Report — System Detailed Report', report_desc: 'Generate a system report by custom conditions: system status over time, usage, client statistics, recent issues, availability, backup and PII status.',
+    report: 'Report', report_title: 'Report — System Detailed Report', report_desc: 'Generate a system report by custom conditions: system status over time, usage, client statistics, recent issues, availability and PII status.',
     report_conditions: 'Conditions', report_days: 'Period', report_days_1: 'Last 1 day', report_days_7: 'Last 7 days', report_days_30: 'Last 30 days', report_days_90: 'Last 90 days',
-    report_sections: 'Include', report_sec_system: 'System Overview', report_sec_usage: 'Usage Stats', report_sec_client: 'Client Stats', report_sec_issues: 'Recent Issues', report_sec_avail: 'Availability', report_sec_backup: 'Backup', report_sec_pii: 'PII Redaction',
+    report_sections: 'Include', report_sec_system: 'System Overview', report_sec_usage: 'Usage Stats', report_sec_client: 'Client Stats', report_sec_issues: 'Recent Issues', report_sec_avail: 'Availability', report_sec_pii: 'PII Redaction',
     report_generate: '📄 Generate Report', report_generating: 'Generating report...', report_download: '⬇️ Export as .md', report_preview: 'Report Preview', report_lang: 'Report language matches current UI language', report_need_admin: 'Generating reports requires the ai-platform-admin role', report_view_rendered: '📖 Rendered', report_view_source: '📝 Markdown Source',
     report_none: 'No report yet. Click "Generate Report".', report_history: 'Report History', report_history_desc: 'Generated reports are saved on the server and auto-pruned by the retention policy.',
     report_no_history: 'No history yet', report_view: 'View', report_delete: 'Delete', report_download_file: 'Download', report_delete_confirm: 'Delete report "', report_size: 'Size',
@@ -2800,67 +2806,6 @@ function toggleLogAuto(on) {
   if (on) _logAutoTimer = setInterval(() => runLogQuery(), 30000);
 }
 
-// ═══ 备份与恢复 ═══
-async function loadBackup(el) {
-  setActive(el);
-  const title = t('backup');
-  document.getElementById('main').innerHTML = `<div class="topbar"><h1>💾 ${title}</h1></div><div class="card"><p class="loading">${t('loading')}</p></div>`;
-  await refreshBackup();
-}
-
-async function refreshBackup() {
-  try {
-    const d = await (await fetch(API + '/backup/list')).json();
-    if (d.error) throw new Error(d.error);
-    const dirs = d.dirs || [];
-    const backupTable = pagedTable('backup_dirs', dirs, `<tr><th style="width:34%">${t('backup_time')}</th><th>${t('backup_files')}</th><th style="width:16%"></th></tr>`, b => {
-      const files = (b.files || []).map(f => `<div style="font-size:0.8em;color:var(--textdim)">${f.name} (${(f.size / 1024).toFixed(1)} KB)</div>`).join('');
-      return `<tr>
-        <td><code>${b.name}</code><div style="font-size:0.78em;color:var(--textdim)">${new Date(b.mtime).toLocaleString()}</div></td>
-        <td>${files || '—'}</td>
-        <td><button onclick="restoreBackup('${b.name}')" style="background:var(--yellow);color:var(--onaccent);border:none;padding:4px 14px;border-radius:4px;cursor:pointer;font-weight:600">${t('backup_restore')}</button></td>
-      </tr>`;
-    });
-    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const logHtml = d.logTail ? `<pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;color:var(--textdim);font-size:0.78em;max-height:240px;overflow:auto">${esc(d.logTail)}</pre>` : '';
-    document.getElementById('main').innerHTML = `
-      <div class="topbar"><h1>💾 ${t('backup_title')}</h1></div>
-      <div class="card"><h3>📋 ${t('backup_desc')}</h3>
-        <button onclick="runBackup()" style="background:var(--accentbtn);color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600">💾 ${t('backup_run')}</button>
-      </div>
-      <div class="card"><h3>🗂️ ${t('backup_list')}</h3>
-        ${dirs.length === 0 ? `<p class="loading">${t('backup_no')}</p>` : backupTable}
-      </div>
-      <div class="card"><h3>📄 ${t('backup_log')}</h3>${logHtml || `<p style="color:var(--textdim)">${t('backup_no')}</p>`}</div>
-      <div id="backupResult"></div>`;
-  } catch (e) {
-    document.getElementById('main').innerHTML = `<div class="topbar"><h1>💾 ${t('backup_title')}</h1></div><div class="card"><p class="error">${t('overview_fail')}${e.message}</p></div>`;
-  }
-}
-
-async function runBackup() {
-  const r = document.getElementById('backupResult');
-  if (r) r.innerHTML = `<div class="card"><p class="loading">${t('backup_running')}</p></div>`;
-  try {
-    const d = await (await fetch(API + '/backup/run', { method: 'POST' })).json();
-    if (d.error) throw new Error(d.error);
-    if (r) r.innerHTML = `<div class="card"><h3>${t('backup_result')}</h3><p style="color:var(--green);font-weight:600">${t('backup_pass')} ${d.pass} / ${t('backup_fail')} ${d.fail}</p>` +
-      d.results.map(x => `<div style="font-size:0.85em;color:${x.ok ? 'var(--green)' : 'var(--red)'}">${x.ok ? '✓' : '✗'} ${x.name}${x.detail ? ' (' + x.detail + ')' : ''}</div>`).join('') + `</div>`;
-    await refreshBackup();
-  } catch (e) {
-    if (r) r.innerHTML = `<div class="card"><p class="error">${e.message}</p></div>`;
-  }
-}
-
-async function restoreBackup(name) {
-  if (!confirm(`${t('backup_restore_warn')}\n${t('backup_confirm')}「${name}」？`)) return;
-  try {
-    const d = await (await fetch(API + '/backup/restore', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dir: name }) })).json();
-    if (d.error) throw new Error(d.error);
-    alert(`${t('backup_result')}：${t('backup_pass')} ${d.pass} / ${t('backup_fail')} ${d.fail}`);
-  } catch (e) { alert(e.message); }
-}
-
 // ═══ 报告生成 ═══
 let lastReportMd = null;
 let lastReportFilename = 'report.md';
@@ -2884,7 +2829,7 @@ async function loadReport(el) {
         <div>
           <div style="color:var(--textdim);font-size:0.85em;margin-bottom:6px">${t('report_sections')}</div>
           <div style="display:flex;gap:14px;flex-wrap:wrap">
-            ${[['system','report_sec_system'],['usage','report_sec_usage'],['client','report_sec_client'],['issues','report_sec_issues'],['avail','report_sec_avail'],['backup','report_sec_backup'],['pii','report_sec_pii']]
+            ${[['system','report_sec_system'],['usage','report_sec_usage'],['client','report_sec_client'],['issues','report_sec_issues'],['avail','report_sec_avail'],['pii','report_sec_pii']]
               .map(([k,kk]) => `<label style="display:flex;align-items:center;gap:5px;color:var(--text);font-size:0.85em;cursor:pointer"><input type="checkbox" class="report-sec" value="${k}" checked> ${t(kk)}</label>`).join('')}
           </div>
         </div>
@@ -3005,7 +2950,7 @@ async function refreshReportHistory() {
     if (!el) return;
     if (!items.length) { el.innerHTML = `<p class="loading">${t('report_no_history')}</p>`; return; }
     const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    el.innerHTML = pagedTable('report_history', items, `<tr><th style="width:42%">${t('backup_files')}</th><th style="width:26%">${t('backup_time')}</th><th style="width:12%">${t('report_size')}</th><th>${t('action')}</th></tr>`, r => `<tr>
+    el.innerHTML = pagedTable('report_history', items, `<tr><th style="width:42%">${t('report_file')}</th><th style="width:26%">${t('report_time')}</th><th style="width:12%">${t('report_size')}</th><th>${t('action')}</th></tr>`, r => `<tr>
         <td><code>${esc(r.name)}</code></td>
         <td style="color:var(--textdim)">${new Date(r.mtime).toLocaleString()}</td>
         <td style="color:var(--textdim)">${(r.size / 1024).toFixed(1)} KB</td>
@@ -3093,11 +3038,16 @@ function availCard(r) {
   const icon = ok ? '✅' : (fail ? '❌' : (running ? '⏳' : '⚠️'));
   const color = ok ? 'var(--green)' : (fail ? 'var(--red)' : (running ? 'var(--textdim)' : 'var(--yellow)'));
   const st = running ? t('avail_running') : r.status.toUpperCase();
+  // 整卡描边：通过=绿框，失败=红框加粗，测试中=虚线，其它=黄框
+  const frame = ok ? 'avail-ok' : (fail ? 'avail-fail' : (running ? 'avail-running' : 'avail-warn'));
   const lat = (r.latency_ms != null) ? `<span style="font-size:0.78em;color:var(--textdim)">${r.latency_ms} ms</span>` : '';
   const restartBtn = availRestartable.has(r.id)
     ? `<button onclick="restartOneAvail('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">↻ ${t('avail_restart')}</button>`
     : '';
-  return `<div class="svc-card" id="avail-${r.id}">
+  const configBtn = (r.id === 'chat-dsh' || r.id === 'chat-dify')
+    ? `<button onclick="showAvailKeyConfig('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.8em" title="配置 API Key">⚙️</button>`
+    : '';
+  return `<div class="svc-card ${frame}" id="avail-${r.id}">
     <div class="svc-name">${icon} ${escHtml(r.name)}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
       <span style="font-size:0.78em;font-weight:600;color:${color}">${r.status.toUpperCase()}</span>${lat}
@@ -3105,9 +3055,21 @@ function availCard(r) {
     <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-top:8px;font-size:0.78em;color:var(--text);min-height:34px;max-height:110px;overflow:auto;white-space:pre-wrap;word-break:break-all" id="avail-log-${r.id}">${escHtml(r.detail || '')}</div>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button onclick="runOneAvail('${r.id}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:5px 12px;border-radius:5px;cursor:pointer;font-size:0.8em">▶ ${t('avail_test')}</button>
-      ${restartBtn}
+      ${restartBtn}${configBtn}
     </div>
   </div>`;
+}
+
+async function showAvailKeyConfig(id) {
+  const label = id === 'chat-dsh' ? 'DSH Desktop' : 'Dify';
+  let cur = { dsh: '', dify: '' };
+  try { cur = await (await fetch(API + '/availability/keys')).json(); } catch {}
+  const key = id === 'chat-dsh' ? 'dsh' : 'dify';
+  const val = prompt(`${label} 的 NewAPI Key（完整值，如 sk-xxxxx）：\n留空则使用自动获取`, '');
+  if (val === null) return; // cancelled
+  const body = {}; body[key] = val || '';
+  await fetch(API + '/availability/keys', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  alert(val ? `已保存 ${label} Key` : `已清除 ${label} Key，将使用自动获取`);
 }
 
 // 渲染统计条（全测 / 单测 / 历史加载共用）
@@ -3482,9 +3444,12 @@ function giteaPhaseInfo(p) {
   return null;
 }
 function giteaSyncCard(s, p, runs) {
-  if (!s && (!runs || runs.length === 0)) return '';
+  // 即使没有同步历史，也要显示操作区域
   const currentRun = s || (runs && runs[0]) || null;
-  const running = currentRun && !currentRun.conclusion && currentRun.status !== 'queued';
+  // 检查是否正在运行：Gitea API 或 sync-progress.json
+  const runningByApi = currentRun && !currentRun.conclusion && currentRun.status !== 'queued';
+  const runningByProgress = p && p.status === 'running';
+  const running = runningByApi || runningByProgress;
   const queued = currentRun && currentRun.status === 'queued';
   const STALE_PHASES = ['no_change', 'done', 'partial'];
   const info = giteaPhaseInfo(p);
@@ -3531,7 +3496,7 @@ function giteaSyncCard(s, p, runs) {
       </select>` : ''}
       <button id="giteaSyncTriggerBtn" onclick="giteaSyncTrigger()" style="background:var(--accentbtn);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em">▶️ ${t('gitea_sync_trigger')}</button>
       <button onclick="giteaFetchGithubReleases()" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em">📥 从 GitHub 拉取版本</button>
-      <button id="giteaForceStopBtn" onclick="giteaForceStop()" style="background:var(--red);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;display:none">⏹ ${t('gitea_force_stop')}</button>
+      <button id="giteaForceStopBtn" onclick="giteaForceStop()" style="background:var(--red);color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.82em;${running ? 'display:inline-block' : 'display:none'}">⏹ ${t('gitea_force_stop')}</button>
       <span id="giteaSyncMsg" style="color:var(--textdim);font-size:0.82em"></span>
     </div>
     <div id="giteaGithubReleases" style="display:none;margin-bottom:12px"></div>
@@ -3580,8 +3545,14 @@ async function giteaSyncRefresh() {
     }
     
     if (s && !s.conclusion) {
+      // 任务仍在运行，继续轮询
       clearTimeout(_giteaSyncTimer);
       _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
+    } else {
+      // 任务已完成，触发版本同步（从 update-server 扫描 + 清理旧版本），然后刷新列表
+      fetch(API + '/gitea/sync/sync-versions-from-server', { method: 'POST' }).catch(() => {});
+      giteaLoadVersions();
+      giteaLoadHistory();
     }
   } catch (e) {
     if (btn) { btn.textContent = '↻ ' + t('refresh'); btn.disabled = false; }
@@ -3834,6 +3805,7 @@ async function loadGitea(el) {
     giteaLoadVersions();
     giteaLoadHistory();
     giteaLoadWorkflowSettings();
+    giteaSyncSubscribe();   // 订阅服务端推送：同步脚本写完库后自动局部刷新，无需整页刷新
     
     // 加载日志（如果有运行中的任务）
     if (giteaData.sync_last_run && giteaData.sync_last_run.id) {
@@ -3888,6 +3860,10 @@ async function giteaSyncTrigger() {
     const d = await r.json().catch(() => ({}));
     if (r.ok && d.ok) {
       if (msg) { msg.textContent = t('gitea_sync_triggered'); msg.style.color = 'var(--green)'; }
+      // 立即显示强制停止按钮并启动轮询
+      updateSyncTriggerBtn(true);
+      clearTimeout(_giteaSyncTimer);
+      _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
       setTimeout(() => loadGitea(), 2000);
     } else {
       throw new Error(d.error || ('HTTP ' + r.status));
@@ -3930,7 +3906,7 @@ async function giteaFetchGithubReleases() {
         ? '<span style="color:var(--green)">✓ 已有</span>'
         : '<span style="color:var(--textdim)">—</span>';
       const syncBtn = rel.assets.length > 0
-        ? `<button onclick="giteaSyncSpecificVersion('${rel.tag}')" style="background:var(--accentbtn);color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.78em">${rel.local ? '重新同步' : '同步'}</button>`
+        ? `<button onclick="giteaSyncSpecificVersion('${rel.tag}')" style="background:var(--accentbtn);color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:0.78em">同步</button>`
         : '<span style="color:var(--textdim)">—</span>';
       const preBadge = rel.prerelease ? ' <span style="color:var(--orange);font-size:0.75em">RC</span>' : '';
       html += `<tr style="border-bottom:1px solid var(--panel2)">
@@ -3960,6 +3936,12 @@ async function giteaSyncSpecificVersion(tag) {
     const d = await r.json().catch(() => ({}));
     if (r.ok && d.ok) {
       if (msg) { msg.textContent = d.message; msg.style.color = 'var(--green)'; }
+      // 如果不是跳过，显示强制停止按钮
+      if (!d.skipped) {
+        updateSyncTriggerBtn(true);
+        clearTimeout(_giteaSyncTimer);
+        _giteaSyncTimer = setTimeout(giteaSyncRefresh, getSyncRefreshSec() * 1000);
+      }
       setTimeout(() => loadGitea(), 2000);
     } else {
       throw new Error(d.error || 'HTTP ' + r.status);
@@ -4218,7 +4200,7 @@ async function giteaLoadVersions() {
     const versions = d.versions || [];
     if (!versions.length) { box.innerHTML = `<p class="loading">${t('gitea_no_versions')}</p>`; return; }
     const allPlatforms = ['windows-x64', 'mac-x64', 'mac-arm64'];
-    box.innerHTML = `<table><tr><th>${t('version')}</th><th>${t('last_updated')}</th><th>${t('gitea_sync_targets')}</th><th>${t('actions')}</th></tr>` +
+    box.innerHTML = `<table><tr><th>${t('version')}</th><th>${t('last_updated')}</th><th>${t('gitea_sync_targets')}</th><th>${t('admins_actions')}</th></tr>` +
       versions.map(v => {
         const files = Object.keys(v.files || {});
         const missing = allPlatforms.filter(p => !files.includes(p));
@@ -4228,47 +4210,65 @@ async function giteaLoadVersions() {
           <td><code>${v.version}</code> ${statusIcon}</td>
           <td style="color:var(--textdim)">${v.date || '—'}</td>
           <td style="color:var(--textdim);font-size:0.85em">${files.join('、')} ${statusText}</td>
-          <td><button onclick="giteaResyncVersion('${v.version}')" style="background:var(--panel2);color:var(--textstrong);border:1px solid var(--border);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em">${t('gitea_resync')}</button></td>
+          <td><button data-del="${v.version}" onclick="giteaDeleteVersion('${v.version}')" style="background:var(--red);color:#fff;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.78em;font-weight:600">🗑 ${t('gitea_delete_version')}</button></td>
         </tr>`;
       }).join('') + `</table>`;
   } catch (e) { box.innerHTML = `<p class="error">${e.message}</p>`; }
 }
 
-async function giteaResyncVersion(ver) {
-  if (!confirm(t('gitea_resync_confirm') + ' ' + ver + '？')) return;
-  const msg = document.getElementById('giteaSyncMsg');
-  if (msg) { msg.textContent = t('gitea_resyncing'); msg.style.color = 'var(--textdim)'; }
+
+
+// ── 同步状态实时推送（SSE）────────────────────────────────────────────
+// 同步脚本写完 SQLite 后，服务端会广播一次变更；这里收到就地刷新
+// 「已同步版本」和「同步历史」两张表，不用轮询也不用整页刷新。
+let _giteaSyncES = null;
+function giteaSyncSubscribe() {
+  if (_giteaSyncES || typeof EventSource === 'undefined') return;
   try {
-    // 直接通过 runner exec 同步（绕过 Gitea workflow_dispatch 字段名错配的问题）
-    const r = await fetch(API + '/gitea/sync/sync-version', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ version: ver })
-    });
-    const d = await r.json().catch(() => ({}));
-    if (r.ok && d.ok) {
-      if (msg) { msg.textContent = d.message; msg.style.color = 'var(--green)'; }
-      giteaLoadVersions();
-    } else {
-      throw new Error(d.error || ('HTTP ' + r.status));
+    _giteaSyncES = new EventSource(API + '/gitea/sync/events');
+  } catch (e) { _giteaSyncES = null; return; }
+  _giteaSyncES.onmessage = (ev) => {
+    let reason = '';
+    try { reason = (JSON.parse(ev.data || '{}').reason || ''); } catch (e) {}
+    if (reason === 'hello') return;        // 建连握手，不需要刷新
+    giteaLoadVersions();                   // 不在本页时这两个函数会自动跳过
+    giteaLoadHistory();
+  };
+  _giteaSyncES.onerror = () => {
+    // EventSource 自带重连；只有连接被彻底关闭（如登录过期）时才丢弃引用，下次进页面重建
+    if (_giteaSyncES && _giteaSyncES.readyState === 2) {
+      try { _giteaSyncES.close(); } catch (e) {}
+      _giteaSyncES = null;
     }
-  } catch (e) {
-    if (msg) { msg.textContent = e.message; msg.style.color = 'var(--red)'; }
-  }
+  };
 }
 
+// 删除一个已同步版本：连同 update-server 上该版本目录里的全部安装包一起删掉。
+// 先取一次版本清单，把「要删掉哪几个文件」写进确认框，避免误删。
 async function giteaDeleteVersion(ver) {
-  if (!confirm(t('gitea_delete_confirm') + ' ' + ver + '？')) return;
+  let fileLines = '';
+  try {
+    const d = await (await fetch(API + '/gitea/sync/versions')).json();
+    const v = (d.versions || []).find(x => x.version === ver);
+    if (v && v.files) {
+      fileLines = '\n' + Object.entries(v.files).map(([p, f]) => '  · ' + p + ': ' + f).join('\n');
+    }
+  } catch (e) { /* 取不到清单不阻断删除，只是确认框少几行 */ }
+  if (!confirm(t('gitea_delete_confirm') + ' ' + ver + ' ?\n\n' + t('gitea_delete_warn') + fileLines)) return;
+
+  const btn = document.querySelector(`button[data-del="${ver}"]`);
+  const orig = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.innerHTML = '⏳ ' + t('gitea_deleting'); }
   try {
     const r = await fetch(API + '/gitea/sync/version/' + encodeURIComponent(ver), { method: 'DELETE' });
     const d = await r.json().catch(() => ({}));
-    if (r.ok && d.ok) {
-      giteaLoadVersions();
-      giteaLoadHistory();
-    } else {
-      throw new Error(d.error || ('HTTP ' + r.status));
-    }
-  } catch (e) { alert(e.message); }
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    giteaLoadVersions();
+    giteaLoadHistory();
+  } catch (e) {
+    alert(e.message);
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.innerHTML = orig; }
+  }
 }
 
 async function giteaLoadHistory() {
@@ -4279,14 +4279,16 @@ async function giteaLoadHistory() {
     const hist = d.history || [];
     if (!hist.length) { box.innerHTML = `<p class="loading">${t('gitea_no_history')}</p>`; return; }
     const st = h => {
-      if (h.status === 'success') return `<span style="color:var(--green)">${t('sync_success')}</span>`;
-      if (h.status === 'failure') return `<span style="color:var(--red)">${t('sync_failed')}</span>`;
-      const act = { sync: t('gitea_hist_sync'), rebuild: t('gitea_hist_rebuild'), delete: t('gitea_hist_delete') }[h.action];
-      return act || '—';
+      if (h.status === 'success') return `<span style="color:var(--green)">✅ ${t('sync_success') || '成功'}</span>`;
+      if (h.status === 'failure' || h.status === 'error') return `<span style="color:var(--red)">❌ ${t('sync_failed') || '失败'}</span>`;
+      if (h.status === 'skipped') return `<span style="color:var(--yellow)">⏭️ 跳过</span>`;
+      if (h.status === 'partial') return `<span style="color:var(--yellow)">⚠️ 部分成功</span>`;
+      return `<span style="color:var(--textdim)">${h.status || '—'}</span>`;
     };
-    box.innerHTML = `<table><tr><th>${t('last_updated')}</th><th>${t('status')}</th><th>${t('repo_desc')}</th></tr>` +
+    box.innerHTML = `<table><tr><th>${t('last_updated')}</th><th>版本</th><th>${t('status')}</th><th>${t('repo_desc')}</th></tr>` +
       hist.map(h => `<tr>
         <td style="color:var(--textdim);white-space:nowrap">${h.time ? new Date(h.time).toLocaleString() : '—'}</td>
+        <td><code>${h.version || '—'}</code></td>
         <td style="white-space:nowrap">${st(h)}</td>
         <td style="color:var(--textdim)">${h.detail || ''}</td>
       </tr>`).join('') + `</table>`;

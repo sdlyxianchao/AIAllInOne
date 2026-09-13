@@ -75,11 +75,11 @@ const DIFY_RERANKER_URL = process.env.DIFY_RERANKER_URL || 'http://dify-reranker
 const DIFY_EMBEDDER_URL = process.env.DIFY_EMBEDDER_URL || 'http://dify-embedder:80';
 const LANGFUSE_CLICKHOUSE_PASSWORD = process.env.LANGFUSE_CLICKHOUSE_PASSWORD || 'CHANGE_ME_CLICKHOUSE_PASSWORD';
 // 备份 / 日志
-const BACKUP_DIR = process.env.BACKUP_DIR || '/backups';          // 宿主机备份目录挂载点
-const REPORT_DIR = process.env.REPORT_DIR || '/backups/reports';  // 历史报告保存目录（在 backups 卷内）
+// 历史报告保存目录。原先借用 backups 卷（/backups/reports），
+// 2026-09-12 备份功能整体移除后改用独立挂载 ../reports:/reports，不再与备份目录耦合。
+const REPORT_DIR = process.env.REPORT_DIR || '/reports';
 const DEPLOY_DIR = process.env.DEPLOY_DIR || '/deploy';            // 部署目录（配置/脚本）只读挂载
 const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';       // Loki 统一日志
-const DIFY_DB_CONTAINER = process.env.DIFY_DB_CONTAINER || 'dify-db_postgres-1';
 const GITEA_CONTAINER = process.env.GITEA_CONTAINER || 'gitea';
 
 // ═══════════════════════════════════════════
@@ -109,7 +109,6 @@ const ADMIN_PRODUCTS = [
   { key: 'monitoring',    labelKey: 'monitoring',    category: 'ops',   sso: true  },
   { key: 'observability', labelKey: 'observability', category: 'ops',   sso: true  },
   { key: 'logs',          labelKey: 'logs',          category: 'ops',   sso: false },
-  { key: 'backup',        labelKey: 'backup',        category: 'ops',   sso: false },
   { key: 'report',        labelKey: 'report',        category: 'ops',   sso: false },
 ];
 const GLOBAL_ADMIN_ROLE = 'ai-platform-admin';
@@ -500,7 +499,7 @@ app.delete('/api/admins/:id', keycloak.protect('realm:ai-platform-admin'), async
 //  - 有 SSO 的产品：用户已在 Keycloak，产品端登录时自动建号；这里用产品 API/DB 把角色设为管理员。
 //  - 无 SSO 的产品：用产品 API 建号（临时密码）并设为管理员，临时密码随结果返回给操作者。
 //  - 删除 = 从产品中删除该账号：SSO 产品撤销授权（移出产品）、直接授权产品删除账号。
-//  - 内部功能（mcp-gateway/update-server/availability/pii/logs/backup/report）无独立产品账号，
+//  - 内部功能（mcp-gateway/update-server/availability/pii/logs/report）无独立产品账号，
 //    Keycloak 的 admin:<key> 角色本身就是权限 → 返回 skipped。
 const GRAFANA_INTERNAL_URL = process.env.GRAFANA_INTERNAL_URL || 'http://grafana:3000';
 const GRAFANA_ADMIN_USER = process.env.GRAFANA_ADMIN_USER || ADMIN_USER;
@@ -1313,53 +1312,136 @@ app.post('/api/gitea/sync/force-stop', async (req, res) => {
       headers: { 'Authorization': `Basic ${auth}` },
     });
     const runsData = await runsResp.json();
-    const runs = (runsData.workflow_runs || []).filter(r => !r.conclusion && r.status !== 'completed');
+    const runs = (runsData.workflow_runs || []).filter(r => r.status === 'in_progress' || r.status === 'waiting' || r.status === 'queued');
     
     if (runs.length === 0) {
       return res.json({ ok: true, message: '没有正在运行的同步任务' });
     }
     
-    // 2. 停止每个运行中的工作流
-    const stopped = [];
-    for (const run of runs) {
-      try {
-        // 尝试取消
-        const cancelResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/cancel`, {
-          method: 'POST',
-          headers: { 'Authorization': `Basic ${auth}` },
-        });
-        
-        if (cancelResp.ok) {
-          stopped.push(run.id);
-        } else {
-          // 如果取消API不存在，直接更新数据库
-          stopped.push(run.id);
-        }
-      } catch (e) {
-        console.error(`[gitea] Failed to cancel run ${run.id}:`, e.message);
+    // 2. 设置 CANCELTASK=true（脚本会定期读取此标志并优雅退出）
+    try {
+      // 读取当前 config
+      const cfgResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json?ref=main`, {
+        headers: { 'Authorization': `Basic ${auth}` },
+      });
+      const cfgData = await cfgResp.json();
+      const cfgContent = Buffer.from(cfgData.content, 'base64').toString('utf8');
+      const cfg = JSON.parse(cfgContent);
+      cfg.CANCELTASK = true;
+      
+      // 写回 config
+      await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'chore: set CANCELTASK=true (force stop)',
+          content: Buffer.from(JSON.stringify(cfg, null, 2)).toString('base64'),
+          sha: cfgData.sha,
+        }),
+      });
+      console.log('[force-stop] CANCELTASK set to true');
+    } catch (e) {
+      console.error('[force-stop] Failed to set CANCELTASK:', e.message);
+    }
+    
+    // 3. 等待脚本检测到 CANCELTASK 并退出（最多等 15 秒）
+    let stopped = false;
+    for (let i = 0; i < 5; i++) {
+      await new Promise(r => setTimeout(r, 3000));
+      const checkResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs?limit=10`, {
+        headers: { 'Authorization': `Basic ${auth}` },
+      });
+      const checkData = await checkResp.json();
+      const stillRunning = (checkData.workflow_runs || []).filter(r => r.status === 'in_progress');
+      if (stillRunning.length === 0) {
+        stopped = true;
+        break;
       }
     }
     
-    // 3. 停止Gitea Runner容器中的相关进程
-    try {
-      const container = docker.getContainer('gitea-runner');
-      // 发送SIGTERM信号给Runner进程
-      await container.restart({ t: 5 });
-    } catch (e) {
-      console.error('[gitea] Failed to restart runner:', e.message);
+    // 4. 如果脚本还没退出，强制停止 runner + 更新 DB
+    if (!stopped) {
+      console.log('[force-stop] Script did not exit in time, forcing runner stop...');
+      try {
+        const container = docker.getContainer('gitea-runner');
+        await container.stop({ t: 3 });
+      } catch (e) {
+        console.error('[force-stop] Failed to stop runner:', e.message);
+      }
+      await new Promise(r => setTimeout(r, 2000));
+      
+      // 更新 Gitea DB
+      const now = Math.floor(Date.now() / 1000);
+      for (const run of runs) {
+        try {
+          await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+            `UPDATE action_run SET status=5, stopped=${now} WHERE id=${run.id}`]);
+          await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+            `UPDATE action_run_job SET status=5, stopped=${now} WHERE run_id=${run.id} AND status NOT IN (1,2,3,4,5)`]);
+          const { stdout: taskIds } = await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+            `SELECT task_id FROM action_run_job WHERE run_id=${run.id}`]);
+          for (const tid of taskIds.split('\n').filter(t => t.trim())) {
+            await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+              `UPDATE action_task SET status=5, stopped=${now} WHERE id=${tid.trim()} AND status NOT IN (1,3,4,5)`]);
+          }
+          await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+            `UPDATE action_run_attempt SET status=3, stopped=${now} WHERE run_id=${run.id}`]);
+          console.log(`[force-stop] Marked run ${run.id} as cancelled in Gitea DB`);
+        } catch (e) {
+          console.error(`[force-stop] Failed to update Gitea DB for run ${run.id}:`, e.message);
+        }
+      }
+      
+      // 重启 runner
+      try {
+        const container = docker.getContainer('gitea-runner');
+        await container.start();
+        console.log('[force-stop] gitea-runner restarted');
+      } catch (e) {
+        console.error('[force-stop] Failed to restart runner:', e.message);
+      }
     }
+    
+    // 5. 重置 CANCELTASK=false
+    try {
+      const cfgResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json?ref=main`, {
+        headers: { 'Authorization': `Basic ${auth}` },
+      });
+      const cfgData = await cfgResp.json();
+      const cfg = JSON.parse(Buffer.from(cfgData.content, 'base64').toString('utf8'));
+      cfg.CANCELTASK = false;
+      await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/contents/sync-config.json`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'chore: reset CANCELTASK=false',
+          content: Buffer.from(JSON.stringify(cfg, null, 2)).toString('base64'),
+          sha: cfgData.sha,
+        }),
+      });
+      console.log('[force-stop] CANCELTASK reset to false');
+    } catch (e) {
+      console.error('[force-stop] Failed to reset CANCELTASK:', e.message);
+    }
+    
+    // 6. 记录历史
+    const runIds = runs.map(r => r.id);
+    await appendSyncHistory('cancelled', `强制停止 ${runs.length} 个同步任务 (IDs: ${runIds.join(',')})`);
     
     res.json({ 
       ok: true, 
-      message: stopped.length > 0 ? `已停止 ${stopped.length} 个同步任务` : '没有需要停止的任务',
-      stopped 
+      message: stopped 
+        ? `已通过 CANCELTASK 停止 ${runs.length} 个任务` 
+        : `已强制停止 ${runs.length} 个任务（runner 已重启）`,
+      stopped: runIds,
+      method: stopped ? 'cancel_flag' : 'runner_restart'
     });
   } catch (e) { 
     res.status(500).json({ error: e.message }); 
   }
 });
 
-// 重新同步指定版本（通过 Gitea Action 触发，input 字段名必须与 sync.yml 的 workflow_dispatch 一致）
+// 重新同步指定版本（先删除本地文件，再触发 Gitea Action 重新下载）
 app.post('/api/gitea/sync/resync-version', async (req, res) => {
   try {
     const { version } = req.body;
@@ -1369,11 +1451,34 @@ app.post('/api/gitea/sync/resync-version', async (req, res) => {
     if (!/^v\d+\.\d+\.\d+$/.test(ver)) {
       return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
     }
-    console.log(`[gitea] Triggering re-sync for version ${ver} via Gitea Action...`);
+    console.log(`[gitea] Re-syncing version ${ver}...`);
 
-    // 触发 Gitea Action，让同步脚本处理重新同步
-    // 注意：input 字段名必须与 sync.yml 中 workflow_dispatch.inputs 的字段名一致（sync_version），
-    // 否则 Gitea 会忽略 input，fallback 到默认行为（同步最新版）。
+    // 1. 先删除 update-server 上的版本目录（强制重新下载）
+    try {
+      await dockerExec('update-server', ['sh', '-c', `rm -rf '/usr/share/nginx/html/dsh/${ver}'`]);
+      console.log(`[gitea] Deleted ${ver} from update-server`);
+    } catch (e) {
+      console.warn(`[gitea] Could not delete ${ver}:`, e.message);
+    }
+
+    // 2. 从数据库删除版本记录
+    try {
+      const initSqlJs = require('sql.js');
+      const fs = require('fs');
+      const dbPath = '/app/dsh-updates/db/dsh.db';
+      const SQL = await initSqlJs();
+      const dbBuffer = fs.readFileSync(dbPath);
+      const db = new SQL.Database(dbBuffer);
+      db.run('DELETE FROM version_files WHERE version = ?', [ver]);
+      db.run('DELETE FROM versions WHERE version = ?', [ver]);
+      const data = db.export();
+      fs.writeFileSync(dbPath, Buffer.from(data));
+      db.close();
+    } catch (e) {
+      console.warn(`[gitea] Could not delete ${ver} from DB:`, e.message);
+    }
+
+    // 3. 触发 Gitea Action 重新下载
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
     const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
       method: 'POST',
@@ -1408,12 +1513,11 @@ app.get('/api/gitea/sync/github-releases', keycloak.protect('realm:ai-platform-a
     if (!resp.ok) return res.status(resp.status).json({ error: `GitHub API error: ${resp.status}` });
     const releases = await resp.json();
     
-    // 获取本地已有版本
+    // 获取本地已有版本（权威源：SQLite versions 表，不再读 update-server 的 versions.json）
     let localVersions = [];
     try {
-      const vr = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
-      const vData = JSON.parse(vr);
-      localVersions = (vData.versions || []).map(v => v.version);
+      const vr = await generateVersionsJson();
+      localVersions = (vr.versions || []).map(v => v.version);
     } catch {}
     
     const result = releases
@@ -1436,34 +1540,56 @@ app.get('/api/gitea/sync/github-releases', keycloak.protect('realm:ai-platform-a
   }
 });
 
-// 同步指定版本（直接在 gitea-runner 容器里执行，不走 Gitea Actions）
+// 同步指定版本（通过 Gitea Actions 触发，与 resync-version 共用同一逻辑）
 app.post('/api/gitea/sync/sync-version', keycloak.protect('realm:ai-platform-admin'), async (req, res) => {
   try {
     const { version } = req.body;
     if (!version) return res.status(400).json({ error: '请提供版本号' });
 
     const ver = version.startsWith('v') ? version : `v${version}`;
-    // 严格校验版本号，防止 shell 注入
     if (!/^v\d+\.\d+\.\d+$/.test(ver)) {
       return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
     }
-    console.log(`[gitea] Syncing specific version ${ver} via runner exec...`);
 
-    // 在 runner 容器后台执行（runner 已挂载 docker.sock，有 python3）
-    // 用引号包裹变量防止含空格/特殊字符的版本号导致解析错误
-    const cmd = [
-      'sh', '-c',
-      `wget -q -O /tmp/sync_download.py 'http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync_download.py' ` +
-      `&& wget -q -O /tmp/sync-config.json 'http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync-config.json' ` +
-      `&& cd /tmp && PYTHONUNBUFFERED=1 python3 /tmp/sync_download.py --sync-version '${ver}'`
-    ];
+    // 检查版本是否已存在且文件齐全（从 update-server 目录）
+    try {
+      const { stdout: dirList } = await dockerExec('update-server', ['sh', '-c', 'ls -d /usr/share/nginx/html/dsh/v*/ 2>/dev/null']);
+      const existingVersions = (dirList || '').split('\n')
+        .filter(d => d.trim())
+        .map(d => { const m = d.match(/\/(v\d+\.\d+\.\d+)\/?$/); return m ? m[1] : ''; })
+        .filter(v => v);
+      if (existingVersions.includes(ver)) {
+        // 版本目录存在，检查文件数量是否齐全
+        const { stdout: fileList } = await dockerExec('update-server', ['sh', '-c', `ls /usr/share/nginx/html/dsh/${ver}/ 2>/dev/null`]);
+        const fileCount = (fileList || '').split('\n').filter(f => f.trim() && (f.endsWith('.exe') || f.endsWith('.dmg'))).length;
+        const expectedCount = 3; // windows-x64, mac-x64, mac-arm64
+        if (fileCount >= expectedCount) {
+          return res.json({ ok: true, skipped: true, message: `${ver} 已存在于更新服务器（${fileCount} 个文件），跳过同步` });
+        }
+        // 文件不齐全，继续同步
+        console.log(`[gitea] ${ver} exists but only has ${fileCount}/${expectedCount} files, will re-sync`);
+      }
+    } catch (e) {
+      console.warn('[gitea] Could not check existing versions:', e.message);
+    }
 
-    // Fire-and-forget：用 dockerExecDetach 立即返回，不等脚本完成
-    dockerExecDetach('gitea-runner', cmd).catch(e =>
-      console.error(`[gitea] Sync ${ver} detach error:`, e.message)
-    );
+    console.log(`[gitea] Triggering sync for version ${ver} via Gitea Action...`);
+    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
+    const resp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ref: 'main',
+        inputs: { sync_version: ver }
+      }),
+    });
 
-    res.json({ ok: true, message: `已触发 ${ver} 同步任务（在 Runner 容器中执行），请稍候查看进度` });
+    if (resp.status === 204) {
+      res.json({ ok: true, message: `已触发 ${ver} 同步任务（Gitea Action），请在同步历史中查看进度` });
+    } else {
+      const txt = await resp.text().catch(() => '');
+      res.status(resp.status).json({ error: `触发失败 (HTTP ${resp.status}) ${txt}` });
+    }
   } catch (e) {
     console.error('[gitea] Sync version error:', e.message);
     res.status(500).json({ error: e.message });
@@ -1565,7 +1691,7 @@ async function writeToUpdateContainer(nginxPath, content) {
   const b64 = Buffer.from(content, 'utf8').toString('base64');
   // 用单引号包裹 nginxPath（路径里不含单引号），base64 字符集安全
   const script = `import sys,base64; open('${nginxPath}','wb').write(base64.b64decode(sys.stdin.read()))`;
-  const container = docker.getContainer(UPDATE_SERVER || 'update-server');
+  const container = docker.getContainer('update-server');
   const exec = await container.exec({
     Cmd: ['python3', '-c', script],
     AttachStdin: true, AttachStdout: false, AttachStderr: true
@@ -1582,93 +1708,604 @@ async function writeToUpdateContainer(nginxPath, content) {
   });
 }
 
-// 追加一条同步历史到 update-server 的 sync-history.json（同步脚本与删除操作共用）
-async function appendSyncHistory(status, detail) {
+// 追加一条同步历史到 SQLite 数据库
+async function appendSyncHistory(status, detail, version = '') {
   try {
-    let hist = { history: [] };
-    try {
-      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
-      hist = JSON.parse(stdout || '{"history":[]}');
-    } catch (e) { hist = { history: [] }; }
-    if (!Array.isArray(hist.history)) hist.history = [];
-    hist.history.push({ time: new Date().toISOString(), status, detail: detail || '' });
-    hist.history = hist.history.slice(-200);
-    await writeToUpdateContainer('/usr/share/nginx/html/dsh/sync-history.json', JSON.stringify(hist, null, 2));
+    const initSqlJs = require('sql.js');
+    const fs = require('fs');
+    const dbPath = '/app/dsh-updates/db/dsh.db';
+    
+    const SQL = await initSqlJs();
+    const dbBuffer = fs.readFileSync(dbPath);
+    const db = new SQL.Database(dbBuffer);
+    
+    db.run('INSERT INTO sync_history (version, status, detail) VALUES (?, ?, ?)', [version || '', status, detail || '']);
+    
+    const data = db.export();
+    fs.writeFileSync(dbPath, Buffer.from(data));
+    db.close();
   } catch (e) {
     console.error('记录同步历史失败:', e.message);
   }
 }
 
-// 读取 update-server 上的版本清单（versions.json）
+// 从 SQLite 数据库读取版本列表（权威数据源）
+const DSH_DB_SCRIPT = '/app/scripts/dsh-db.py';
+const DSH_KEEP_VERSIONS = parseInt(process.env.DSH_KEEP_VERSIONS || '5', 10);
+
+// 从 update-server 扫描并同步版本到数据库，然后清理多余版本
+async function syncVersionsFromServer() {
+  try {
+    // 1. 扫描 update-server 目录
+    const { stdout: dirList } = await dockerExec('update-server', ['sh', '-c', 'ls -d /usr/share/nginx/html/dsh/v*/ 2>/dev/null']);
+    const serverVersions = {};
+    
+    for (const dir of (dirList || '').split('\n').filter(d => d.trim())) {
+      const match = dir.match(/\/(v\d+\.\d+\.\d+)\/?$/);
+      if (!match) continue;
+      const version = match[1];
+      
+      const { stdout: fileList } = await dockerExec('update-server', ['sh', '-c', `ls ${dir} 2>/dev/null`]);
+      const files = {};
+      for (const fname of (fileList || '').split('\n').filter(f => f.trim())) {
+        if (fname.includes('windows') && fname.endsWith('.exe')) files['windows-x64'] = fname;
+        else if (fname.includes('mac-arm64') && fname.endsWith('.dmg')) files['mac-arm64'] = fname;
+        else if (fname.includes('mac') && fname.endsWith('.dmg')) files['mac-x64'] = fname;
+      }
+      if (Object.keys(files).length > 0) {
+        const { stdout: dateStr } = await dockerExec('update-server', ['sh', '-c', `stat -c %y ${dir} 2>/dev/null | cut -d. -f1`]);
+        serverVersions[version] = { date: dateStr?.trim()?.split(' ')[0] || new Date().toISOString().split('T')[0], files };
+      }
+    }
+    
+    // 2. 更新数据库（使用 sql.js）
+    const initSqlJs = require('sql.js');
+    const fs = require('fs');
+    const dbPath = '/app/dsh-updates/db/dsh.db';
+    const SQL = await initSqlJs();
+    const dbBuffer = fs.readFileSync(dbPath);
+    const db = new SQL.Database(dbBuffer);
+    
+    // 获取数据库中现有版本
+    const dbVersions = new Set();
+    const verStmt = db.prepare('SELECT version FROM versions');
+    while (verStmt.step()) {
+      dbVersions.add(verStmt.getAsObject().version);
+    }
+    verStmt.free();
+    
+    // 添加/更新版本
+    for (const [version, info] of Object.entries(serverVersions)) {
+      if (!dbVersions.has(version)) {
+        db.run('INSERT INTO versions (version, date) VALUES (?, ?)', [version, info.date]);
+      }
+      db.run('DELETE FROM version_files WHERE version = ?', [version]);
+      for (const [platform, filename] of Object.entries(info.files)) {
+        db.run('INSERT INTO version_files (version, platform, filename) VALUES (?, ?, ?)', [version, platform, filename]);
+      }
+    }
+    
+    // 删除服务器上不存在的版本
+    for (const version of dbVersions) {
+      if (!serverVersions[version]) {
+        db.run('DELETE FROM version_files WHERE version = ?', [version]);
+        db.run('DELETE FROM versions WHERE version = ?', [version]);
+      }
+    }
+    
+    // 3. 清理多余版本（保留最新 N 个）
+    const allVersions = [];
+    const allVerStmt = db.prepare('SELECT version FROM versions ORDER BY version DESC');
+    while (allVerStmt.step()) {
+      allVersions.push(allVerStmt.getAsObject().version);
+    }
+    allVerStmt.free();
+    
+    if (allVersions.length > DSH_KEEP_VERSIONS) {
+      const toDelete = allVersions.slice(DSH_KEEP_VERSIONS);
+      for (const version of toDelete) {
+        db.run('DELETE FROM version_files WHERE version = ?', [version]);
+        db.run('DELETE FROM versions WHERE version = ?', [version]);
+        // 从 update-server 删除目录
+        try {
+          await dockerExec('update-server', ['sh', '-c', `rm -rf /usr/share/nginx/html/dsh/${version}`]);
+        } catch (e) {
+          console.warn(`[versions] Could not delete ${version} from server:`, e.message);
+        }
+      }
+    }
+    
+    const data = db.export();
+    fs.writeFileSync(dbPath, Buffer.from(data));
+    db.close();
+    
+    console.log(`[versions] Pruned to keep ${DSH_KEEP_VERSIONS} versions`);
+  } catch (e) {
+    console.error('[versions] Sync/prune error:', e.message);
+  }
+}
+
+// 缓存版本数据（避免频繁读取数据库）
+let _cachedVersions = [];
+let _cacheTime = 0;
+const CACHE_TTL = 60000; // 60 秒缓存
+
+// 让版本缓存立即失效。任何写操作（新增/更新/删除版本、同步完成）之后都必须调用，
+// 否则页面会在 CACHE_TTL 内继续读到旧值。
+function invalidateVersionsCache() {
+  _cachedVersions = [];
+  _cacheTime = 0;
+}
+
+// ── 版本表写操作（SQLite versions / version_files 是唯一权威数据源）────────────────
+// SQLite（dsh.db）通过 sql.js 就地读写：读全库 → 改 → export 回写。
+async function withDshDb(fn) {
+  const initSqlJs = require('sql.js');
+  const dbPath = '/app/dsh-updates/db/dsh.db';
+  const SQL = await initSqlJs();
+  const dbBuffer = fs.readFileSync(dbPath);
+  const db = new SQL.Database(dbBuffer);
+  try {
+    const result = await fn(db);
+    const data = db.export();
+    fs.writeFileSync(dbPath, Buffer.from(data));
+    return result;
+  } finally {
+    try { db.close(); } catch (e) {}
+  }
+}
+
+// 校验版本号：只接受 vX.Y.Z（X/Y/Z 为数字），返回规范化的 'vX.Y.Z' 或 null
+function normalizeVersion(v) {
+  const s = String(v || '').trim();
+  const m = s.match(/^v?(\d+)\.(\d+)\.(\d+)$/);
+  return m ? `v${m[1]}.${m[2]}.${m[3]}` : null;
+}
+
+// 新增或覆盖一个版本（含各平台文件名）。返回 { created } 表示是新增还是覆盖。
+async function upsertVersion(version, date, files) {
+  const ver = normalizeVersion(version);
+  if (!ver) throw new Error(`版本号格式不合法，应为 vX.Y.Z（收到 "${version}"）`);
+  const fileMap = files && typeof files === 'object' ? files : {};
+  if (Object.keys(fileMap).length === 0) throw new Error('files 不能为空，至少需要指定一个平台文件名');
+
+  return await withDshDb((db) => {
+    const exists = db.exec('SELECT 1 FROM versions WHERE version = ?', [ver]);
+    const created = !(exists.length && exists[0].values.length);
+    if (created) {
+      db.run('INSERT INTO versions (version, date) VALUES (?, ?)', [ver, date || new Date().toISOString().slice(0, 10)]);
+    } else if (date) {
+      db.run('UPDATE versions SET date = ? WHERE version = ?', [date, ver]);
+    }
+    db.run('DELETE FROM version_files WHERE version = ?', [ver]);
+    for (const [platform, filename] of Object.entries(fileMap)) {
+      db.run('INSERT INTO version_files (version, platform, filename) VALUES (?, ?, ?)', [ver, String(platform), String(filename)]);
+    }
+    return { created, version: ver, platforms: Object.keys(fileMap) };
+  });
+}
+
+// 从版本表删除一个版本（只删数据库记录，不动 update-server 上的文件）
+async function deleteVersionRow(version) {
+  const ver = normalizeVersion(version);
+  if (!ver) throw new Error(`版本号格式不合法，应为 vX.Y.Z（收到 "${version}"）`);
+  return await withDshDb((db) => {
+    db.run('DELETE FROM version_files WHERE version = ?', [ver]);
+    db.run('DELETE FROM versions WHERE version = ?', [ver]);
+    return { version: ver };
+  });
+}
+
+async function generateVersionsJson() {
+  try {
+    // 检查缓存
+    if (_cachedVersions.length > 0 && (Date.now() - _cacheTime) < CACHE_TTL) {
+      return { versions: _cachedVersions };
+    }
+    
+    // 使用 sql.js 直接读取数据库
+    const initSqlJs = require('sql.js');
+    const fs = require('fs');
+    const dbPath = '/app/dsh-updates/db/dsh.db';
+    
+    const SQL = await initSqlJs();
+    const dbBuffer = fs.readFileSync(dbPath);
+    const db = new SQL.Database(dbBuffer);
+    
+    // 查询版本
+    const versions = [];
+    const stmt = db.prepare('SELECT version, date FROM versions ORDER BY version DESC');
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      const filesStmt = db.prepare('SELECT platform, filename FROM version_files WHERE version = ?');
+      const files = {};
+      filesStmt.bind([row.version]);
+      while (filesStmt.step()) {
+        const f = filesStmt.getAsObject();
+        files[f.platform] = f.filename;
+      }
+      filesStmt.free();
+      versions.push({ version: row.version, date: row.date, files });
+    }
+    stmt.free();
+    db.close();
+    
+    // 更新缓存
+    _cachedVersions = versions;
+    _cacheTime = Date.now();
+    
+    return { versions };
+  } catch (e) {
+    console.error('[versions] Generate error:', e.message);
+    // sql.js 不可用或 DB 损坏 → 回退到扫描 update-server 目录
+    return await generateVersionsJsonFallback();
+  }
+}
+
+// 回退方案：直接扫描目录
+async function generateVersionsJsonFallback() {
+  try {
+    const { stdout: dirList } = await dockerExec('update-server', ['sh', '-c', 'ls -d /usr/share/nginx/html/dsh/v*/ 2>/dev/null']);
+    if (!dirList) return { versions: [] };
+    const versions = [];
+    for (const dir of dirList.split('\n').filter(d => d.trim())) {
+      const match = dir.match(/\/(v\d+\.\d+\.\d+)\/?$/);
+      if (!match) continue;
+      const version = match[1];
+      const { stdout: dateStr } = await dockerExec('update-server', ['sh', '-c', `stat -c %y ${dir} 2>/dev/null | cut -d. -f1`]);
+      const date = dateStr ? dateStr.trim().split(' ')[0] : new Date().toISOString().split('T')[0];
+      const { stdout: fileList } = await dockerExec('update-server', ['sh', '-c', `ls ${dir} 2>/dev/null`]);
+      if (!fileList) continue;
+      const files = {};
+      for (const fname of fileList.split('\n').filter(f => f.trim())) {
+        if (fname.includes('windows') && fname.endsWith('.exe')) files['windows-x64'] = fname;
+        else if (fname.includes('mac-arm64') && fname.endsWith('.dmg')) files['mac-arm64'] = fname;
+        else if (fname.includes('mac') && fname.endsWith('.dmg')) files['mac-x64'] = fname;
+      }
+      if (Object.keys(files).length > 0) versions.push({ version, date, files });
+    }
+    versions.sort((a, b) => {
+      const parseV = v => v.version.replace('v', '').split('.').map(Number);
+      const [a1, a2, a3] = parseV(a); const [b1, b2, b3] = parseV(b);
+      return b1 - a1 || b2 - a2 || b3 - a3;
+    });
+    return { versions };
+  } catch (e) {
+    return { versions: [] };
+  }
+}
+
+// 读取 update-server 上的版本清单（动态扫描生成）
 app.get('/api/gitea/sync/versions', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
-    const d = JSON.parse(stdout || '{"versions":[]}');
-    res.json({ versions: d.versions || [] });
+    const result = await generateVersionsJson();
+    res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 同步脚本用的版本读取端点（不需要认证）
+// 同步脚本用的版本读取端点（不需要认证，动态扫描）
 app.get('/api/gitea/sync/versions-internal', async (req, res) => {
   try {
-    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
-    const d = JSON.parse(stdout || '{"versions":[]}');
-    res.json({ versions: d.versions || [] });
+    const result = await generateVersionsJson();
+    res.json(result);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// 读取同步历史（sync-history.json，由同步脚本维护）
+// ── 已同步版本 CRUD（权威数据源：SQLite 的 versions / version_files 表）──────────
+//   GET    /api/gitea/sync/versions        列表（见上方）
+//   POST   /api/gitea/sync/versions        新增或覆盖一个版本
+//   PUT    /api/gitea/sync/versions/:ver   更新一个版本（日期 / 平台文件）
+//   DELETE /api/gitea/sync/version/:ver    删除版本（连 update-server 目录一起，见下方）
+app.post('/api/gitea/sync/versions', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const { version, date, files } = req.body || {};
+    const r = await upsertVersion(version, date, files);
+    invalidateVersionsCache();
+    broadcastSyncChange('version-create');
+    res.json({ ok: true, ...r });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+app.put('/api/gitea/sync/versions/:ver', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  try {
+    const ver = normalizeVersion(req.params.ver);
+    if (!ver) return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
+    const { date, files } = req.body || {};
+    if (!date && (!files || typeof files !== 'object')) {
+      return res.status(400).json({ error: '请至少提供 date 或 files 之一' });
+    }
+    const r = await withDshDb((db) => {
+      const found = db.exec('SELECT version FROM versions WHERE version = ?', [ver]);
+      if (!found.length || !found[0].values.length) throw new Error(`${ver} 不在已同步版本中`);
+      if (date) db.run('UPDATE versions SET date = ? WHERE version = ?', [date, ver]);
+      if (files && typeof files === 'object') {
+        db.run('DELETE FROM version_files WHERE version = ?', [ver]);
+        for (const [platform, filename] of Object.entries(files)) {
+          db.run('INSERT INTO version_files (version, platform, filename) VALUES (?, ?, ?)',
+            [ver, String(platform), String(filename)]);
+        }
+      }
+      return { version: ver };
+    });
+    invalidateVersionsCache();
+    broadcastSyncChange('version-update');
+    res.json({ ok: true, ...r });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// ═══════════════════════════════════════════
+// 同步状态变更推送（SSE）
+// 同步脚本写完数据库后广播一次，前端收到就局部刷新「已同步版本」+「同步历史」，
+// 既不用轮询，也不用整页刷新。
+// ═══════════════════════════════════════════
+const _syncSseClients = new Set();
+
+function broadcastSyncChange(reason) {
+  const frame = `data: ${JSON.stringify({ reason, at: new Date().toISOString() })}\n\n`;
+  for (const client of Array.from(_syncSseClients)) {
+    try { client.write(frame); } catch (e) { _syncSseClients.delete(client); }
+  }
+  if (_syncSseClients.size > 0) console.log(`[sse] "${reason}" -> ${_syncSseClients.size} client(s)`);
+}
+
+app.get('/api/gitea/sync/events', keycloak.protect(), (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',   // 反向代理后面要显式禁用缓冲，否则事件会被攒住
+  });
+  if (typeof res.flushHeaders === 'function') res.flushHeaders();
+  res.write('retry: 5000\n\n');
+  res.write(`data: ${JSON.stringify({ reason: 'hello', at: new Date().toISOString() })}\n\n`);
+  _syncSseClients.add(res);
+  // 心跳，避免中间层按空闲超时把连接掐掉
+  const ping = setInterval(() => { try { res.write(': ping\n\n'); } catch (e) {} }, 25000);
+  req.on('close', () => { clearInterval(ping); _syncSseClients.delete(res); });
+});
+
+// 触发从 update-server 同步版本到数据库（同步完成后由脚本调用）
+// 这是「已同步版本」的唯一写入通道：扫描 update-server 上的实际目录，与 versions 表对齐。
+app.post('/api/gitea/sync/sync-versions-from-server', async (req, res) => {
+  try {
+    await syncVersionsFromServer();
+    invalidateVersionsCache();
+    const { versions } = await generateVersionsJson();
+    broadcastSyncChange('versions-sync');
+    res.json({ ok: true, versions: versions.map(v => v.version) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 读取同步历史（从 SQLite 数据库）
 app.get('/api/gitea/sync/history', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
-    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
-    const d = JSON.parse(stdout || '[]');
-    res.json({ history: Array.isArray(d) ? d : (d.history || []) });
+    const initSqlJs = require('sql.js');
+    const fs = require('fs');
+    const dbPath = '/app/dsh-updates/db/dsh.db';
+    const SQL = await initSqlJs();
+    const dbBuffer = fs.readFileSync(dbPath);
+    const db = new SQL.Database(dbBuffer);
+    
+    const history = [];
+    const stmt = db.prepare('SELECT time, version, status, detail FROM sync_history ORDER BY time DESC LIMIT 10');
+    while (stmt.step()) {
+      history.push(stmt.getAsObject());
+    }
+    stmt.free();
+    db.close();
+    
+    res.json({ history });
   } catch (e) {
-    res.json({ history: [] });
+    console.error('[history] Error:', e.message);
+    // sql.js 不可用 → 用 dsh-db.py fallback
+    try {
+      const { spawn } = require('child_process');
+      const { stdout } = await new Promise((resolve, reject) => {
+        const p = spawn('python3', ['/app/scripts/dsh-db.py', 'query-history', '10']);
+        let out = '', err = '';
+        p.stdout.on('data', d => out += d);
+        p.stderr.on('data', d => err += d);
+        p.on('close', code => code === 0 ? resolve({ stdout: out, stderr: err }) : reject(new Error(err)));
+      });
+      const history = JSON.parse(stdout);
+      return res.json({ history });
+    } catch (e2) {
+      console.error('[history] Fallback error:', e2.message);
+      return res.json({ history: [] });
+    }
+  }
+});
+
+// 扫描 update-server 目录，返回版本数据（供 dsh-db.py 调用）
+app.get('/api/gitea/sync/scan-update-server', async (req, res) => {
+  try {
+    const { stdout: dirList } = await dockerExec('update-server', ['sh', '-c', 'ls -d /usr/share/nginx/html/dsh/v*/ 2>/dev/null']);
+    if (!dirList) return res.json({});
+    
+    const versions = {};
+    const dirs = dirList.split('\n').filter(d => d.trim());
+    
+    for (const dir of dirs) {
+      const match = dir.match(/\/(v\d+\.\d+\.\d+)\/?$/);
+      if (!match) continue;
+      const version = match[1];
+      
+      // 获取日期
+      const { stdout: dateStr } = await dockerExec('update-server', ['sh', '-c', `stat -c %y ${dir} 2>/dev/null | cut -d. -f1`]);
+      const date = dateStr ? dateStr.trim().split(' ')[0] : new Date().toISOString().split('T')[0];
+      
+      // 获取文件列表
+      const { stdout: fileList } = await dockerExec('update-server', ['sh', '-c', `ls ${dir} 2>/dev/null`]);
+      if (!fileList) continue;
+      
+      const files = {};
+      for (const fname of fileList.split('\n').filter(f => f.trim())) {
+        if (fname.includes('windows') && fname.endsWith('.exe')) files['windows-x64'] = fname;
+        else if (fname.includes('mac-arm64') && fname.endsWith('.dmg')) files['mac-arm64'] = fname;
+        else if (fname.includes('mac') && fname.endsWith('.dmg')) files['mac-x64'] = fname;
+      }
+      
+      if (Object.keys(files).length > 0) {
+        versions[version] = { date, files };
+      }
+    }
+    
+    res.json(versions);
+  } catch (e) {
+    console.error('[scan-update-server] Error:', e.message);
+    res.json({});
   }
 });
 
 // 同步脚本用的历史读取端点（不需要认证）
 app.get('/api/gitea/sync/history-internal', async (req, res) => {
   try {
-    const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/sync-history.json']);
-    const d = JSON.parse(stdout || '[]');
-    res.json({ history: Array.isArray(d) ? d : (d.history || []) });
+    const initSqlJs = require('sql.js');
+    const fs = require('fs');
+    const dbPath = '/app/dsh-updates/db/dsh.db';
+    
+    const SQL = await initSqlJs();
+    const dbBuffer = fs.readFileSync(dbPath);
+    const db = new SQL.Database(dbBuffer);
+    
+    const history = [];
+    const stmt = db.prepare('SELECT time, version, status, detail FROM sync_history ORDER BY time DESC LIMIT 10');
+    while (stmt.step()) {
+      history.push(stmt.getAsObject());
+    }
+    stmt.free();
+    db.close();
+    
+    res.json({ history });
   } catch (e) {
-    res.json({ history: [] });
+    console.error('[history] Error:', e.message);
+    // sql.js 不可用或 DB 损坏 → 尝试用 sqlite3 兼容方式读（fallback）
+    try {
+      const { spawn } = require('child_process');
+      const { stdout } = await new Promise((resolve, reject) => {
+        const p = spawn('python3', ['/app/scripts/dsh-db.py', 'query-history', '10']);
+        let out = '', err = '';
+        p.stdout.on('data', d => out += d);
+        p.stderr.on('data', d => err += d);
+        p.on('close', code => code === 0 ? resolve({ stdout: out, stderr: err }) : reject(new Error(err)));
+      });
+      const history = JSON.parse(stdout);
+      return res.json({ history });
+    } catch (e2) {
+      console.error('[history] Fallback error:', e2.message);
+      return res.json({ history: [] });
+    }
   }
 });
 
-// 删除某个版本（删目录 + 更新 versions.json + 触发重建页面）
-app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+// 记录同步历史（供同步脚本调用）。写完后广播一次变更，前端无需刷新即可看到新值。
+app.post('/api/gitea/sync/record-history', async (req, res) => {
   try {
-    const ver = (req.params.ver || '').replace(/[^a-zA-Z0-9.\-]/g, '');
-    if (!ver) return res.status(400).json({ error: '无效版本号' });
-    if (!/^v?\d+\.\d+\.\d+$/.test(ver)) {
-      return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
-    }
-    // 1. 删除版本目录（nginx 路径，单引号包裹防止路径含特殊字符）
-    await dockerExec('update-server', ['sh', '-c', `rm -rf '/usr/share/nginx/html/dsh/${ver}'`]);
-    // 2. 更新 versions.json（移除该版本）
-    let d;
-    try {
-      const { stdout } = await dockerExec('update-server', ['cat', '/usr/share/nginx/html/dsh/versions.json']);
-      d = JSON.parse(stdout || '{"versions":[]}');
-    } catch (e) { d = { versions: [] }; }
-    d.versions = (d.versions || []).filter(v => v.version !== ver);
-    // 用 python stdin 写入，避免 echo ${b64} | base64 -d 的注入风险
-    await writeToUpdateContainer('/usr/share/nginx/html/dsh/versions.json', JSON.stringify(d, null, 2));
-    // 3. 记录删除历史（软件信息已变化）
-    await appendSyncHistory('success', `删除版本 ${ver}`);
-    // 4. 触发 rebuild_only 重建页面（保持向后兼容）
-    const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/workflows/sync.yml/dispatches`, {
-      method: 'POST',
-      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ref: 'main', inputs: { rebuild_only: 'true' } }),
-    }).catch(() => {});
+    const { version, status, detail } = req.body || {};
+    if (!status) return res.status(400).json({ error: 'Missing status' });
+    await appendSyncHistory(status, detail || '', version || '');
+    invalidateVersionsCache();
+    broadcastSyncChange('history');
     res.json({ ok: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DSH 页面数据 API（版本 + 历史，不需要认证，支持 CORS）
+app.get('/api/dsh/data', async (req, res) => {
+  // 设置 CORS 头，允许 Ghost 页面跨域访问
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  try {
+    // 使用缓存的版本数据
+    const versionsResult = await generateVersionsJson();
+    
+    // 历史数据从 SQLite 读取
+    const initSqlJs = require('sql.js');
+    const fs = require('fs');
+    const dbPath = '/app/dsh-updates/db/dsh.db';
+    const SQL = await initSqlJs();
+    const dbBuffer = fs.readFileSync(dbPath);
+    const db = new SQL.Database(dbBuffer);
+    
+    const history = [];
+    const stmt = db.prepare('SELECT time, version, status, detail FROM sync_history ORDER BY time DESC LIMIT 10');
+    while (stmt.step()) {
+      history.push(stmt.getAsObject());
+    }
+    stmt.free();
+    db.close();
+    
+    res.json({
+      versions: versionsResult.versions,
+      history: history
+    });
+  } catch (e) {
+    console.error('[dsh-data] Error:', e.message);
+    res.json({ versions: _cachedVersions || [], history: [] });
+  }
+});
+
+// 删除某个版本：把 update-server 上该版本目录（含全部平台安装包）与数据库记录一并删除。
+// 顺序是刻意的：先删文件 → 校验目录确实没了 → 再删数据库记录。
+// 如果文件没删掉就中止、不动数据库，避免出现「列表里看不到、磁盘上还占着几百 MB」的假删除。
+app.delete('/api/gitea/sync/version/:ver', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
+  const ver = normalizeVersion(req.params.ver);
+  if (!ver) return res.status(400).json({ error: '版本号格式不合法，应为 vX.Y.Z' });
+  const dir = `/usr/share/nginx/html/dsh/${ver}`;
+  try {
+    // 1. 先记录目录里有什么、占多大（回执用；顺带确认 update-server 可达）
+    let before;
+    try {
+      before = await dockerExec('update-server', ['sh', '-c',
+        `ls -1 '${dir}' 2>/dev/null; echo '---SIZE---'; du -sk '${dir}' 2>/dev/null | awk '{print $1}'`]);
+    } catch (e) {
+      return res.status(503).json({ error: `update-server 容器不可达，未删除任何内容：${e.message}` });
+    }
+    const parts = String(before.stdout || '').split('---SIZE---');
+    const removedFiles = parts[0].split('\n').map(s => s.trim()).filter(Boolean);
+    const freedKb = parseInt((parts[1] || '').trim(), 10) || 0;
+
+    // 2. 删除整个版本目录（所有平台安装包都在这一个目录里）
+    const rm = await dockerExec('update-server', ['sh', '-c', `rm -rf '${dir}'`]);
+    if (rm.stderr && rm.stderr.trim()) console.warn('[dsh-delete] rm stderr:', rm.stderr.trim());
+
+    // 3. 校验目录真的没了；没删掉就中止，数据库保持原样
+    const chk = await dockerExec('update-server', ['sh', '-c', `test -e '${dir}' && echo EXISTS || echo GONE`]);
+    if (!/\bGONE\b/.test(String(chk.stdout || ''))) {
+      return res.status(500).json({
+        error: `${ver} 的目录未能删除（可能有文件正被占用），该版本记录已保留，请稍后重试`,
+        version: ver, dir,
+      });
+    }
+
+    // 4. 删数据库记录（versions + version_files 是唯一权威源）
+    await deleteVersionRow(ver);
+
+    // 5. 记历史（带版本号）+ 失效缓存 + 通知前端立即刷新
+    const sizeTxt = freedKb > 0 ? `，释放约 ${(freedKb / 1024).toFixed(0)} MB` : '';
+    await appendSyncHistory('success', `删除版本 ${ver}（${removedFiles.length} 个文件${sizeTxt}）`, ver);
+    invalidateVersionsCache();
+    broadcastSyncChange('version-delete');
+
+    console.log(`[dsh-delete] ${ver} removed: ${removedFiles.length} file(s) from ${dir}`);
+    res.json({ ok: true, version: ver, dir, removedFiles, freedBytes: freedKb * 1024 });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ---- Gitea 工作流管理（超时设置 + 强制停止）----
@@ -1751,7 +2388,7 @@ app.get('/api/gitea/workflow/runs', keycloak.protect(), protectAdmin('gitea'), a
   }
 });
 
-// 取消工作流运行
+// 取消工作流运行（Gitea 1.27.x 没有 cancel API，通过停止 runner + 更新 DB 来强制终止）
 app.post('/api/gitea/workflow/runs/:id/cancel', keycloak.protect(), protectAdmin('gitea'), async (req, res) => {
   try {
     const runId = req.params.id;
@@ -1759,33 +2396,64 @@ app.post('/api/gitea/workflow/runs/:id/cancel', keycloak.protect(), protectAdmin
       return res.status(400).json({ error: '无效的工作流运行ID' });
     }
     
+    // 检查 run 是否还在运行
     const auth = Buffer.from(`${GITEA_ADMIN_USER}:${GITEA_ADMIN_PASS}`).toString('base64');
-    
-    // 尝试取消工作流运行
-    const cancelResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${runId}/cancel`, {
-      method: 'POST',
+    const runResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${runId}`, {
       headers: { 'Authorization': `Basic ${auth}` },
     });
-    
-    if (cancelResp.ok) {
-      res.json({ ok: true, message: '已发送取消请求' });
-    } else {
-      // 如果取消API不存在，尝试删除
-      const deleteResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${runId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Basic ${auth}` },
-      });
-      
-      if (deleteResp.ok) {
-        res.json({ ok: true, message: '已删除工作流运行' });
-      } else {
-        const error = await deleteResp.json().catch(() => ({}));
-        res.status(deleteResp.status).json({ 
-          error: error.message || '取消失败',
-          suggestion: '可能需要重启Gitea Runner或Gitea服务'
-        });
-      }
+    if (!runResp.ok) {
+      return res.status(404).json({ error: '工作流运行不存在' });
     }
+    const runData = await runResp.json();
+    if (runData.status === 'completed' || runData.status === 'cancelled' || runData.status === 'failure') {
+      return res.json({ ok: true, message: '该任务已结束', status: runData.status });
+    }
+    
+    // 通过停止 runner + 更新 Gitea DB 来强制终止
+    try {
+      const container = docker.getContainer('gitea-runner');
+      await container.stop({ t: 3 });
+      console.log(`[force-stop] gitea-runner stopped for run ${runId}`);
+    } catch (e) {
+      console.error('[force-stop] Failed to stop runner:', e.message);
+      return res.status(500).json({ error: '停止 runner 失败: ' + e.message });
+    }
+    
+    await new Promise(r => setTimeout(r, 2000));
+    
+    // 更新 Gitea 数据库（4张表都需要更新）
+    const now = Math.floor(Date.now() / 1000);
+    try {
+      await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+        `UPDATE action_run SET status=5, stopped=${now} WHERE id=${runId}`]);
+      await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+        `UPDATE action_run_job SET status=5, stopped=${now} WHERE run_id=${runId} AND status NOT IN (1,2,3,4,5)`]);
+      const { stdout: taskIds } = await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+        `SELECT task_id FROM action_run_job WHERE run_id=${runId}`]);
+      for (const tid of taskIds.split('\n').filter(t => t.trim())) {
+        await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+          `UPDATE action_task SET status=5, stopped=${now} WHERE id=${tid.trim()} AND status NOT IN (1,3,4,5)`]);
+      }
+      await dockerExec('gitea', ['sqlite3', '/data/gitea/gitea.db',
+        `UPDATE action_run_attempt SET status=3, stopped=${now} WHERE run_id=${runId}`]);
+      console.log(`[force-stop] Marked run ${runId} as cancelled in Gitea DB`);
+    } catch (e) {
+      console.error(`[force-stop] Failed to update Gitea DB:`, e.message);
+    }
+    
+    // 重新启动 runner
+    try {
+      const container = docker.getContainer('gitea-runner');
+      await container.start();
+      console.log(`[force-stop] gitea-runner restarted after cancelling run ${runId}`);
+    } catch (e) {
+      console.error('[force-stop] Failed to restart runner:', e.message);
+    }
+    
+    // 记录历史
+    await appendSyncHistory('cancelled', `强制停止任务 #${runId}`);
+    
+    res.json({ ok: true, message: '已停止任务并标记为失败' });
   } catch (e) { 
     res.status(500).json({ error: e.message }); 
   }
@@ -1909,26 +2577,30 @@ app.post('/api/gitea/workflow/cleanup', keycloak.protect(), protectAdmin('gitea'
       if (!run.conclusion && run.started_at) {
         const startTime = new Date(run.started_at).getTime();
         if ((now - startTime) > timeoutMs) {
-          // 尝试取消超时任务
-          try {
-            const cancelResp = await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/cancel`, {
-              method: 'POST',
-              headers: { 'Authorization': `Basic ${auth}` },
-            });
-            if (cancelResp.ok) {
-              cleaned.push({ id: run.id, title: run.display_title });
-            }
-          } catch (e) {
-            console.error(`[gitea] Failed to cancel run ${run.id}:`, e.message);
-          }
+          // 尝试停止超时任务（通过重启 runner）
+          cleaned.push({ id: run.id, title: run.display_title, method: 'runner-restart' });
         }
       }
+    }
+    
+    // 如果有超时任务，停止 runner 来终止它们
+    if (cleaned.length > 0) {
+      try {
+        const container = docker.getContainer('gitea-runner');
+        await container.stop({ t: 3 });
+        await new Promise(r => setTimeout(r, 2000));
+        await container.start();
+        console.log(`[gitea] Runner restarted to cancel ${cleaned.length} timeout run(s)`);
+      } catch (e) {
+        console.error('[gitea] Failed to restart runner for cleanup:', e.message);
+      }
+      await appendSyncHistory('cancelled', `清理 ${cleaned.length} 个超时任务`);
     }
     
     res.json({ 
       ok: true, 
       cleaned, 
-      message: cleaned.length > 0 ? `已清理 ${cleaned.length} 个超时任务` : '没有需要清理的任务' 
+      message: cleaned.length > 0 ? `已清理 ${cleaned.length} 个超时任务（runner 已重启）` : '没有需要清理的任务' 
     });
   } catch (e) { 
     res.status(500).json({ error: e.message }); 
@@ -1963,21 +2635,29 @@ function startWorkflowCleanup() {
       
       const timeoutMs = workflowSettings.timeoutMinutes * 60 * 1000;
       const now = Date.now();
+      const timeoutRuns = [];
       
       for (const run of runs) {
         if (!run.conclusion && run.started_at) {
           const startTime = new Date(run.started_at).getTime();
           if ((now - startTime) > timeoutMs) {
             console.log(`[gitea] Auto-cleaning timeout run: ${run.id} (${run.display_title})`);
-            try {
-              await fetch(`${GITEA_URL}/api/v1/repos/${GITEA_ADMIN_USER}/dsh-sync/actions/runs/${run.id}/cancel`, {
-                method: 'POST',
-                headers: { 'Authorization': `Basic ${auth}` },
-              });
-            } catch (e) {
-              console.error(`[gitea] Failed to cancel run ${run.id}:`, e.message);
-            }
+            timeoutRuns.push(run);
           }
+        }
+      }
+      
+      // 如果有超时任务，重启 runner 来终止它们
+      if (timeoutRuns.length > 0) {
+        try {
+          const container = docker.getContainer('gitea-runner');
+          await container.stop({ t: 3 });
+          await new Promise(r => setTimeout(r, 2000));
+          await container.start();
+          console.log(`[gitea] Auto-cleanup: runner restarted to cancel ${timeoutRuns.length} timeout run(s)`);
+          await appendSyncHistory('cancelled', `自动清理 ${timeoutRuns.length} 个超时任务`);
+        } catch (e) {
+          console.error('[gitea] Auto-cleanup: failed to restart runner:', e.message);
         }
       }
     } catch (e) {
@@ -2648,229 +3328,6 @@ app.get('/api/metrics', keycloak.protect(), async (req, res) => {
 });
 
 // ═══════════════════════════════════════════
-// 备份与恢复（Node 原生实现，与 scripts\backup.ps1 产出同格式备份）
-// ═══════════════════════════════════════════
-
-function tsStr(d) {
-  const p = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
-}
-
-// 从部署目录挂载读取配置（dify .env 等）
-function readDeployEnv(relPath, key, fallback) {
-  try {
-    const content = fs.readFileSync(path.join(DEPLOY_DIR, relPath), 'utf8');
-    const m = content.match(new RegExp(`^${key}=(.*)$`, 'm'));
-    return m ? m[1].trim() : fallback;
-  } catch { return fallback; }
-}
-const DIFY_DB_PASSWORD = readDeployEnv('dify/docker/.env', 'DB_PASSWORD', 'difyai123456');
-
-// 读取容器内文件 → Buffer（base64 中转，二进制安全）
-async function readContainerFile(containerName, filePath) {
-  const { stdout, stderr } = await dockerExec(containerName, ['sh', '-c', `base64 "${filePath}" 2>/dev/null`]);
-  if (stderr && stderr.trim() && !/base64/i.test(stderr)) throw new Error(stderr.trim());
-  return Buffer.from(stdout.replace(/\s/g, ''), 'base64');
-}
-
-// 容器内执行 dump 命令 → Buffer（stdout 走 base64，避免 UTF-8/二进制损坏）
-async function dumpFromContainer(containerName, dumpCmd) {
-  const { stdout } = await dockerExec(containerName, ['sh', '-c', `${dumpCmd} | base64`]);
-  return Buffer.from(stdout.replace(/\s/g, ''), 'base64');
-}
-
-// 把本地 Buffer 写入容器内指定路径（tar-fs.pack + putArchive，二进制安全）
-const tarfs = require('tar-fs');
-function writeContainerFile(containerName, containerPath, buffer, entryName) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const tmp = fs.mkdtempSync('/tmp/restore-');
-      fs.writeFileSync(path.join(tmp, entryName), buffer);
-      const pack = tarfs.pack(tmp, { entries: [entryName] });
-      const container = docker.getContainer(containerName);
-      await container.putArchive(pack, { path: containerPath });
-      fs.rmSync(tmp, { recursive: true, force: true });
-      resolve();
-    } catch (e) { reject(e); }
-  });
-}
-
-const GHOST_CHECKPOINT_SCRIPT = `const fs=require('fs'),path=require('path');
-let sp=null;
-for(const d of fs.readdirSync('/var/lib/ghost/versions')){
-  const p=path.join('/var/lib/ghost/versions',d,'node_modules','sqlite3');
-  if(fs.existsSync(p)){sp=p;break;}
-}
-if(!sp){console.log('no-sqlite3');process.exit(0);}
-const D=require(sp);
-const db=new D.Database('/var/lib/ghost/content/data/ghost.db');
-db.pragma('wal_checkpoint(TRUNCATE)');
-db.close();
-console.log('checkpoint-ok');`;
-
-async function performBackup() {
-  const results = [];
-  const add = (name, ok, detail) => results.push({ name, ok, detail: detail || '' });
-  const stamp = tsStr(new Date());
-  const dir = path.join(BACKUP_DIR, `backup_${stamp}`);
-  fs.mkdirSync(dir, { recursive: true });
-
-  // 1. NewAPI MySQL
-  try {
-    const buf = await dumpFromContainer(NEWAPI_DB_CONTAINER, `mysqldump -uroot -p"${NEWAPI_DB_PASSWORD}" --single-transaction --routines --triggers new-api 2>/dev/null`);
-    fs.writeFileSync(path.join(dir, 'newapi-mysql.sql'), buf);
-    add('NewAPI MySQL', buf.length > 1024, `${(buf.length / 1024).toFixed(1)} KB`);
-  } catch (e) { add('NewAPI MySQL', false, e.message); }
-
-  // 2. Dify PostgreSQL
-  try {
-    const buf = await dumpFromContainer(DIFY_DB_CONTAINER, `PGPASSWORD="${DIFY_DB_PASSWORD}" pg_dump -U postgres -d dify 2>/dev/null`);
-    fs.writeFileSync(path.join(dir, 'dify-postgres.sql'), buf);
-    add('Dify PostgreSQL', buf.length > 1024, `${(buf.length / 1024).toFixed(1)} KB`);
-  } catch (e) { add('Dify PostgreSQL', false, e.message); }
-
-  // 3. SQLite（Ghost / Gitea）
-  try {
-    await dockerExec(GHOST_CONTAINER, ['node', '-e', GHOST_CHECKPOINT_SCRIPT]);
-    const buf = await readContainerFile(GHOST_CONTAINER, '/var/lib/ghost/content/data/ghost.db');
-    fs.writeFileSync(path.join(dir, 'ghost.db'), buf);
-    add('Ghost SQLite', buf.length > 0, `${(buf.length / 1024).toFixed(1)} KB`);
-  } catch (e) { add('Ghost SQLite', false, e.message); }
-  try {
-    await dockerExec(GITEA_CONTAINER, ['sh', '-c', 'sqlite3 /data/gitea/gitea.db "PRAGMA wal_checkpoint(TRUNCATE);" 2>/dev/null']);
-    const buf = await readContainerFile(GITEA_CONTAINER, '/data/gitea/gitea.db');
-    fs.writeFileSync(path.join(dir, 'gitea.db'), buf);
-    add('Gitea SQLite', buf.length > 0, `${(buf.length / 1024).toFixed(1)} KB`);
-  } catch (e) { add('Gitea SQLite', false, e.message); }
-
-  // 4. 配置文件（从 /deploy 只读挂载复制）
-  try {
-    const cfgDir = path.join(dir, 'config');
-    fs.mkdirSync(cfgDir, { recursive: true });
-    const cfgFiles = [
-      ['.env', '.env'], ['.env.windows', '.env.windows'], ['docker-compose.yml', 'docker-compose.yml'],
-      ['litellm-config.yaml', 'litellm-config.yaml'], ['gitea-runner-config.yaml', 'gitea-runner-config.yaml'],
-      ['mcp-gateway/mcp-servers.json', 'mcp-servers.json'], ['dify/docker/.env', 'dify.env'],
-    ];
-    let n = 0;
-    for (const [src, dst] of cfgFiles) {
-      try { fs.copyFileSync(path.join(DEPLOY_DIR, src), path.join(cfgDir, dst)); n++; }
-      catch (e) { add(`配置 ${dst}`, false, e.message); }
-    }
-    add('配置文件', n > 0, `${n} 个`);
-  } catch (e) { add('配置文件', false, e.message); }
-
-  // 写 backup.log
-  const logLine = `[${new Date().toLocaleString('sv-SE')}] ========== 备份 -> ${dir}（AI 管理中心触发）==========\n` +
-    results.map(r => `  ${r.ok ? '[OK]' : '[FAIL]'} ${r.name}${r.detail ? ' (' + r.detail + ')' : ''}`).join('\n') + '\n';
-  try { fs.appendFileSync(path.join(BACKUP_DIR, 'backup.log'), logLine); } catch (e) {}
-
-  return { dir: path.basename(dir), results, pass: results.filter(r => r.ok).length, fail: results.filter(r => !r.ok).length };
-}
-
-async function performRestore(dirName) {
-  if (!/^backup_[0-9_]+$/.test(dirName)) throw new Error('非法备份目录名');
-  const dir = path.join(BACKUP_DIR, dirName);
-  if (!fs.existsSync(dir)) throw new Error('备份目录不存在');
-  const results = [];
-  const add = (name, ok, detail) => results.push({ name, ok, detail: detail || '' });
-
-  // 1. 配置
-  const cfgDir = path.join(dir, 'config');
-  if (fs.existsSync(cfgDir)) {
-    for (const f of ['.env', '.env.windows', 'docker-compose.yml', 'litellm-config.yaml', 'gitea-runner-config.yaml']) {
-      const src = path.join(cfgDir, f);
-      if (fs.existsSync(src)) {
-        try { fs.copyFileSync(src, path.join(DEPLOY_DIR, f)); add(`配置 ${f}`, true); }
-        catch (e) { add(`配置 ${f}`, false, e.message); }
-      }
-    }
-  }
-
-  // 2. NewAPI MySQL
-  const mysqlDump = path.join(dir, 'newapi-mysql.sql');
-  if (fs.existsSync(mysqlDump)) {
-    try {
-      await writeContainerFile(NEWAPI_DB_CONTAINER, '/tmp', fs.readFileSync(mysqlDump), 'restore.sql');
-      await dockerExec(NEWAPI_DB_CONTAINER, ['sh', '-c', `MYSQL_PWD="${NEWAPI_DB_PASSWORD}" mysql -uroot new-api < /tmp/restore.sql 2>/dev/null`]);
-      add('NewAPI MySQL', true);
-    } catch (e) { add('NewAPI MySQL', false, e.message); }
-  }
-
-  // 3. Dify PostgreSQL
-  const pgDump = path.join(dir, 'dify-postgres.sql');
-  if (fs.existsSync(pgDump)) {
-    try {
-      await writeContainerFile(DIFY_DB_CONTAINER, '/tmp', fs.readFileSync(pgDump), 'restore.sql');
-      await dockerExec(DIFY_DB_CONTAINER, ['sh', '-c', `PGPASSWORD="${DIFY_DB_PASSWORD}" psql -U postgres -d dify < /tmp/restore.sql 2>/dev/null`]);
-      add('Dify PostgreSQL', true);
-    } catch (e) { add('Dify PostgreSQL', false, e.message); }
-  }
-
-  // 4. SQLite
-  const ghostDb = path.join(dir, 'ghost.db');
-  if (fs.existsSync(ghostDb)) {
-    try {
-      await writeContainerFile(GHOST_CONTAINER, '/var/lib/ghost/content/data', fs.readFileSync(ghostDb), 'ghost.db');
-      await docker.getContainer(GHOST_CONTAINER).restart();
-      add('Ghost SQLite', true);
-    } catch (e) { add('Ghost SQLite', false, e.message); }
-  }
-  const giteaDb = path.join(dir, 'gitea.db');
-  if (fs.existsSync(giteaDb)) {
-    try {
-      await writeContainerFile(GITEA_CONTAINER, '/data/gitea', fs.readFileSync(giteaDb), 'gitea.db');
-      await docker.getContainer(GITEA_CONTAINER).restart();
-      add('Gitea SQLite', true);
-    } catch (e) { add('Gitea SQLite', false, e.message); }
-  }
-
-  return { dir: dirName, results, pass: results.filter(r => r.ok).length, fail: results.filter(r => !r.ok).length };
-}
-
-// 备份列表
-app.get('/api/backup/list', keycloak.protect(), protectAdmin('backup'), async (req, res) => {
-  try {
-    const dirs = [];
-    if (fs.existsSync(BACKUP_DIR)) {
-      for (const name of fs.readdirSync(BACKUP_DIR)) {
-        if (!name.startsWith('backup_')) continue;
-        const full = path.join(BACKUP_DIR, name);
-        const st = fs.statSync(full);
-        if (!st.isDirectory()) continue;
-        const files = fs.readdirSync(full).filter(f => f !== 'config').map(f => {
-          const s = fs.statSync(path.join(full, f));
-          return { name: f, size: s.size, mtime: s.mtimeMs };
-        });
-        dirs.push({ name, mtime: st.mtimeMs, files });
-      }
-    }
-    dirs.sort((a, b) => b.mtime - a.mtime);
-    let logTail = '';
-    try { logTail = fs.readFileSync(path.join(BACKUP_DIR, 'backup.log'), 'utf8').split('\n').slice(-40).join('\n'); } catch (e) {}
-    res.json({ dirs, logTail });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// 触发备份
-app.post('/api/backup/run', keycloak.protect(), protectAdmin('backup'), async (req, res) => {
-  try {
-    const r = await performBackup();
-    res.json(r);
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// 触发恢复
-app.post('/api/backup/restore', keycloak.protect(), protectAdmin('backup'), async (req, res) => {
-  try {
-    const dirName = (req.body && req.body.dir) || '';
-    if (!dirName) return res.status(400).json({ error: '缺少备份目录名' });
-    const r = await performRestore(dirName);
-    res.json(r);
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ═══════════════════════════════════════════
 // PII 脱敏概览
 // ═══════════════════════════════════════════
 app.get('/api/pii/overview', keycloak.protect(), async (req, res) => {
@@ -2946,20 +3403,54 @@ app.get('/api/logs/query', keycloak.protect(), async (req, res) => {
 // ═══════════════════════════════════════════
 const AVAILABILITY_INTERVAL_MIN = parseInt(process.env.AVAILABILITY_INTERVAL_MIN || '10', 10);
 
+// ═══ 手动配置的 API Key（持久化到文件，优先级高于自动获取）═══
+const AVAIL_KEYS_FILE = path.join(__dirname, 'data', 'avail-keys.json');
+function loadAvailKeys() {
+  try { return JSON.parse(fs.readFileSync(AVAIL_KEYS_FILE, 'utf8')); } catch { return {}; }
+}
+function saveAvailKeys(obj) {
+  fs.mkdirSync(path.dirname(AVAIL_KEYS_FILE), { recursive: true });
+  fs.writeFileSync(AVAIL_KEYS_FILE, JSON.stringify(obj, null, 2));
+}
+
+// GET /api/availability/keys — 读取手动配置的 key（脱敏）
+app.get('/api/availability/keys', keycloak.protect(), (req, res) => {
+  const k = loadAvailKeys();
+  const mask = v => v ? v.slice(0, 6) + '****' + v.slice(-4) : '';
+  res.json({ dsh: k.dsh ? mask(k.dsh) : '', dify: k.dify ? mask(k.dify) : '' });
+});
+
+// PUT /api/availability/keys — 更新手动配置的 key
+app.put('/api/availability/keys', keycloak.protect(), async (req, res) => {
+  const body = req.body || {};
+  const cur = loadAvailKeys();
+  if (body.dsh !== undefined) cur.dsh = body.dsh || undefined;
+  if (body.dify !== undefined) cur.dify = body.dify || undefined;
+  saveAvailKeys(cur);
+  res.json({ ok: true });
+});
+
 // 从 NewAPI DB 取 dsh / dify 的完整 token key（base64 中转避免 shell 转义）
+// 优先使用手动配置的 key，没有则 fallback 到自动获取
 async function getNewApiTokens() {
-  const sql = "SELECT name, `key` FROM `new-api`.tokens WHERE status=1";
-  const b64 = Buffer.from(sql).toString('base64');
-  const { stdout } = await dockerExec(NEWAPI_DB_CONTAINER, [
-    'sh', '-c',
-    `MYSQL_PWD="${NEWAPI_DB_PASSWORD}" mysql -uroot -N -B -e "$(echo ${b64} | base64 -d)" 2>/dev/null`,
-  ]);
-  const out = { dsh: null, dify: null };
-  for (const line of stdout.split('\n')) {
-    const [name, key] = line.split('\t');
-    if (name === 'dsh-key' && key) out.dsh = 'sk-' + key.trim();
-    if (name === 'dify-key' && key) out.dify = 'sk-' + key.trim();
-  }
+  const manual = loadAvailKeys();
+  const out = { dsh: manual.dsh || null, dify: manual.dify || null };
+  // 如果手动配置的都有值，直接返回
+  if (out.dsh && out.dify) return out;
+  // 否则 fallback 到数据库自动获取
+  try {
+    const sql = "SELECT name, `key` FROM `new-api`.tokens WHERE status=1";
+    const b64 = Buffer.from(sql).toString('base64');
+    const { stdout } = await dockerExec(NEWAPI_DB_CONTAINER, [
+      'sh', '-c',
+      `MYSQL_PWD="${NEWAPI_DB_PASSWORD}" mysql -uroot -N -B -e "$(echo ${b64} | base64 -d)" 2>/dev/null`,
+    ]);
+    for (const line of stdout.split('\n')) {
+      const [name, key] = line.split('\t');
+      if (name === 'dsh-key' && key && !out.dsh) out.dsh = 'sk-' + key.trim();
+      if (name === 'dify-key' && key && !out.dify) out.dify = 'sk-' + key.trim();
+    }
+  } catch (e) { /* ignore, return whatever manual keys we have */ }
   return out;
 }
 
@@ -3115,14 +3606,6 @@ const availabilityTestDefs = [
       const { stdout } = await dockerExec(UPDATE_CONTAINER, ['cat', '/usr/share/nginx/html/version.txt']);
       return `DSH Desktop 版本 ${(stdout || '').trim() || '—'}`;
     } },
-  { id: 'backup', name: '备份', run: async () => {
-      if (!fs.existsSync(BACKUP_DIR)) throw new Error('备份目录不存在');
-      const dirs = fs.readdirSync(BACKUP_DIR).filter(n => n.startsWith('backup_'));
-      if (!dirs.length) return '暂无备份（未执行过）';
-      const latest = dirs.map(n => ({ n, t: fs.statSync(path.join(BACKUP_DIR, n)).mtimeMs })).sort((a, b) => b.t - a.t)[0];
-      const ageH = ((Date.now() - latest.t) / 3600000).toFixed(1);
-      return `最近备份 ${latest.n}（${ageH} 小时前）`;
-    } },
   { id: 'docker', name: 'Docker 容器', run: async () => {
       const containers = await docker.listContainers({ all: true });
       const running = containers.filter(c => c.State === 'running').length;
@@ -3137,7 +3620,7 @@ const availabilityTestDefs = [
 ];
 
 // 各测试项 → 可安全重启的 Docker 容器名。仅映射到有明确宿主服务的项；
-// backup / docker 为纯状态检查（无对应容器），不在此列，前端不显示重启按钮。
+// docker 为纯状态检查（无对应容器），不在此列，前端不显示重启按钮。
 // 注：dify 不在本表——它是独立 compose 项目（项目名 dify），分层依赖，走 restartDifyStack()。
 const availabilityRestartMap = {
   keycloak:        ['keycloak'],
@@ -3347,7 +3830,7 @@ const REPORT_L = {
     title: 'AI 平台系统报告', metaGen: '报告生成时间', metaPeriod: '统计周期', metaDays: '天',
     secSystem: '一、系统总览', secProducts: '产品健康状态', secUsage: '二、使用统计',
     secClient: '三、客户端统计', secIssues: '四、最近问题', secAvail: '五、可用性测试',
-    secBackup: '六、备份状态', secPii: '七、PII 脱敏状态',
+    secPii: '六、PII 脱敏状态',
     kRunning: '运行容器 / 总容器', kDocker: 'Docker 版本', kCpu: 'CPU 核数', kMemory: '内存(GB)', kImages: '镜像数', kArch: '架构',
     kProduct: '产品', kStatus: '状态', kDetail: '详情', kUp: '正常', kDown: '异常',
     kTotalCalls: '总调用次数', kTotalTokens: '总 Token', kTotalCost: '总成本(USD)',
@@ -3357,7 +3840,6 @@ const REPORT_L = {
     kErrLogs: '错误日志汇总(按容器)', kErrSample: '错误日志样例', kNoErr: '统计周期内未发现错误日志', kContainer: '容器', kErrCount: '错误数',
     kAvailFail: '可用性测试失败项', kStopped: '异常/停止的容器', kNone: '无',
     kAvailSummary: '可用性测试汇总', kTotal: '总计', kPass: '通过', kFail: '失败',
-    kBackupLatest: '最近备份', kBackupCount: '备份数量', kBackupList: '备份列表', kBackupNo: '暂无备份',
     kPresidio: 'Presidio 服务', kAnalyzer: '识别(analyzer)', kAnonymizer: '脱敏(anonymizer)',
     footer: '本报告由 AI 管理中心自动生成。', noData: '无数据', errLabel: '获取失败',
     pnames: { newapi: 'NewAPI 网关', litellm: 'LiteLLM 脱敏代理', keycloak: 'Keycloak 认证', dify: 'Dify 平台', ghost: 'Ghost 门户', gitea: 'Gitea 源码', mcp: 'MCP Gateway', prometheus: 'Prometheus 监控', grafana: 'Grafana 大盘', langfuse: 'Langfuse 可观测', loki: 'Loki 日志', presidio: 'Presidio PII 脱敏', 'dify-reranker': 'BGE-Reranker 重排序', 'dify-embedder': 'BGE-M3 Embedding', update: '更新服务器', redis: 'Redis 会话' },
@@ -3366,7 +3848,7 @@ const REPORT_L = {
     title: 'AI Platform System Report', metaGen: 'Generated at', metaPeriod: 'Period', metaDays: 'days',
     secSystem: '1. System Overview', secProducts: 'Product Health', secUsage: '2. Usage Statistics',
     secClient: '3. Client Statistics', secIssues: '4. Recent Issues', secAvail: '5. Availability Test',
-    secBackup: '6. Backup Status', secPii: '7. PII Redaction',
+    secPii: '6. PII Redaction',
     kRunning: 'Running / Total containers', kDocker: 'Docker version', kCpu: 'CPU cores', kMemory: 'Memory(GB)', kImages: 'Images', kArch: 'Architecture',
     kProduct: 'Product', kStatus: 'Status', kDetail: 'Detail', kUp: 'Up', kDown: 'Down',
     kTotalCalls: 'Total calls', kTotalTokens: 'Total tokens', kTotalCost: 'Total cost(USD)',
@@ -3376,7 +3858,6 @@ const REPORT_L = {
     kErrLogs: 'Error log summary (by container)', kErrSample: 'Error log samples', kNoErr: 'No error logs in this period', kContainer: 'Container', kErrCount: 'Errors',
     kAvailFail: 'Failed availability tests', kStopped: 'Stopped/unhealthy containers', kNone: 'None',
     kAvailSummary: 'Availability summary', kTotal: 'Total', kPass: 'Passed', kFail: 'Failed',
-    kBackupLatest: 'Latest backup', kBackupCount: 'Backup count', kBackupList: 'Backup list', kBackupNo: 'No backups',
     kPresidio: 'Presidio service', kAnalyzer: 'Analyzer', kAnonymizer: 'Anonymizer',
     footer: 'This report was auto-generated by AI Admin Center.', noData: 'No data', errLabel: 'Failed',
     pnames: { newapi: 'NewAPI Gateway', litellm: 'LiteLLM Proxy', keycloak: 'Keycloak Auth', dify: 'Dify Platform', ghost: 'Ghost Portal', gitea: 'Gitea Source', mcp: 'MCP Gateway', prometheus: 'Prometheus', grafana: 'Grafana', langfuse: 'Langfuse', loki: 'Loki Logs', presidio: 'Presidio PII', 'dify-reranker': 'BGE-Reranker', 'dify-embedder': 'BGE-M3 Embedding', update: 'Update Server', redis: 'Redis Session' },
@@ -3481,22 +3962,14 @@ async function collectReport(days) {
   let availability = lastAvailability;
   if (!availability) { try { availability = await refreshAvailability(); } catch (e) { availability = null; } }
 
-  // 6. 备份
-  let backup = null;
-  try {
-    const dirs = fs.readdirSync(BACKUP_DIR).filter(n => n.startsWith('backup_'));
-    const list = dirs.map(n => ({ name: n, mtime: fs.statSync(path.join(BACKUP_DIR, n)).mtimeMs })).sort((a, b) => b.mtime - a.mtime);
-    backup = { latest: list[0] || null, count: list.length, list: list.slice(0, 10).map(x => x.name) };
-  } catch (e) { backup = { error: e.message }; }
-
-  // 7. PII
+  // 6. PII
   let pii = null;
   try {
     const [a, an] = await Promise.all([fetch(`${PRESIDIO_ANALYZER_URL}/health`), fetch(`${PRESIDIO_ANONYMIZER_URL}/health`)]);
     pii = { analyzer: a.ok, anonymizer: an.ok };
   } catch (e) { pii = { error: e.message }; }
 
-  return { generatedAt: now, from, to: now, days, system, products, usage, errors, availability, backup, pii };
+  return { generatedAt: now, from, to: now, days, system, products, usage, errors, availability, pii };
 }
 
 // markdown 单元格转义
@@ -3658,23 +4131,7 @@ function renderReportMarkdown(data, lang, sections) {
     lines.push('');
   }
 
-  // 六、备份状态
-  if (on('backup') && data.backup) {
-    lines.push(`## ${L.secBackup}`);
-    lines.push('');
-    if (data.backup.error) {
-      lines.push(`- ${L.errLabel}：${data.backup.error}`);
-    } else {
-      lines.push(`- ${L.kBackupLatest}：${data.backup.latest ? mdCell(data.backup.latest.name) + '（' + tsFmt(data.backup.latest.mtime) + '）' : L.kBackupNo}`);
-      lines.push(`- ${L.kBackupCount}：${data.backup.count}`);
-      if (data.backup.list && data.backup.list.length) {
-        lines.push(`- ${L.kBackupList}：${data.backup.list.map(mdCell).join('、')}`);
-      }
-    }
-    lines.push('');
-  }
-
-  // 七、PII 脱敏
+  // 六、PII 脱敏
   if (on('pii') && data.pii) {
     lines.push(`## ${L.secPii}`);
     lines.push('');
@@ -4229,90 +4686,34 @@ app.post('/api/ghost/auto-login', keycloak.protect(), protectAdmin('ghost'), asy
 // ═══════════════════════════════════════════
 // 更新 Ghost DSH Desktop 页面（供 sync_download.py 调用）
 // ═══════════════════════════════════════════
-app.post('/api/ghost/update-dsh-page', async (req, res) => {
-  try {
-    const { version, date, files, all_versions } = req.body;
-    if (!version) return res.status(400).json({ error: 'Missing version' });
-    
-    const UPDATE_BASE = 'http://192.168.31.117:8091/dsh';
-    const SLUG = 'dsh';
-    
-    // 平台图标 SVG
-    const platformIcons = {
-      'windows-x64': '<svg viewBox="0 0 88 88" width="26" height="26"><path fill="#357ec7" d="M0 12.4 36.1 7.5v34.4H0zM39.6 7.2 88 0v41.9H39.6zM0 45.9h36.1v34.6L0 75.6zM39.6 45.9H88V88l-48.4-6.6z"/></svg>',
-      'mac-x64': '<svg viewBox="0 0 384 512" width="22" height="26"><path fill="#555" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>',
-      'mac-arm64': '<svg viewBox="0 0 384 512" width="22" height="26"><path fill="#555" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>'
-    };
-    
-    const platformNames = {
-      'windows-x64': 'Windows x64',
-      'mac-x64': 'macOS x64 (Intel)',
-      'mac-arm64': 'macOS ARM64 (Apple Silicon)'
-    };
-    
-    // 构建最新版本的下载卡片
-    const latestCards = Object.entries(files || {}).map(([platform, filename]) => {
-      const name = platformNames[platform] || platform;
-      const icon = platformIcons[platform] || '';
-      return `<div class="dc-card"><div class="dc-os-icon">${icon}</div><h3>${name}</h3><p class="dc-meta">${version} · ${filename}</p><a class="dc-btn" href="${UPDATE_BASE}/${version}/${filename}?ref=192.168.31.117">下载</a></div>`;
-    }).join('');
-    
-    // 构建版本历史
-    const versions = all_versions || [{ version, date, files }];
-    const historyItems = versions.map(v => {
-      const vFiles = v.files || {};
-      const fileLinks = Object.entries(vFiles).map(([platform, filename]) => {
-        const name = platformNames[platform] || platform;
-        return `<a class="dc-hist-link" href="${UPDATE_BASE}/${v.version}/${filename}?ref=192.168.31.117">${name}</a>`;
-      }).join('');
-      return `<li class="dc-tl-item" data-version="${v.version}"><span class="dc-tl-dot"></span><span class="dc-ver">${v.version}</span><span class="dc-note">${v.date || ''}</span><span class="dc-hist-links">${fileLinks}</span></li>`;
-    }).join('');
-    
-    // 构建完整的页面 HTML（带 CSS 样式，与原有页面风格一致）
-    const newContent = `<style>
-.dc-download {
-  --dc-accent: #4f46e5; --dc-accent-2: #7c3aed;
-  --dc-heading: #111827; --dc-text: #1f2937; --dc-muted: #6b7280;
-  --dc-border: #e5e7eb; --dc-card: #ffffff; --dc-icon-bg: #f3f4f6; --dc-hover: #f9fafb;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
-    "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: var(--dc-text); line-height: 1.6; margin-top: 8px;
-  -webkit-font-smoothing: antialiased;
-}
+// ═══════════════════════════════════════════
+// Ghost /dsh/ 客户端下载页 —— 完全由「已同步版本」表驱动
+// ═══════════════════════════════════════════
+// 页面是静态骨架 + 浏览器端取数：版本数据来自 /api/dsh/data，也就是 SQLite 的 versions 表。
+// 这样 versions 表一改，页面立刻跟着变，不需要反复重写 Ghost 数据库、也不用重启 Ghost。
+// 展示规则：下载卡片 = 最新版；「版本历史」= 除最新版之外的其余版本（版本号倒序）。
+const DSH_UPDATE_BASE = `${SERVER_PUBLIC_URL}:8091/dsh`;
+const DSH_API_BASE = `${SERVER_PUBLIC_URL}:10086/api/dsh`;
+const DSH_MCP_ADDR = `${SERVER_PUBLIC_URL.replace(/^https?:\/\//, '')}:3100/mcp`;
+
+function buildDshPageHtml() {
+  return `<style>
+.dc-download { --dc-accent: #4f46e5; --dc-accent-2: #7c3aed; --dc-heading: #111827; --dc-text: #1f2937; --dc-muted: #6b7280; --dc-border: #e5e7eb; --dc-card: #ffffff; --dc-icon-bg: #f3f4f6; --dc-hover: #f9fafb; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--dc-text); line-height: 1.6; margin-top: 8px; -webkit-font-smoothing: antialiased; }
 .dc-download * { box-sizing: border-box; }
 .dc-hero { text-align: center; padding: 4px 0 28px; }
-.dc-hero .dc-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: linear-gradient(135deg, rgba(79,70,229,.09), rgba(124,58,237,.09));
-  color: var(--dc-accent); border: 1px solid rgba(79,70,229,.2);
-  padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
-}
+.dc-hero .dc-badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(79,70,229,.09), rgba(124,58,237,.09)); color: var(--dc-accent); border: 1px solid rgba(79,70,229,.2); padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
 .dc-hero h2 { font-size: 30px; font-weight: 800; margin: 16px 0 8px; letter-spacing: -.02em; color: var(--dc-heading); }
 .dc-hero .dc-sub { color: var(--dc-muted); font-size: 15px; margin: 0; }
 .dc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
-.dc-card {
-  border: 1px solid var(--dc-border); border-radius: 16px; padding: 26px 20px;
-  background: var(--dc-card); box-shadow: 0 1px 2px rgba(16,24,40,.05);
-  text-align: center; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-}
+.dc-card { border: 1px solid var(--dc-border); border-radius: 16px; padding: 26px 20px; background: var(--dc-card); box-shadow: 0 1px 2px rgba(16,24,40,.05); text-align: center; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
 .dc-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(16,24,40,.09); border-color: rgba(79,70,229,.32); }
 .dc-os-icon { width: 54px; height: 54px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--dc-icon-bg); }
 .dc-card h3 { font-size: 17px; font-weight: 700; margin: 0 0 6px; color: var(--dc-heading); }
 .dc-card .dc-meta { color: var(--dc-muted); font-size: 12px; margin: 0 0 16px; word-break: break-all; }
-.dc-btn {
-  display: inline-block; padding: 10px 24px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--dc-accent), var(--dc-accent-2));
-  color: #fff !important; text-decoration: none !important; font-weight: 600; font-size: 14px;
-  box-shadow: 0 4px 14px rgba(79,70,229,.28);
-}
+.dc-btn { display: inline-block; padding: 10px 24px; border-radius: 10px; background: linear-gradient(135deg, var(--dc-accent), var(--dc-accent-2)); color: #fff !important; text-decoration: none !important; font-weight: 600; font-size: 14px; box-shadow: 0 4px 14px rgba(79,70,229,.28); }
 .dc-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(79,70,229,.36); }
 .dc-changelog { margin-top: 34px; }
-.dc-sec-title {
-  font-size: 13px; font-weight: 700; color: var(--dc-heading);
-  text-transform: uppercase; letter-spacing: .07em; margin: 0 0 14px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--dc-border);
-}
+.dc-sec-title { font-size: 13px; font-weight: 700; color: var(--dc-heading); text-transform: uppercase; letter-spacing: .07em; margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--dc-border); }
 .dc-timeline { list-style: none; margin: 0; padding: 0; }
 .dc-tl-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; flex-wrap: wrap; }
 .dc-tl-item:hover { background: var(--dc-hover); }
@@ -4320,26 +4721,15 @@ app.post('/api/ghost/update-dsh-page', async (req, res) => {
 .dc-ver { font-weight: 700; color: var(--dc-heading); font-size: 14px; font-variant-numeric: tabular-nums; }
 .dc-note { color: var(--dc-muted); font-size: 13px; }
 .dc-hist-links { display: inline-flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
-.dc-hist-link {
-  font-size: 12px; font-weight: 600; color: var(--dc-accent);
-  text-decoration: none; border: 1px solid rgba(79,70,229,.25);
-  padding: 2px 10px; border-radius: 999px; background: var(--dc-card);
-}
+.dc-hist-link { font-size: 12px; font-weight: 600; color: var(--dc-accent); text-decoration: none; border: 1px solid rgba(79,70,229,.25); padding: 2px 10px; border-radius: 999px; background: var(--dc-card); }
 .dc-hist-link:hover { background: rgba(79,70,229,.08); }
-.dc-first {
-  margin: 0 0 22px; padding: 16px 18px; border: 1px solid rgba(79,70,229,.25);
-  border-left: 4px solid var(--dc-accent); border-radius: 12px; background: rgba(79,70,229,.06);
-}
+.dc-first { margin: 0 0 22px; padding: 16px 18px; border: 1px solid rgba(79,70,229,.25); border-left: 4px solid var(--dc-accent); border-radius: 12px; background: rgba(79,70,229,.06); }
 .dc-first h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: var(--dc-heading); }
 .dc-first p { margin: 0 0 6px; font-size: 14px; color: var(--dc-text); }
-.dc-first .dc-first-url {
-  display: inline-block; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 13px; color: var(--dc-accent); background: var(--dc-card);
-  border: 1px solid var(--dc-border); padding: 4px 10px; border-radius: 6px; word-break: break-all;
-}
+.dc-first .dc-first-url { display: inline-block; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 13px; color: var(--dc-accent); background: var(--dc-card); border: 1px solid var(--dc-border); padding: 4px 10px; border-radius: 6px; word-break: break-all; }
 </style><div class="dc-download">
   <div class="dc-hero">
-    <span class="dc-badge">最新版本 ${version}</span>
+    <span class="dc-badge" id="dcBadge">最新版本 …</span>
     <h2>DSH Desktop</h2>
     <p class="dc-sub">企业内网 AI 桌面客户端（DeepSeek Harness），选择你的平台开始下载</p>
   </div>
@@ -4347,17 +4737,183 @@ app.post('/api/ghost/update-dsh-page', async (req, res) => {
     <h3>🔗 接入平台 MCP（平台工具 + RAG 知识库检索）</h3>
     <p>DSH Desktop 通过 MCP 客户端插件（<code>@deepseek-ai/dsh-mcp-client</code>）接入平台 MCP 网关，接入后即可在对话里调用平台内置工具（含 <code>search_knowledge</code> 知识库检索）。</p>
     <p>在 MCP 客户端插件中新增服务器，传输方式选 <b>Streamable HTTP</b>，地址填：</p>
-    <span class="dc-first-url">192.168.31.117:3100/mcp</span>
+    <span class="dc-first-url">${DSH_MCP_ADDR}</span>
   </div>
-  <div class="dc-grid">${latestCards}</div>
+  <div class="dc-grid" id="dcGrid"><div class="dc-note">加载中…</div></div>
   <div class="dc-changelog">
     <h3 class="dc-sec-title">版本历史</h3>
-    <ul class="dc-timeline">${historyItems}</ul>
+    <ul class="dc-timeline" id="dcHistory"><li class="dc-note">加载中…</li></ul>
   </div>
-</div>`;
+</div>
+<script>
+(function () {
+  var BASE = '${DSH_UPDATE_BASE}';
+  var API = '${DSH_API_BASE}';
+  var ICONS = {
+    'windows-x64': '<svg viewBox="0 0 88 88" width="26" height="26"><path fill="#357ec7" d="M0 12.4 36.1 7.5v34.4H0zM39.6 7.2 88 0v41.9H39.6zM0 45.9h36.1v34.6L0 75.6zM39.6 45.9H88V88l-48.4-6.6z"/></svg>',
+    'mac-x64': '<svg viewBox="0 0 384 512" width="22" height="26"><path fill="#555" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>',
+    'mac-arm64': '<svg viewBox="0 0 384 512" width="22" height="26"><path fill="#555" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>'
+  };
+  var NAMES = { 'windows-x64': 'Windows x64', 'mac-x64': 'macOS x64 (Intel)', 'mac-arm64': 'macOS ARM64 (Apple Silicon)' };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  var grid = document.getElementById('dcGrid');
+  var hist = document.getElementById('dcHistory');
+  var badge = document.getElementById('dcBadge');
+  fetch(API + '/data').then(function (r) { return r.json(); }).then(function (data) {
+    var versions = (data.versions || []);
+    if (!versions.length) {
+      if (grid) grid.innerHTML = '<div class="dc-note">暂无已同步版本</div>';
+      if (hist) hist.innerHTML = '<li class="dc-note">暂无历史版本</li>';
+      return;
+    }
+    // 版本表按版本号倒序返回，第一条即最新版
+    var latest = versions[0];
+    var history = versions.slice(1);   // 历史版本：只显示最新版之前的各个版本
+    if (badge) badge.textContent = '最新版本 ' + latest.version;
+    if (grid) {
+      var files = latest.files || {};
+      grid.innerHTML = Object.keys(files).map(function (p) {
+        var href = BASE + '/' + latest.version + '/' + files[p];
+        return '<div class="dc-card"><div class="dc-os-icon">' + (ICONS[p] || '') + '</div>'
+          + '<h3>' + esc(NAMES[p] || p) + '</h3>'
+          + '<p class="dc-meta">' + esc(latest.version) + ' · ' + esc(files[p]) + '</p>'
+          + '<a class="dc-btn" href="' + esc(href) + '">下载</a></div>';
+      }).join('');
+    }
+    if (hist) {
+      if (!history.length) {
+        hist.innerHTML = '<li class="dc-note">暂无历史版本</li>';
+      } else {
+        hist.innerHTML = history.map(function (v) {
+          var f = v.files || {};
+          var links = Object.keys(f).map(function (p) {
+            return '<a class="dc-hist-link" href="' + esc(BASE + '/' + v.version + '/' + f[p]) + '">' + esc(NAMES[p] || p) + '</a>';
+          }).join('');
+          return '<li class="dc-tl-item"><span class="dc-tl-dot"></span>'
+            + '<span class="dc-ver">' + esc(v.version) + '</span>'
+            + '<span class="dc-note">' + esc(v.date || '') + '</span>'
+            + '<span class="dc-hist-links">' + links + '</span></li>';
+        }).join('');
+      }
+    }
+  }).catch(function () {
+    if (grid) grid.innerHTML = '<div class="dc-note">加载失败，请刷新重试</div>';
+    if (hist) hist.innerHTML = '<li class="dc-note">加载失败，请刷新重试</li>';
+  });
+})();
+</script>`;
+}
+
+// 把上面生成的 HTML 写进 Ghost 的 posts 表（slug=dsh）。
+// 内容与库里已有的完全一致时直接跳过，避免无谓地重启 Ghost。
+app.post('/api/ghost/rebuild-dsh-page', async (req, res) => {
+  const SLUG = 'dsh';
+  const GHOST_CONTAINER = 'ghost';
+  const ghostDbPath = '/var/lib/ghost/content/data/ghost.db';
+  const localTmpDb = '/tmp/ghost_rebuild.db';
+  try {
+    const html = buildDshPageHtml();
+
+    // 1. 从 Ghost 容器取出 ghost.db
+    const container = docker.getContainer(GHOST_CONTAINER);
+    const dbStream = await container.getArchive({ path: ghostDbPath });
+    const chunks = [];
+    for await (const chunk of dbStream) chunks.push(chunk);
+    const tarBuffer = Buffer.concat(chunks);
+
+    const tar = require('tar-stream');
+    const extract = tar.extract();
+    let dbBuffer = null;
+    extract.on('entry', (header, stream, next) => {
+      const dataChunks = [];
+      stream.on('data', d => dataChunks.push(d));
+      stream.on('end', () => { dbBuffer = Buffer.concat(dataChunks); next(); });
+    });
+    extract.end(tarBuffer);
+    await new Promise(resolve => extract.on('finish', resolve));
+    if (!dbBuffer) throw new Error('Failed to extract ghost.db from container');
+    fs.writeFileSync(localTmpDb, dbBuffer);
+
+    // 2. 读当前 HTML 并对比。用 sql.js（admin-portal 容器里没有 python3，别再走 python）。
+    //    页面 HTML 与版本号无关（数据由浏览器端拉取），所以第二次往后基本都是 SAME。
+    const initSqlJs = require('sql.js');
+    const SQL = await initSqlJs();
+    const db = new SQL.Database(fs.readFileSync(localTmpDb));
+    let current = null;
+    let found = false;
+    const stmt = db.prepare('SELECT html FROM posts WHERE slug = ?');
+    stmt.bind([SLUG]);
+    if (stmt.step()) { found = true; current = stmt.getAsObject().html || ''; }
+    stmt.free();
+
+    if (!found) {
+      db.close();
+      return res.status(404).json({ error: 'Ghost 里找不到 slug=dsh 的页面' });
+    }
+    if (current === html) {
+      db.close();
+      return res.json({ ok: true, skipped: true, message: 'DSH 页面已是最新，未改动' });
+    }
+
+    const EXCERPT = 'DSH Desktop 客户端安装包下载（Windows / macOS，最新版与历史版本）';
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    db.run('UPDATE posts SET html = ?, mobiledoc = NULL, updated_at = ? WHERE slug = ?', [html, now, SLUG]);
+    db.run(`UPDATE posts_meta SET meta_title = ?, meta_description = ?, og_title = ?, og_description = ?, twitter_title = ?, twitter_description = ? WHERE post_id = (SELECT id FROM posts WHERE slug = ?)`,
+      ['DSH Desktop 下载', EXCERPT, 'DSH Desktop 下载', EXCERPT, 'DSH Desktop 下载', EXCERPT, SLUG]);
+    fs.writeFileSync(localTmpDb, Buffer.from(db.export()));
+    db.close();
+    console.log('[ghost-rebuild] ghost.db updated (html len=' + html.length + ')');
+
+    // 3. 把改好的 ghost.db 放回容器。
+    //    先停 Ghost：直接覆盖正在被 Ghost 打开的库有并发写丢失的风险。
+    const updatedDb = fs.readFileSync(localTmpDb);
+    const tarPack = tar.pack();
+    tarPack.entry({ name: 'ghost.db' }, updatedDb);
+    tarPack.finalize();
+    const packChunks = [];
+    for await (const chunk of tarPack) packChunks.push(chunk);
+
+    try {
+      await container.stop({ t: 10 });
+      console.log('[ghost-rebuild] Ghost stopped');
+    } catch (e) {
+      console.log('[ghost-rebuild] Ghost stop warning:', e.message);
+    }
+    try {
+      await container.putArchive(Buffer.concat(packChunks), { path: '/var/lib/ghost/content/data' });
+      console.log('[ghost-rebuild] ghost.db written back');
+    } finally {
+      try {
+        await container.start();
+        console.log('[ghost-rebuild] Ghost started');
+      } catch (e) {
+        console.log('[ghost-rebuild] Ghost start warning:', e.message);
+      }
+    }
+
+    res.json({ ok: true, updated: true, message: 'DSH 页面已按版本表重建' });
+  } catch (e) {
+    console.error('[ghost-rebuild] Error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 注意：旧的 /api/ghost/update-dsh-page 已废弃（它只改标题/描述、不重写 HTML，
+// 这正是以前下载页一直停在旧版本的原因）。保留仅为兼容老调用方，新代码请用 rebuild-dsh-page。
+app.post('/api/ghost/update-dsh-page', async (req, res) => {
+  try {
+    const { version } = req.body;
+    if (!version) return res.status(400).json({ error: 'Missing version' });
     
-    // 直接更新 Ghost 数据库（在 admin-portal 容器中用 Python + sqlite3）
-    console.log('[ghost-update] Updating Ghost database via Python in admin-portal...');
+    const SLUG = 'dsh';
+    
+    // 只更新 meta 信息（标题、描述），不覆盖 HTML 内容
+    // HTML 内容由 ghost-dsh-v3.js 维护（JavaScript 动态加载版本历史）
+    console.log('[ghost-update] Updating meta info only, keeping JavaScript dynamic loading...');
     
     const GHOST_CONTAINER = 'ghost';
     const localTmpDb = '/tmp/ghost_update.db';
@@ -4387,38 +4943,25 @@ app.post('/api/ghost/update-dsh-page', async (req, res) => {
     fs.writeFileSync(localTmpDb, dbBuffer);
     console.log('[ghost-update] Copied ghost.db to local temp');
     
-    // 2. 用 Python 更新数据库（写临时脚本文件再执行，避免命令行转义问题）
+    // 2. 用 Python 只更新 meta 信息（不覆盖 HTML）
     const { execSync } = require('child_process');
     const pyScriptPath = '/tmp/ghost_update.py';
     const pyScript = `#!/usr/bin/env python3
-import sqlite3, json
+import sqlite3
 from datetime import datetime, timezone
 
 DB_PATH = '${localTmpDb}'
 SLUG = '${SLUG}'
 VERSION = '${version}'
 
-html = open('/tmp/ghost_html.txt', 'r', encoding='utf-8').read()
-
-lexical = json.dumps({
-    "root": {
-        "children": [{"type": "html", "version": 1, "html": html}],
-        "direction": None, "format": "", "indent": 0, "type": "root", "version": 1
-    }
-})
-
-mobiledoc = json.dumps({
-    "version": "0.3.1", "markups": [], "atoms": [],
-    "cards": [["html", {"html": html}]],
-    "sections": [[10, 0]]
-})
-
 now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
 db = sqlite3.connect(DB_PATH)
 c = db.cursor()
-c.execute('UPDATE posts SET lexical=?, mobiledoc=?, html=?, updated_at=? WHERE slug=?',
-          (lexical, mobiledoc, html, now, SLUG))
+
+# 只更新 meta 信息，不覆盖 HTML 内容
+c.execute('''UPDATE posts SET title=?, updated_at=? WHERE slug=?''',
+          (f'DSH Desktop {VERSION}', now, SLUG))
 c.execute('''UPDATE posts_meta SET 
     meta_title=?, meta_description=?, og_title=?, og_description=?, 
     twitter_title=?, twitter_description=? 
@@ -4429,10 +4972,9 @@ c.execute('''UPDATE posts_meta SET
      SLUG))
 db.commit()
 db.close()
-print('OK')
+print('OK - meta updated, HTML preserved')
 `;
     fs.writeFileSync(pyScriptPath, pyScript);
-    fs.writeFileSync('/tmp/ghost_html.txt', newContent);
     
     const pyResult = execSync(`python3 ${pyScriptPath}`, { encoding: 'utf8' });
     console.log('[ghost-update] Python result:', pyResult.trim());
@@ -4457,10 +4999,7 @@ print('OK')
       console.log('[ghost-update] Ghost restart warning:', e.message);
     }
     
-    // 清理临时文件
-    try { fs.unlinkSync(localTmpDb); } catch (e) {}
-    
-    res.json({ ok: true, message: `Updated DSH Desktop page to ${version}` });
+    res.json({ ok: true, message: `Ghost page meta updated to ${version}` });
   } catch (e) {
     console.error('[ghost-update] Error:', e.message);
     res.status(500).json({ error: e.message });

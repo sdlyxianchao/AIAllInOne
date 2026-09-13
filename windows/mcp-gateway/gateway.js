@@ -343,6 +343,7 @@ function dirSize(dir) {
 function discoverSkills() {
   const skills = [];
   if (!fs.existsSync(SKILLS_DIR)) return skills;
+  const base = PUBLIC_URL ? `${PUBLIC_URL}:${PORT}` : `http://localhost:${PORT}`;
   for (const entry of fs.readdirSync(SKILLS_DIR, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const dir = path.join(SKILLS_DIR, entry.name);
@@ -355,16 +356,17 @@ function discoverSkills() {
       description: meta.description || '',
       version: meta.version || '',
       size: dirSize(dir),
-      zipUrl: `/skills/${entry.name}.zip`,
+      zipUrl: `${base}/skills/${entry.name}.zip`,
     });
   }
   return skills;
 }
 
 app.get('/skills', (req, res) => {
+  const base = PUBLIC_URL ? `${PUBLIC_URL}:${PORT}` : `http://localhost:${PORT}`;
   res.json({
     skills: discoverSkills(),
-    install: 'DSH 的技能通过插件安装（dsh plugin add），技能包地址 http://<服务器IP>:3100/skills/<名称>.zip',
+    install: `DSH 的技能通过插件安装（dsh plugin add），技能包地址 ${base}/skills/<名称>.zip`,
   });
 });
 

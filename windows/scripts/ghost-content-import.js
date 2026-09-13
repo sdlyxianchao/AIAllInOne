@@ -58,11 +58,11 @@ function get(sql, params) {
       await run(
         `INSERT INTO posts (id, uuid, title, slug, mobiledoc, lexical, html, plaintext,
            feature_image, type, status, locale, created_at, created_by, updated_at, updated_by,
-           published_at, published_by, custom_excerpt)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+           published_at, published_by, custom_excerpt, email_recipient_filter)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
         [id, uuid, repl(p.title), p.slug, repl(p.mobiledoc), repl(p.lexical), repl(p.html),
          repl(p.plaintext), repl(p.feature_image), p.type, p.status || 'published', 'en',
-         ts, authorId, ts, authorId, ts, authorId, repl(p.custom_excerpt)]
+         ts, authorId, ts, authorId, ts, authorId, repl(p.custom_excerpt), 'none']
       );
       await run("INSERT INTO posts_authors (id, post_id, author_id, sort_order) VALUES (?,?,?,?)",
         [genId(), id, authorId, 0]);

@@ -2384,7 +2384,7 @@ cd ..</code></pre>
   <li><b>系统设置</b>：环境变量说明 + 产品入口 URL + <b>界面语言（9 种：简中/繁中/英/法/西/葡/日/韩/阿，阿拉伯语支持 RTL 从右到左）</b>。</li>
   <li><b>🧬 PII 脱敏</b>：展示 Presidio analyzer/anonymizer 健康状态 + LiteLLM guardrails（content-safety-filter / presidio-pii-mask）规则清单 + 已接入模型。</li>
   <li><b>📜 统一日志</b>：按容器下拉 + 关键字 + 时间范围查 Loki 聚合日志（后端 <code>/api/logs/query</code>）。</li>
-  <li><b>💾 备份与恢复</b>：备份列表 + 「立即备份」+ 一键恢复（后端 <code>/api/backup/list|run|restore</code>，经 docker.sock + <code>C:\AIAllInOne\backups</code> 挂载实现，与 backup.ps1 同格式）。</li>
+  <li><b>💾 备份与恢复</b>：独立脚本 <code>Backup\backup-docker.ps1</code> 两级备份（L1 快照 + L2 VHDX）+ 完整性校验）。</li>
   <li><b>📄 报告生成</b>：按条件（统计周期 1/7/30/90 天 + 勾选包含模块）生成系统详细报告，覆盖系统总览、产品健康状态、使用统计（调用/Token/成本，按用户·模型·天）、客户端统计（按 IP 地址 + 按 API Key 应用）、最近问题（Loki 错误日志汇总 + 可用性失败项 + 停止容器）、可用性测试、备份状态、PII 脱敏状态；报告语言与当前界面语言一致（zh/en，其他语言回退英文）；可导出 <code>.md</code> 文件（后端 <code>/api/report?days=&lang=&sections=</code>）。</li>
   <li><b>监控告警 / LLM 可观测</b>：内嵌统计页（Prometheus targets/告警数、Langfuse 版本/trace 数）+ 打开大盘按钮。</li>
   <li><b>🩺 可用性测试</b>：定时（默认每 10 分钟，<code>AVAILABILITY_INTERVAL_MIN</code> 可调）+ 手动「测试所有」+ 每项单独测试；覆盖 Keycloak 认证 / NewAPI / LiteLLM / DSH Desktop·Dify 聊天（经 NewAPI 发真实对话）/ Ghost / Gitea / MCP / Prometheus / Grafana / Langfuse / Loki / Presidio / SSO / 更新服务器 / 备份 / Docker / Redis；每项卡片下方小窗口输出结果与关键日志。后端 <code>/api/availability|run|test/:id</code>。Dashboard 产品指标区追加「可用性测试」汇总卡。</li>
@@ -2561,7 +2561,7 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
 <div class="verify">验证：发含手机号/邮箱的请求 → 模型回复中原始值被替换为 <code>[REDACTED]</code>；发含「内部机密」的请求 → 直接返回 <code>Content blocked</code>。</div>
 
 <h3>13.2 数据备份与恢复</h3>
-<p>备份脚本 <code>scripts\backup.ps1</code> 每日备份所有关键数据，输出到 <code>C:\AIAllInOne\backups\</code>，自动保留最近 7 天。</p>
+<p>备份脚本 <code>Backup\backup-docker.ps1</code> 每日备份所有关键数据，输出到 <code>C:\AIAllInOne\backups\</code>，自动保留最近 7 天。</p>
 <table>
   <tr><th>备份项</th><th>内容</th><th>方式</th></tr>
   <tr><td>NewAPI</td><td>MySQL（new-api 库：用户/渠道/密钥/日志）</td><td><code>mysqldump</code></td></tr>
@@ -2572,22 +2572,22 @@ C:\AIAllInOne\windows\scripts\health-check.ps1</code></pre>
 </table>
 <div class="step">
   <span class="step-num">1</span><strong>手动执行一次</strong>
-  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code></pre>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\backup-docker.ps1</code></pre>
 </div>
 <div class="step">
   <span class="step-num">2</span><strong>定时执行（Windows 任务计划）</strong>
-  <p>已注册计划任务 <code>AI-Platform-Backup</code>（每天 02:00，当前用户）。如未自动注册，可手动在「任务计划程序」创建：操作 → 新建 → 程序 <code>powershell.exe</code>，参数 <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1</code>，触发器每天 02:00。</p>
+  <p>已注册计划任务 <code>AI-Platform-Backup</code>（每天 02:00，当前用户）。如未自动注册，可手动在「任务计划程序」创建：操作 → 新建 → 程序 <code>powershell.exe</code>，参数 <code>-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\backup-docker.ps1</code>，触发器每天 02:00。</p>
 </div>
 <div class="note">⚠️ 备份文件默认在 C 盘，建议定期把 <code>C:\AIAllInOne\backups\</code> 同步到另一块盘或对象存储，实现异地容灾。</div>
 <div class="step">
-  <span class="step-num">3</span><strong>恢复（<code>scripts\restore.ps1</code>）</strong>
+  <span class="step-num">3</span><strong>恢复（<code>Backup\restore-docker.ps1</code>）</strong>
   <p>从某次备份目录恢复全部数据（MySQL / PostgreSQL / SQLite / 配置）：</p>
-  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
+  <pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\restore-docker.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001</code></pre>
   <p>脚本会要求输入 <code>yes</code> 确认后执行（加 <code>-Force</code> 跳过确认，仅脚本/CI 用）。</p>
 </div>
 <div class="step">
   <span class="step-num">4</span><strong>AI 管理中心「💾 备份与恢复」页</strong>
-  <p>登录 AI 管理中心即可看到备份列表、点击「立即备份」、点某次备份的「恢复」按钮一键恢复（后端经 <code>docker.sock</code> + 挂载的 <code>C:\AIAllInOne\backups</code> 实现，与 backup.ps1 产出同格式备份）。需要 <code>ai-platform-admin</code> 角色。</p>
+  <p>备份功能已移至独立脚本（<code>Backupbackup-docker.ps1</code>），不再在 AI 管理中心展示。</p>
   <div class="note">⚠️ <b>关键坑</b>：旧版 backup.ps1 用 <code>Copy-Item</code> 批量复制配置文件时，点号文件 <code>.env</code> 会导致整批静默失败（<code>-ErrorAction SilentlyContinue</code> 吞错），实测备份里 <code>config/</code> 只有 <code>dify.env</code> + <code>mcp-servers.json</code>。已改为逐文件 <code>-LiteralPath</code> 复制 + 校验。另：AI 管理中心备份用 <code>base64</code> 中转 + <code>tar-fs</code>/<code>putArchive</code> 保证二进制安全（<code>docker exec</code> 的 stdout 走 utf8 会损坏 SQLite .db）。</div>
 </div>
 
@@ -2736,7 +2736,7 @@ schtasks /query /tn "AI-HealthCheck" /v /fo list</code></pre>
 <div class="step">
   <span class="step-num">2</span><strong>每日备份（每天 02:00）</strong>
   <pre><code><span class="comment"># 创建每日备份计划任务</span>
-schtasks /create /tn "AI-Backup" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1" /sc daily /st 02:00 /f
+schtasks /create /tn "AI-Backup" /tr "powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\Backup\backup-docker.ps1" /sc daily /st 02:00 /f
 
 <span class="comment"># 验证</span>
 schtasks /query /tn "AI-Backup" /v /fo list</code></pre>

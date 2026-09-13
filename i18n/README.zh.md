@@ -33,7 +33,7 @@ AI AllInOne 是一套**开源免费**、开箱即用的企业内网 AI 平台：
 | ⚡ **约 30 分钟完成部署** | `docker compose` + 自动化脚本，或直接让 AI Agent 帮你部署整套环境。 |
 | 🛡️ **PII 脱敏** | 手机号 / 身份证 / 邮箱等敏感信息在调用外部大模型前自动脱敏（Presidio）。 |
 | 📊 **全链路可观测** | Prometheus + Grafana 监控、Langfuse LLM 追踪、Loki 统一日志、企业 IM 告警（钉钉/企微/飞书）。 |
-| 💾 **备份与恢复** | 管理后台一键每日全量备份和一键恢复。 |
+| 💾 **备份与恢复** | 两级备份（L1 快照 + L2 完整 VHDX），独立 PowerShell 脚本 + 完整性校验。 |
 | 🌐 **9 种语言** | 手册和管理界面多语言（简中 / 繁中 / 英 / 法 / 西 / 葡 / 日 / 韩 / 阿）。 |
 
 ## 📦 组件清单
@@ -54,7 +54,7 @@ AI AllInOne 是一套**开源免费**、开箱即用的企业内网 AI 平台：
 | 监控 | Prometheus + Grafana + Alertmanager | 容器资源监控 + 告警通知 |
 | LLM 可观测 | Langfuse | 追踪每次模型调用的延迟、token、成本 |
 | 统一日志 | Loki + Promtail | 聚合全部容器日志，可按容器/关键字/时间检索 |
-| 备份恢复 | 脚本 + 管理页 | 每日全量备份 + 一键恢复 |
+| 备份恢复 | `Backup/backup-docker.ps1` · `restore-docker.ps1` · `check_backup.ps1` | 两级备份（L1 快照 + L2 VHDX）+ 完整性校验 |
 
 ### 架构与数据流
 
@@ -190,7 +190,7 @@ chmod +x import-images.sh && sudo ./import-images.sh
 - 📝 **写文档和教程**——部署指南、排错经验、最佳实践
 - 🌐 **翻译**——手册已有 9 种语言，帮忙改进或新增更多
 - 🧪 **测试分享**——部署一次，告诉我们哪些好用哪些踩坑
-- 💻 **贡献代码**——集成层（统一 SSO、管理门户、监控、备份）是最好上手的地方
+- 💻 **贡献代码**——集成层（统一 SSO、管理门户、监控）是最好上手的地方
 
 完整指南见 [CONTRIBUTING.md](../CONTRIBUTING.md)，公开的[路线图](#roadmap)可以看到下一步计划。**每一位贡献者都会列入 README 的贡献者名单。**
 
@@ -206,6 +206,17 @@ chmod +x import-images.sh && sudo ./import-images.sh
 - 各平台的坑位、端口表、数据流见对应 `*-deploy-guide*.html` 文档。
 
 ## 📋 更新日志
+
+### v1.08（2026-09-12）
+
+- **变更：备份移至独立脚本** — 备份/恢复功能从 AI 管理中心移除，改为独立 PowerShell 脚本（`Backup/` 目录：`backup-docker.ps1`、`restore-docker.ps1`、`check_backup.ps1`、`fix-backup-task.ps1`）
+- **新增：两级备份** — L1 快照（配置 + 数据库 dump）和 L2 完整备份（额外包含 docker_data.vhdx，可瞬间灾难恢复）
+- **新增：备份完整性校验** — `check_backup.ps1` 提供 5 层检查（路径、完备性、完整性、一致性、自恢复性）
+- **新增：计划任务修复脚本** — `fix-backup-task.ps1` 修复 `0x800710E0` 错误并配置 StartWhenAvailable
+- **修复：DSH 同步文件完整性检查** — 同步时验证所有平台文件是否齐全（而非仅检查版本目录），自动同步和指定版本模式均已覆盖
+- **修复：Gitea Actions 强制停止** — 使用 CANCELTASK 配置标志实现优雅取消；回退到 runner 重启 + DB 更新
+- **改进：Gitea Actions 并发控制** — workflow YAML 通过 `concurrency` 组强制单任务执行
+- **改进：全部文档** — 更新管理员手册（9 种语言）、培训资料、部署指南、AI Agent Ops 指南
 
 ### v1.07（2026-09-08）
 
@@ -297,7 +308,7 @@ chmod +x import-images.sh && sudo ./import-images.sh
 
 > 仓库现在自带一个**现成的运维技能**（[`AIOperation/agent/`](../AIOperation/agent/SKILL.md)），能让任何 AI Agent（WorkBuddy、OpenClaw、Microsoft Scout 等）变成完整的平台运维员——**零服务器特定配置**。不写死 IP、密码和路径：凭据一律从 `.env` 读取，路径自动定位，所以在任何部署了本平台的机器上都能直接用。
 
-**覆盖范围**（全部日常管理）：一键健康检查（41 容器 × 9 阶段）、容器启停/重启与日志排查、配置修改、整个 AI Admin Center——管理员与角色、Keycloak/AD 同步、NewAPI 渠道/令牌/成本、Gitea 同步、Ghost 门户、Dify、MCP Gateway、监控/告警/日志/PII、可用性测试、报告、备份与恢复、IM 告警——以及各三方产品的原生管理（Keycloak 域/角色/客户端、NewAPI 渠道/令牌/用户、LiteLLM 模型/用户/语义缓存、Dify 应用/知识库、Ghost 内容/主题、Gitea 仓库/CI、MCP 网关、Grafana 看板/用户、Langfuse 项目/密钥、Prometheus/Alertmanager/Loki、Update Server），以及版本发布、磁盘清理和故障排查。
+**覆盖范围**（全部日常管理）：一键健康检查（41 容器 × 9 阶段）、容器启停/重启与日志排查、配置修改、整个 AI Admin Center——管理员与角色、Keycloak/AD 同步、NewAPI 渠道/令牌/成本、Gitea 同步、Ghost 门户、Dify、MCP Gateway、监控/告警/日志/PII、可用性测试、报告、IM 告警——以及各三方产品的原生管理（Keycloak 域/角色/客户端、NewAPI 渠道/令牌/用户、LiteLLM 模型/用户/语义缓存、Dify 应用/知识库、Ghost 内容/主题、Gitea 仓库/CI、MCP 网关、Grafana 看板/用户、Langfuse 项目/密钥、Prometheus/Alertmanager/Loki、Update Server），以及版本发布、磁盘清理和故障排查。备份已移至独立脚本（`Backup/` 目录）。
 
 **下载与部署（3 步）：**
 
@@ -325,7 +336,7 @@ chmod +x import-images.sh && sudo ./import-images.sh
 | 修改 AI 管理中心 | 改 `admin-portal/public/index.html`（前端）或 `admin-portal/server.js`（后端）后重启 |
 | 管理 Gitea 与同步 | Gitea API：触发工作流、查看运行状态/日志、编辑仓库文件 |
 | 管理 Ghost 门户 | 读写 Ghost SQLite 库、改主题模板、导入内容种子 |
-| 备份与恢复 | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| 备份与恢复 | `Backup\backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | 发布版本 | `publish.ps1`（构建 + 提交 + 推送到 GitHub） |
 | 排障 | 端口冲突、Docker Desktop 问题、DNS/代理等 |
 

@@ -52,7 +52,7 @@
 | **D5** | M06 Dify 上（模型供应商/聊天助手/Agent） | M06 Dify 下（知识库 RAG / Knowledge API / 工作流 / 发布） | Dify 应用 + 知识库检索可用 |
 | **D6** | M07 Ghost（初始化/Corp Portal 主题/内容种子/下载中心） | M08 Gitea + Runner（Actions / dsh-sync / 工作流语法 / SSO） | 门户发布文章；CI 工作流跑通 |
 | **D7** | M09 DSH Desktop（安装/模型配置/MCP/Skill/更新链路） | M10 MCP Gateway（内置工具/外部 MCP/Skill 市场/RAG 检索） | DSH Desktop 调 search_knowledge 成功 |
-| **D8** | M11 AI 管理中心（初始化/菜单/分模块授权/备份恢复） | M12~M16 运维模块（Update Server/监控告警/Langfuse/Loki/MailHog） | 管理中心全功能可用；告警配置完成 |
+| **D8** | M11 AI 管理中心（初始化/菜单/分模块授权） | M12~M16 运维模块（Update Server/监控告警/Langfuse/Loki/MailHog） | 管理中心全功能可用；告警配置完成 |
 | **D9** | 综合实战一（12 项互连验证 + health-check.ps1 全绿） | 综合实战二 · M17 AI 运维（Agent 驱动巡检/备份/故障演练/发布） | 12 项互连全绿；健康检查 ALL CLEAR |
 | **D10** | 总复习 + 答疑 + 模拟答辩 | 结业考核（理论 100 题 90min + 实操 120min + 答辩） | 三项考核完成并评分、结业 |
 
@@ -76,7 +76,7 @@
 | M08 | Gitea + Runner | 核心 | 3 | Runner 注册与 4 个坑、dsh-sync 工作流（sync-config.json 三开关）、Actions 语法、SSO 自动注册、ROOT_URL | [大纲](06-gitea-runner/培训大纲.md) · [教材](06-gitea-runner/教材.md) · [计划](06-gitea-runner/培训计划.md) · [考试](06-gitea-runner/考试考察.md) · [资料](06-gitea-runner/参考资料清单.md) |
 | M09 | DSH Desktop 桌面客户端 | 核心 | 3 | 安装配置、手动 MCP（跳过至手动配置）、SSE 提示、Skill URL 安装、技能管家（主机名坑）、自动更新链路 | [大纲](07-dsh/培训大纲.md) · [教材](07-dsh/教材.md) · [计划](07-dsh/培训计划.md) · [考试](07-dsh/考试考察.md) · [资料](07-dsh/参考资料清单.md) |
 | M10 | MCP Gateway | 核心 | 3 | MCP 协议、内置 4 工具、外部 Server 聚合、Skill 市场、search_knowledge 全链路（3 个坑）、管理 API | [大纲](09-mcp-gateway/培训大纲.md) · [教材](09-mcp-gateway/教材.md) · [计划](09-mcp-gateway/培训计划.md) · [考试](09-mcp-gateway/考试考察.md) · [资料](09-mcp-gateway/参考资料清单.md) |
-| M11 | AI 管理中心 | 核心 | 4 | Global Admin 初始化、菜单全览、分模块授权（admin:产品 + 产品侧 provision）、备份恢复、可用性测试、报告、IM 告警 | [大纲](10-admin-center/培训大纲.md) · [教材](10-admin-center/教材.md) · [计划](10-admin-center/培训计划.md) · [考试](10-admin-center/考试考察.md) · [资料](10-admin-center/参考资料清单.md) |
+| M11 | AI 管理中心 | 核心 | 4 | Global Admin 初始化、菜单全览、分模块授权（admin:产品 + 产品侧 provision）、可用性测试、报告、IM 告警。备份已移至独立脚本（`Backup/`） | [大纲](10-admin-center/培训大纲.md) · [教材](10-admin-center/教材.md) · [计划](10-admin-center/培训计划.md) · [考试](10-admin-center/考试考察.md) · [资料](10-admin-center/参考资料清单.md) |
 | M12 | Update Server | 基础 | 1 | 分发链路、手工上传验证、latest.yml/version.txt/publish.url、403 属正常、防版本回退 | [大纲](08-update-server/培训大纲.md) · [教材](08-update-server/教材.md) · [计划/考试](08-update-server/培训计划与考试.md) · [资料](08-update-server/参考资料清单.md) |
 | M13 | 监控告警 | 重要 | 2 | cadvisor 采集、大盘操作、两条防误报规则、IM 告警配置（群机器人/企业应用）、端口冲突 | [大纲](11-monitoring/培训大纲.md) · [教材](11-monitoring/教材.md) · [计划/考试](11-monitoring/培训计划与考试.md) · [资料](11-monitoring/参考资料清单.md) |
 | M14 | Langfuse 可观测 | 重要 | 1.5 | trace 解读、V4_WRITE_MODE=dual 坑、SSO 组织绑定坑、成本分析、Prompt 管理入门 | [大纲](12-langfuse/培训大纲.md) · [教材](12-langfuse/教材.md) · [计划/考试](12-langfuse/培训计划与考试.md) · [资料](12-langfuse/参考资料清单.md) |

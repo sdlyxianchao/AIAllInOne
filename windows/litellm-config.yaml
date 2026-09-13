@@ -19,54 +19,19 @@
 # ============================================================
 
 model_list:
-  # --- OpenAI GPT-4o models ---
-  # HOW: requires OPENAI_API_KEY in .env
-  # UNCOMMENT: remove the '#' before each line in this block
-  # - model_name: gpt-4o
-  #   litellm_params:
-  #     model: openai/gpt-4o                # LiteLLM model identifier
-  #     api_key: os.environ/OPENAI_API_KEY   # reads from .env
-  #
-  # - model_name: gpt-4o-mini
-  #   litellm_params:
-  #     model: openai/gpt-4o-mini
-  #     api_key: os.environ/OPENAI_API_KEY
-
-  # --- Anthropic Claude Sonnet 3.5 ---
-  # HOW: requires ANTHROPIC_API_KEY in .env (starts with sk-ant-)
-  # UNCOMMENT: remove the '#' before each line in this block
-  # - model_name: claude-3-5-sonnet-20241022
-  #   litellm_params:
-  #     model: anthropic/claude-3-5-sonnet-20241022
-  #     api_key: os.environ/ANTHROPIC_API_KEY
-
-  # --- DeepSeek Chat (DEFAULT, active) ---
-  # HOW: fill in DEEPSEEK_API_KEY in .env (starts with sk-)
-  # GET KEY: https://platform.deepseek.com → API Keys
-  - model_name: deepseek-chat                # Model name shown in NewAPI
+  # --- 小米 MiMo ---
+  - model_name: mimo-v2.5-pro
     litellm_params:
-      model: openai/deepseek-chat            # Underlying provider/model
-      api_key: os.environ/DEEPSEEK_API_KEY   # Key from .env
-      api_base: https://api.deepseek.com/v1  # DeepSeek API endpoint
-
-  # --- DeepSeek V4 Flash（Agent 优化，DSH 默认模型）---
-  - model_name: deepseek-v4-flash
+      model: openai/mimo-v2.5-pro
+      api_key: os.environ/XIAOMI_API_KEY
+      api_base: https://api.xiaomimimo.com/v1
+  - model_name: mimo-v2.5
     litellm_params:
-      model: openai/deepseek-v4-flash
-      api_key: os.environ/DEEPSEEK_API_KEY
-      api_base: https://api.deepseek.com/v1
-
-  # --- DeepSeek V4 Pro（旗舰 Agent 模型）---
-  - model_name: deepseek-v4-pro
-    litellm_params:
-      model: openai/deepseek-v4-pro
-      api_key: os.environ/DEEPSEEK_API_KEY
-      api_base: https://api.deepseek.com/v1
+      model: openai/mimo-v2.5
+      api_key: os.environ/XIAOMI_API_KEY
+      api_base: https://api.xiaomimimo.com/v1
 
   # --- 本地 embedding：bge-m3（语义缓存 redis-semantic 的向量化模型）---
-  # HOW: 由 dify-embedder 容器提供（transformers + PyTorch CPU），无需外部 Ollama。
-  #      容器经 ai-platform 网络访问 dify-embedder:80。
-  #      首次需从 ModelScope 下载模型到 dify-embedder/model-cache/。
   - model_name: bge-m3
     litellm_params:
       model: openai/bge-m3
@@ -151,8 +116,7 @@ guardrails:
 general_settings:
   # [LiteLLM internal] — Master admin API key for LiteLLM itself
   # NOT an external LLM key. NewAPI uses this to authenticate to LiteLLM.
-  # Value comes from .env (LITELLM_MASTER_KEY), read at runtime.
-  master_key: os.environ/LITELLM_MASTER_KEY
+  master_key: sk-litellm-admin-2026
 
 # ============================================================
 # Response Caching — Redis Semantic Cache（语义缓存，推荐）
@@ -180,4 +144,8 @@ litellm_settings:
   # 每次调用（提示词/响应/模型/延迟/成本/token）上报到 Langfuse 做追踪分析。
   # 端点由环境变量 LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY / LANGFUSE_HOST 指定。
   success_callback: ["langfuse"]
+  langfuse_public_key: os.environ/LANGFUSE_PUBLIC_KEY
+  langfuse_secret_key: os.environ/LANGFUSE_SECRET_KEY
+  langfuse_host: os.environ/LANGFUSE_HOST
+  langfuse_debug: true
 

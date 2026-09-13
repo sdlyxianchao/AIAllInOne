@@ -48,7 +48,7 @@
 | AI 관리 센터 편집 | `admin-portal/public/index.html`(UI) 또는 `admin-portal/server.js`(API) 편집 |
 | Gitea + 동기화 관리 | Gitea API: 워크플로 트리거, 실행 상태/로그 조회, 저장소 파일 편집 |
 | Ghost 포털 관리 | Ghost SQLite DB 읽기/쓰기, 테마 템플릿 편집, 샘플 콘텐츠 임포트 |
-| 백업·복원 | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| 백업·복원 | `Backup/backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | 릴리스 게시 | `publish.ps1`(빌드 + 커밋 + GitHub 푸시) |
 | 정리 | `docker image prune`, 오래된 백업 삭제 등(확인 필요) |
 | 문제 해결 | 포트 충돌, Docker Desktop 문제, DNS/프록시 등 |

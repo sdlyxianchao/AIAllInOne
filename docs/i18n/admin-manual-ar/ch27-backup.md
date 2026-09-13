@@ -2,53 +2,60 @@
 
 *الجزء الثالث · قسم التشغيل والصيانة*
 
-> نسخ احتياطي يومي كامل للبيانات واستعادة بضغطة واحدة.
+> نسخ احتياطي بمستويين، التحقق من التكامل، سكريبتات مستقلة.
 
 [← الفصل 26: مستقبل البريد MailHog](ch26-ops-mailhog.md) · [📖 الفهرس](index.md) · [الفصل 28: الفحص الصحي والفحص الذاتي عند الإقلاع →](ch28-healthcheck.md)
 
 ---
 
-**المدخل**: صفحة «💾 النسخ الاحتياطي والاستعادة» في مركز إدارة الذكاء الاصطناعي، أو سطر الأوامر `scripts/backup.ps1` / `restore.ps1`. يُنفَّذ نسخ احتياطي تلقائي يوميًا عند الساعة 02:00 عبر مهمة مجدولة مع الاحتفاظ بـ 7 أيام.
+**الموقع**: `C:\AIAllInOne\Backup\` — سكريبتات PowerShell مستقلة عن مركز إدارة الذكاء الاصطناعي.
 
-## 27.1 عناصر النسخ الاحتياطي
-
-| عنصر النسخ | الطريقة |
+| السكريبت | الاستخدام |
 | --- | --- |
-| NewAPI MySQL | `mysqldump` |
-| Dify PostgreSQL | `pg_dump` |
-| Langfuse PostgreSQL | `pg_dump` |
-| Ghost / Gitea / Grafana SQLite | نسخ الملفات |
-| Keycloak | **realm export (JSON)** |
-| ملفات الإعداد | نسخ الملفات |
+| `backup-docker.ps1` | النسخ الاحتياطي (مستويان) |
+| `restore-docker.ps1` | الاستعادة (استراتيجيتان) |
+| `check_backup.ps1` | التحقق من التكامل (5 طبقات) |
+| `fix-backup-task.ps1` | إصلاح المهمة المجدولة |
+
+## 27.1 مستويات النسخ الاحتياطي
+
+| المستوى | المحتوى | الاستخدام |
+| --- | --- | --- |
+| **L1** (افتراضي) | ملفات الإعداد + قواعد البيانات | لقطة يومية |
+| **L2** | L1 + `docker_data.vhdx` | استعادة كاملة من الكوارث |
 
 ## 27.2 النسخ الاحتياطي اليدوي
 
+```powershell
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 1
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 2
+C:\AIAllInOne\Backup\backup-docker.ps1 -Level 2 -DryRun
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1
+
+## 27.3 النسخ الاحتياطي المجدول
+
+```powershell
+C:\AIAllInOne\Backup\fix-backup-task.ps1 -Apply -BackupRoot "F:\Backup\Docker"
 ```
-
-## 27.3 النسخ الاحتياطي المجدول (مهمة مجدولة)
-
-سُجّلت المهمة المجدولة `AI-Platform-Backup` بالفعل (يوميًا عند 02:00). وإن لم تُسجَّل تلقائيًا يمكن إنشاؤها يدويًا: برنامج جدولة المهام ← جديد ← البرنامج `powershell.exe` والوسائط `-NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\backup.ps1` والمشغّل يوميًا عند 02:00.
-
-> 📌 يُخزَّن النسخ الاحتياطي افتراضيًا على القرص C؛ ويُنصح بمزامنة `C:\AIAllInOne\backups\` دوريًا إلى قرص آخر أو تخزين كائنات للتعافي من الكوارث في موقع مختلف.
 
 ## 27.4 الاستعادة
 
-```
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\AIAllInOne\windows\scripts\restore.ps1 -BackupDir C:\AIAllInOne\backups\backup_20260814_020001
+```powershell
+C:\AIAllInOne\Backup\restore-docker.ps1 -BackupDir "C:\AIAllInOne\Backup\backups\backup_20260912_020000"
 ```
 
-يطلب السكربت كتابة `yes` للتأكيد (أضف `-Force` لتخطي ذلك، للاستخدام في السكربتات/CI فقط). ويمكن أيضًا الاستعادة بضغطة واحدة من صفحة «النسخ الاحتياطي والاستعادة» في مركز إدارة الذكاء الاصطناعي عبر النقر على «استعادة» الخاصة بنسخة معينة.
+## 27.5 التحقق
 
-## 27.5 نقاط حرجة (مُتحقق منها أثناء التدريب)
+```powershell
+C:\AIAllInOne\Backup\check_backup.ps1 "C:\AIAllInOne\Backup\backups\backup_20260912_020000"
+```
+
+## 27.6 نقاط حرجة
 
 > ⚠️
-> - يجب استخدام **realm export/import (JSON)** مع Keycloak؛ فاستعادة pg_dump ستفقد ارتباط default role وتؤدي إلى تعذر الإقلاع؛
-> - بعد استعادة SQLite يكون المالك root، فيجب تنفيذ chown إلى uid المقابل (grafana=472 وgitea=1000) وإلا سيظهر خطأ readonly؛
-> - استخدم `--clean --if-exists` مع pg_dump لتجنب التعارض عند الاستعادة؛
-> - كان الإصدار القديم من backup.ps1 يستخدم `Copy-Item` للنسخ الجماعي، وكان ملف النقطة `.env` يتسبب في فشل صامت للمجموعة كاملة؛ لذا عُدّل إلى النسخ ملفًا بملف عبر `-LiteralPath`؛
-> - يستخدم النسخ الاحتياطي في مركز إدارة الذكاء الاصطناعي تمريرًا عبر base64 + tar-fs لضمان سلامة البيانات الثنائية (لأن stdout الخاص بـ docker exec يعمل بصيغة utf8 وقد يُتلف ملفات SQLite .db).
+> - يجب استخدام **realm export/import (JSON)** مع Keycloak;
+> - L2 يوقف المنصة مؤقتًا;
+> - دائمًا تحقق بـ `check_backup.ps1` قبل الاستعادة.
 
 ---
 

@@ -33,7 +33,7 @@ AI AllInOne is a ready-to-use, **open-source** enterprise intranet AI platform: 
 | ⚡ **Deploy in ~30 minutes** | `docker compose` + automation scripts, or let an AI agent deploy the whole stack for you. |
 | 🛡️ **PII redaction** | Phone numbers / IDs / emails are redacted before calls reach external LLMs (Presidio). |
 | 📊 **Observe everything** | Prometheus + Grafana monitoring, Langfuse LLM tracing, Loki unified logs, IM alerting (DingTalk/WeCom/Feishu). |
-| 💾 **Backup & restore** | One-click daily full backup and restore from the admin portal. |
+| 💾 **Backup & restore** | Two-level backup (L1 snapshot + L2 full VHDX), standalone PowerShell scripts with integrity verification. |
 | 🌐 **9 languages** | Manuals and admin UI localized (zh-CN / zh-TW / en / fr / es / pt / ja / ko / ar). |
 
 ## 📦 What's inside
@@ -54,7 +54,7 @@ AI AllInOne is a ready-to-use, **open-source** enterprise intranet AI platform: 
 | Monitoring | Prometheus + Grafana + Alertmanager | Container resource monitoring + alert notifications |
 | LLM observability | Langfuse | Trace / latency / tokens / cost of every model call |
 | Unified logging | Loki + Promtail | Aggregated, searchable logs from all containers |
-| Backup & restore | scripts + admin page | Daily full backup + one-click restore |
+| Backup & restore | `Backup/backup-docker.ps1` · `restore-docker.ps1` · `check_backup.ps1` | Two-level backup (L1 snapshot + L2 VHDX) + integrity check |
 | AI operations | WorkBuddy / OpenClaw / Microsoft Scout | Operate & maintain the whole platform through an AI agent — see [AI Agent Operations](#ai-agent-operations) |
 
 ### Architecture & data flow
@@ -176,7 +176,7 @@ This project is **open source and free** — it grows through the community. You
 - 📝 **Write docs & tutorials** — deployment guides, troubleshooting, best practices
 - 🌐 **Translate** — manuals are already in 9 languages; help improve or add more
 - 🧪 **Test & share** — deploy it and tell us what worked / what didn't
-- 💻 **Contribute code** — the integration layer (unified SSO, admin portal, monitoring, backup) is the easiest place to start
+- 💻 **Contribute code** — the integration layer (unified SSO, admin portal, monitoring) is the easiest place to start
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadmap](#roadmap) to see what's next. **Every contributor is listed in the README's contributors section.**
 
@@ -192,6 +192,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, and our public [Roadm
 - Per-platform gotchas, port tables, and data flows are in the corresponding `*-deploy-guide*` docs (Markdown / HTML, e.g. `windows/windows-deploy-guide-v2.md`).
 
 ## 📋 Changelog
+
+### v1.08 (2026-09-12)
+
+- **Changed: Backup moved to standalone scripts** — backup/restore removed from AI Admin Center; now uses independent PowerShell scripts in `Backup/` directory (`backup-docker.ps1`, `restore-docker.ps1`, `check_backup.ps1`, `fix-backup-task.ps1`)
+- **New: Two-level backup** — L1 snapshot (config + DB dumps) and L2 full (adds docker_data.vhdx for instant disaster recovery)
+- **New: Backup integrity verification** — `check_backup.ps1` with 5-layer checks (path, completeness, integrity, consistency, self-recovery)
+- **New: Scheduled task fix script** — `fix-backup-task.ps1` repairs `0x800710E0` errors and configures StartWhenAvailable
+- **Fixed: DSH sync file completeness check** — sync now verifies all platform files exist (not just version directory), auto-sync and specific-version modes both checked
+- **Fixed: Gitea Actions force-stop** — uses CANCELTASK config flag for graceful cancellation; falls back to runner restart + DB update
+- **Improved: Gitea Actions concurrency** — workflow YAML enforces single-task execution via `concurrency` group
+- **Improved: All documentation** — updated admin manual (9 languages), training materials, deploy guides, AI Agent Ops guide for new backup scripts
 
 ### v1.07 (2026-09-08)
 
@@ -282,7 +293,7 @@ One star on the top right is the biggest support for this project.
 
 > The repo now ships a **ready-made Ops Skill** at [`AIOperation/agent/`](AIOperation/agent/SKILL.md) that turns any AI agent (WorkBuddy, OpenClaw, Microsoft Scout, or equivalent) into a full platform operator — **with zero server-specific setup**. No IPs, no passwords, no hardcoded paths: credentials are read from `.env`, paths auto-resolve, so it works on **any machine** where this platform is deployed.
 
-**What the skill covers** (all day-to-day management): one-command health checks (41 containers × 9 stages), container start/stop/restart & log troubleshooting, configuration changes, the whole AI Admin Center — admins & roles, Keycloak/AD sync, NewAPI channels/tokens/cost, Gitea sync, Ghost portal, Dify, MCP Gateway, monitoring/alerts/logs/PII, availability tests, reports, backup & restore, IM alerting — **native management of every third-party product** (Keycloak realms/roles/clients, NewAPI channels/tokens, LiteLLM models/users, Dify apps/knowledge bases, Ghost content/themes, Gitea repos/CI, Grafana dashboards/users, Langfuse projects, Prometheus/Alertmanager/Loki, Update Server) — plus version releases, disk cleanup and troubleshooting.
+**What the skill covers** (all day-to-day management): one-command health checks (41 containers × 9 stages), container start/stop/restart & log troubleshooting, configuration changes, the whole AI Admin Center — admins & roles, Keycloak/AD sync, NewAPI channels/tokens/cost, Gitea sync, Ghost portal, Dify, MCP Gateway, monitoring/alerts/logs/PII, availability tests, reports, IM alerting — **native management of every third-party product** (Keycloak realms/roles/clients, NewAPI channels/tokens, LiteLLM models/users, Dify apps/knowledge bases, Ghost content/themes, Gitea repos/CI, Grafana dashboards/users, Langfuse projects, Prometheus/Alertmanager/Loki, Update Server) — plus version releases, disk cleanup and troubleshooting.
 
 **Download & deploy in 3 steps:**
 
@@ -310,7 +321,7 @@ Everything that makes the platform run lives on your machine as **code, config, 
 | Edit the AI Admin Center | edit `admin-portal/public/index.html` (UI) or `admin-portal/server.js` (API), then restart |
 | Manage Gitea + sync | Gitea API: trigger workflows, read run status/logs, edit repo files |
 | Manage the Ghost portal | read/write the Ghost SQLite DB, edit theme templates, import the content seed |
-| Backup & restore | `scripts/backup.ps1` / `scripts/restore.ps1` |
+| Backup & restore | `Backup\backup-docker.ps1` / `restore-docker.ps1` / `check_backup.ps1` |
 | Publish a release | `publish.ps1` (build + commit + push to GitHub) |
 | Troubleshoot | port conflicts, Docker Desktop issues, DNS/proxy, etc. |
 
