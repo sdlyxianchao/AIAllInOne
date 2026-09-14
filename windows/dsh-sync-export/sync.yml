@@ -1,0 +1,23 @@
+name: DSH Desktop Sync
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3-alpine
+    steps:
+      - name: Download sync script from Gitea
+        shell: sh
+        run: |
+          wget -q -O sync_download.py "http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync_download.py"
+          wget -q -O sync-config.json "http://gitea:3000/ai_all_in_one_admin/dsh-sync/raw/branch/main/sync-config.json"
+      - name: Sync DSH Desktop installers
+        shell: sh
+        run: PYTHONUNBUFFERED=1 python3 sync_download.py
+        env:
+          UPDATE_ROOT: /tmp/dsh-sync-output

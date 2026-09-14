@@ -1,0 +1,22 @@
+{{!< default}}
+
+<section class="archive-hero">
+    <div class="container">
+        <div class="archive-eyebrow">栏目</div>
+        <h1 class="archive-title">{{tag.name}}</h1>
+        {{#if tag.description}}
+            <p class="archive-desc">{{tag.description}}</p>
+        {{/if}}
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="post-grid">
+            {{#foreach posts}}
+                {{> post-card}}
+            {{/foreach}}
+        </div>
+        {{pagination}}
+    </div>
+</section>

@@ -1,0 +1,159 @@
+{{!< default}}
+
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="hero-eyebrow">内部工作平台</div>
+        <h1 class="hero-title">{{#if @site.description}}{{@site.description}}{{else}}欢迎进入公司内部门户{{/if}}</h1>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="#latest">浏览最新动态</a>
+            <a class="btn btn-ghost" href="{{@site.url}}/dsh/">下载 DSH Desktop</a>
+            <a class="btn btn-ghost" href="{{@site.url}}/" data-dify-link>访问 Dify</a>
+            <a class="btn btn-ghost" href="#" data-mcp-market-link>访问 MCP/SKILL Market</a>
+        </div>
+    </div>
+</section>
+<script>
+(function () {
+    // Dify 部署在宿主机 80 端口（服务器根路径）：用当前访问地址去掉端口号得到 Dify 入口
+    var el = document.querySelector('[data-dify-link]');
+    if (el) {
+        var base = window.location.origin.replace(/:\d+$/, '');
+        el.setAttribute('href', base + '/');
+    }
+})();
+</script>
+
+<section class="section features">
+    <div class="container">
+        <div class="section-head">
+            <h2 class="section-title">平台能力</h2>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3 class="feature-title">统一认证</h3>
+                <p class="feature-desc">Keycloak SSO 一套账号登录所有产品，支持对接公司 AD 域。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔀</div>
+                <h3 class="feature-title">大模型网关</h3>
+                <p class="feature-desc">NewAPI 统一路由与计费，员工自助申请 API Key。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">模型代理</h3>
+                <p class="feature-desc">LiteLLM 代理 + PII 脱敏 + 响应缓存，安全可控。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI 应用编排</h3>
+                <p class="feature-desc">Dify 低代码搭建智能体与工作流，快速上线业务场景。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">桌面客户端</h3>
+                <p class="feature-desc">DSH Desktop 开箱即用，企业内网 AI 桌面客户端。</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3 class="feature-title">源码管理</h3>
+                <p class="feature-desc">Gitea + CI/CD 自动构建分发，代码资产安全可控。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="latest">
+    <div class="container">
+        <div class="section-head">
+            <h2 class="section-title">最新动态</h2>
+        </div>
+
+        <div class="posts-toolbar">
+            <span class="posts-count"></span>
+            <div class="view-toggle" role="group" aria-label="视图切换">
+                <button type="button" class="view-btn active" data-view="card">卡片</button>
+                <button type="button" class="view-btn" data-view="list">列表</button>
+            </div>
+            <label class="page-size">
+                每页
+                <select data-page-size>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                条
+            </label>
+        </div>
+
+        <div class="post-grid" id="post-grid">
+            {{#foreach posts}}
+                {{> post-card}}
+            {{else}}
+                <p class="empty">暂无内容，请稍后再来。</p>
+            {{/foreach}}
+        </div>
+
+        <div class="posts-pagination" id="posts-pagination">
+            <button type="button" class="pg-btn" data-pg="prev">上一页</button>
+            <span class="pg-info"></span>
+            <button type="button" class="pg-btn" data-pg="next">下一页</button>
+        </div>
+    </div>
+</section>
+<script>
+(function () {
+    var grid = document.getElementById('post-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.post-card');
+    var pag = document.getElementById('posts-pagination');
+    if (!cards.length) { if (pag) pag.style.display = 'none'; return; }
+
+    var pageSize = 10;
+    var page = 1;
+    var info = pag ? pag.querySelector('.pg-info') : null;
+    var prevBtn = pag ? pag.querySelector('[data-pg="prev"]') : null;
+    var nextBtn = pag ? pag.querySelector('[data-pg="next"]') : null;
+    var sizeSel = document.querySelector('[data-page-size]');
+    var countEl = document.querySelector('.posts-count');
+
+    function totalPages() { return Math.ceil(cards.length / pageSize); }
+    function render() {
+        var start = (page - 1) * pageSize;
+        var end = start + pageSize;
+        cards.forEach(function (c, i) {
+            c.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+        var tp = totalPages();
+        if (info) info.textContent = '第 ' + page + ' / ' + tp + ' 页';
+        if (prevBtn) prevBtn.disabled = page <= 1;
+        if (nextBtn) nextBtn.disabled = page >= tp;
+        if (pag) pag.style.display = tp > 1 ? '' : 'none';
+    }
+    function applyView(v) {
+        grid.classList.toggle('list', v === 'list');
+        document.querySelectorAll('.view-btn').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-view') === v);
+        });
+        try { localStorage.setItem('corp-news-view', v); } catch (e) {}
+    }
+
+    if (countEl) countEl.textContent = '共 ' + cards.length + ' 篇';
+
+    document.querySelectorAll('.view-btn').forEach(function (b) {
+        b.addEventListener('click', function () { applyView(b.getAttribute('data-view')); });
+    });
+    if (prevBtn) prevBtn.addEventListener('click', function () { if (page > 1) { page--; render(); } });
+    if (nextBtn) nextBtn.addEventListener('click', function () { if (page < totalPages()) { page++; render(); } });
+    if (sizeSel) sizeSel.addEventListener('change', function () {
+        pageSize = parseInt(sizeSel.value, 10) || 10;
+        page = 1;
+        render();
+    });
+
+    var saved = null;
+    try { saved = localStorage.getItem('corp-news-view'); } catch (e) {}
+    applyView(saved === 'list' ? 'list' : 'card');
+    render();
+})();
+</script>

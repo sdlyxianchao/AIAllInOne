@@ -1,0 +1,151 @@
+# ============================================================
+# LiteLLM Configuration — LLM Proxy + Presidio PII Redaction
+# Mounted as: /app/config.yaml (inside LiteLLM container)
+#
+# Key concept: api_key: os.environ/VARIABLE_NAME
+# The "os.environ/" prefix tells LiteLLM to read the value
+# from the environment variable of the same name in your .env file.
+# If the .env var is empty, LiteLLM will fail for that model.
+#
+# ADDING A MODEL:
+#   1. Add API key to .env (e.g. OPENAI_API_KEY=sk-xxx)
+#   2. Uncomment the model block below
+#   3. Restart: docker compose restart litellm
+#
+# REMOVING A MODEL:
+#   1. Comment out the model block below
+#   2. (Optional) Comment out or empty the key in .env
+#   3. Restart: docker compose restart litellm
+# ============================================================
+
+model_list:
+  # --- 小米 MiMo ---
+  - model_name: mimo-v2.5-pro
+    litellm_params:
+      model: openai/mimo-v2.5-pro
+      api_key: os.environ/XIAOMI_API_KEY
+      api_base: https://api.xiaomimimo.com/v1
+  - model_name: mimo-v2.5
+    litellm_params:
+      model: openai/mimo-v2.5
+      api_key: os.environ/XIAOMI_API_KEY
+      api_base: https://api.xiaomimimo.com/v1
+
+  # --- 本地 embedding：bge-m3（语义缓存 redis-semantic 的向量化模型）---
+  - model_name: bge-m3
+    litellm_params:
+      model: openai/bge-m3
+      api_base: http://dify-embedder:80/v1
+      api_key: "no-key"
+
+# ============================================================
+# Guardrails（内容安全 + PII 脱敏）
+# guardrails 是「顶层键」（不是 litellm_settings 的子键），较新 LiteLLM 版本格式。
+# ============================================================
+guardrails:
+  # --- ① 内置内容过滤器（无需外部服务，立即生效）---
+  # 支持 prebuilt 预设模式 + 自定义正则 + 关键字；action = MASK(脱敏) / BLOCK(拒绝)
+  - guardrail_name: "content-safety-filter"
+    litellm_params:
+      guardrail: litellm_content_filter
+      mode: "pre_call"
+      default_on: true          # 对所有请求生效，无需客户端显式指定
+      patterns:
+        # 中国手机号（11 位，1 开头）
+        - pattern_type: "regex"
+          pattern: '\b1[3-9]\d{9}\b'
+          name: "cn_mobile"
+          action: "MASK"
+        # 中国身份证号（18 位）
+        - pattern_type: "regex"
+          pattern: '\b\d{17}[\dXx]\b'
+          name: "cn_id"
+          action: "MASK"
+        # 银行卡号（16~19 位数字）
+        - pattern_type: "regex"
+          pattern: '\b\d{16,19}\b'
+          name: "bank_card"
+          action: "MASK"
+        # 邮箱（预设模式）
+        - pattern_type: "prebuilt"
+          pattern_name: "email"
+          action: "MASK"
+        # 统一社会信用代码（18 位，含大写字母与数字，企业标识）
+        - pattern_type: "regex"
+          pattern: '\b[0-9A-HJ-NPQRTUWXY]{18}\b'
+          name: "cn_credit_code"
+          action: "MASK"
+        # 中国护照号（E/G 开头 + 8 位数字）
+        - pattern_type: "regex"
+          pattern: '\b[EG]\d{8}\b'
+          name: "cn_passport"
+          action: "MASK"
+        # IPv4 地址
+        - pattern_type: "regex"
+          pattern: '\b\d{1,3}(\.\d{1,3}){3}\b'
+          name: "ip_address"
+          action: "MASK"
+      # 敏感词黑名单（命中即拒绝请求）——按公司实际敏感词自行增删
+      blocked_words:
+        - keyword: "内部机密"
+          action: "BLOCK"
+          description: "公司内部机密信息"
+        - keyword: "商业机密"
+          action: "BLOCK"
+          description: "商业机密信息"
+
+  # --- ② Presidio PII 脱敏（需 presidio 服务）---
+  # 识别英文人名/地址/日期等更细粒度实体，与上方内置正则互补。
+  # 依赖 presidio-analyzer / presidio-anonymizer，端点由
+  # 环境变量 PRESIDIO_ANALYZER_API_BASE / PRESIDIO_ANONYMIZER_API_BASE 指定。
+  - guardrail_name: "presidio-pii-mask"
+    litellm_params:
+      guardrail: presidio
+      mode: ["pre_call", "post_call"]   # pre_call: 发送前脱敏；post_call: 回复后还原
+      default_on: true
+      output_parse_pii: true
+      pii_entities_config:
+        EMAIL_ADDRESS: "MASK"
+        PHONE_NUMBER: "MASK"
+        CREDIT_CARD: "MASK"
+        PERSON: "MASK"
+
+# ============================================================
+# General Settings
+# ============================================================
+general_settings:
+  # [LiteLLM internal] — Master admin API key for LiteLLM itself
+  # NOT an external LLM key. NewAPI uses this to authenticate to LiteLLM.
+  master_key: sk-litellm-admin-2026
+
+# ============================================================
+# Response Caching — Redis Semantic Cache（语义缓存，推荐）
+# 「意思相近」即命中（向量相似度 ≥ similarity_threshold），比 exact-match
+# 大幅提高命中率，直接省外部 LLM 费用。向量化用本地 bge-m3（免费），
+# 向量检索用 Redis RediSearch（redis-stack-server 镜像自带）。
+# 语义命中响应带 x-litellm-semantic-similarity 头，可据此调阈值。
+#   similarity_threshold：0.9+ 接近精确匹配；0.7~0.8 推荐平衡点；0.6~0.7 更激进省钱
+# 建议对确定性任务（知识库问答 / 固定模板 / temperature=0）开启效果最好；
+# 需实时/个性化内容可用请求头 no-cache 绕过。To disable: cache: false。
+# ============================================================
+litellm_settings:
+  # 丢弃上游模型不支持的参数（如 Cherry Studio 发的 reasoning_effort），
+  # 避免 "openai does not support parameters" 400 错误。
+  drop_params: true
+  # 精确匹配缓存（type: redis）：只有完全相同的请求才命中缓存，
+  # 对 Agent（系统提示词恒定、语义相似度会误命中）安全。
+  cache: true
+  cache_params:
+    type: redis
+    host: litellm-redis
+    port: 6379
+    ttl: 3600
+  # --- LLM 可观测（Langfuse）---
+  # 每次调用（提示词/响应/模型/延迟/成本/token）上报到 Langfuse 做追踪分析。
+  # 端点由环境变量 LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY / LANGFUSE_HOST 指定。
+  success_callback: ["langfuse"]
+  langfuse_public_key: os.environ/LANGFUSE_PUBLIC_KEY
+  langfuse_secret_key: os.environ/LANGFUSE_SECRET_KEY
+  langfuse_host: os.environ/LANGFUSE_HOST
+  langfuse_debug: true
+

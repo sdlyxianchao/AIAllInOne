@@ -1,0 +1,71 @@
+# 第16章：LiteLLM 日常管理
+
+*第二部分 · 管理篇（各产品日常操作）*
+
+> PII 脱敏代理：模型列表、脱敏规则、缓存、Langfuse 上报；AI 管理中心可看概览。
+
+[← 第15章：NewAPI 日常管理](ch15-ops-newapi.md) · [📖 目录](index.md) · [第17章：Dify 日常管理 →](ch17-ops-dify.md)
+
+---
+
+## 16.1 AI 管理中心可执行的操作
+
+菜单：**AI 网关与集成 → 🛡️ LiteLLM+PII**。页面显示：
+
+- **概览**：代理状态、模型数量、健康检查；
+- **模型列表**：当前 `litellm-config.yaml` 里配置的全部模型（名称/来源）。
+
+> 📌 页面只读。增删模型、改脱敏/缓存配置都在 LiteLLM 自己的后台或配置文件里完成（见 16.3/16.4）。
+
+![AI 管理中心 LiteLLM+PII 页](../../images/admin-manual/litellm.png)
+
+*图 16-1：AI 管理中心「LiteLLM+PII」页*
+
+
+## 16.2 登录 LiteLLM 管理中心
+
+- **方式一（推荐）**：AI 管理中心 → LiteLLM+PII → 「打开后台」→ 跳 `http://<服务器IP>:4001/ui`，自动登录。
+- **方式二（直连）**：浏览器打开 `http://<服务器IP>:4001/ui` → 用统一账号 `ai_all_in_one_admin` 登录（密码见 `credentials.html`，由 `.env` 的 `UI_USERNAME`/`UI_PASSWORD` 控制）。
+
+> 📌 项目已配置 **Keycloak SSO 自动登录**：访问 `/ui` 自动跳 Keycloak 免密登录（OIDC Client `litellm`，redirect `<服务器IP>:4001/sso/callback`）。若 SSO 失效，用统一账号兜底。
+
+![LiteLLM 管理后台](../../images/admin-manual/product-litellm.png)
+
+*图 16-2：LiteLLM 管理后台 /ui*
+
+
+## 16.3 模型列表维护
+
+编辑 `litellm-config.yaml` 的 `model_list`，增删模型与对应 API Key。加新 provider 的步骤：
+
+1. `.env` 取消 `# OPENAI_API_KEY=` 注释填 Key；
+
+2. `litellm-config.yaml` 取消对应 model 块注释；
+
+3. `docker compose up -d litellm`。
+
+## 16.4 项目相关配置
+
+- **Redis 语义缓存（redis-semantic，v0.93 起默认）**：请求先由本地 `bge-m3` 向量化，与历史请求做相似度比对，**意思相近即命中**（相似度 ≥ `similarity_threshold`，默认 0.8），跨用户共享、直接省外部 LLM 费用（实测命中请求 `Key-Spend: 0.0`，耗时 17s → 0.4s）。配置在 `litellm-config.yaml`：
+  - `cache_params.type: redis-semantic`（替代原 exact-match）；`ttl` 默认 3600 秒，按数据更新频率调；
+  - `similarity_threshold`：0.9+ 接近精确匹配；0.7~0.8 推荐平衡；0.6~0.7 更激进省钱；
+  - `redis_semantic_cache_embedding_model: bge-m3`（model_list 已注册，走宿主机 Ollama，免费）；
+  - 依赖：① `litellm-redis` 镜像为 `redis/redis-stack-server`（RediSearch 向量检索）；② `.env` 的 `OLLAMA_API_BASE`（默认 `http://host.docker.internal:11434`）；③ litellm 容器 `REDIS_PASSWORD=${LITELLM_REDIS_PASSWORD:-}`（RedisSemanticCache 强制要求，可空）。
+  - **验证命中**：连续两次语义相近但措辞不同的请求，第二次响应带 `X-Litellm-Cache-Key` + `X-Litellm-Semantic-Similarity`（实测 0.92）即命中；
+  - **适用建议**：确定性任务（知识库问答 / 固定模板 / `temperature=0`）收益最大；实时/个性化内容用请求头 `no-cache` 绕过；关闭：`cache: false` 后重启。
+- **Langfuse 上报**：`success_callback: ["langfuse"]` + `.env` 的 `LANGFUSE_PUBLIC_KEY/SECRET_KEY/HOST` 自动上报每次调用（可观测链路依赖它）；
+- **PII 脱敏（Presidio）**：guardrails 使用 `default_on: true` 全局生效；模式为 `["pre_call", "post_call"]`——PII 在模型调用前脱敏，响应中自动还原（用户不再看到 `<PERSON>` 占位符）；
+- **重启与排错**：
+
+```
+docker compose restart litellm          # 改配置后重启
+docker logs litellm --tail 50           # 看日志
+```
+
+> ⚠️ 关键坑：① 用稳定版 `v1.95.1`（`main-latest` 有 bug）；② 改 `litellm-config.yaml` 后必须重启容器生效；③ SSO 跳转失败时检查 Keycloak 里 `litellm` 客户端的回调地址。
+
+> 📖 原厂文档：LiteLLM 官方文档 https://docs.litellm.ai · Presidio guardrail https://docs.litellm.ai/docs/proxy/guardrails/presidio
+
+---
+
+[← 第15章：NewAPI 日常管理](ch15-ops-newapi.md) · [📖 目录](index.md) · [第17章：Dify 日常管理 →](ch17-ops-dify.md)

@@ -1,0 +1,11 @@
+{
+  "name": "mcp-gateway",
+  "version": "1.0.0",
+  "description": "AI All-in-One MCP Gateway — 聚合内置平台工具与外部 MCP Server，暴露标准 Streamable HTTP /mcp 端点",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "adm-zip": "^0.5.18",
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,33 @@
+# AI All In One — Promtail 配置（采集 Docker 容器日志 → Loki）
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      # 容器名（去掉前导斜杠）
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      # docker-compose 服务名
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        regex: '(.*)'
+        target_label: 'service'
+      # docker-compose 项目名
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_project']
+        regex: '(.*)'
+        target_label: 'project'
+      # 不采集 promtail 自身，避免日志环路
+      - source_labels: ['container']
+        regex: 'promtail'
+        action: drop

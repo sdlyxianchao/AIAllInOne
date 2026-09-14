@@ -1,0 +1,18 @@
+# AI All In One — Alertmanager 配置
+# 告警通知：通用 webhook 接收器（URL 从环境变量 ALERT_WEBHOOK_URL 注入）
+# 支持钉钉/企微/飞书等自定义机器人，需把机器人 webhook 地址填到 .env 的 ALERT_WEBHOOK_URL
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'job']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'webhook'
+
+receivers:
+  - name: 'webhook'
+    webhook_configs:
+      - url: 'http://admin-portal:3000/api/alert-webhook'
+        send_resolved: true

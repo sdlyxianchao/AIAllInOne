@@ -1,0 +1,29 @@
+# ============================================================
+# 发布目录（_release）专用 .gitignore
+# ⚠️ 注意：不要写 /windows/ /linux/ /docker/ ——
+#    这些是「脱敏后的平台内容」，必须发布到 GitHub。
+#    保护本地运行目录的规则只放在根目录的 .gitignore 里。
+# ============================================================
+
+# 依赖
+node_modules/
+**/node_modules/
+
+# 环境变量（含密钥，禁止提交）
+.env
+.env.windows
+**/.env
+
+# 凭据清单（真实版，只提交 .example）
+credentials.html
+
+# 备份 / 运行时数据
+backups/
+*.sql
+*.db
+*.log
+health_check_*.log
+
+# 系统
+.DS_Store
+Thumbs.db
