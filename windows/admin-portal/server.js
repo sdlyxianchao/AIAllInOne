@@ -3237,13 +3237,22 @@ const D=require(sp);
 const db=new D.Database('/var/lib/ghost/content/data/ghost.db',D.OPEN_READONLY);
 const q=(sql)=>new Promise((res,rej)=>db.get(sql,(e,r)=>e?rej(e):res(r)));
 const qa=(sql)=>new Promise((res,rej)=>db.all(sql,(e,r)=>e?rej(e):res(r)));
+// 注意：这里是 Admin Center 展示 Ghost 文章/页面列表的唯一数据源，直接读 Ghost 的 SQLite 库，
+// 后台不要另外维护一份文章列表副本，否则会与 Ghost 实际状态不一致。
+// 1) 过滤 status='deleted'：Ghost 后台的文章/页面列表不显示 Trashed 条目，
+//    不过滤会在页面上出现 Ghost 后台看不到的"幽灵文章"。
+// 2) updated_at 在库里是 UTC 裸字符串（如 '2026-09-11 16:05:54'），直接吐给前端会被
+//    当成浏览器本地时间解析、偏 8 小时，因此统一转成 ISO8601（带 Z）。
+// 3) 不设 LIMIT：一次返回全部（前端 pagedTable 做客户端分页，默认 10 条/页、
+//    可选 10/20/50/100），否则列表会被截断、跟 Ghost 后台对不上。
+const POST_COLS="id, title, slug, status, strftime('%Y-%m-%dT%H:%M:%SZ', updated_at) AS updated_at";
 (async()=>{
-  const posts=await q("SELECT COUNT(*) c FROM posts WHERE type='post'");
-  const pages=await q("SELECT COUNT(*) c FROM posts WHERE type='page'");
+  const posts=await q("SELECT COUNT(*) c FROM posts WHERE type='post' AND status!='deleted'");
+  const pages=await q("SELECT COUNT(*) c FROM posts WHERE type='page' AND status!='deleted'");
   const members=await q("SELECT COUNT(*) c FROM members");
   const tags=await q("SELECT COUNT(*) c FROM tags");
-  const recent_posts=await qa("SELECT id, title, slug, status, updated_at FROM posts WHERE type='post' ORDER BY updated_at DESC LIMIT 5");
-  const recent_pages=await qa("SELECT id, title, slug, status, updated_at FROM posts WHERE type='page' ORDER BY updated_at DESC LIMIT 5");
+  const recent_posts=await qa("SELECT "+POST_COLS+" FROM posts WHERE type='post' AND status!='deleted' ORDER BY updated_at DESC");
+  const recent_pages=await qa("SELECT "+POST_COLS+" FROM posts WHERE type='page' AND status!='deleted' ORDER BY updated_at DESC");
   console.log(JSON.stringify({posts:posts.c,pages:pages.c,members:members.c,tags:tags.c,recent_posts,recent_pages}));
   db.close();
 })();`;

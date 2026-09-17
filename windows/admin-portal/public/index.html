@@ -325,7 +325,7 @@ const I18N = {
     update_about: '更新服务器用于分发 DSH Desktop 桌面客户端安装包（Windows/macOS），客户端自动检查更新。',
     pii_about: 'PII 脱敏由内置正则 + Microsoft Presidio 服务组成，对手机号、身份证、银行卡、邮箱等敏感信息脱敏。',
     sso_login_hint: '统一账号 SSO 单点登录（ai_all_in_one_admin）', ghost_auto_hint: '统一账号免登录进入（点右上角按钮自动登录）',
-    ghost_recent_posts: '最近文章', ghost_recent_pages: '最近页面', ghost_st_published: '已发布', ghost_st_draft: '草稿', ghost_st_scheduled: '定时发布',
+    ghost_recent_posts: '全部文章', ghost_recent_pages: '全部页面', ghost_st_published: '已发布', ghost_st_draft: '草稿', ghost_st_scheduled: '定时发布',
     dify_new_app: '新建应用', dify_new_kb: '新建知识库',
     kc_new_user: '新建用户', kc_new_client: '新建客户端', kc_new_role: '新建角色',
     search_ph: '搜索…', per_page: '每页', prev_page: '上一页', next_page: '下一页', no_results: '无匹配结果',
@@ -471,7 +471,7 @@ const I18N = {
     update_about: 'Update Server distributes DSH Desktop desktop installers (Windows/macOS); clients auto-check for updates.',
     pii_about: 'PII redaction combines built-in regex + Microsoft Presidio to mask phone numbers, IDs, bank cards and emails.',
     sso_login_hint: 'Unified account SSO (ai_all_in_one_admin)', ghost_auto_hint: 'Unified account auto sign-in (click the button)',
-    ghost_recent_posts: 'Recent Posts', ghost_recent_pages: 'Recent Pages', ghost_st_published: 'Published', ghost_st_draft: 'Draft', ghost_st_scheduled: 'Scheduled',
+    ghost_recent_posts: 'All Posts', ghost_recent_pages: 'All Pages', ghost_st_published: 'Published', ghost_st_draft: 'Draft', ghost_st_scheduled: 'Scheduled',
     dify_new_app: 'New App', dify_new_kb: 'New Knowledge Base',
     kc_new_user: 'New User', kc_new_client: 'New Client', kc_new_role: 'New Role',
     search_ph: 'Search…', per_page: 'Per page', prev_page: 'Prev', next_page: 'Next', no_results: 'No results',
@@ -2322,8 +2322,10 @@ function entriesCard(entries, docsUrl) {
   const docs = docsUrl ? `<p style="color:var(--textdim);font-size:0.85em;margin-top:12px">📖 ${t('official_docs')}: <code>${docsUrl}</code></p>` : '';
   return `<div class="card"><h3>🔗 ${t('related_entries')}</h3><div style="display:flex;gap:10px;flex-wrap:wrap">${btns}</div>${docs}</div>`;
 }
+// title 省略/为空 → 标题回退为「关键信息」；显式传 null → 整行标题不渲染（卡片内自带分组标题时用）
 function keyInfoCard(html, title) {
-  return `<div class="card"><h3>🗂️ ${title || t('key_info')}</h3>${html}</div>`;
+  const head = title === null ? '' : `<h3>🗂️ ${title || t('key_info')}</h3>`;
+  return `<div class="card">${head}${html}</div>`;
 }
 
 // ═══ 企业 IM 告警配置 ═══
@@ -3206,7 +3208,14 @@ async function loadGhost(el) {
       { value: d.tags ?? '—', label: t('ghost_tags') },
     ];
     const stTxt = s => ({ published: t('ghost_st_published'), draft: t('ghost_st_draft'), scheduled: t('ghost_st_scheduled') }[s] || s);
-    const fmtDate = ts => ts ? new Date(ts).toLocaleDateString() : '—';
+    // 后端给的是带 Z 的 ISO UTC，按浏览器本地时区渲染（显示到分钟，避免同一天多篇看不出先后）
+    const fmtDate = ts => {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      if (isNaN(d)) return ts;
+      const z = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;
+    };
     const ghostBase = P('ghost');
     const postTable = pagedTable('ghost_posts', d.recent_posts || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td>${p.id ? `<a class="namelink" href="${ghostBase}/ghost/#/editor/post/${p.id}" target="_blank">${p.title || '—'}</a>` : (p.title || '—')}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
     const pageTable = pagedTable('ghost_pages', d.recent_pages || [], `<tr><th>${t('name')}</th><th>${t('status')}</th><th>${t('last_updated')}</th></tr>`, p => `<tr><td>${p.id ? `<a class="namelink" href="${ghostBase}/ghost/#/editor/page/${p.id}" target="_blank">${p.title || '—'}</a>` : (p.title || '—')}</td><td>${stTxt(p.status)}</td><td style="color:var(--textdim)">${fmtDate(p.updated_at)}</td></tr>`);
@@ -3221,7 +3230,7 @@ async function loadGhost(el) {
       + keyInfoCard(`<p style="color:var(--textdim);margin:0 0 8px">📄 ${t('ghost_recent_posts')}</p>
         ${(d.recent_posts || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : postTable}
         <p style="color:var(--textdim);margin:14px 0 8px">📃 ${t('ghost_recent_pages')}</p>
-        ${(d.recent_pages || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : pageTable}`, t('content_activity'));
+        ${(d.recent_pages || []).length === 0 ? `<p class="loading">${t('no_data')}</p>` : pageTable}`, null);
   } catch (e) {
     document.getElementById('main').innerHTML = productError('📰', title, url, e.message, t('open_ghost'));
   }
